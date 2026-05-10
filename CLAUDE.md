@@ -2,7 +2,7 @@
 
 ## Contexte projet
 Box physique d'escape game électronique. ESP32 standard pour dev, cible finale ESP32-S3.
-Voir docs/vision.md et docs/fsd.md pour le détail complet.
+Voir docs/escapebox-vision.md et docs/escapebox-fsd.md pour le détail complet.
 
 ## Environnement
 - ESP-IDF v6.1
@@ -16,7 +16,7 @@ Voir docs/vision.md et docs/fsd.md pour le détail complet.
 - Flash + monitor : idf.py -p /dev/ttyUSB0 flash monitor
 
 ## Git
-- Remote : git@github.com:gilles/blackbox.git
+- Remote : git@github.com:GillesClerc/blackbox.git
 - Commiter souvent avec des messages clairs
 - Pusher après chaque feature stable
 

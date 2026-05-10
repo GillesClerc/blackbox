@@ -213,7 +213,7 @@ LiPo 3.7V 3000mAh
 
 ### 2.3 Software Architecture
 
-#### 2.3.1 Firmware (ESP32-S3, Arduino framework / PlatformIO)
+#### 2.3.1 Firmware (ESP32-S3, ESP-IDF v6.1)
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
@@ -222,51 +222,49 @@ LiPo 3.7V 3000mAh
 │  ┌─────────────────────────────────────────────────────────┐    │
 │  │                    Core 0 (réseau + audio)               │    │
 │  │                                                          │    │
-│  │  WiFiManager (BLE provisioning + sync)                   │    │
-│  │  OTAManager (Arduino OTA + HTTPS OTA)                    │    │
-│  │  AudioPlayer (I2S DMA, MP3 via librairies)               │    │
-│  │  AudioCapture (I2S micro, analyse niveau/rythme)         │    │
+│  │  wifi_manager  (BLE provisioning + sync)                 │    │
+│  │  ota_manager   (esp_https_ota)                           │    │
+│  │  audio_player  (I2S DMA, MP3 via ESP-ADF)               │    │
+│  │  audio_capture (I2S micro, analyse niveau/rythme)        │    │
 │  └─────────────────────────────────────────────────────────┘    │
 │                                                                  │
 │  ┌─────────────────────────────────────────────────────────┐    │
 │  │                    Core 1 (UI + jeu)                     │    │
 │  │                                                          │    │
-│  │  ScenarioEngine (state machine, parse YAML)              │    │
-│  │  SensorManager  (polling I2C 50ms, event queue)          │    │
-│  │  DisplayManager (LVGL, TFT 4", GC9A01 1.3")             │    │
-│  │  LEDManager     (WS2812, FastLED, effets)                │    │
-│  │  ServoManager   (PWM, positions, timing)                 │    │
+│  │  scenario_engine (state machine, parse YAML)             │    │
+│  │  sensor_manager  (polling I2C 50ms, event queue)         │    │
+│  │  display_manager (LVGL, TFT 4", GC9A01 1.3")            │    │
+│  │  led_manager     (WS2812 via RMT ESP-IDF)               │    │
+│  │  servo_manager   (MCPWM ESP-IDF)                         │    │
 │  └─────────────────────────────────────────────────────────┘    │
 │                                                                  │
 │  ┌─────────────────────────────────────────────────────────┐    │
 │  │                    Shared (FreeRTOS)                     │    │
 │  │                                                          │    │
-│  │  EventQueue (xQueue entre cores)                         │    │
-│  │  StorageManager (SD card, LittleFS flash)                │    │
-│  │  CryptoManager (ECDSA vérif signature scénario)          │    │
-│  │  ConfigManager (WiFi creds, box ID, préférences)         │    │
+│  │  event_queue    (xQueue entre cores)                     │    │
+│  │  storage_manager (SD card SDMMC, NVS flash)              │    │
+│  │  crypto_manager  (ECDSA vérif via mbedTLS intégré)       │    │
+│  │  config_manager  (WiFi creds, box ID, préférences)       │    │
 │  └─────────────────────────────────────────────────────────┘    │
 └──────────────────────────────────────────────────────────────────┘
 ```
 
-**Libraries principales :**
+**Composants / librairies :**
 
-| Librairie | Usage |
+| Composant | Usage |
 |---|---|
-| Arduino ESP32 | Framework de base |
-| LVGL | Interface graphique écrans |
-| TFT_eSPI | Drivers TFT bas niveau |
-| FastLED | WS2812 LEDs |
-| ArduinoJSON | Parsing config / API |
-| ESP32-audioI2S | Playback MP3/WAV |
-| Adafruit MPR121 | Keypad capacitif |
-| Adafruit PN532 | Lecteur NFC |
-| MPU6050 | Accéléromètre |
-| AS5600 | Rotary magnétique |
-| ESP32 BLE Arduino | Provisioning WiFi |
-| ArduinoOTA | OTA via WiFi local |
-| HTTPClient | Download scénarios HTTPS |
-| mbedTLS | Vérification ECDSA |
+| ESP-IDF v6.1 | Framework de base (FreeRTOS, drivers, HAL) |
+| LVGL | Interface graphique écrans (porté ESP-IDF natif) |
+| esp_lcd | Drivers TFT bas niveau (SPI, ILI9488, GC9A01) |
+| led_strip via RMT | WS2812 LEDs (driver natif ESP-IDF) |
+| MCPWM | Servos (driver natif ESP-IDF) |
+| cJSON | Parsing config / API (inclus ESP-IDF) |
+| ESP-ADF | Playback MP3/WAV via I2S DMA |
+| i2c_master | MPR121 keypad, PN532 NFC, MPU6050, AS5600 |
+| NimBLE (ESP-IDF) | Provisioning WiFi via BLE |
+| esp_https_ota | OTA HTTPS |
+| esp_http_client | Download scénarios HTTPS |
+| mbedTLS (intégré) | Vérification ECDSA |
 
 #### 2.3.2 Format des scénarios (YAML)
 
@@ -747,7 +745,7 @@ POST /api/box/session
 | Stripe | Cloud (paiements) | Ventes impossibles |
 | JLCPCB / LCSC | Fabrication | Production bloquée |
 | Espressif ESP32-S3 | Composant | Redesign MCU nécessaire |
-| Arduino ESP32 core | Librairie | Migration vers ESP-IDF |
+| ESP-IDF | Framework | Migration vers autre SDK |
 | LVGL | Librairie | Redesign affichage |
 | Anthropic API | IA (éditeur B2B) | Fonctionnalité IA dégradée (non bloquant) |
 
@@ -893,107 +891,98 @@ ERROR         → Message d'erreur + code QR support
 
 ```bash
 # Outils requis
-- Visual Studio Code
-- PlatformIO IDE Extension
+- ESP-IDF v6.1 (installé via install.sh ou Docker espressif/idf)
 - Python 3.8+
 - Git
 - Driver CP2104 ou CH340 (selon le board)
+- VS Code + extension Espressif IDF (optionnel)
 ```
 
 #### 7.1.2 Cloner le repository
 
 ```bash
-git clone https://github.com/[org]/escapebox-firmware.git
-cd escapebox-firmware
+git clone git@github.com:GillesClerc/blackbox.git
+cd blackbox
+source /opt/esp/idf/export.sh   # ou via le container Docker
 ```
 
 **Structure du repository :**
 
 ```
-escapebox-firmware/
-├── src/
-│   ├── main.cpp                 # Point d'entrée
-│   ├── ScenarioEngine/          # Moteur YAML + state machine
-│   │   ├── ScenarioEngine.h
-│   │   ├── ScenarioEngine.cpp
-│   │   └── StepTypes/           # Chaque type de step
-│   ├── Sensors/                 # Drivers capteurs
-│   │   ├── NFC.h / NFC.cpp
-│   │   ├── Keypad.h / Keypad.cpp
-│   │   ├── Rotation.h / Rotation.cpp
-│   │   └── ...
-│   ├── Display/                 # LVGL + TFT drivers
-│   ├── Audio/                   # MP3 playback + micro
-│   ├── LEDs/                    # WS2812 FastLED
-│   ├── WiFi/                    # Sync + BLE provisioning
-│   ├── Storage/                 # SD card + LittleFS
-│   ├── Crypto/                  # ECDSA vérification
-│   └── Config/                  # ConfigManager
-├── data/                        # Fichiers à flasher sur LittleFS
-│   ├── scenarios/               # Scénarios YAML de dev
-│   └── certs/                   # Clé publique ECDSA
-├── platformio.ini
-├── partitions_custom.csv        # Partition table (OTA + LittleFS + SD)
-└── README.md
+blackbox/
+├── firmware/
+│   └── main/
+│       ├── main.c               # Point d'entrée app_main()
+│       └── CMakeLists.txt
+├── components/
+│   ├── scenario/                # Moteur YAML + state machine
+│   ├── nfc/                     # Driver PN532
+│   ├── keypad/                  # Driver MPR121
+│   ├── imu/                     # Driver MPU6050
+│   ├── display/                 # LVGL + ILI9488 + GC9A01
+│   ├── audio/                   # I2S DMA + MAX98357A
+│   ├── led/                     # WS2812 via RMT
+│   ├── servo/                   # SG90 via MCPWM
+│   ├── storage/                 # SD card SDMMC + NVS
+│   ├── wifi_manager/            # Sync + BLE provisioning
+│   ├── ota_manager/             # esp_https_ota
+│   └── crypto/                  # Vérification ECDSA
+├── docs/                        # Vision, FSD
+├── CMakeLists.txt               # Root CMake
+├── sdkconfig.defaults           # Config ESP-IDF par défaut
+├── partitions.csv               # Partition table custom
+└── CLAUDE.md
 ```
 
-#### 7.1.3 Configuration PlatformIO
+#### 7.1.3 Configuration ESP-IDF
 
-```ini
-# platformio.ini
-[env:esp32s3devkit]
-platform = espressif32
-board = esp32-s3-devkitc-1
-framework = arduino
-monitor_speed = 115200
+```cmake
+# CMakeLists.txt (racine)
+cmake_minimum_required(VERSION 3.16)
+include($ENV{IDF_PATH}/tools/cmake/project.cmake)
+project(blackbox)
+```
 
-board_build.partitions = partitions_custom.csv
-board_upload.flash_size = 8MB
-
-lib_deps =
-    lvgl/lvgl @ ^8.3.0
-    bodmer/TFT_eSPI @ ^2.5.0
-    fastled/FastLED @ ^3.6.0
-    adafruit/Adafruit MPR121 @ ^1.1.2
-    adafruit/Adafruit PN532 @ ^1.3.0
-    electroniccats/MPU6050 @ ^1.3.0
-    bblanchon/ArduinoJson @ ^7.0.0
-    earlephilhower/ESP8266Audio @ ^1.9.7
-    ESP32 BLE Arduino
-
-build_flags =
-    -D ARDUINO_USB_CDC_ON_BOOT=1
-    -D CORE_DEBUG_LEVEL=3
-    -DBOARD_HAS_PSRAM
-    -D LV_CONF_INCLUDE_SIMPLE
+```
+# sdkconfig.defaults
+CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ_240=y
+CONFIG_SPIRAM=y
+CONFIG_SPIRAM_MODE_OCT=y
+CONFIG_ESPTOOLPY_FLASHSIZE_8MB=y
+CONFIG_PARTITION_TABLE_CUSTOM=y
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
+CONFIG_LOG_DEFAULT_LEVEL_INFO=y
 ```
 
 **Partition table custom :**
 
 ```csv
-# partitions_custom.csv
-# Name,   Type, SubType, Offset,  Size,     Flags
-nvs,      data, nvs,     0x9000,  0x5000,
-otadata,  data, ota,     0xe000,  0x2000,
-app0,     app,  ota_0,   0x10000, 0x300000,
-app1,     app,  ota_1,   0x310000,0x300000,
-littlefs, data, spiffs,  0x610000,0x1F0000,
+# partitions.csv
+# Name,   Type, SubType, Offset,   Size
+nvs,      data, nvs,     0x9000,   0x5000
+otadata,  data, ota,     0xe000,   0x2000
+app0,     app,  ota_0,   0x10000,  0x300000
+app1,     app,  ota_1,   0x310000, 0x300000
+storage,  data, fat,     0x610000, 0x1F0000
 ```
 
 #### 7.1.4 Premier flash (USB)
 
 ```bash
-# Dans VS Code avec PlatformIO :
-1. Brancher le board via USB-C
-2. Vérifier le port COM dans platformio.ini (ou laisser auto)
-3. Cliquer sur → (Upload) dans la barre inférieure
-   OU : pio run --target upload
+# Configurer la cible (une seule fois)
+idf.py set-target esp32s3
 
-# Pour flasher les données LittleFS (certs, scénarios dev) :
-pio run --target uploadfs
+# Compiler
+idf.py build
 
-# Ouvrir le Serial Monitor :
-pio device monitor --baud 115200
+# Flasher
+idf.py -p /dev/ttyUSB0 flash
+
+# Monitor série
+idf.py -p /dev/ttyUSB0 monitor
+
+# Flash + monitor en une commande
+idf.py -p /dev/ttyUSB0 flash monitor
 ```
 
 **Logs attendus au premier démarrage :**
@@ -1061,13 +1050,11 @@ Flux OTA automatique :
 #### 7.2.2 OTA forcée via WiFi local (développement)
 
 ```bash
-# Dans platformio.ini, ajouter :
-upload_protocol = espota
-upload_port = 192.168.1.xxx  # IP de la box sur le réseau local
-upload_flags = --port=3232
+# Générer le binaire
+idf.py build
 
-# Puis flasher normalement :
-pio run --target upload
+# Flasher via réseau (la box doit être en mode OTA local)
+espota.py -i 192.168.1.xxx -p 3232 -f build/blackbox.bin
 ```
 
 La box doit être en mode OTA local (menu Settings → OTA local → ON).
