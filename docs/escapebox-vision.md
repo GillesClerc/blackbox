@@ -22,8 +22,11 @@ Ce produit doit être **rejouable** : on achète la box une fois, on achète des
 
 Un **cube ou parallélépipède en bois et ardoise**, monté sur un plateau rotatif. Les joueurs assis autour de la table font tourner la box vers eux pour interagir avec les différentes faces. Chaque face accueille des capteurs, des écrans, des zones tactiles, des capteurs cachées. L'ensemble ressemble à un **objet artisanal de collection** — pas un gadget plastique, un vrai objet qu'on garde sur une étagère.
 
-À l'intérieur : un ESP32-S3, une batterie rechargeable, tous les capteurs nécessaires pour créer des énigmes variées : NFC, clavier, boussole, accéléromètre, micro, capteur de souffle, Capteur angle magnétique, température, lumière, Capteur Hall analogique. Un compartiment s'ouvrent mécaniquement via un servos — c'est le moment de révélation physique qui crée le wahou. 
-Le cube contient également un haut parleure, un micro et deux écrans. Un écrans 3-4' de haute résolution, et un petit écran rond sur une autre face.
+À l'intérieur : un ESP32-S3, une batterie rechargeable, tous les capteurs nécessaires pour créer des énigmes variées : NFC, clavier capacitif (MTCH2120), boussole, accéléromètre, micro, capteur de souffle, capteur d'angle magnétique, température, lumière, capteur Hall analogique. Un compartiment s'ouvre mécaniquement via un servo — c'est le moment de révélation physique qui crée le wahou.
+
+Le cube contient également un haut-parleur, un micro et deux écrans : un écran 3-4" de haute résolution, et un petit écran rond sur une autre face.
+
+Un bus backbone interne (connecteurs JST) court le long de la structure. Chaque PCB satellite — face keypad, face NFC, face boussole — se plug/déplugg proprement sur ce bus. L'assemblage est propre, maintenable, et permet d'upgrader une face sans tout démonter.
 
 ---
 

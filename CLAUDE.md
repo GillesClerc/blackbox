@@ -50,7 +50,7 @@ firmware/
 - [ ] NFC PN532 I2C
 - [ ] Servo SG90 MCPWM
 - [ ] LEDs WS2812 RMT
-- [ ] Bus I2C complet (MPR121, MPU6050, BMP280, AS5600, VEML7700)
+- [ ] Bus I2C complet (MTCH2120, MPU6050, BMP280, AS5600, VEML7700) — distribué via backbone JST
 - [ ] Filesystem SD
 
 ## Conventions code

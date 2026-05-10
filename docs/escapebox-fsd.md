@@ -110,15 +110,18 @@ Scores et stats remontés à la prochaine synchro
 
 #### 2.2.2 Capteurs et actionneurs
 
-**Bus I2C** (SDA=GPIO8, SCL=GPIO9, pull-up 4.7kΩ) :
+**Bus backbone interne** (JST, court le long de la structure de la box) :
+
+Chaque PCB satellite ou composant se plug/déplugg via connecteur JST sur ce bus backbone. Il transporte : alimentation 3.3V + 5V, I2C, et signaux GPIO nécessaires. Permet un assemblage/démontage propre sans soudure volante.
+
+**Bus I2C** (SDA=GPIO8, SCL=GPIO9, pull-up 4.7kΩ) — distribué via backbone JST :
 
 | Adresse | Composant | Fonction |
 |---|---|---|
 | 0x10 | VEML7700 | Lumière ambiante |
 | 0x24 | PN532 | Lecteur NFC |
 | 0x36 | AS5600 | Rotation magnétique (plateau) |
-| 0x5A | MPR121 #1 | Keypad 12 canaux |
-| 0x5B | MPR121 #2 | Touch zones larges |
+| 0x28 | MTCH2120 | Capacitif 12 canaux (keypad + touch zones) |
 | 0x5C | MLX90614 | Température IR |
 | 0x68 | MPU-6050 | Accéléromètre + gyroscope |
 | 0x76 | BMP280 | Pression / détection souffle |
@@ -169,7 +172,7 @@ Scores et stats remontés à la prochaine synchro
 | GPIO3 | Laser ON/OFF | 2N7002 MOSFET |
 | GPIO4 | WS2812 DATA | Chaîne LEDs RGB (arêtes + anneau NFC) |
 | GPIO10 | Hall sensor | A3144E (détection aimant) |
-| GPIO11-13 | Touch natif | Pads cuivre (zones tactiles larges) |
+| GPIO11-13 | Touch natif ESP32-S3 | Réservé — à confirmer selon besoins MTCH2120 |
 | GPIO14 | Encoder A | Rotary encoder EC11 |
 | GPIO18 | Encoder B | Rotary encoder EC11 |
 | GPIO21 | Encoder BTN | Bouton rotary encoder |
@@ -195,6 +198,15 @@ LiPo 3.7V 3000mAh
 **Proto Phase 1** : ESP32-S3-DevKitC-1 sur headers femelles + PCB capteurs.
 
 **Proto Phase 2** : Module WROOM-1-N16R8 soudé directement sur PCB custom tout-en-un, PCBA par JLCPCB.
+
+**Architecture PCB interne** :
+
+Un bus backbone JST court le long de la structure interne de la box. Chaque PCB satellite (face keypad, face NFC, face boussole, etc.) et chaque composant se plug/déplugg proprement sur ce bus via connecteur JST. Le backbone distribue :
+- Alimentation 3.3V et 5V
+- Bus I2C partagé
+- Signaux GPIO nécessaires par face
+
+Avantages : assemblage sans soudure volante, remplacement/upgrade d'une face sans toucher au reste, câblage propre et maintenable en production.
 
 **Boîtier** :
 - Phase 1 : MDF découpé laser + peinture noire + détails laiton minimal (Lite)
@@ -249,7 +261,7 @@ LiPo 3.7V 3000mAh
 | MCPWM | Servos (driver natif ESP-IDF) |
 | cJSON | Parsing config / API (inclus ESP-IDF) |
 | ESP-ADF | Playback MP3/WAV via I2S DMA |
-| i2c_master | MPR121 keypad, PN532 NFC, MPU6050, AS5600 |
+| i2c_master | MTCH2120 keypad, PN532 NFC, MPU6050, AS5600 |
 | NimBLE (ESP-IDF) | Provisioning WiFi via BLE |
 | esp_https_ota | OTA HTTPS |
 | esp_http_client | Download scénarios HTTPS |
