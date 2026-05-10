@@ -1,2 +1,5 @@
 build/
 sdkconfig.old
+dependencies.lock
+managed_components/
+sample_project/
