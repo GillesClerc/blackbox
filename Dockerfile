@@ -6,7 +6,7 @@ RUN apt-get update && \
     apt-get install -y nodejs && \
     npm install -g @anthropic-ai/claude-code
 
-RUN useradd -m -s /bin/bash dev
+RUN useradd -m -s /bin/bash dev && usermod -aG dialout dev
 
 RUN git config --system user.name "Gilles" && \
     git config --system user.email "gillesclerc@gmail.com" && \

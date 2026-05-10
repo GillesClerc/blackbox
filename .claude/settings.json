@@ -1,0 +1,6 @@
+{
+  "statusLine": {
+    "type": "command",
+    "command": "sh /workspaces/blackbox/.claude/statusline-command.sh"
+  }
+}
