@@ -34,24 +34,35 @@ firmware/
   main/           → app_main, point d'entrée
   components/
     display/      → ST7735 1.8" (SPI2, 40MHz, DMA) ✅ validé
-    audio/        → MAX98357A I2S (à faire)
+    audio/        → PCM5122PW I2S DAC + I2C config ✅ (driver écrit, validé au branchement)
     nfc/          → PN532 I2C (à faire)
     servo/        → SG90 MCPWM (à faire)
-    leds/         → WS2812 RMT (à faire)
-    sensors/      → Bus I2C complet (à faire)
-    scenario/     → Moteur JSON state machine ✅ (cJSON bundlé, FreeRTOS task + xQueue)
+    leds/         → WS2812B RMT ✅ (driver écrit, validé au branchement)
+    sensors/      → Bus I2C + LSM6DSOTR, AS5600, VEML7700, MTCH2120 ✅ (drivers écrits)
+    scenario/     → Moteur JSON state machine ✅ (hints, variables, branch, do_fail)
     storage/      → SD card filesystem (à faire)
 ```
 
 ## Statut Phase 1 (FSD §3.1)
-- [x] Display ST7735 1.8" — driver SPI DMA 40MHz, plasma demo
-- [x] Moteur de scénario YAML/JSON — state machine FreeRTOS, validé sur device
-- [ ] Audio PCM5122PW (I2S DAC stéréo, I2C 0x4C) + PAM8406 (amp Class D 5W+5W)
+- [x] Display ST7735 1.8" — driver SPI DMA 40MHz, plasma demo, boot screen animé
+- [x] Moteur de scénario JSON — state machine FreeRTOS, hints temporisés, variables, branch, do_fail
+- [x] Scénario "Capitaine Verdier" — YAML + JSON, simulateur d'events, 3 énigmes
+- [x] Audio PCM5122PW — driver I2S + I2C config (validé au branchement du chip)
+- [x] LEDs WS2812B — driver RMT (validé au branchement)
+- [x] Capteurs I2C — LSM6DSOTR (IMU 6 axes), AS5600 (angle magn.), VEML7700 (lumière), MTCH2120 (touch)
+- [x] Outil YAML→JSON — tools/yaml2json.py, validation du format scénario
 - [ ] NFC PN532 I2C
 - [ ] Servo SG90 MCPWM
-- [ ] LEDs WS2812 RMT
-- [ ] Bus I2C complet (MTCH2120, MPU6050, BMP280, AS5600, VEML7700) — distribué via backbone JST
 - [ ] Filesystem SD
+
+## Capteurs I2C (backbone JST, bus I2C_NUM_0, SDA=21, SCL=22, 400kHz)
+| Composant    | Adresse | Rôle                        |
+|:-------------|:--------|:----------------------------|
+| MTCH2120     | 0x28    | Tactile capacitif 12 canaux |
+| AS5600       | 0x36    | Encodeur magnétique 12 bits |
+| LSM6DSOTR    | 0x6A    | IMU 6 axes (accel + gyro)   |
+| VEML7700     | 0x10    | Lumière ambiante            |
+| PCM5122PW    | 0x4C    | DAC audio stéréo (I2C ctrl) |
 
 ## Conventions code
 - C pur ESP-IDF natif, zéro lib externe sauf LVGL (plus tard)

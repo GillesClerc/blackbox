@@ -123,7 +123,7 @@ Chaque PCB satellite ou composant se plug/déplugg via connecteur JST sur ce bus
 | 0x36 | AS5600 | Rotation magnétique (plateau) |
 | 0x28 | MTCH2120 | Capacitif 12 canaux (keypad + touch zones) |
 | 0x5C | MLX90614 | Température IR |
-| 0x68 | MPU-6050 | Accéléromètre + gyroscope |
+| 0x6A | LSM6DSOTR | Accéléromètre + gyroscope 6 axes (STMicroelectronics) |
 | 0x76 | BMP280 | Pression / détection souffle |
 
 **Bus SPI2** (écran principal, GPIO35-40) :
@@ -264,7 +264,7 @@ Avantages : assemblage sans soudure volante, remplacement/upgrade d'une face san
 | cJSON | Parsing config / API (inclus ESP-IDF) |
 | ESP-ADF | Playback MP3/WAV via I2S DMA |
 | i2c_master (PCM5122) | Config DAC : volume, EQ DSP, mute via registres I2C (addr 0x4C) |
-| i2c_master | MTCH2120 keypad, PN532 NFC, MPU6050, AS5600 |
+| i2c_master | MTCH2120 keypad, PN532 NFC, LSM6DSOTR, AS5600 |
 | NimBLE (ESP-IDF) | Provisioning WiFi via BLE |
 | esp_https_ota | OTA HTTPS |
 | esp_http_client | Download scénarios HTTPS |
@@ -552,24 +552,27 @@ POST /api/box/session
 - [ ] ESP32-S3-DevKitC-1 + Joy-iT TFT 1.8" → valider affichage
 - [ ] Cabler microphone MEMS i2s -> valider le micro
 - [ ] Câbler PN532 breakout → valider NFC
-- [ ] Câbler MPR121 breakout → valider keypad
+- [ ] Câbler MTCH2120 → valider keypad capacitif
 - [ ] Câbler servo SG90 → valider compartiment
 - [ ] Câbler PCM5122PW (I2S + I2C 0x4C) + PAM8406 + 2× speakers 3W 4Ω → valider audio MP3 stéréo
 - [ ] Valider contrôle volume logiciel via I2C (fade-in/out propre)
 - [ ] Tester EQ DSP PCM5122 sur un scénario (pas de distorsion)
-- [ ] Câbler MPU6050, BMP280, VEML7700, AS5600 → valider I2C bus complet
+- [ ] Câbler LSM6DSOTR, BMP280, VEML7700, AS5600 → valider I2C bus complet
 - [ ] Câbler WS2812 → valider LEDs
 - [ ] Tester le moteur de scénario YAML sur le hardware assemblé
 
 **Firmware :**
-- [ ] Moteur de scénario (parser YAML + state machine)
+- [x] Moteur de scénario JSON (state machine, hints, variables, branches, do_fail)
+- [x] Scénario "Capitaine Verdier" — YAML + JSON, 3 énigmes (boussole, code, inclinaison)
+- [x] Driver audio PCM5122PW (I2S + I2C config, tone generator)
+- [x] Driver LEDs WS2812B (RMT, GRB, show)
+- [x] Drivers I2C (LSM6DSOTR, AS5600, VEML7700, MTCH2120)
+- [x] Outil YAML→JSON (tools/yaml2json.py avec validation)
 - [ ] Driver LVGL sur TFT 1.8" (puis 4")
-- [ ] Driver audio (MP3 playback)
-- [ ] Drivers I2C (tous capteurs)
-- [ ] Gestion LEDs WS2812 (FastLED)
-- [ ] Gestion servos
+- [ ] Driver audio MP3 playback (ESP-ADF ou SPIFFS + raw PCM)
+- [ ] Driver NFC PN532
+- [ ] Driver servos SG90 MCPWM
 - [ ] Système de fichiers SD (LittleFS ou SD FAT)
-- [ ] Scénario "Capitaine Verdier" complet en YAML
 
 **Web Platform :**
 - [ ] Projet Next.js + Supabase initialisé
@@ -948,8 +951,8 @@ blackbox/
 ├── components/
 │   ├── scenario/                # Moteur YAML + state machine
 │   ├── nfc/                     # Driver PN532
-│   ├── keypad/                  # Driver MPR121
-│   ├── imu/                     # Driver MPU6050
+│   ├── keypad/                  # Driver MTCH2120
+│   ├── sensors/                 # Drivers I2C : LSM6DSOTR, AS5600, VEML7700, MTCH2120
 │   ├── display/                 # LVGL + ILI9488 + GC9A01
 │   ├── audio/                   # I2S DMA + PCM5122PW (DAC) + PAM8406 (amp)
 │   ├── led/                     # WS2812 via RMT
@@ -1167,9 +1170,9 @@ Les indices sont gradués : d'abord vague, puis de plus en plus précis.
 [ ] EQ DSP PCM5122 testée sur un scénario (pas de distorsion)
 [ ] Micro détecte un claquement de mains à 1 mètre
 [ ] PN532 lit un tag NTAG213 en < 500ms
-[ ] MPR121 keypad détecte les 12 touches avec < 1% faux positifs
+[ ] MTCH2120 keypad détecte les 12 touches avec < 1% faux positifs
 [ ] AS5600 mesure la rotation avec précision ≤ 2° sur 360°
-[ ] MPU6050 détecte une inclinaison de 15° minimum
+[ ] LSM6DSOTR détecte une inclinaison de 15° minimum
 [ ] BMP280 détecte un souffle buccal à 5 cm
 [ ] VEML7700 distingue pièce éclairée / pièce sombre
 [ ] MLX90614 mesure la température d'une main à 2 cm
@@ -1283,7 +1286,7 @@ Les indices sont gradués : d'abord vague, puis de plus en plus précis.
 | AS5600 | LCSC C79815 | https://ams.com/documents/20143/36005/AS5600_DS000365_5-00.pdf |
 | VEML7700 | LCSC C1850416 | https://www.vishay.com/docs/84286/veml7700.pdf |
 | BMP280 | LCSC C83291 | https://www.bosch-sensortec.com/media/boschsensortec/downloads/datasheets/bst-bmp280-ds001.pdf |
-| MPU-6050 | LCSC C24112 | https://invensense.tdk.com/wp-content/uploads/2015/02/MPU-6000-Datasheet1.pdf |
+| LSM6DSOTR | LCSC C2678328 | https://www.st.com/resource/en/datasheet/lsm6dso.pdf |
 | MLX90614 | LCSC C58661 | https://www.melexis.com/en/documents/documentation/datasheets/datasheet-mlx90614 |
 | PCM5122PW | LCSC C14969 | https://www.ti.com/lit/ds/symlink/pcm5122.pdf |
 | PAM8406 | LCSC C89689 | https://www.diodes.com/assets/Datasheets/PAM8406.pdf |
