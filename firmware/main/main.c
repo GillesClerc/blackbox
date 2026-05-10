@@ -6,69 +6,11 @@
 
 #define TAG "main"
 
-// Scénario de test Phase 1 — embarqué en dur, pas de SD
-static const char *TEST_SCENARIO = R"({
-  "meta": {
-    "id": "test_phase1",
-    "title": "Test Phase 1 — Sans hardware",
-    "version": "1.0"
-  },
-  "steps": [
-    {
-      "id": "intro",
-      "type": "narrative",
-      "do": [
-        {"screen_main": {"text": "Bienvenue dans EscapeBox"}},
-        {"led": {"target": "all", "color": "#0000FF", "mode": "pulse"}}
-      ],
-      "next": "attente_rfid"
-    },
-    {
-      "id": "attente_rfid",
-      "type": "trigger",
-      "on": "rfid_read",
-      "expect": {"uid": "04:AB:CD:EF"},
-      "timeout_sec": 30,
-      "do": [
-        {"audio": {"play": "intro"}},
-        {"screen_main": {"text": "ÉPREUVE 1 — Entrez le code"}},
-        {"led": {"target": "edges", "color": "#FF8800", "mode": "solid"}}
-      ],
-      "next": "code_secret"
-    },
-    {
-      "id": "code_secret",
-      "type": "input",
-      "on": "keypad_code",
-      "expect": {"code": "1743"},
-      "timeout_sec": 120,
-      "do_success": [
-        {"servo": {"id": "main", "action": "open"}},
-        {"audio": {"play": "victoire"}},
-        {"led": {"target": "all", "color": "#00FF00", "mode": "flash"}}
-      ],
-      "next": "epilogue"
-    },
-    {
-      "id": "epilogue",
-      "type": "narrative",
-      "do": [
-        {"screen_main": {"text": "Bravo ! Temps : 3m47s"}},
-        {"led": {"target": "all", "color": "#FFD700", "mode": "cycle"}}
-      ],
-      "next": "end"
-    },
-    {
-      "id": "end",
-      "type": "end",
-      "do": [
-        {"screen_main": {"text": "À bientôt !"}}
-      ]
-    }
-  ]
-})";
+// Scénario Verdier embarqué via EMBED_TXTFILES dans CMakeLists
+extern const uint8_t _binary_capitaine_verdier_json_start[];
+#define VERDIER_SCENARIO ((const char *)_binary_capitaine_verdier_json_start)
 
-// --- Handlers d'actions (mocks Phase 1 — logguent et affichent sur l'écran) ---
+// --- Boot screen ---
 
 static void draw_boot_screen(void) {
     display_fill(COLOR_BLACK);
@@ -88,7 +30,6 @@ static void draw_boot_screen(void) {
     display_draw_string(4, 99,  "le hardware", COLOR_GRAY, COLOR_BLACK, 1);
     display_draw_string(4, 108, "est arrive :)", COLOR_GRAY, COLOR_BLACK, 1);
 
-    // Zone animation : barre + status (dessinée par boot_screen_task)
     display_fill_rect(4, 120, 120, 10, COLOR_GRAY);
     display_fill_rect(0, DISPLAY_HEIGHT - 2, DISPLAY_WIDTH, 2, COLOR_CYAN);
 }
@@ -114,23 +55,19 @@ static void boot_screen_task(void *arg) {
     uint8_t color_idx = 0;
 
     while (1) {
-        // Barre de progression
         uint8_t bar_w = (progress * 118) / 100;
-        display_fill_rect(5, 121, bar_w,       8, COLOR_GREEN);
-        display_fill_rect(5 + bar_w, 121, 118 - bar_w, 8, 0x2104); // vert très sombre
+        display_fill_rect(5, 121, bar_w,             8, COLOR_GREEN);
+        display_fill_rect(5 + bar_w, 121, 118 - bar_w, 8, 0x2104);
 
-        // Pourcentage (droite de la barre)
         char pct[8];
         snprintf(pct, sizeof(pct), " %3d%% ", progress);
         display_draw_string(4, 133, pct, COLOR_GREEN, COLOR_BLACK, 1);
 
-        // Message status toutes les 600ms (12 ticks × 50ms)
         if (tick % 12 == 0) {
             display_draw_string(4, 148, status_msgs[msg_idx % 8], COLOR_GRAY, COLOR_BLACK, 1);
             msg_idx++;
         }
 
-        // Titre pulse toutes les 400ms (8 ticks × 50ms)
         if (tick % 8 == 0) {
             display_draw_string(10, 6, "ESCAPEBOX",
                                 title_colors[color_idx % 6], COLOR_BLACK, 2);
@@ -144,18 +81,21 @@ static void boot_screen_task(void *arg) {
     }
 }
 
+// --- Handlers d'actions (mocks Phase 1 — log + affichage) ---
+
 static void action_screen_main(const char *name, const cJSON *params) {
     const char *text = cJSON_GetStringValue(cJSON_GetObjectItem(params, "text"));
-    if (text) {
-        ESP_LOGI(TAG, "[screen] %s", text);
-        // TODO: afficher sur le vrai écran avec LVGL
-    }
+    if (text) ESP_LOGI(TAG, "[screen_main] %s", text);
+}
+
+static void action_screen_secondary(const char *name, const cJSON *params) {
+    const char *text = cJSON_GetStringValue(cJSON_GetObjectItem(params, "text"));
+    if (text) ESP_LOGI(TAG, "[screen_sec ] %s", text);
 }
 
 static void action_audio(const char *name, const cJSON *params) {
     const char *play = cJSON_GetStringValue(cJSON_GetObjectItem(params, "play"));
     ESP_LOGI(TAG, "[audio] play: %s", play ? play : "?");
-    // TODO: lecture MP3 via I2S
 }
 
 static void action_led(const char *name, const cJSON *params) {
@@ -163,44 +103,60 @@ static void action_led(const char *name, const cJSON *params) {
     const char *color  = cJSON_GetStringValue(cJSON_GetObjectItem(params, "color"));
     const char *mode   = cJSON_GetStringValue(cJSON_GetObjectItem(params, "mode"));
     ESP_LOGI(TAG, "[led] target=%s color=%s mode=%s",
-             target ? target : "?",
-             color  ? color  : "?",
-             mode   ? mode   : "?");
-    // TODO: WS2812 via RMT
+             target ? target : "?", color ? color : "?", mode ? mode : "?");
 }
 
 static void action_servo(const char *name, const cJSON *params) {
     const char *id     = cJSON_GetStringValue(cJSON_GetObjectItem(params, "id"));
     const char *action = cJSON_GetStringValue(cJSON_GetObjectItem(params, "action"));
     ESP_LOGI(TAG, "[servo] id=%s action=%s", id ? id : "?", action ? action : "?");
-    // TODO: SG90 via MCPWM
 }
 
-// --- Simulateur d'événements (remplace les vrais capteurs en Phase 1) ---
+// --- Simulateur d'événements — scénario Capitaine Verdier ---
 
 static void simulator_task(void *arg) {
-    ESP_LOGI(TAG, "simulateur démarré — inject events dans 3s...");
-    vTaskDelay(pdMS_TO_TICKS(3000));
+    ESP_LOGI(TAG, "simulateur démarré — injection dans 4s...");
+    vTaskDelay(pdMS_TO_TICKS(4000));
 
-    // Simule un badge NFC
-    ESP_LOGI(TAG, "SIM → rfid 04:AB:CD:EF");
-    scenario_event_t evt = { .type = EVT_RFID_READ };
-    snprintf(evt.str, sizeof(evt.str), "04:AB:CD:EF");
+    scenario_event_t evt;
+
+    // Épreuve 0 : médaillon RFID
+    ESP_LOGI(TAG, "SIM → rfid '04:VE:RD:01'");
+    evt.type = EVT_RFID_READ;
+    snprintf(evt.str, sizeof(evt.str), "04:VE:RD:01");
     scenario_engine_post_event(&evt);
-
-    vTaskDelay(pdMS_TO_TICKS(3000));
-
-    // Simule un mauvais code
-    ESP_LOGI(TAG, "SIM → keypad '0000' (mauvais)");
-    evt.type = EVT_KEYPAD_CODE;
-    snprintf(evt.str, sizeof(evt.str), "0000");
-    scenario_engine_post_event(&evt);
-
     vTaskDelay(pdMS_TO_TICKS(2000));
 
-    // Simule le bon code
-    ESP_LOGI(TAG, "SIM → keypad '1743' (correct)");
-    snprintf(evt.str, sizeof(evt.str), "1743");
+    // Épreuve 1 : boussole — mauvais cap d'abord
+    ESP_LOGI(TAG, "SIM → rotary 90 (mauvais)");
+    evt.type = EVT_ROTARY_VALUE;
+    evt.int_val = 90;
+    scenario_engine_post_event(&evt);
+    vTaskDelay(pdMS_TO_TICKS(1500));
+
+    // Bon cap : 270° (plein Ouest)
+    ESP_LOGI(TAG, "SIM → rotary 270 (correct)");
+    evt.int_val = 270;
+    scenario_engine_post_event(&evt);
+    vTaskDelay(pdMS_TO_TICKS(2000));
+
+    // Épreuve 2 : code — mauvais d'abord
+    ESP_LOGI(TAG, "SIM → keypad '1234' (mauvais)");
+    evt.type = EVT_KEYPAD_CODE;
+    snprintf(evt.str, sizeof(evt.str), "1234");
+    scenario_engine_post_event(&evt);
+    vTaskDelay(pdMS_TO_TICKS(1500));
+
+    // Bon code : 7394 (date du naufrage inversée)
+    ESP_LOGI(TAG, "SIM → keypad '7394' (correct)");
+    snprintf(evt.str, sizeof(evt.str), "7394");
+    scenario_engine_post_event(&evt);
+    vTaskDelay(pdMS_TO_TICKS(2000));
+
+    // Épreuve 3 : inclinaison 15°
+    ESP_LOGI(TAG, "SIM → accel_tilt 15 (correct)");
+    evt.type = EVT_ACCEL_TILT;
+    evt.int_val = 15;
     scenario_engine_post_event(&evt);
 
     vTaskDelete(NULL);
@@ -209,21 +165,19 @@ static void simulator_task(void *arg) {
 // --- Main ---
 
 void app_main(void) {
-    ESP_LOGI(TAG, "Démarrage EscapeBox");
+    ESP_LOGI(TAG, "=== EscapeBox démarrage ===");
 
-    // Display
     display_init();
     draw_boot_screen();
     xTaskCreate(boot_screen_task, "boot_anim", 4096, NULL, 4, NULL);
 
-    // Moteur de scénario
-    ESP_ERROR_CHECK(scenario_engine_init(TEST_SCENARIO));
-    scenario_engine_register_action("screen_main", action_screen_main);
-    scenario_engine_register_action("audio",       action_audio);
-    scenario_engine_register_action("led",         action_led);
-    scenario_engine_register_action("servo",       action_servo);
+    ESP_ERROR_CHECK(scenario_engine_init(VERDIER_SCENARIO));
+    scenario_engine_register_action("screen_main",      action_screen_main);
+    scenario_engine_register_action("screen_secondary", action_screen_secondary);
+    scenario_engine_register_action("audio",            action_audio);
+    scenario_engine_register_action("led",              action_led);
+    scenario_engine_register_action("servo",            action_servo);
     ESP_ERROR_CHECK(scenario_engine_start());
 
-    // Simulateur d'events pour tester sans hardware
     xTaskCreate(simulator_task, "simulator", 4096, NULL, 3, NULL);
 }

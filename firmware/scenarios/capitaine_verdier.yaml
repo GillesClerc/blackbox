@@ -1,0 +1,178 @@
+# Scénario : Le Mystère du Capitaine Verdier
+# Format YAML auteur → converti en JSON firmware par tools/yaml2json.py
+
+meta:
+  id: capitaine_verdier
+  title: "Le Mystère du Capitaine Verdier"
+  version: "1.0"
+  duration_min: 20
+  players: "2-4"
+
+steps:
+
+  # --- Intro narrative ---
+
+  - id: intro
+    type: narrative
+    do:
+      - screen_main: {text: "1957. Le sous-marin\nVerdier disparaît\nen mer du Nord..."}
+      - led: {target: all, color: "#001F4D", mode: pulse}
+      - audio: {play: intro_ambient}
+    next: intro2
+
+  - id: intro2
+    type: narrative
+    do:
+      - screen_main: {text: "Vous avez retrouvé\nla balise de\ndétresse du bord."}
+    next: attente_medallion
+
+  # --- Épreuve 0 : activation par médaillon RFID ---
+
+  - id: attente_medallion
+    type: trigger
+    on: rfid_read
+    expect:
+      uid: "04:VE:RD:01"
+    timeout_sec: 300
+    hints:
+      - delay_sec: 30
+        do:
+          - screen_secondary: {text: "Posez le médaillon\nVerdier sur la\nsurface de la box"}
+      - delay_sec: 90
+        do:
+          - screen_secondary: {text: "Le médaillon est\ndans l'enveloppe\ncamel..."}
+          - audio: {play: hint_medallion}
+    do:
+      - audio: {play: activation}
+      - screen_main: {text: "SIGNAL DÉTECTÉ !\n\nÉpreuve 1 :\nLa Boussole"}
+      - led: {target: edges, color: "#00AA88", mode: solid}
+    next: cap_boussole
+
+  # --- Épreuve 1 : cap boussole (AS5600, 270° = Ouest) ---
+
+  - id: cap_boussole
+    type: input
+    on: rotary_value
+    expect:
+      value: 270
+      tolerance: 10
+    timeout_sec: 120
+    hints:
+      - delay_sec: 30
+        do:
+          - screen_secondary: {text: "Indice : le sous-\nmarin naviguait\nvers l'Ouest..."}
+      - delay_sec: 70
+        do:
+          - screen_secondary: {text: "L'Ouest = 270°"}
+          - audio: {play: hint_compass}
+    do_success:
+      - audio: {play: correct}
+      - led: {target: edges, color: "#00FF88", mode: flash}
+      - screen_main: {text: "Cap 270° validé !\n\nÉpreuve 2 :\nLe Code Secret"}
+    do_fail:
+      - audio: {play: wrong}
+      - screen_secondary: {text: "Pas ce cap..."}
+      - incr_var: {compass_fails: 1}
+    next: check_compass
+
+  - id: check_compass
+    type: branch
+    conditions:
+      - var: compass_fails
+        op: gte
+        value: 5
+        next: hint_compass_force
+    default: code_secret
+
+  - id: hint_compass_force
+    type: narrative
+    do:
+      - screen_secondary: {text: "Le cap est :\n270 degrés\n(plein Ouest)"}
+      - audio: {play: hint_compass_final}
+      - set_var: {compass_fails: 0}
+    next: cap_boussole
+
+  # --- Épreuve 2 : code du journal de bord (clavier, "7394") ---
+  # Indice : date du naufrage 4937, inversée
+
+  - id: code_secret
+    type: input
+    on: keypad_code
+    expect:
+      code: "7394"
+    timeout_sec: 180
+    hints:
+      - delay_sec: 45
+        do:
+          - screen_secondary: {text: "Indice : la date\ndu naufrage,\ninversée..."}
+      - delay_sec: 100
+        do:
+          - screen_secondary: {text: "Date du naufrage :\n4937 — inversez"}
+          - audio: {play: hint_code}
+    do_success:
+      - audio: {play: correct}
+      - led: {target: all, color: "#00FF88", mode: pulse}
+      - screen_main: {text: "Code 7394 validé !\n\nÉpreuve 3 :\nL'Inclinaison"}
+    do_fail:
+      - audio: {play: wrong}
+      - screen_secondary: {text: "Code incorrect..."}
+      - incr_var: {code_fails: 1}
+    next: check_code
+
+  - id: check_code
+    type: branch
+    conditions:
+      - var: code_fails
+        op: gte
+        value: 3
+        next: hint_code_force
+    default: inclinaison
+
+  - id: hint_code_force
+    type: narrative
+    do:
+      - screen_secondary: {text: "Le code du journal\nde bord : 7394"}
+      - audio: {play: hint_code_final}
+      - set_var: {code_fails: 0}
+    next: code_secret
+
+  # --- Épreuve 3 : inclinaison précise (LSM6DSOTR, 15°) ---
+
+  - id: inclinaison
+    type: input
+    on: accel_tilt
+    expect:
+      angle: 15
+      tolerance: 3
+    timeout_sec: 120
+    hints:
+      - delay_sec: 25
+        do:
+          - screen_secondary: {text: "Inclinez la box\nvers l'avant : ~15°"}
+      - delay_sec: 65
+        do:
+          - audio: {play: hint_tilt}
+          - screen_secondary: {text: "15 degrés exactement"}
+    do_success:
+      - audio: {play: victoire}
+      - servo: {id: main, action: open}
+      - led: {target: all, color: "#FFD700", mode: cycle}
+      - screen_main: {text: "ACCÈS AUTORISÉ !\n\nLe compartiment\ns'ouvre..."}
+    do_fail:
+      - screen_secondary: {text: "Pas cette inclinaison"}
+    next: epilogue
+
+  # --- Dénouement ---
+
+  - id: epilogue
+    type: narrative
+    do:
+      - screen_main: {text: "BRAVO !\n\nVous avez élucidé\nle mystère du\nCapitaine Verdier"}
+      - led: {target: all, color: "#FFD700", mode: cycle}
+    next: end
+
+  - id: end
+    type: end
+    do:
+      - screen_main: {text: "Merci d'avoir joué !\n\nÀ bientôt..."}
+      - led: {target: all, color: "#001F4D", mode: pulse}
