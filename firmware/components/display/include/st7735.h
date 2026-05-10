@@ -18,10 +18,16 @@
 #define COLOR_GREEN   0x07E0
 #define COLOR_BLUE    0x001F
 #define COLOR_YELLOW  0xFFE0
+#define COLOR_CYAN    0x07FF
+#define COLOR_ORANGE  0xFD20
+#define COLOR_GRAY    0x8410
+#define COLOR_GOLD    0xFEA0
 
 void display_init(void);
 void display_fill(uint16_t color);
 void display_fill_rect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color);
 void display_draw_pixel(uint16_t x, uint16_t y, uint16_t color);
 void display_draw_image(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const uint16_t *data);
+void display_draw_char(uint16_t x, uint16_t y, char c, uint16_t fg, uint16_t bg, uint8_t scale);
+void display_draw_string(uint16_t x, uint16_t y, const char *str, uint16_t fg, uint16_t bg, uint8_t scale);
 void display_demo_plasma(void);

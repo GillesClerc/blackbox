@@ -70,6 +70,80 @@ static const char *TEST_SCENARIO = R"({
 
 // --- Handlers d'actions (mocks Phase 1 — logguent et affichent sur l'écran) ---
 
+static void draw_boot_screen(void) {
+    display_fill(COLOR_BLACK);
+
+    display_fill_rect(0, 0, DISPLAY_WIDTH, 2, COLOR_CYAN);
+    display_draw_string(10, 6, "ESCAPEBOX", COLOR_GOLD, COLOR_BLACK, 2);
+    display_draw_string(22, 24, "v0.1-alpha", COLOR_CYAN, COLOR_BLACK, 1);
+    display_fill_rect(0, 33, DISPLAY_WIDTH, 1, COLOR_CYAN);
+
+    display_draw_string(4, 40, "En chantier...", COLOR_YELLOW, COLOR_BLACK, 1);
+    display_draw_string(4, 54, "Claude code", COLOR_WHITE, COLOR_BLACK, 1);
+    display_draw_string(4, 63, "construit", COLOR_WHITE, COLOR_BLACK, 1);
+    display_draw_string(4, 72, "quelque chose.", COLOR_WHITE, COLOR_BLACK, 1);
+
+    display_fill_rect(0, 84, DISPLAY_WIDTH, 1, COLOR_GRAY);
+    display_draw_string(4, 90,  "Revenez quand", COLOR_GRAY, COLOR_BLACK, 1);
+    display_draw_string(4, 99,  "le hardware", COLOR_GRAY, COLOR_BLACK, 1);
+    display_draw_string(4, 108, "est arrive :)", COLOR_GRAY, COLOR_BLACK, 1);
+
+    // Zone animation : barre + status (dessinée par boot_screen_task)
+    display_fill_rect(4, 120, 120, 10, COLOR_GRAY);
+    display_fill_rect(0, DISPLAY_HEIGHT - 2, DISPLAY_WIDTH, 2, COLOR_CYAN);
+}
+
+static void boot_screen_task(void *arg) {
+    static const char *status_msgs[] = {
+        "compiling...   ",
+        "linking...     ",
+        "downloading... ",
+        "debugging...   ",
+        "caffeinating...",
+        "hallucinating..",
+        "reticulating...",
+        "optimizing...  ",
+    };
+    static const uint16_t title_colors[] = {
+        COLOR_GOLD, COLOR_ORANGE, COLOR_YELLOW, COLOR_WHITE, COLOR_YELLOW, COLOR_ORANGE,
+    };
+
+    uint8_t progress  = 0;
+    uint8_t tick      = 0;
+    uint8_t msg_idx   = 0;
+    uint8_t color_idx = 0;
+
+    while (1) {
+        // Barre de progression
+        uint8_t bar_w = (progress * 118) / 100;
+        display_fill_rect(5, 121, bar_w,       8, COLOR_GREEN);
+        display_fill_rect(5 + bar_w, 121, 118 - bar_w, 8, 0x2104); // vert très sombre
+
+        // Pourcentage (droite de la barre)
+        char pct[8];
+        snprintf(pct, sizeof(pct), " %3d%% ", progress);
+        display_draw_string(4, 133, pct, COLOR_GREEN, COLOR_BLACK, 1);
+
+        // Message status toutes les 600ms (12 ticks × 50ms)
+        if (tick % 12 == 0) {
+            display_draw_string(4, 148, status_msgs[msg_idx % 8], COLOR_GRAY, COLOR_BLACK, 1);
+            msg_idx++;
+        }
+
+        // Titre pulse toutes les 400ms (8 ticks × 50ms)
+        if (tick % 8 == 0) {
+            display_draw_string(10, 6, "ESCAPEBOX",
+                                title_colors[color_idx % 6], COLOR_BLACK, 2);
+            color_idx++;
+        }
+
+        progress++;
+        if (progress > 100) progress = 0;
+        tick++;
+        vTaskDelay(pdMS_TO_TICKS(50));
+    }
+}
+
 static void action_screen_main(const char *name, const cJSON *params) {
     const char *text = cJSON_GetStringValue(cJSON_GetObjectItem(params, "text"));
     if (text) {
@@ -139,7 +213,8 @@ void app_main(void) {
 
     // Display
     display_init();
-    display_fill(COLOR_BLACK);
+    draw_boot_screen();
+    xTaskCreate(boot_screen_task, "boot_anim", 4096, NULL, 4, NULL);
 
     // Moteur de scénario
     ESP_ERROR_CHECK(scenario_engine_init(TEST_SCENARIO));
