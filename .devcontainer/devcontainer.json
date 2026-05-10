@@ -1,0 +1,20 @@
+{
+  "name": "Blackbox ESP32",
+  "image": "espressif/idf:latest",
+  "runArgs": [
+    "--privileged"
+  ],
+  "mounts": [
+    "source=${localEnv:HOME}/.ssh,target=/root/.ssh,type=bind,readonly",
+    "source=${localEnv:HOME}/.gitconfig,target=/root/.gitconfig,type=bind,readonly"
+  ],
+  "postCreateCommand": "apt-get update -q && apt-get install -y -q usbutils curl && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && apt-get install -y nodejs && npm install -g @anthropic-ai/claude-code",
+  "remoteUser": "root",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "espressif.esp-idf-extension"
+      ]
+    }
+  }
+}
