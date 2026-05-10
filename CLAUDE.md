@@ -46,7 +46,7 @@ firmware/
 ## Statut Phase 1 (FSD §3.1)
 - [x] Display ST7735 1.8" — driver SPI DMA 40MHz, plasma demo
 - [x] Moteur de scénario YAML/JSON — state machine FreeRTOS, validé sur device
-- [ ] Audio MAX98357A + I2S
+- [ ] Audio PCM5122PW (I2S DAC stéréo, I2C 0x4C) + PAM8406 (amp Class D 5W+5W)
 - [ ] NFC PN532 I2C
 - [ ] Servo SG90 MCPWM
 - [ ] LEDs WS2812 RMT

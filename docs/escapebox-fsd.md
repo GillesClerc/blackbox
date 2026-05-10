@@ -151,9 +151,11 @@ Chaque PCB satellite ou composant se plug/déplugg via connecteur JST sur ce bus
 
 | GPIO | Signal | Composant |
 |---|---|---|
-| GPIO5 | BCLK | MAX98357A → Speaker 3W |
-| GPIO6 | LRCLK | MAX98357A |
-| GPIO7 | DIN | MAX98357A |
+| GPIO5 | BCLK | PCM5122PW (I2S DAC stéréo) |
+| GPIO6 | LRCLK | PCM5122PW |
+| GPIO7 | DIN | PCM5122PW |
+
+> PCM5122PW génère son propre clock maître (pas de MCLK externe nécessaire). Il est aussi contrôlé via I2C à l'adresse **0x4C** (volume, EQ DSP, mute). Sa sortie analogique LOUT/ROUT alimente le PAM8406 via condensateurs de couplage 100nF. Le **PAM8406** (Class D 5W+5W stéréo) ne nécessite aucun driver logiciel — purement analogique, piloté par SHDN pin.
 
 **Bus I2S1** (audio entrée, GPIO15-17) :
 
@@ -261,6 +263,7 @@ Avantages : assemblage sans soudure volante, remplacement/upgrade d'une face san
 | MCPWM | Servos (driver natif ESP-IDF) |
 | cJSON | Parsing config / API (inclus ESP-IDF) |
 | ESP-ADF | Playback MP3/WAV via I2S DMA |
+| i2c_master (PCM5122) | Config DAC : volume, EQ DSP, mute via registres I2C (addr 0x4C) |
 | i2c_master | MTCH2120 keypad, PN532 NFC, MPU6050, AS5600 |
 | NimBLE (ESP-IDF) | Provisioning WiFi via BLE |
 | esp_https_ota | OTA HTTPS |
@@ -551,7 +554,9 @@ POST /api/box/session
 - [ ] Câbler PN532 breakout → valider NFC
 - [ ] Câbler MPR121 breakout → valider keypad
 - [ ] Câbler servo SG90 → valider compartiment
-- [ ] Câbler MAX98357A + speaker → valider audio MP3
+- [ ] Câbler PCM5122PW (I2S + I2C 0x4C) + PAM8406 + 2× speakers 3W 4Ω → valider audio MP3 stéréo
+- [ ] Valider contrôle volume logiciel via I2C (fade-in/out propre)
+- [ ] Tester EQ DSP PCM5122 sur un scénario (pas de distorsion)
 - [ ] Câbler MPU6050, BMP280, VEML7700, AS5600 → valider I2C bus complet
 - [ ] Câbler WS2812 → valider LEDs
 - [ ] Tester le moteur de scénario YAML sur le hardware assemblé
@@ -946,7 +951,7 @@ blackbox/
 │   ├── keypad/                  # Driver MPR121
 │   ├── imu/                     # Driver MPU6050
 │   ├── display/                 # LVGL + ILI9488 + GC9A01
-│   ├── audio/                   # I2S DMA + MAX98357A
+│   ├── audio/                   # I2S DMA + PCM5122PW (DAC) + PAM8406 (amp)
 │   ├── led/                     # WS2812 via RMT
 │   ├── servo/                   # SG90 via MCPWM
 │   ├── storage/                 # SD card SDMMC + NVS
@@ -1157,7 +1162,9 @@ Les indices sont gradués : d'abord vague, puis de plus en plus précis.
 ```
 [ ] TFT s'affiche correctement (couleurs, orientation, pas d'artefact)
 [ ] Écran rond GC9A01 s'affiche (animation boussole)
-[ ] Speaker produit du son (MP3 lisible, pas de bruit parasite)
+[ ] Speaker gauche + droite produisent du son stéréo (MP3 lisible, pas de bruit parasite)
+[ ] Contrôle volume I2C fonctionnel (fade-in/fade-out propre)
+[ ] EQ DSP PCM5122 testée sur un scénario (pas de distorsion)
 [ ] Micro détecte un claquement de mains à 1 mètre
 [ ] PN532 lit un tag NTAG213 en < 500ms
 [ ] MPR121 keypad détecte les 12 touches avec < 1% faux positifs
@@ -1233,7 +1240,10 @@ Les indices sont gradués : d'abord vague, puis de plus en plus précis.
 |---|---|---|
 | Box ne démarre pas | Batterie déchargée / câble USB charge-only | Charger 30 min / changer câble |
 | Écran blanc | SPI mal câblé / CS/DC inversés | Vérifier GPIO 37/38, tester avec sketch minimal |
-| Pas de son | I2S mal configuré / speaker déconnecté | Vérifier GPIO 5/6/7, tester MAX98357A seul |
+| Pas de son | PCM5122 XSMT pin flottant / PAM8406 SHDN actif | Vérifier XSMT → 3.3V, SHDN → VDD |
+| Son mono uniquement | ROUT non connecté au PAM8406 INR | Vérifier condensateurs de couplage LOUT/ROUT |
+| Bruit de fond / hiss | Masse analogique mal séparée | Séparer AGND (PCM5122) du PGND (PAM8406) sur le PCB |
+| Volume ne change pas | I2C addr incorrecte / registres mal configurés | Vérifier 0x4C sur bus I2C, relire registres 61 et 62 |
 | NFC ne lit pas | Mode I2C non sélectionné sur PN532 (jumper) | Souder le jumper I2C sur le module PN532 |
 | Touch erratique | Paroi trop épaisse / mauvais calibrage | Augmenter le pad cuivre / ajuster threshold firmware |
 | Servo bloqué | Courant insuffisant (5V rail) / mécanisme coincé | Vérifier MT3608 boost 5V, libérer mécaniquement |
@@ -1269,13 +1279,14 @@ Les indices sont gradués : d'abord vague, puis de plus en plus précis.
 |---|---|---|
 | ESP32-S3-WROOM-1-N16R8 | LCSC C2913202 | https://datasheet.lcsc.com/lcsc/2207151200_Espressif-Systems-ESP32-S3-WROOM-1-N16R8_C2913202.pdf |
 | PN532 | LCSC C132449 | https://www.nxp.com/docs/en/user-guide/141520.pdf |
-| MPR121 | LCSC C14382 | https://www.nxp.com/docs/en/data-sheet/MPR121.pdf |
+| MTCH2120 | LCSC (chercher) | https://ww1.microchip.com/downloads/en/DeviceDoc/MTCH2120-Touch-Sensor-Controller-DS60001337B.pdf |
 | AS5600 | LCSC C79815 | https://ams.com/documents/20143/36005/AS5600_DS000365_5-00.pdf |
 | VEML7700 | LCSC C1850416 | https://www.vishay.com/docs/84286/veml7700.pdf |
 | BMP280 | LCSC C83291 | https://www.bosch-sensortec.com/media/boschsensortec/downloads/datasheets/bst-bmp280-ds001.pdf |
 | MPU-6050 | LCSC C24112 | https://invensense.tdk.com/wp-content/uploads/2015/02/MPU-6000-Datasheet1.pdf |
 | MLX90614 | LCSC C58661 | https://www.melexis.com/en/documents/documentation/datasheets/datasheet-mlx90614 |
-| MAX98357A | LCSC C2846280 | https://www.analog.com/media/en/technical-documentation/data-sheets/MAX98357A-MAX98357B.pdf |
+| PCM5122PW | LCSC C14969 | https://www.ti.com/lit/ds/symlink/pcm5122.pdf |
+| PAM8406 | LCSC C89689 | https://www.diodes.com/assets/Datasheets/PAM8406.pdf |
 | ICS-43434 | LCSC (chercher) | https://invensense.tdk.com/wp-content/uploads/2016/02/DS-000069-ICS-43434-v1.2.pdf |
 | TP4056 | LCSC C382139 | https://datasheet.lcsc.com/lcsc/TOPPOWER-Nanjing-Top-Power-ATEC-TP4056_C382139.pdf |
 | MT3608 | LCSC C84817 | https://datasheet.lcsc.com/lcsc/XI-AN-Aerosemi-Tech-MT3608_C84817.pdf |
