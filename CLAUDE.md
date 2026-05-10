@@ -39,13 +39,13 @@ firmware/
     servo/        → SG90 MCPWM (à faire)
     leds/         → WS2812 RMT (à faire)
     sensors/      → Bus I2C complet (à faire)
-    scenario/     → Moteur YAML state machine (à faire — priorité)
+    scenario/     → Moteur JSON state machine ✅ (cJSON bundlé, FreeRTOS task + xQueue)
     storage/      → SD card filesystem (à faire)
 ```
 
 ## Statut Phase 1 (FSD §3.1)
 - [x] Display ST7735 1.8" — driver SPI DMA 40MHz, plasma demo
-- [ ] Moteur de scénario YAML (state machine) ← priorité firmware
+- [x] Moteur de scénario YAML/JSON — state machine FreeRTOS, validé sur device
 - [ ] Audio MAX98357A + I2S
 - [ ] NFC PN532 I2C
 - [ ] Servo SG90 MCPWM
