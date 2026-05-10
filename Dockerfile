@@ -15,5 +15,10 @@ RUN useradd -m -s /bin/bash dev && \
 # Source ESP-IDF pour le user dev
 RUN echo 'source /opt/esp/idf/export.sh 2>/dev/null' >> /home/dev/.bashrc
 
+# Git config système (identité, safe directory)
+RUN git config --system user.name "Gilles" && \
+    git config --system user.email "gillesclerc@gmail.com" && \
+    git config --system safe.directory /workspaces/blackbox
+
 WORKDIR /workspaces/blackbox
 USER dev
