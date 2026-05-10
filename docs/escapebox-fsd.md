@@ -1,6 +1,6 @@
 # EscapeBox — Functional Specification Document (FSD)
 
-**Version** : 0.1-draft  
+**Version** : 0.2-draft  
 **Date** : Mai 2026  
 **Auteur** : Gilles  
 **Statut** : Draft — en cours de définition  
@@ -82,7 +82,7 @@ Scores et stats remontés à la prochaine synchro
 │  │  Boutique      │  │  HTTPS   │  │                             │  │
 │  │  Bibliothèque  │◄─┼──────────┼─►│  Moteur scénario (YAML)    │  │
 │  │  Éditeur B2B   │  │  WiFi    │  │  Drivers capteurs           │  │
-│  │  Compte joueur │  │  (sync   │  │  Gestion audio              │  │
+│  │  Compte joueur │  │  (sync   │  │  Gestion audio + vidéo      │  │
 │  └────────────────┘  │  only)   │  │  Gestion OTA                │  │
 │                      │          │  └─────────────────────────────┘  │
 │  ┌────────────────┐  │          │                                   │
@@ -107,16 +107,6 @@ Scores et stats remontés à la prochaine synchro
 #### 2.2.1 SoC principal
 
 **ESP32-S3-DevKitC-1-N8R8** (proto) → **ESP32-S3-WROOM-1-N16R8** (série)
-
-| Spec | Valeur |
-|---|---|
-| CPU | Dual-core Xtensa LX7 @ 240 MHz |
-| Flash | 8 MB (proto) / 16 MB (série) |
-| PSRAM | 8 MB Octal SPIRAM |
-| WiFi | 802.11 b/g/n 2.4 GHz |
-| Bluetooth | BLE 5.0 |
-| USB | USB-OTG natif (CDC + MSC) |
-| Touch GPIO | 14 pins natifs |
 
 #### 2.2.2 Capteurs et actionneurs
 
@@ -208,8 +198,7 @@ LiPo 3.7V 3000mAh
 
 **Boîtier** :
 - Phase 1 : MDF découpé laser + peinture noire + détails laiton minimal (Lite)
-- Phase 2 : Bois massif (noyer/chêne) + ardoise composite + laiton brossé (Pro)
-- Plateau rotatif : roulement à billes 100-150mm + AS5600 + aimant néodyme diamétral
+- Phase 2 : Bois massif (noyer/chêne) + ardoise composite + laiton brossé + plateau rotatif avec roulement à billes 100-150mm + AS5600 + aimant néodyme diamétral(Pro)
 
 ### 2.3 Software Architecture
 
@@ -272,6 +261,8 @@ Chaque scénario est un fichier YAML décrivant une machine à états finis (sta
 
 **Structure de base :**
 
+Exemple:
+
 ```yaml
 meta:
   id: capitaine_verdier_v1
@@ -304,6 +295,9 @@ assets:
   images:
     - id: carte_tresor
       file: carte.png
+  videos:
+    - id: video_test.mp4
+      file: video_test.mp4
 
 variables:
   attempts_keypad: 0
@@ -536,11 +530,12 @@ POST /api/box/session
 
 ### 3.1 Phase 1 — Proof of Concept
 
-**Durée estimée :** 3-6 mois  
+**Durée estimée :** 1 mois 
 **Objectif :** Valider que le hardware fonctionne et que les gens veulent jouer
 
 **Hardware :**
 - [ ] ESP32-S3-DevKitC-1 + Joy-iT TFT 1.8" → valider affichage
+- [ ] Cabler microphone MEMS i2s -> valider le micro
 - [ ] Câbler PN532 breakout → valider NFC
 - [ ] Câbler MPR121 breakout → valider keypad
 - [ ] Câbler servo SG90 → valider compartiment
@@ -567,13 +562,26 @@ POST /api/box/session
 - [ ] Stripe checkout (paiement one-shot)
 - [ ] API sync basique (liste des scénarios autorisés)
 
+**Scénario :**
+- [ ] Trouver un scénariste
+- [ ] Lui fournir les capteurs souhaités 
+- [ ] Implémenter l'histoire
+- [ ] Faire des illustrations et vidéos
+- [ ] Faire les leds d'ambiance
+
+**Box**
+- [ ] Faire un prototype et plusieurs itérations
+- [ ] Faire des design mockup
+
+
+
 **Validation Phase 1 :**
-- 10-15 testeurs jouent le scénario Verdier de bout en bout
+- 10-15 testeurs jouent le scénario de base de bout en bout
 - Taux de complétion > 80%
 - Feedback qualitatif positif ("je l'achèterais ?")
 - Aucun bug bloquant en cours de partie
 
-**Budget Phase 1 :** 3-5k CHF
+
 
 ---
 
@@ -608,13 +616,20 @@ POST /api/box/session
 - [ ] Dashboard joueur complet (bibliothèque, scores, historique)
 - [ ] Pré-commande / liste d'attente
 
+**Scénario :**
+- [ ] Faire 2 autres scénarios
+
+
+**Box**
+- [ ] Lancer une série 0 de 50 box
+
 **Validation Phase 2 :**
 - 30-50 boxes pré-vendues à des early adopters
 - Synchro WiFi fonctionnelle sur réseau domestique standard
 - OTA firmware sans intervention physique
 - Scénario téléchargé et jouable en < 5 min depuis l'achat
 
-**Budget Phase 2 :** 20-40k CHF
+
 
 ---
 
@@ -667,15 +682,14 @@ POST /api/box/session
 | HW-01 | La box doit fonctionner offline pendant une partie complète | MUST | 1 |
 | HW-02 | La batterie doit durer au minimum une partie de 90 min sans recharge | MUST | 2 |
 | HW-03 | La recharge via USB-C doit fonctionner sans éteindre la box | SHOULD | 2 |
-| HW-04 | Le compartiment servo doit s'ouvrir en < 2 secondes | MUST | 1 |
+| HW-04 | Le compartiment servo doit s'ouvrir en < 2 secondes | SHOULD | 1 |
 | HW-05 | Les deux écrans doivent être rafraîchis à > 20 FPS simultanément | MUST | 1 |
 | HW-06 | Le son doit être audible à 2 mètres dans un environnement normal | MUST | 1 |
 | HW-07 | Le NFC doit détecter un tag à < 3 cm | MUST | 1 |
 | HW-08 | Le clavier capacitif doit fonctionner à travers 3 mm de bois/ardoise | SHOULD | 2 |
 | HW-09 | La rotation du plateau doit être mesurée avec précision ≤ 5° | SHOULD | 2 |
 | HW-10 | La box doit démarrer (boot complet) en < 5 secondes | SHOULD | 2 |
-| HW-11 | Le laser doit être de classe 2 maximum (sécurité oculaire) | MUST | 2 |
-| HW-12 | La box doit résister à une utilisation de 1000 parties (fiabilité) | MUST | 3 |
+| HW-11 | La box doit résister à une utilisation de 1000 parties (fiabilité) | MUST | 3 |
 
 ### FR-FW — Firmware
 
@@ -1129,7 +1143,7 @@ Les indices sont gradués : d'abord vague, puis de plus en plus précis.
 #### 8.1.1 Tests hardware (checklist)
 
 ```
-[ ] TFT 4" s'affiche correctement (couleurs, orientation, pas d'artefact)
+[ ] TFT s'affiche correctement (couleurs, orientation, pas d'artefact)
 [ ] Écran rond GC9A01 s'affiche (animation boussole)
 [ ] Speaker produit du son (MP3 lisible, pas de bruit parasite)
 [ ] Micro détecte un claquement de mains à 1 mètre
@@ -1178,7 +1192,7 @@ Les indices sont gradués : d'abord vague, puis de plus en plus précis.
 #### 8.1.4 Tests intégration end-to-end
 
 ```
-[ ] Scénario Verdier joué de bout en bout par 3 personnes
+[ ] Scénario de base joué de bout en bout par 3 personnes
 [ ] Taux de complétion mesuré sur 10 groupes testeurs
 [ ] Aucun bug bloquant en cours de partie sur 10 parties complètes
 [ ] Synchro WiFi après achat : scénario jouable en < 5 minutes
@@ -1302,4 +1316,4 @@ Les indices sont gradués : d'abord vague, puis de plus en plus précis.
 
 ---
 
-*FSD v0.1 — Document vivant, mis à jour à chaque fin de phase.*
+*FSD v0.2 — Document vivant, mis à jour à chaque fin de phase.*

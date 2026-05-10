@@ -20,15 +20,16 @@ Ce produit doit être **rejouable** : on achète la box une fois, on achète des
 
 ## La box
 
-Un **cube ou parallélépipède en bois et ardoise**, monté sur un plateau rotatif. Les joueurs assis autour de la table font tourner la box vers eux pour interagir avec les différentes faces. Chaque face accueille des capteurs, des écrans, des zones tactiles. L'ensemble ressemble à un **objet artisanal de collection** — pas un gadget plastique, un vrai objet qu'on garde sur une étagère.
+Un **cube ou parallélépipède en bois et ardoise**, monté sur un plateau rotatif. Les joueurs assis autour de la table font tourner la box vers eux pour interagir avec les différentes faces. Chaque face accueille des capteurs, des écrans, des zones tactiles, des capteurs cachées. L'ensemble ressemble à un **objet artisanal de collection** — pas un gadget plastique, un vrai objet qu'on garde sur une étagère.
 
-À l'intérieur : un ESP32-S3, une batterie rechargeable, tous les capteurs nécessaires pour créer des énigmes variées : NFC, clavier capacitif, boussole, accéléromètre, micro, capteur de souffle, température, lumière. Deux compartiments s'ouvrent mécaniquement via des servos — c'est le moment de révélation physique qui crée le wahou.
+À l'intérieur : un ESP32-S3, une batterie rechargeable, tous les capteurs nécessaires pour créer des énigmes variées : NFC, clavier, boussole, accéléromètre, micro, capteur de souffle, Capteur angle magnétique, température, lumière, Capteur Hall analogique. Un compartiment s'ouvrent mécaniquement via un servos — c'est le moment de révélation physique qui crée le wahou. 
+Le cube contient également un haut parleure, un micro et deux écrans. Un écrans 3-4' de haute résolution, et un petit écran rond sur une autre face.
 
 ---
 
 ## L'expérience de jeu
 
-Le joueur déballe la box. Il pose un médaillon NFC sur la surface — la box s'allume, une voix raconte le début de l'histoire. L'écran affiche une carte. Les énigmes s'enchaînent : des codes à trouver, des objets à reconnaître, des gestes à faire, un souffle à produire, un angle précis à atteindre. À la fin, un compartiment s'ouvre physiquement et révèle un parchemin, un jeton, un objet.
+Le joueur déballe la box. Il pose un médaillon NFC sur la surface — la box s'allume, une voix raconte le début de l'histoire. L'écran affiche une carte. Les énigmes s'enchaînent : des codes à trouver, des choses à dire, des un aimant à utiliser, un souffle à produire, un angle précis à atteindre. 
 
 Chaque joueur a un rôle naturel : l'un tourne la boussole, l'autre lit les indices sur l'écran, le troisième tient l'objet magnétique sur la bonne zone. Certaines énigmes nécessitent deux personnes simultanément — la coopération est dans le design, pas dans les règles.
 
@@ -38,23 +39,22 @@ Chaque joueur a un rôle naturel : l'un tourne la boussole, l'autre lit les indi
 
 Je m'inspire du modèle de **Lunii** (la conteuse pour enfants) : une box vendue une fois, des histoires achetées sur une plateforme web et synchronisées sur l'appareil. La box fonctionne **100% offline** pendant le jeu — elle ne se connecte au WiFi qu'au moment de la synchronisation des nouveaux scénarios.
 
-Un compte en ligne gère la bibliothèque du joueur. L'achat d'un scénario (19-29 CHF) le rend disponible sur la webapp, et la box le télécharge à la prochaine synchronisation. Jusqu'à 3 box associées au même compte — idéal pour les familles.
+Un compte en ligne gère la bibliothèque du joueur. L'achat d'un scénario (19-29 CHF) le rend disponible sur la webapp, et la box le télécharge à la prochaine synchronisation.
 
 ---
 
 ## La plateforme
 
 En parallèle de la box grand public, je veux offrir aux **professionnels** (escape rooms, animateurs, enseignants, musées) la possibilité de **créer leurs propres scénarios** via une webapp intuitive. Un éditeur visuel type drag-and-drop permet de définir les énigmes, les actions, les audios, sans coder. Les scénarios sont décrits dans un format YAML standard qui alimente directement le firmware de la box.
-
-Cette plateforme est monétisée par abonnement mensuel (30-80 CHF/mois selon le plan). À terme, une marketplace permet aux créateurs de vendre leurs scénarios, avec une commission de 30%.
+À terme, une marketplace permet aux créateurs de vendre leurs scénarios, avec une commission.
 
 ---
 
 ## Les deux gammes envisagées
 
-**Escape Box Lite** (99-129 CHF) : format rectangle, boîtier MDF + finition noire, tous les capteurs essentiels, 1 compartiment servo, destinée au grand public, à l'éducation, aux cadeaux. C'est la priorité absolue — le produit qui valide le concept.
+**Escape Box Lite** (99-129 CHF) : format rectangle, boîtier MDF + finition noire, tous les capteurs essentiels, 1 compartiment servo, destinée au grand public, à l'éducation, aux cadeaux. 
 
-**Escape Box Pro** (199-249 CHF) : format cube rotatif sur plateau bois tourné, boîtier bois massif + ardoise + laiton brossé, 2 compartiments, capteurs supplémentaires (accéléromètre, souffle, température, micro), 2 écrans. Destinée aux passionnés, aux escape rooms, aux collectionneurs.
+**Escape Box Pro** (199-249 CHF) : format cube ou polyèdre rotatif sur plateau bois tourné, boîtier bois massif + ardoise + laiton brossé, 2 compartiments, capteurs supplémentaires. Destinée aux passionnés, aux escape rooms, aux collectionneurs.
 
 ---
 
