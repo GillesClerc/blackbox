@@ -20,5 +20,9 @@ RUN git config --system user.name "Gilles" && \
     git config --system user.email "gillesclerc@gmail.com" && \
     git config --system safe.directory /workspaces/blackbox
 
+# Entrypoint : tourne en root pour fixer SSH, puis bascule sur dev
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
 WORKDIR /workspaces/blackbox
-USER dev
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
