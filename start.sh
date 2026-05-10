@@ -2,8 +2,6 @@
 docker run -it --rm \
   --privileged \
   -v ~/dev/blackbox:/workspaces/blackbox \
-  -v ~/.ssh:/root/.ssh:ro \
-  -v ~/.gitconfig:/root/.gitconfig:ro \
+  -v ~/.ssh:/tmp/ssh_host:ro \
   -w /workspaces/blackbox \
-  escapebox-dev \
-  bash -c "source /opt/esp/idf/export.sh && claude --dangerously-skip-permissions"
+  escapebox-dev
