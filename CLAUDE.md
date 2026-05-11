@@ -79,6 +79,26 @@ firmware/
 | VEML7700               | 0x10    | Lumière ambiante                          |
 | PCM5122PW              | 0x4C    | DAC audio stéréo (I2C ctrl)               |
 
+## Web Platform (web/)
+Stack : Next.js 14 App Router, Tailwind CSS, shadcn/ui, Supabase Auth + PostgreSQL, Stripe.
+Monorepo : `web/` dans ce même repo git (à côté de `firmware/`).
+
+Sprint 4 semaines (en parallèle de l'attente hardware) :
+1. Fondation : init Next.js, Supabase, auth email + Google
+2. Pages core : landing (email capture waitlist), catalogue, bibliothèque, compte
+3. API sync box : `/api/box/auth` (HMAC), `/api/box/sync`, `/api/box/session` + Stripe webhook
+4. Simulateur : `/studio/simulate` — player YAML scénario dans le navigateur
+
+Statut : pas encore démarré (hardware attendu 2-4 semaines).
+
+## Business
+Stratégie : **FFF (Friends, Family, Fools) d'abord**, Kickstarter ensuite si traction confirmée.
+
+- Phase FFF : tester scénario Capitaine Verdier avec proches, collecter retours qualitatifs
+- Kickstarter : 50-100 boxes early adopters à ~150 CHF (box Lite + 1 scénario), marché Suisse + France
+- Prix à valider : box Lite 99-129 CHF, scénario 19-29 CHF
+- À faire avant Kickstarter : nom de marque (EscapeBox = générique), charte graphique, scénariste Phase 2
+
 ## Conventions code
 - C pur ESP-IDF natif, zéro lib externe sauf LVGL (plus tard)
 - Un composant = une responsabilité, un dossier dans components/
