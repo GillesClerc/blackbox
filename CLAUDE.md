@@ -35,12 +35,12 @@ firmware/
   components/
     display/      → ST7735 1.8" (SPI2, 40MHz, DMA) ✅ validé
     audio/        → PCM5122PW I2S DAC + I2C config ✅ (driver écrit, validé au branchement)
-    nfc/          → PN532 I2C (à faire)
-    servo/        → SG90 MCPWM (à faire)
+    nfc/          → PN532 I2C ✅ (driver écrit)
+    servo/        → SG90 MCPWM ✅ (driver écrit)
     leds/         → WS2812B RMT ✅ (driver écrit, validé au branchement)
-    sensors/      → Bus I2C + LSM6DSOTR, AS5600, VEML7700, MTCH2120 ✅ (drivers écrits)
+    sensors/      → Bus I2C + LSM6DSOTR, AS5600, VEML7700, MPR121 (proto) / MTCH2120 (série) ✅ (drivers écrits)
     scenario/     → Moteur JSON state machine ✅ (hints, variables, branch, do_fail)
-    storage/      → SD card filesystem (à faire)
+    storage/      → SD card SPI + FAT ✅ (driver écrit)
 ```
 
 ## Statut Phase 1 (FSD §3.1)
@@ -49,20 +49,21 @@ firmware/
 - [x] Scénario "Capitaine Verdier" — YAML + JSON, simulateur d'events, 3 énigmes
 - [x] Audio PCM5122PW — driver I2S + I2C config (validé au branchement du chip)
 - [x] LEDs WS2812B — driver RMT (validé au branchement)
-- [x] Capteurs I2C — LSM6DSOTR (IMU 6 axes), AS5600 (angle magn.), VEML7700 (lumière), MTCH2120 (touch)
+- [x] Capteurs I2C — LSM6DSOTR (IMU 6 axes), AS5600 (angle magn.), VEML7700 (lumière), MPR121 (touch proto) + MTCH2120 (touch série)
 - [x] Outil YAML→JSON — tools/yaml2json.py, validation du format scénario
-- [ ] NFC PN532 I2C
-- [ ] Servo SG90 MCPWM
-- [ ] Filesystem SD
+- [x] NFC PN532 I2C — driver écrit (à valider sur hardware)
+- [x] Servo SG90 MCPWM — driver écrit (à valider sur hardware)
+- [x] Filesystem SD — driver SPI+FAT écrit (à valider sur hardware)
 
 ## Capteurs I2C (backbone JST, bus I2C_NUM_0, SDA=21, SCL=22, 400kHz)
-| Composant    | Adresse | Rôle                        |
-|:-------------|:--------|:----------------------------|
-| MTCH2120     | 0x28    | Tactile capacitif 12 canaux |
-| AS5600       | 0x36    | Encodeur magnétique 12 bits |
-| LSM6DSOTR    | 0x6A    | IMU 6 axes (accel + gyro)   |
-| VEML7700     | 0x10    | Lumière ambiante            |
-| PCM5122PW    | 0x4C    | DAC audio stéréo (I2C ctrl) |
+| Composant              | Adresse | Rôle                                      |
+|:-----------------------|:--------|:------------------------------------------|
+| MPR121 (Phase 1 proto) | 0x5A    | Tactile capacitif 12 canaux (breakout)    |
+| MTCH2120 (Phase 2 PCB) | 0x28    | Tactile capacitif 12 canaux (sur PCB)     |
+| AS5600                 | 0x36    | Encodeur magnétique 12 bits               |
+| LSM6DSOTR              | 0x6A    | IMU 6 axes (accel + gyro)                 |
+| VEML7700               | 0x10    | Lumière ambiante                          |
+| PCM5122PW              | 0x4C    | DAC audio stéréo (I2C ctrl)               |
 
 ## Conventions code
 - C pur ESP-IDF natif, zéro lib externe sauf LVGL (plus tard)

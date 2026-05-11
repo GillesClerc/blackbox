@@ -121,7 +121,8 @@ Chaque PCB satellite ou composant se plug/déplugg via connecteur JST sur ce bus
 | 0x10 | VEML7700 | Lumière ambiante |
 | 0x24 | PN532 | Lecteur NFC |
 | 0x36 | AS5600 | Rotation magnétique (plateau) |
-| 0x28 | MTCH2120 | Capacitif 12 canaux (keypad + touch zones) |
+| 0x5A | MPR121 (Phase 1 proto) | Capacitif 12 canaux — breakout AliExpress |
+| 0x28 | MTCH2120 (Phase 2 PCB) | Capacitif 12 canaux — directement sur PCB custom |
 | 0x5C | MLX90614 | Température IR |
 | 0x6A | LSM6DSOTR | Accéléromètre + gyroscope 6 axes (STMicroelectronics) |
 | 0x76 | BMP280 | Pression / détection souffle |
@@ -566,7 +567,7 @@ POST /api/box/session
 - [x] Scénario "Capitaine Verdier" — YAML + JSON, 3 énigmes (boussole, code, inclinaison)
 - [x] Driver audio PCM5122PW (I2S + I2C config, tone generator)
 - [x] Driver LEDs WS2812B (RMT, GRB, show)
-- [x] Drivers I2C (LSM6DSOTR, AS5600, VEML7700, MTCH2120)
+- [x] Drivers I2C (LSM6DSOTR, AS5600, VEML7700, MTCH2120, MPR121)
 - [x] Outil YAML→JSON (tools/yaml2json.py avec validation)
 - [ ] Driver LVGL sur TFT 1.8" (puis 4")
 - [ ] Driver audio MP3 playback (ESP-ADF ou SPIFFS + raw PCM)
