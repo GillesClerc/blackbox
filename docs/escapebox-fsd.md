@@ -217,6 +217,23 @@ La face dos reste neutre pendant la partie. À la victoire :
 **Servo Phase 2 :** réintroduit optionnellement pour les scénarios avec pack physique.
 Déclaré via `hardware_required: [servo_main]` dans le YAML du scénario. Driver MCPWM déjà écrit.
 
+**Flux de révélation complet (tous appareils) :**
+```
+Joueur résout l'énigme → entre le code sur le keypad
+        ↓
+Servo (Phase 2) OU face dos s'active (Phase 1)
+        ↓
+GC9A01 affiche QR → escapebox.ch/obj/{scenario}/{session}
+        ↓
+Téléphone reçoit l'objet digital (image, fragment, symbole)
+        ↓
+L'objet affiche un CODE → joueur le tape sur le keypad
+        ↓
+Prochaine énigme débloquée
+```
+
+> **Note NFC téléphone :** L'interaction téléphone → PN532 (téléphone agit comme tag) est **impossible sur iPhone** (limitation hardware iOS 18.1 inclus, HCE restreint aux paiements). Le flux ci-dessus (QR → objet → code clavier) fonctionne sur tous les appareils. Une variante Android-only (HCE → tap PN532) pourrait être explorée en Phase 3 (COULD).
+
 #### 2.2.3 PCB
 
 **Proto Phase 1** : ESP32-S3-DevKitC-1 sur headers femelles + PCB capteurs.
@@ -782,6 +799,7 @@ POST /api/box/session
 | R-08 | WiFi instable (réseau domestique varié) | Synchro échoue | Moyen | Retry automatique, timeout généreux, feedback clair à l'utilisateur |
 | R-09 | Prix de vente trop élevé pour le marché | Ventes insuffisantes | Moyen | Valider la willingness-to-pay avec 50 early adopters avant la série |
 | R-10 | Bois / ardoise : variabilité matériau | Qualité inconstante | Faible | Fournisseur local certifié, gabarits précis, contrôle qualité entrée |
+| R-11 | iPhone ne peut pas émuler un tag NFC ISO14443A | Interaction téléphone→PN532 impossible sur iOS | Certain | Conception du flux de révélation sans NFC téléphone (voir §2.2.2b). Interaction téléphone→box via code clavier uniquement. NFC téléphone→box réservé Android si implémenté (COULD, Phase 3). |
 
 ### Assumptions
 
@@ -791,6 +809,7 @@ POST /api/box/session
 - Les joueurs ont accès à un réseau WiFi domestique pour la synchro (pas de 4G requise)
 - Le format YAML choisi est suffisamment expressif pour couvrir 90% des énigmes imaginables
 - Les testeurs Phase 1 sont représentatifs du marché cible final
+- **iPhone ne peut pas émuler un tag NFC** lisible par le PN532 (limitation hardware/OS confirmée, iOS 18.1 inclus — HCE restreint aux paiements/badges). Le flux compartiment → QR → code clavier est conçu pour fonctionner sur tous les appareils.
 
 ### Dependencies
 
