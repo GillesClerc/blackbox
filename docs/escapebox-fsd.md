@@ -196,6 +196,27 @@ LiPo 3.7V 3000mAh
     └── MT3608 boost → 5V (WS2812 + servos + laser)
 ```
 
+#### 2.2.2b Assignation des faces — Cube Phase 1 (120×120×120mm)
+
+| Face | Rôle | Composants |
+|---|---|---|
+| **Avant** | Écran narratif principal | ILI9488 4" SPI (GPIO35-40), WS2812 border |
+| **Droite** | Keypad capacitif | MPR121 0x5A (proto) / MTCH2120 0x28 (série), WS2812 rétro |
+| **Gauche** | Zone NFC | PN532 0x24 (antenne derrière bois ≤3mm), WS2812 anneau |
+| **Haut** | Capteurs ambiance | VEML7700 0x10, BMP280 0x76 (souffle), LSM6DSOTR 0x6A, Hall A3144E |
+| **Dos** | Face révélation victoire | GC9A01 1.3" round (GPIO41-45), WS2812 celebration border |
+| **Dessous** | Technique | USB-C, micro SD, interrupteur, AS5600 plateau rotatif (Phase 2 Pro) |
+
+**Mécanique de révélation Phase 1 (sans servo) :**
+La face dos reste neutre pendant la partie. À la victoire :
+1. WS2812 border (face dos) s'allume en animation celebration
+2. GC9A01 affiche le QR code → `escapebox.ch/score/{session_token}`
+3. WS2812 toute la box en animation globale
+4. Audio piste victoire
+
+**Servo Phase 2 :** réintroduit optionnellement pour les scénarios avec pack physique.
+Déclaré via `hardware_required: [servo_main]` dans le YAML du scénario. Driver MCPWM déjà écrit.
+
 #### 2.2.3 PCB
 
 **Proto Phase 1** : ESP32-S3-DevKitC-1 sur headers femelles + PCB capteurs.

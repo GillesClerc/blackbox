@@ -1,8 +1,22 @@
 # Blackbox — EscapeBox Firmware
 
 ## Contexte projet
-Box physique d'escape game électronique. ESP32 (Lolin) pour dev, cible finale ESP32-S3.
+Box physique d'escape game électronique. ESP32 (Lolin) pour dev, cible finale ESP32-S3-WROOM-1-N16R8 (commandé AliExpress).
 Voir docs/escapebox-vision.md et docs/escapebox-fsd.md pour le détail complet.
+
+## Boîtier Phase 1 — Cube 6 faces actives (120×120×120mm)
+| Face | Rôle | Composants clés |
+|:-----|:-----|:----------------|
+| Avant | Écran narratif principal | ILI9488 4" SPI, WS2812 border |
+| Droite | Keypad capacitif | MPR121 (proto) / MTCH2120 (série), WS2812 |
+| Gauche | Zone NFC | PN532 (antenne derrière bois fin), WS2812 anneau |
+| Haut | Capteurs ambiance | VEML7700, BMP280 (souffle), LSM6DSOTR, Hall A3144E |
+| Dos | Face révélation (victoire) | GC9A01 1.3" round (QR leaderboard), WS2812 celebration |
+| Dessous | Technique | USB-C, SD card, interrupteur ON/OFF |
+
+**Servo** : pas de servo en Phase 1 (scénarios digitaux — pas d'objets physiques).
+La "face dos" s'active à la victoire : WS2812 + GC9A01 affiche QR → leaderboard.
+Le servo est réintroduit en Phase 2 pour les scénarios avec pack physique (`hardware_required: [servo_main]` dans le YAML). Le driver MCPWM est déjà écrit.
 
 ## Environnement
 - ESP-IDF v6.1
