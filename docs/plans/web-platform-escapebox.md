@@ -2,10 +2,12 @@
 
 ## Contexte
 
-Construire la plateforme web pendant l'attente du hardware AliExpress (livraison ~2026-05-25).
+Construire la plateforme web en parallèle du hardware.
 Stack : Next.js 14 App Router · Tailwind · shadcn/ui · Supabase self-hosted (Coolify) · Stripe test mode · Email auth uniquement.
 Déploiement : `box.agill.es` via Coolify (GitHub → build auto, base dir `web/`).
 Monorepo : `web/` dans ce repo git à côté de `firmware/`.
+
+Source : `docs/plans/web-platform-escapebox.md`
 
 ---
 
@@ -50,12 +52,13 @@ NEXT_PUBLIC_APP_URL=https://box.agill.es
 ```bash
 cd /workspaces/blackbox
 npx create-next-app@latest web \
-  --typescript --tailwind --app \
+  --typescript --tailwind --eslint --app \
   --no-src-dir --import-alias "@/*" \
   --no-git
 cd web
 npx shadcn@latest init   # style: default, dark, CSS variables: yes
 ```
+> `--no-git` est intentionnel : le monorepo a déjà un `.git` à la racine, on ne veut pas de repo imbriqué. `--eslint` doit être explicite sinon le prompt peut bloquer en CI/non-interactif.
 
 ### 1.2 Dépendances
 ```bash
@@ -207,7 +210,11 @@ export function verifyBoxHmac(deviceMac: string, timestamp: number, hmac: string
   const expected = createHmac('sha256', process.env.BOX_SHARED_SECRET!)
     .update(`${deviceMac}:${timestamp}`)
     .digest('hex')
-  return timingSafeEqual(Buffer.from(expected), Buffer.from(hmac))
+  const a = Buffer.from(expected)
+  const b = Buffer.from(hmac)
+  // timingSafeEqual throws if lengths differ — guard required
+  if (a.length !== b.length) return false
+  return timingSafeEqual(a, b)
 }
 
 export async function signBoxJwt(payload: { deviceMac: string; deviceId: string; ownerId: string }) {
@@ -419,7 +426,6 @@ class ScenarioEngine {
   reset(): void
 }
 ```
-Lit le YAML (même format firmware), exécute la state machine, émet des actions (`display_text`, `play_audio`, `led_pattern`, `advance_state`, `do_fail`).
 
 ### 4.2 `app/studio/simulate/page.tsx`
 - Zone gauche : upload YAML ou charger "Capitaine Verdier"
