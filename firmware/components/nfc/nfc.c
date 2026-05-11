@@ -62,8 +62,9 @@ static esp_err_t pn532_read_ack(void)
 {
     // ACK = [status=0x01, 0x00, 0x00, 0xFF, 0x00, 0xFF, 0x00]
     uint8_t buf[7];
-    ESP_ERROR_CHECK(pn532_wait_ready(500));
-    esp_err_t ret = i2c_master_receive(s_dev, buf, sizeof(buf), pdMS_TO_TICKS(100));
+    esp_err_t ret = pn532_wait_ready(500);
+    if (ret != ESP_OK) return ret;
+    ret = i2c_master_receive(s_dev, buf, sizeof(buf), pdMS_TO_TICKS(100));
     if (ret != ESP_OK) return ret;
     if (buf[1] != 0x00 || buf[2] != 0x00 || buf[3] != 0xFF ||
         buf[4] != 0x00 || buf[5] != 0xFF) {
@@ -87,11 +88,12 @@ static esp_err_t pn532_read_response(uint8_t expected_cmd,
                                      uint8_t *data, uint8_t *data_len,
                                      uint32_t timeout_ms)
 {
-    ESP_ERROR_CHECK(pn532_wait_ready(timeout_ms));
+    esp_err_t ret = pn532_wait_ready(timeout_ms);
+    if (ret != ESP_OK) return ret;
 
     // Lire entête + buffer large (32 octets de données max)
     uint8_t raw[40];
-    esp_err_t ret = i2c_master_receive(s_dev, raw, sizeof(raw), pdMS_TO_TICKS(100));
+    ret = i2c_master_receive(s_dev, raw, sizeof(raw), pdMS_TO_TICKS(100));
     if (ret != ESP_OK) return ret;
 
     // raw[0] = status, raw[1]=0x00, raw[2]=0x00, raw[3]=0xFF

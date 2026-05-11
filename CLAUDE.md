@@ -70,4 +70,5 @@ firmware/
 - Un composant = une responsabilité, un dossier dans components/
 - Logs via ESP_LOGI/LOGW/LOGE avec TAG propre par composant
 - Pas de malloc() direct → utiliser les heap ESP-IDF si nécessaire
-- Toujours ESP_ERROR_CHECK() sur les retours de drivers critiques
+- `ESP_ERROR_CHECK()` uniquement dans les fonctions `_init()` — partout ailleurs, vérifier explicitement et retourner l'erreur. Raison : un timeout légitime (ex. pas de tag NFC) appellerait `abort()` et crasherait le firmware.
+- Les GPIO des servos (GPIO1/GPIO2) sont ceux de la cible ESP32-S3 (FSD §2.2.2). Sur le dev board ESP32 Lolin, GPIO1=UART0 TX et GPIO2=Display DC — ne pas tester les servos sur le Lolin, uniquement sur l'ESP32-S3.
