@@ -42,7 +42,7 @@ NEXT_PUBLIC_APP_URL=https://box.agill.es
 
 ```bash
 cd /workspaces/blackbox
-npx create-next-app@latest web \
+npx create-next-app@16.2.6 web \
   --typescript --tailwind --eslint --app \
   --no-src-dir --import-alias "@/*" \
   --no-git

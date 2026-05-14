@@ -80,7 +80,7 @@ firmware/
 | PCM5122PW              | 0x4C    | DAC audio stéréo (I2C ctrl)               |
 
 ## Web Platform (web/)
-Stack : Next.js 14 App Router, Tailwind CSS, shadcn/ui, Supabase Auth + PostgreSQL, Stripe.
+Stack : Next.js 16.2 LTS (App Router), Tailwind CSS, shadcn/ui, Supabase Auth + PostgreSQL, Stripe.
 Monorepo : `web/` dans ce même repo git (à côté de `firmware/`).
 
 Sprint 4 semaines (en parallèle de l'attente hardware) :
