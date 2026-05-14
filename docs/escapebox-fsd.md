@@ -620,12 +620,65 @@ POST /api/box/session
 - [ ] API sync basique (liste des scénarios autorisés)
 - [ ] Route publique `/v/[scenario]/[session]` (leaderboard / résultat QR code)
 
-**Scénario :**
-- [ ] Trouver un scénariste
-- [ ] Lui fournir les capteurs souhaités 
-- [ ] Implémenter l'histoire
-- [ ] Faire des illustrations et vidéos
-- [ ] Faire les leds d'ambiance
+**Scénario — Processus de création (1 scénario complet) :**
+
+*Contrainte clé EscapeBox : chaque énigme doit être ancrée dans un capteur physique disponible sur la box. Le game design et le hardware design doivent avancer ensemble.*
+
+**Étape 1 — Vision & cadrage**
+- [ ] Définir les paramètres fixes : public cible, âge min, nombre de joueurs (min/max), durée (45/60/90 min), difficulté (1-5)
+- [ ] Choisir le registre narratif : aventure, mystère, horreur douce, SF, historique…
+- [ ] Confirmer la liste de capteurs disponibles pour ce scénario (`hardware_required` + `hardware_enhanced`)
+- [ ] Valider le cadrage en 1 page (titre provisoire, pitch 3 phrases, contraintes hardware)
+
+**Étape 2 — Univers & direction artistique**
+- [ ] Thème principal, époque, lieux — assez précis pour guider les assets
+- [ ] Palette visuelle : couleurs dominantes pour les écrans (ILI9488 + GC9A01), typographie narrative
+- [ ] Charte LED par état : couleur repos, tension, danger, victoire, indice
+- [ ] Ambiance sonore générale : style musical, effets attendus, voix narratrice (oui/non)
+- [ ] Moodboard ou références visuelles transmis au scénariste et à l'illustrateur
+
+**Étape 3 — Cahier des charges narratif**
+- [ ] Synopsis complet (500-800 mots) : mise en situation, nœud dramatique, résolution
+- [ ] Personnages et leur rôle dans la fiction (le joueur est qui ? quel est l'enjeu ?)
+- [ ] Arc narratif structuré : intro → énigme 1 → transition → énigme 2 → transition → énigme 3 → révélation finale
+- [ ] Logique interne cohérente : chaque énigme doit avoir une justification narrative ("pourquoi je fais ça dans l'histoire ?")
+
+**Étape 4 — Design des énigmes**
+- [ ] Pour chaque énigme : nom, description narrative, mécanique de résolution, capteur(s) utilisé(s)
+- [ ] Mapping hardware explicite : rotation (AS5600) → boussole / souffle (BMP280) → détection / NFC → objet physique / keypad → code, etc.
+- [ ] Système d'indices gradués : 3 niveaux par énigme (vague → précis → quasi-solution), déclenchés par timer ou tentatives
+- [ ] Temps estimé par énigme (ex : 5 / 10 / 15 min) → total cohérent avec la durée cible
+- [ ] Revue du flow : est-ce que l'enchaînement est logique ? Y a-t-il des blocages possibles ?
+
+**Étape 5 — Spécification YAML**
+- [ ] Rédiger le fichier YAML complet selon le format FSD §2.3.2 (steps, triggers, hints, do_success, fallbacks)
+- [ ] Valider avec `tools/yaml2json.py` — zéro erreur
+- [ ] Tester le flow sur le simulateur web (Phase 2) ou à la main sur la box
+
+**Étape 6 — Production des assets**
+- [ ] Illustrations écran principal (ILI9488 4") : cartes, objets, textes clés — format PNG 480×320 ou adapté
+- [ ] Écran secondaire (GC9A01 1.3") : boussole animée, QR final, icônes par énigme
+- [ ] Audio : narration intro/transitions/victoire (voix ou synthèse), musique d'ambiance, effets sonores
+- [ ] Programmation LED : séquences par état (repos, tension, indice, victoire) — testées sur la box
+- [ ] QR code de révélation : URL `escapebox.ch/v/{scenario}/{session}` + page web correspondante
+
+**Étape 7 — Intégration & test technique**
+- [ ] Charger assets + YAML sur la SD, vérifier la signature
+- [ ] Tester chaque capteur dans le contexte réel du scénario (pas juste en démo)
+- [ ] Valider le flow complet bout en bout sans intervention extérieure
+- [ ] Vérifier les cas limites : timeout énigme, mauvaise réponse répétée, fallback capteur absent
+
+**Étape 8 — Playtest interne**
+- [ ] 3-5 personnes jouent sans explication préalable (cold start)
+- [ ] Observer sans intervenir — noter les blocages, les confusions, les moments forts
+- [ ] Mesurer : durée réelle, nombre d'indices utilisés, où les gens abandonnent
+- [ ] Feedback structuré post-jeu : qu'est-ce qui était flou ? trop facile ? trop dur ?
+
+**Étape 9 — Itération**
+- [ ] Ajuster les énigmes trop longues ou trop courtes
+- [ ] Revoir les indices si les joueurs ont bloqué > 5 min sans progresser
+- [ ] Corriger les incohérences narratives signalées
+- [ ] Retester si des changements majeurs ont été faits (retour étape 8)
 
 **Box**
 - [ ] Faire un prototype et plusieurs itérations
@@ -675,8 +728,12 @@ POST /api/box/session
 - [ ] Pré-commande / liste d'attente
 - [ ] Simulateur `/studio/[id]/simulate` — player JSON scénario dans le navigateur (state machine JS identique à la logique firmware, events simulés via boutons)
 
-**Scénario :**
-- [ ] Faire 2 autres scénarios
+**Scénario — 2 nouveaux scénarios :**
+- [ ] Appliquer le processus complet défini en Phase 1 (étapes 1 à 9) pour chaque scénario
+- [ ] Cibler des univers distincts du scénario Phase 1 — diversifier les registres narratifs
+- [ ] Exploiter au moins 1 capteur différent par scénario (capteurs enhanced : souffle, température IR, rotation plateau)
+- [ ] S'assurer que les 3 scénarios couvrent des niveaux de difficulté variés (ex : 2 / 3 / 4 sur 5)
+- [ ] Faire appel à un scénariste externe si le retour Phase 1 confirme la traction produit
 
 
 **Box**
