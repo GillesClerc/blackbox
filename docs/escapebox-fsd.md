@@ -62,6 +62,36 @@ Scores et stats remontés à la prochaine synchro
 - Chaque scénario est **signé cryptographiquement** (protection contre la copie)
 - L'expérience du premier déballage doit être possible **sans aucun setup** (scénario pré-chargé en usine)
 
+### 1.1 Utilisateurs & proposition de valeur
+
+**Personas cibles :**
+
+**Persona A — Famille "Saturday Night"**
+- Profil : parents 30-45 ans, enfants 8-14 ans, habitués aux jeux de société
+- Contexte d'achat : cadeau Noël/anniversaire, recherche d'activité commune hors écran
+- Contexte de jeu : salon, 60-90 min, 3-5 joueurs
+- Attentes : facile à démarrer (< 5 min setup), rejouable, pas de compte obligatoire pour la première partie
+
+**Persona B — Couple/groupe "Escape Room fans"**
+- Profil : 25-40 ans, déjà clients d'escape rooms, budget loisirs moyen-haut
+- Contexte d'achat : alternative domicile, offrir à quelqu'un qui "aime les énigmes"
+- Contexte de jeu : soirée entre amis, 2-6 joueurs, attachés à la qualité narrative
+- Attentes : histoire immersive, difficulté réelle, résultat partageable
+
+**Proposition de valeur :**
+> "L'escape room à domicile, rechargeable en contenu — une expérience physique et narrative qui évolue avec de nouveaux scénarios."
+
+**Positionnement vs. alternatives :**
+
+| Alternative | Limite vs. EscapeBox |
+|---|---|
+| Escape room réelle | 80-120 CHF/session, hors domicile, non rejouable |
+| Jeux de société escape | Pas d'électronique, expérience figée, non rechargeable |
+| Jackbox / jeux numériques | Zéro physicalité, pas de manipulation d'objets |
+| Kits DIY (Arduino) | Trop technique, pas clé en main |
+
+**Segmentation :** B2C uniquement en Phase 1 et Phase 2. B2B (escape rooms pro, profs, animateurs) : roadmap Phase 3, non prioritaire avant.
+
 ---
 
 ## 2. System Architecture
@@ -578,9 +608,43 @@ POST /api/box/session
 
 ## 3. Implementation Phases
 
+### 3.0 Budget & planning
+
+**Budget Phase 1 (enveloppe 500-2000 CHF) :**
+
+| Poste | Estimation basse | Estimation haute |
+|---|---|---|
+| Composants électroniques | 300 CHF | 500 CHF |
+| Matériaux boîtier (impression 3D, peinture) | 100 CHF | 200 CHF |
+| Assets son & illustration | 0 CHF | 700 CHF |
+| Infrastructure web (Supabase free, Vercel free) | 0 CHF | 0 CHF |
+| Imprévus / itérations | 100 CHF | 300 CHF |
+| **Total** | **500 CHF** | **1700 CHF** |
+
+**Jalons Phase 1 (cible : août-septembre 2026) :**
+
+| Jalon | Date cible | Critère de succès | Statut |
+|---|---|---|---|
+| M0 — Lancement | Mai 2026 | Hardware commandé, firmware validé dev board | ✅ |
+| M1 — Hardware | Juin 2026 | ESP32-S3 reçu, tous drivers validés sur target | ⏳ |
+| M2 — Scénario + Boîtier | Juillet 2026 | Scénario chargé, prototype boîtier V1 jouable | ☐ |
+| M3 — Playtest FFF | Août-Septembre 2026 | 10-15 testeurs, go/no-go Phase 2 décidé | ☐ |
+
+**Séquencement des workstreams Phase 1 :**
+```
+Maintenant → M1 : firmware + hardware (bloquant pour la suite)
+M1 → M2   : scénario + boîtier (en parallèle, non interdépendants)
+En continu : web MVP peut démarrer dès maintenant (non bloquant)
+M2 → M3   : intégration complète + playtests
+```
+
+**Budget Phase 2 :** à affiner après go/no-go Phase 1. Poste principal identifié : certification CE-RED (~10k CHF, chemin critique — à initier dès le début de Phase 2).
+
+---
+
 ### 3.1 Phase 1 — Proof of Concept
 
-**Durée estimée :** 1 mois 
+**Durée estimée :** 3-4 mois (voir jalons §3.0)
 **Objectif :** Valider que le hardware fonctionne et que les gens veulent jouer
 
 **Hardware :**
@@ -680,6 +744,13 @@ POST /api/box/session
 - [ ] Corriger les incohérences narratives signalées
 - [ ] Retester si des changements majeurs ont été faits (retour étape 8)
 
+**Roadmap contenu minimale :**
+- 1 scénario pré-chargé en usine (inclus à l'achat)
+- Objectif : 2 scénarios disponibles au premier lancement public
+- Cadence cible : 1 nouveau scénario tous les 2-3 mois
+- Coût de production estimé : 4-6 semaines solo / 2-3 semaines avec illustrateur + compositeur
+- Décision scénariste externe : si NPS Phase 1 ≥ 8 et WTP validée
+
 **Box**
 - [ ] Faire un prototype et plusieurs itérations
 - [ ] Faire des design mockup
@@ -687,10 +758,19 @@ POST /api/box/session
 
 
 **Validation Phase 1 :**
-- 10-15 testeurs jouent le scénario de base de bout en bout
-- Taux de complétion > 80%
-- Feedback qualitatif positif ("je l'achèterais ?")
+
+Critères techniques :
+- Taux de complétion > 80% sur 10 parties complètes
 - Aucun bug bloquant en cours de partie
+- Synchro WiFi : scénario téléchargeable en < 5 min
+
+Critères produit — go/no-go Phase 2 :
+- WTP mesurée : au moins 5 testeurs annoncent un prix acceptable ≥ 100 CHF
+- NPS ≥ 7/10 sur les 15 testeurs
+- Au moins 3 personnes prêtes à précommander à prix réel (non amical)
+- Feedback spontané de recommandation (sans être sollicité)
+
+> **Décision :** si les critères produit ne sont pas atteints → retravail scénario/boîtier avant de lancer Phase 2. Les critères techniques seuls ne suffisent pas à justifier l'investissement Phase 2.
 
 ---
 
@@ -1313,11 +1393,19 @@ Les indices sont gradués : d'abord vague, puis de plus en plus précis.
 ```
 1. Scénario terminé → animation de victoire (LEDs + audio)
 2. Écran affiche : score, durée, nombre d'indices utilisés
-3. QR code vers la page de résultat en ligne
+3. QR code vers la page de résultat en ligne (escapebox.ch/v/{scenario}/{session})
 4. Score sauvegardé localement (SD + NVS)
 5. Sera remonté au serveur à la prochaine synchro
 6. Retour au menu après 30 secondes
 ```
+
+**Page de résultat (QR) — micro-enquête post-partie :**
+```
+- "C'était comment ?"      → 3 boutons emoji  😕 / 😊 / 🤩
+- "Difficulté ?"           → Trop facile / Bien dosé / Trop difficile
+- "Tu recommanderais ?"    → Oui / Non
+```
+Ces 3 réponses sont liées à la session (`hints_used`, `duration_sec`, `score`) et remontées au serveur. Elles permettent d'itérer sur les scénarios sans organiser de playtest formel.
 
 ---
 
