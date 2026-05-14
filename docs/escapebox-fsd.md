@@ -39,7 +39,7 @@ EscapeBox est un système de jeu d'escape interactif composé de trois sous-syst
 |---|---|
 | **Hardware** | Box physique avec capteurs, actionneurs, écrans, ESP32-S3 |
 | **Firmware** | Code embarqué sur l'ESP32-S3, moteur de scénario, drivers capteurs |
-| **Web Platform** | Webapp Next.js (catalogue, bibliothèque, éditeur B2B, compte joueur) |
+| **Web Platform** | Webapp Next.js (catalogue, bibliothèque, éditeur B2B, compte joueur, backend) |
 
 Le principe opérationnel est le suivant :
 
@@ -114,12 +114,15 @@ Scores et stats remontés à la prochaine synchro
 
 Chaque PCB satellite ou composant se plug/déplugg via connecteur JST sur ce bus backbone. Il transporte : alimentation 3.3V + 5V, I2C, et signaux GPIO nécessaires. Permet un assemblage/démontage propre sans soudure volante.
 
-**Bus I2C** (SDA=GPIO8, SCL=GPIO9, pull-up 4.7kΩ) — distribué via backbone JST :
+**Bus I2C** — distribué via backbone JST :
+
+> **Dev board ESP32 Lolin :** SDA=GPIO21, SCL=GPIO22 | **Cible ESP32-S3-WROOM-1-N16R8 :** SDA=GPIO8, SCL=GPIO9 (pull-up 4.7kΩ). Le firmware sélectionne les bons GPIO via `#define I2C_SDA / I2C_SCL` dans `sdkconfig.defaults`.
+
 
 | Adresse | Composant | Fonction |
 |---|---|---|
 | 0x10 | VEML7700 | Lumière ambiante |
-| 0x24 | PN532 | Lecteur NFC |
+| 0x48 | PN532 | Lecteur NFC |
 | 0x36 | AS5600 | Rotation magnétique (plateau) |
 | 0x5A | MPR121 (Phase 1 proto) | Capacitif 12 canaux — breakout AliExpress |
 | 0x28 | MTCH2120 (Phase 2 PCB) | Capacitif 12 canaux — directement sur PCB custom |
@@ -138,15 +141,17 @@ Chaque PCB satellite ou composant se plug/déplugg via connecteur JST sur ce bus
 | GPIO39 | RST | TFT 4" ILI9488 |
 | GPIO40 | BL | TFT 4" backlight |
 
-**Bus SPI3** (écran boussole, GPIO41-45) :
+**Bus SPI3** (écran boussole) :
 
 | GPIO | Signal | Composant |
 |---|---|---|
 | GPIO41 | MOSI | GC9A01 1.3" rond |
 | GPIO42 | CLK | GC9A01 1.3" rond |
-| GPIO43 | CS | GC9A01 1.3" rond |
-| GPIO44 | DC | GC9A01 1.3" rond |
+| GPIO47 | CS | GC9A01 1.3" rond |
+| GPIO46 | DC | GC9A01 1.3" rond |
 | GPIO45 | RST | GC9A01 1.3" rond |
+
+> **⚠ GPIO43=UART0_TX / GPIO44=UART0_RX** sur l'ESP32-S3-WROOM-1 — les utiliser pour SPI3 rend la console de debug inutilisable. CS et DC remappés sur GPIO47/GPIO46 (libres sur le module nu). À confirmer sur le schéma PCB final.
 
 **Bus I2S0** (audio sortie, GPIO5-7) :
 
@@ -196,32 +201,23 @@ LiPo 3.7V 3000mAh
     └── MT3608 boost → 5V (WS2812 + servos + laser)
 ```
 
-#### 2.2.2b Assignation des faces — Cube Phase 1 (120×120×120mm)
+#### 2.2.2b Assignation des faces — Cube Phase 1 (150×150×150mm)
 
 | Face | Rôle | Composants |
 |---|---|---|
-| **Avant** | Écran narratif principal | ILI9488 4" SPI (GPIO35-40), WS2812 border |
-| **Droite** | Keypad capacitif | MPR121 0x5A (proto) / MTCH2120 0x28 (série), WS2812 rétro |
-| **Gauche** | Zone NFC | PN532 0x24 (antenne derrière bois ≤3mm), WS2812 anneau |
-| **Haut** | Capteurs ambiance | VEML7700 0x10, BMP280 0x76 (souffle), LSM6DSOTR 0x6A, Hall A3144E |
-| **Dos** | Face révélation victoire | GC9A01 1.3" round (GPIO41-45), WS2812 celebration border |
-| **Dessous** | Technique | USB-C, micro SD, interrupteur, AS5600 plateau rotatif (Phase 2 Pro) |
-
-**Mécanique de révélation Phase 1 (sans servo) :**
-La face dos reste neutre pendant la partie. À la victoire :
-1. WS2812 border (face dos) s'allume en animation celebration
-2. GC9A01 affiche le QR code → `escapebox.ch/score/{session_token}`
-3. WS2812 toute la box en animation globale
-4. Audio piste victoire
-
-**Servo Phase 2 :** réintroduit optionnellement pour les scénarios avec pack physique.
-Déclaré via `hardware_required: [servo_main]` dans le YAML du scénario. Driver MCPWM déjà écrit.
+| **A definir** | Écran narratif principal | ILI9488 4" SPI (GPIO35-40), WS2812 border |
+| **A definir** | Keypad capacitif | MPR121 0x5A (proto) / MTCH2120 0x28 (série), WS2812 rétro |
+| **A definir** | Zone NFC | PN532 0x48 (antenne derrière bois ≤3mm), WS2812 anneau |
+| **A definir** | Capteurs ambiance | VEML7700 0x10, BMP280 0x76 (souffle), LSM6DSOTR 0x6A, Hall A3144E |
+| **A definir** | Face révélation victoire | GC9A01 1.3" round (GPIO41-45), WS2812 celebration border |
+| **A definir** | Technique | USB-C, micro SD, interrupteur, AS5600 plateau rotatif (Phase 2 Pro) |
+| **A definir** | Melange de plusieurs capteurs! Pas forcément un capteur par faces ou un capteur sur une seul face. |
 
 **Flux de révélation complet (tous appareils) :**
 ```
 Joueur résout l'énigme → entre le code sur le keypad
         ↓
-Servo (Phase 2) OU face dos s'active (Phase 1)
+Servo (peut etre Phase 2) OU face dos s'active (Phase 1)
         ↓
 GC9A01 affiche QR → escapebox.ch/obj/{scenario}/{session}
         ↓
@@ -273,7 +269,7 @@ Avantages : assemblage sans soudure volante, remplacement/upgrade d'une face san
 │  ┌─────────────────────────────────────────────────────────┐    │
 │  │                    Core 1 (UI + jeu)                     │    │
 │  │                                                          │    │
-│  │  scenario_engine (state machine, parse YAML)             │    │
+│  │  scenario_engine (state machine, parse JSON)             │    │
 │  │  sensor_manager  (polling I2C 50ms, event queue)         │    │
 │  │  display_manager (LVGL, TFT 4", GC9A01 1.3")            │    │
 │  │  led_manager     (WS2812 via RMT ESP-IDF)               │    │
@@ -284,7 +280,7 @@ Avantages : assemblage sans soudure volante, remplacement/upgrade d'une face san
 │  │                    Shared (FreeRTOS)                     │    │
 │  │                                                          │    │
 │  │  event_queue    (xQueue entre cores)                     │    │
-│  │  storage_manager (SD card SDMMC, NVS flash)              │    │
+│  │  storage_manager (SD card SPI+FAT, NVS flash)            │    │
 │  │  crypto_manager  (ECDSA vérif via mbedTLS intégré)       │    │
 │  │  config_manager  (WiFi creds, box ID, préférences)       │    │
 │  └─────────────────────────────────────────────────────────┘    │
@@ -301,13 +297,13 @@ Avantages : assemblage sans soudure volante, remplacement/upgrade d'une face san
 | led_strip via RMT | WS2812 LEDs (driver natif ESP-IDF) |
 | MCPWM | Servos (driver natif ESP-IDF) |
 | cJSON | Parsing config / API (inclus ESP-IDF) |
-| ESP-ADF | Playback MP3/WAV via I2S DMA |
+| ESP-ADF | Playback MP3/WAV via I2S DMA — **SDK externe** (`git submodule`), non inclus dans ESP-IDF v6.1. Alternative : `minimp3` porté en composant natif. |
 | i2c_master (PCM5122) | Config DAC : volume, EQ DSP, mute via registres I2C (addr 0x4C) |
 | i2c_master | MTCH2120 keypad, PN532 NFC, LSM6DSOTR, AS5600 |
 | NimBLE (ESP-IDF) | Provisioning WiFi via BLE |
 | esp_https_ota | OTA HTTPS |
 | esp_http_client | Download scénarios HTTPS |
-| mbedTLS (intégré) | Vérification ECDSA |
+| mbedTLS (intégré) | Vérification ECDSA P-256 (secp256r1 + SHA-256). Clé publique compilée en dur dans le firmware (`const uint8_t[]`), non chargée depuis la SD. |
 
 #### 2.3.2 Format des scénarios (YAML)
 
@@ -607,19 +603,22 @@ POST /api/box/session
 - [x] Driver LEDs WS2812B (RMT, GRB, show)
 - [x] Drivers I2C (LSM6DSOTR, AS5600, VEML7700, MTCH2120, MPR121)
 - [x] Outil YAML→JSON (tools/yaml2json.py avec validation)
-- [ ] Driver LVGL sur TFT 1.8" (puis 4")
-- [ ] Driver audio MP3 playback (ESP-ADF ou SPIFFS + raw PCM)
-- [ ] Driver NFC PN532
-- [ ] Driver servos SG90 MCPWM
-- [ ] Système de fichiers SD (LittleFS ou SD FAT)
+- [x] Driver NFC PN532 (écrit — validation hardware en attente)
+- [x] Driver servos SG90 MCPWM (écrit — tester sur ESP32-S3 uniquement, GPIO1/2 incompatibles Lolin)
+- [x] Système de fichiers SD SPI+FAT (écrit — validation hardware en attente)
+- [x] Driver ST7735 1.8" SPI DMA 40MHz (validé dev board)
+- [ ] Driver ILI9488 4" SPI (LVGL ou esp_lcd — cible Phase 1 cube)
+- [ ] Driver audio MP3 playback (ESP-ADF submodule ou minimp3 natif)
 
 **Web Platform :**
-- [ ] Projet Next.js + Supabase initialisé
+- [ ] Projet Next.js + Supabase initialisé (Route Groups : `(marketing)`, `(app)`, `(studio)` + `middleware.ts` Supabase)
 - [ ] Auth (email + Google)
 - [ ] Page catalogue (statique pour commencer)
 - [ ] Page bibliothèque (scénarios achetés)
-- [ ] Stripe checkout (paiement one-shot)
+- [ ] Stripe checkout (paiement one-shot) + routes `/app/checkout/success` et `/app/checkout/cancel`
+- [ ] Route Handler `/app/api/webhooks/stripe/route.ts` avec vérification signature Stripe (test via `stripe listen`)
 - [ ] API sync basique (liste des scénarios autorisés)
+- [ ] Route publique `/v/[scenario]/[session]` (leaderboard / résultat QR code)
 
 **Scénario :**
 - [ ] Trouver un scénariste
@@ -639,8 +638,6 @@ POST /api/box/session
 - Taux de complétion > 80%
 - Feedback qualitatif positif ("je l'achèterais ?")
 - Aucun bug bloquant en cours de partie
-
-
 
 ---
 
@@ -669,11 +666,14 @@ POST /api/box/session
 
 **Web Platform :**
 - [ ] Système de synchro complet côté serveur
-- [ ] Génération des fichiers scénario signés (ECDSA) par box
-- [ ] Gestion des devices (association, liste, dernière synchro)
+- [ ] Génération paire de clés ECDSA P-256 par box à l'enregistrement (stockée dans Supabase Vault)
+- [ ] Pipeline signing : YAML + assets → archive → signature ECDSA → upload R2 sous `/scenarios/{box_uid}/{slug}.enc`
+- [ ] Endpoint GET /api/box/sync retourne R2 Presigned URL (expiration 1h)
+- [ ] Gestion des devices (association, liste, dernière synchro, révocation)
 - [ ] Webhook Stripe → attribution licence immédiate
 - [ ] Dashboard joueur complet (bibliothèque, scores, historique)
 - [ ] Pré-commande / liste d'attente
+- [ ] Simulateur `/studio/[id]/simulate` — player JSON scénario dans le navigateur (state machine JS identique à la logique firmware, events simulés via boutons)
 
 **Scénario :**
 - [ ] Faire 2 autres scénarios
@@ -716,7 +716,7 @@ POST /api/box/session
 - [ ] Éditeur B2B mode Simple (templates)
 - [ ] Éditeur B2B mode Pro (React Flow drag-and-drop)
 - [ ] Éditeur B2B mode Expert (Monaco Editor YAML)
-- [ ] Simulateur scénario dans le navigateur
+- [ ] Simulateur avancé (améliorations Phase 3 — base posée en Phase 2)
 - [ ] Marketplace (publication + vente scénarios tiers)
 - [ ] App mobile native iOS/Android (si demande)
 - [ ] Multi-langues webapp (FR/DE/EN)
@@ -771,7 +771,7 @@ POST /api/box/session
 | ID | Exigence | Priorité | Phase |
 |---|---|---|---|
 | WB-01 | Un utilisateur doit pouvoir créer un compte et associer une box en < 10 min | MUST | 1 |
-| WB-02 | Un scénario acheté doit être disponible à la synchro suivante | MUST | 1 |
+| WB-02 | Un scénario acheté doit apparaître dans `/api/box/sync` dans les 10 secondes suivant la confirmation de paiement Stripe | MUST | 1 |
 | WB-03 | Le paiement Stripe doit déclencher l'attribution de licence immédiatement (webhook) | MUST | 1 |
 | WB-04 | Un compte peut gérer jusqu'à 3 box simultanément | MUST | 2 |
 | WB-05 | Les fichiers scénario servis aux box doivent être signés ECDSA côté serveur | MUST | 2 |
@@ -780,6 +780,8 @@ POST /api/box/session
 | WB-08 | La marketplace doit gérer les reversements aux créateurs (Stripe Connect) | COULD | 3 |
 | WB-09 | La webapp doit être disponible en FR, DE et EN | SHOULD | 3 |
 | WB-10 | Le dashboard B2B doit afficher l'état en temps réel des boxes d'une flotte | COULD | 3 |
+| WB-11 | Les endpoints `/api/box/*` doivent être protégés par rate limiting (max 10 req/min par box_uid) | MUST | 2 |
+| WB-12 | Une box peut être révoquée depuis le dashboard (token invalidé immédiatement) | SHOULD | 2 |
 
 ---
 
@@ -792,7 +794,7 @@ POST /api/box/session
 | R-01 | Certification CE-RED refusée ou retardée | Bloquant pour vente EU | Moyen | Anticiper 6 mois, budget 15k CHF, pré-compliance dès la phase 2 |
 | R-02 | Servos qui tombent en panne après 500 cycles | SAV + mauvaises reviews | Moyen | Utiliser MG90S (métal), tester 2000 cycles, stock pièces de rechange |
 | R-03 | Firmware OTA brique une box (brick) | SAV exceptionnel | Faible | Double partition OTA (rollback automatique si boot fail), mode recovery USB |
-| R-04 | Scénarios piratés et distribués | Perte de revenus | Moyen | ECDSA signature, accepter 1-5% de piratage comme coût marketing |
+| R-04 | Scénarios piratés et distribués | Perte de revenus | Moyen | Binding par box : chiffrement AES-128-GCM par box + signature ECDSA sur tuple `(contenu + box_uid)`. Champ `bound_to_box_uid` vérifié par le firmware au chargement. |
 | R-05 | Dépendance au cloud (serveur down) | Synchro impossible | Moyen | Scénarios déjà téléchargés jouables offline, mode dégradé local |
 | R-06 | Manque de contenu (pas assez de scénarios) | Abandon du produit après 1-2 parties | Fort | Roadmap contenu en parallèle hardware, IA pour accélérer production |
 | R-07 | PSRAM incompatibilité avec librairies | Bugs affichage/audio | Faible | Tester dès Phase 1 avec N8R8, documenter les contraintes |
@@ -800,6 +802,8 @@ POST /api/box/session
 | R-09 | Prix de vente trop élevé pour le marché | Ventes insuffisantes | Moyen | Valider la willingness-to-pay avec 50 early adopters avant la série |
 | R-10 | Bois / ardoise : variabilité matériau | Qualité inconstante | Faible | Fournisseur local certifié, gabarits précis, contrôle qualité entrée |
 | R-11 | iPhone ne peut pas émuler un tag NFC ISO14443A | Interaction téléphone→PN532 impossible sur iOS | Certain | Conception du flux de révélation sans NFC téléphone (voir §2.2.2b). Interaction téléphone→box via code clavier uniquement. NFC téléphone→box réservé Android si implémenté (COULD, Phase 3). |
+| R-12 | NVS flash wear (scores écrits à chaque partie) | Corruption données persistantes après 2-3 ans usage intensif | Faible | Batcher les écritures NVS (accumuler N scores avant flush), utiliser un compteur de séquence. Monitorer la santé NVS en Phase 2. |
+| R-13 | Replay attack sur HMAC auth (challenge réutilisé ou généré côté client) | Usurpation d'identité box | Faible-Moyen | Challenge généré côté serveur via `GET /box/challenge`, valide 60s, usage unique (invalidé après première réponse valide). Voir §6.1. |
 
 ### Assumptions
 
@@ -835,19 +839,32 @@ POST /api/box/session
 **Authentification :** Chaque box s'authentifie par HMAC-SHA256 challenge-response basé sur son UID unique gravé dans les eFuses ESP32.
 
 ```
+GET /box/challenge?box_uid=ESP32S3-XXXX
+Response 200:
+  {
+    "challenge": "<32 octets aléatoires hex>",   // usage unique, TTL 60s côté serveur
+    "expires_in": 60
+  }
+
 POST /box/auth
 Request:
   {
     "box_uid": "ESP32S3-XXXX-XXXX",
+    "challenge": "<challenge reçu>",
     "challenge_response": "hmac_sha256(challenge, secret_key)"
   }
 Response 200:
   {
-    "token": "eyJ...",        // JWT valide 24h
+    "token": "eyJ...",        // JWT valide 2h (jti traçable pour révocation)
     "server_time": 1715000000
   }
 Response 401:
   { "error": "invalid_credentials" }
+
+POST /box/register                              // appelé depuis la webapp lors du BLE provisioning
+  Headers: Authorization: Bearer {supabase_user_jwt}
+  Body: { box_uid, pairing_code }
+  Returns: { device_id: uuid, ok: true }
 ```
 
 ```
@@ -862,16 +879,19 @@ Response 200:
         "slug": "capitaine_verdier_v1",
         "version": "1.0",
         "size_bytes": 47200000,
-        "download_url": "https://cdn.escapebox.ch/scenarios/verdier_v1_{box_uid}.enc",
-        "signature": "base64_ecdsa_signature",
+        "download_url": "https://cdn.escapebox.ch/...(R2 Presigned URL, TTL 1h)",
+        "url_expires_at": 1715003600,
+        "signature": "base64_ecdsa_p256_signature",   // signature sur (contenu + box_uid)
         "checksum_sha256": "abc123..."
       }
     ],
     "firmware": {
       "version": "1.2.3",
       "url": "https://cdn.escapebox.ch/firmware/v1.2.3.bin",
-      "sha256": "def456..."
+      "sha256": "def456...",
+      "ecdsa_signature": "base64_ecdsa_p256_signature"  // vérifié par le firmware avant OTA
     },
+    "revoked_scenarios": [],   // slugs révoqués à supprimer de la SD
     "timestamp": 1715000000
   }
 ```
@@ -898,42 +918,72 @@ Response 200:
 Utilisé uniquement lors de la première configuration WiFi.
 
 ```
-Service UUID: 4FAFC201-1FB5-459E-8FCC-C5C9C331914B
+Service UUID: A1B2C3D4-E5F6-7890-ABCD-EF1234567890   // UUID propre EscapeBox (ne pas réutiliser l'exemple générique ESP-IDF)
 Characteristics:
-  - WIFI_SSID    (write): UUID 6E400002-...  Max 64 chars
-  - WIFI_PASS    (write): UUID 6E400003-...  Max 64 chars
-  - BOX_CODE     (read) : UUID 6E400004-...  6-char pairing code
-  - STATUS       (notify): UUID 6E400005-... "connecting|connected|error"
+  - WIFI_SSID    (write): UUID A1B2C3D4-E5F6-7890-ABCD-EF1234567891  Max 64 chars
+  - WIFI_PASS    (write): UUID A1B2C3D4-E5F6-7890-ABCD-EF1234567892  Max 64 chars
+  - BOX_CODE     (read) : UUID A1B2C3D4-E5F6-7890-ABCD-EF1234567893  6-char pairing code
+  - STATUS       (notify): UUID A1B2C3D4-E5F6-7890-ABCD-EF1234567894 "connecting|connected|error"
 ```
 
-**Flux :**
+> **Sécurité BLE :** La session BLE doit être établie avec **BLE Secure Connections** (NimBLE : `BLE_SM_SC_REQUIRED=1`, `BLE_SM_MITM_REQUIRED=1`, `BLE_SM_IO_CAP_DISP_ONLY`). Le code 6 chars affiché sur l'écran sert de PIN BLE — il chiffre le transport avant l'écriture de `WIFI_PASS`.
+
+**Flux provisioning initial :**
 1. Box en mode provisioning → émet BLE avec code 6 chars sur l'écran
-2. Webapp scanne les BLE devices → trouve le bon (nom = "EscapeBox-XXXX")
-3. Webapp écrit SSID et mot de passe
-4. Box tente la connexion WiFi → notifie le statut
-5. Si succès → provisioning terminé, BLE éteint
+2. Webapp scanne les BLE devices (filtre sur Service UUID EscapeBox) → trouve le bon
+3. Webapp initie le pairing BLE Secure avec le code 6 chars comme PIN
+4. Webapp écrit SSID et mot de passe (chiffrés par la session BLE)
+5. Box tente la connexion WiFi → notifie le statut
+6. Si succès → `POST /api/box/register` depuis la webapp → provisioning terminé, BLE éteint
+
+**Re-provisioning (changement de réseau WiFi) :**
+- Après 3 tentatives de connexion WiFi consécutives en échec au démarrage, la box repasse automatiquement en mode provisioning BLE et affiche un message explicite sur l'écran.
+- Accessible aussi manuellement via Menu → Paramètres → Reconfigurer WiFi.
 
 ### 6.3 Interface Utilisateur — Webapp
 
-**Navigation principale :**
+**Navigation principale (App Router Route Groups) :**
 
 ```
-/                       → Landing page / marketing
-/auth/login             → Connexion
-/auth/register          → Inscription
-/app/library            → Ma bibliothèque (scénarios achetés)
-/app/shop               → Catalogue scénarios
-/app/shop/{slug}        → Détail scénario
-/app/devices            → Mes box (liste, synchro, stats)
-/app/devices/add        → Associer une nouvelle box
-/app/scores             → Historique des parties
-/app/account            → Mon compte, abonnement
-/studio                 → Éditeur B2B (plan Pro+)
-/studio/new             → Nouveau scénario
-/studio/{id}/edit       → Éditer un scénario existant
-/studio/{id}/simulate   → Simulateur
-/marketplace            → Scénarios communautaires (Phase 3)
-/activate/{token}       → Activation QR code physique
+app/
+  (marketing)/                      → layout public, pas d'auth requis
+    page.tsx                        → Landing page / marketing
+    activate/[token]/page.tsx       → Activation QR code physique
+    v/[scenario]/[session]/page.tsx → Leaderboard / résultat de partie (lien QR box)
+
+  (auth)/                           → layout login/register
+    login/page.tsx
+    register/page.tsx
+
+  (app)/                            → layout avec Supabase session guard (middleware.ts)
+    library/page.tsx                → Ma bibliothèque (scénarios achetés)
+    shop/page.tsx                   → Catalogue scénarios
+    shop/[slug]/page.tsx            → Détail scénario + bouton achat
+    checkout/success/page.tsx       → Retour Stripe OK
+    checkout/cancel/page.tsx        → Retour Stripe annulé
+    devices/page.tsx                → Mes box (liste, synchro, stats)
+    devices/add/page.tsx            → Associer une nouvelle box (BLE provisioning)
+    scores/page.tsx                 → Historique des parties
+    account/page.tsx                → Mon compte, abonnement
+
+  (studio)/                         → layout avec guard plan Pro+
+    page.tsx                        → Éditeur B2B
+    new/page.tsx
+    [id]/edit/page.tsx
+    [id]/simulate/page.tsx          → Simulateur (Phase 2)
+
+  api/
+    box/
+      challenge/route.ts            → GET challenge HMAC
+      auth/route.ts                 → POST auth box
+      register/route.ts             → POST enregistrement box
+      sync/route.ts                 → GET sync scénarios + firmware
+      session/route.ts              → POST upload scores
+    webhooks/stripe/route.ts        → POST webhook Stripe (signature vérifiée)
+
+  marketplace/page.tsx              → Scénarios communautaires (Phase 3)
+
+middleware.ts                       → Supabase updateSession (protège (app) et (studio))
 ```
 
 ### 6.4 Interface Utilisateur — Box (Menu on-device)
@@ -986,26 +1036,27 @@ source /opt/esp/idf/export.sh   # ou via le container Docker
 ```
 blackbox/
 ├── firmware/
-│   └── main/
-│       ├── main.c               # Point d'entrée app_main()
-│       └── CMakeLists.txt
-├── components/
-│   ├── scenario/                # Moteur YAML + state machine
-│   ├── nfc/                     # Driver PN532
-│   ├── keypad/                  # Driver MTCH2120
-│   ├── sensors/                 # Drivers I2C : LSM6DSOTR, AS5600, VEML7700, MTCH2120
-│   ├── display/                 # LVGL + ILI9488 + GC9A01
-│   ├── audio/                   # I2S DMA + PCM5122PW (DAC) + PAM8406 (amp)
-│   ├── led/                     # WS2812 via RMT
-│   ├── servo/                   # SG90 via MCPWM
-│   ├── storage/                 # SD card SDMMC + NVS
-│   ├── wifi_manager/            # Sync + BLE provisioning
-│   ├── ota_manager/             # esp_https_ota
-│   └── crypto/                  # Vérification ECDSA
+│   ├── main/
+│   │   ├── main.c               # Point d'entrée app_main()
+│   │   └── CMakeLists.txt
+│   ├── components/
+│   │   ├── scenario/            # Moteur JSON + state machine
+│   │   ├── nfc/                 # Driver PN532
+│   │   ├── sensors/             # Drivers I2C : LSM6DSOTR, AS5600, VEML7700, MPR121
+│   │   ├── display/             # ILI9488 4" + GC9A01 1.3" (SPI, LVGL)
+│   │   ├── audio/               # I2S DMA + PCM5122PW (DAC) + PAM8406 (amp)
+│   │   ├── leds/                # WS2812 via RMT
+│   │   ├── servo/               # SG90 via MCPWM
+│   │   ├── storage/             # SD card SPI+FAT + NVS
+│   │   ├── wifi_manager/        # Sync + BLE provisioning (NimBLE)
+│   │   ├── ota_manager/         # esp_https_ota + vérification ECDSA
+│   │   └── crypto/              # Vérification ECDSA P-256 (mbedTLS)
+│   ├── CMakeLists.txt
+│   ├── sdkconfig.defaults       # Config ESP-IDF par défaut
+│   └── partitions.csv           # Partition table custom
+├── web/                         # Web platform Next.js (Phase 1+)
 ├── docs/                        # Vision, FSD
-├── CMakeLists.txt               # Root CMake
-├── sdkconfig.defaults           # Config ESP-IDF par défaut
-├── partitions.csv               # Partition table custom
+├── tools/                       # yaml2json.py + outils dev
 └── CLAUDE.md
 ```
 
@@ -1032,13 +1083,13 @@ CONFIG_LOG_DEFAULT_LEVEL_INFO=y
 **Partition table custom :**
 
 ```csv
-# partitions.csv
+# partitions.csv — N16R8 (16 MB flash)
 # Name,   Type, SubType, Offset,   Size
 nvs,      data, nvs,     0x9000,   0x5000
 otadata,  data, ota,     0xe000,   0x2000
-app0,     app,  ota_0,   0x10000,  0x300000
-app1,     app,  ota_1,   0x310000, 0x300000
-storage,  data, fat,     0x610000, 0x1F0000
+app0,     app,  ota_0,   0x10000,  0x400000   # 4 MB — firmware cible < 2.5 MB
+app1,     app,  ota_1,   0x410000, 0x400000   # 4 MB — partition OTA inactive
+storage,  data, fat,     0x810000, 0x7F0000   # ~8 MB FAT (assets + config)
 ```
 
 #### 7.1.4 Premier flash (USB)
@@ -1074,7 +1125,7 @@ idf.py -p /dev/ttyUSB0 flash monitor
 [STORAGE] LittleFS: 1.75 MB free
 [SCENARIO] Found 1 scenario on SD: capitaine_verdier_v1
 [AUDIO] I2S initialized - Speaker + Mic
-[SENSORS] I2C scan: 0x10 0x24 0x36 0x5A 0x5B 0x5C 0x68 0x76 - OK
+[SENSORS] I2C scan: 0x10 0x28 0x36 0x48 0x4C 0x5C 0x6A 0x76 - OK
 [BOOT] Ready
 ```
 
@@ -1088,7 +1139,7 @@ idf.py -p /dev/ttyUSB0 flash monitor
 6. Sélectionner le réseau WiFi et entrer le mot de passe
 7. La box se connecte → confirmation sur l'écran + dans la webapp
 
-> **Note :** La Web Bluetooth API nécessite Chrome ou Edge sur desktop. Sur mobile, utiliser l'app native (Phase 3) ou la procédure manuelle (AP mode).
+> **Compatibilité Web Bluetooth :** Chrome/Edge desktop + Android Chrome. iOS Safari non supporté (WebBluetooth indisponible). Pour iPhone : utiliser la procédure AP mode ci-dessous. App native iOS prévue en Phase 3 (COULD).
 
 **Procédure manuelle AP mode (fallback) :**
 ```
@@ -1109,18 +1160,27 @@ Au démarrage de chaque synchro WiFi, la box interroge le serveur pour connaîtr
 
 ```
 Flux OTA automatique :
-1. GET /api/box/sync → { firmware: { version: "1.2.3", url: "...", sha256: "..." } }
+1. GET /api/box/sync → { firmware: { version: "1.2.3", url: "...", sha256: "...", ecdsa_signature: "..." } }
 2. Box compare avec sa version actuelle
 3. Si version_serveur > version_locale :
    a. Afficher sur écran : "Mise à jour disponible (v1.2.3) - Installation..."
    b. Download depuis CDN vers la partition OTA inactive (app1 si app0 active)
    c. Vérifier SHA256 du fichier téléchargé
-   d. esp_ota_set_boot_partition() → pointer vers la nouvelle partition
-   e. Redémarrer
-   f. Au boot : vérifier que le nouveau firmware démarre (watchdog 30s)
-   g. Si OK → valider (esp_ota_mark_app_valid_cancel_rollback())
-   h. Si KO → rollback automatique vers la partition précédente
+   d. Vérifier signature ECDSA P-256 du binaire (clé publique compilée dans le firmware)
+   e. Si signature invalide → esp_ota_abort(), annuler, log erreur, continuer sur partition actuelle
+   f. esp_ota_set_boot_partition() → pointer vers la nouvelle partition
+   g. Redémarrer
+   h. Au boot : vérifier que le nouveau firmware démarre (watchdog 30s)
+   i. Si OK → valider (esp_ota_mark_app_valid_cancel_rollback())
+   j. Si KO → rollback automatique vers la partition précédente
 ```
+
+> **Toutes les connexions HTTPS** (sync, OTA, upload session) utilisent la vérification TLS complète : le certificat racine (ISRG Root X1 Let's Encrypt) est compilé dans le firmware et passé à `esp_http_client_config_t.cert_pem`. Ne jamais passer `skip_cert_common_name_check = true` en production.
+
+**Comportement en cas d'interruption OTA :**
+- Si la connexion WiFi est perdue pendant le download : `esp_ota_abort()` est appelé, la partition inactive est marquée invalide, le firmware actuel continue de fonctionner.
+- `esp_https_ota` ne supporte pas le resume HTTP Range — la prochaine synchro retente le download depuis le début.
+- La taille cible maximale du binaire firmware est **< 2.5 MB** (à vérifier en CI avant chaque release). Les partitions OTA sont dimensionnées à 0x400000 (4 MB) sur le N16R8 (16 MB flash).
 
 #### 7.2.2 OTA forcée via WiFi local (développement)
 
@@ -1166,13 +1226,20 @@ Si la box ne démarre plus après une OTA :
 ```
 1. Menu principal → "Synchroniser"
 2. Box se connecte au WiFi (credentials stockés dans NVS)
-3. Auth avec le serveur (HMAC)
+3. Auth avec le serveur (HMAC) — toujours faire un GET /box/challenge + POST /box/auth
+   (le JWT NVS n'est pas réutilisé — durée de vie 2h, synchros espacées de jours/semaines)
 4. Récupère la liste des scénarios autorisés
-5. Télécharge les nouveaux scénarios non présents sur la SD
-6. Upload les scores des parties récentes
-7. Vérifie si firmware update disponible (OTA automatique si oui)
-8. Déconnexion WiFi
-9. Retour au menu
+5. Télécharge les nouveaux scénarios non présents sur la SD :
+   - Stratégie "tout-ou-rien" : un scénario est considéré installé UNIQUEMENT après
+     vérification SHA256 complète du fichier téléchargé.
+   - Si interruption réseau en cours de download : fichier partiel supprimé, retentative
+     à la prochaine synchro.
+6. Supprime de la SD les scénarios listés dans revoked_scenarios[]
+7. Upload les scores des parties récentes (marqués "envoyés" en NVS uniquement après
+   réception du { "ok": true } serveur — évite les doublons en cas d'interruption)
+8. Vérifie si firmware update disponible (OTA automatique si oui)
+9. Déconnexion WiFi
+10. Retour au menu
 ```
 
 #### 7.3.3 Gestion des indices (hints)
