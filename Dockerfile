@@ -4,7 +4,9 @@ RUN apt-get update && \
     apt-get install -y curl gosu && \
     curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
     apt-get install -y nodejs && \
-    npm install -g @anthropic-ai/claude-code
+    npm install -g @anthropic-ai/claude-code && \
+    chmod -R 777 $(npm root -g)/@anthropic-ai/claude-code && \
+    chmod 777 $(npm prefix -g)/bin/claude
 
 RUN useradd -m -s /bin/bash dev && usermod -aG dialout dev
 
