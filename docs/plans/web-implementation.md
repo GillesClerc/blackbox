@@ -8,9 +8,9 @@
 
 ### 0.1 Supabase self-hosted
 1. Coolify → New Resource → Supabase (template one-click)
-2. Sous-domaine : `db.box.agill.es`
+2. Sous-domaine : `https://supabase.agill.es/`
 3. Récupérer : `SUPABASE_URL`, `ANON_KEY`, `SERVICE_ROLE_KEY`
-4. Studio : `https://db.box.agill.es/dashboard`
+4. Studio : `https://supabase.agill.es/dashboard`
 
 ### 0.2 Service Next.js
 1. Coolify → New Resource → Application → GitHub
@@ -21,7 +21,7 @@
 
 Variables d'env :
 ```env
-NEXT_PUBLIC_SUPABASE_URL=https://db.box.agill.es
+NEXT_PUBLIC_SUPABASE_URL=https://supabase.agill.es/
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
 SUPABASE_SERVICE_ROLE_KEY=eyJ...
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
@@ -31,7 +31,7 @@ BOX_SHARED_SECRET=<openssl rand -hex 32>
 NEXT_PUBLIC_APP_URL=https://box.agill.es
 ```
 
-### 0.3 Stripe test mode
+### 0.3 Stripe test mode (optionnel, sera fait phase 4)
 1. stripe.com → Test mode → Créer produit "Capitaine Verdier" prix fixe CHF
 2. Récupérer `pk_test_` / `sk_test_`
 3. Webhook → `https://box.agill.es/api/webhooks/stripe`
@@ -364,7 +364,7 @@ values ('capitaine-verdier', 'Le Trésor du Capitaine Verdier',
 
 ```bash
 # Phase 0
-curl https://db.box.agill.es/rest/v1/          # → 200
+curl https://supabase.agill.es/rest/v1/          # → 200
 curl https://box.agill.es                       # → page Next.js
 
 # Phase 1 : register/login OK · tables dans Supabase Studio · git push → Coolify build vert
