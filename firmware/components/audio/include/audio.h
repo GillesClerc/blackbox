@@ -29,7 +29,13 @@ typedef struct {
     uint16_t gap_ms;
 } audio_bg_note_t;
 
-// Démarre une boucle de fond (tâche FreeRTOS distincte, priorité basse).
-// Les tones foreground interrompent proprement la boucle.
+// Démarre une boucle de fond à base de tons synthétiques (fallback sans MP3).
 void audio_bg_start(const audio_bg_note_t *notes, int count);
+
+// Démarre la musique de fond depuis un buffer MP3 embarqué en flash.
+// MP3 : 44100 Hz recommandé, mono ou stéréo, bitrate libre.
+// Volume appliqué automatiquement (discret, ~15 % amplitude).
+void audio_bg_mp3_start(const uint8_t *mp3_data, size_t mp3_size);
+
+// Arrête la musique de fond (tons ou MP3).
 void audio_bg_stop(void);

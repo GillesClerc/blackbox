@@ -14,8 +14,13 @@
 
 #define TAG "main"
 
-extern const char capitaine_verdier_json_start[] asm("_binary_capitaine_verdier_json_start");
-extern const char capitaine_verdier_json_end[]   asm("_binary_capitaine_verdier_json_end");
+extern const char    capitaine_verdier_json_start[] asm("_binary_capitaine_verdier_json_start");
+extern const char    capitaine_verdier_json_end[]   asm("_binary_capitaine_verdier_json_end");
+
+// ambient.mp3 embarqué uniquement si le fichier existe au moment du build
+// (voir firmware/main/CMakeLists.txt). Sinon ces symboles sont NULL (weak).
+extern const uint8_t _binary_ambient_mp3_start[] __attribute__((weak));
+extern const uint8_t _binary_ambient_mp3_end[]   __attribute__((weak));
 
 // ─── Layout écran ────────────────────────────────────────────────────────────
 //
@@ -436,8 +441,13 @@ void app_main(void)
 
     ESP_ERROR_CHECK(scenario_engine_start());
 
-    // Musique de fond
-    audio_bg_start(s_ambient, sizeof(s_ambient) / sizeof(s_ambient[0]));
+    // Musique de fond : MP3 embarqué si dispo, sinon tons synthétiques
+    if (_binary_ambient_mp3_start) {
+        audio_bg_mp3_start(_binary_ambient_mp3_start,
+                           _binary_ambient_mp3_end - _binary_ambient_mp3_start);
+    } else {
+        audio_bg_start(s_ambient, sizeof(s_ambient) / sizeof(s_ambient[0]));
+    }
 
     // Clavier
     xTaskCreate(touch_task, "touch", 4096, NULL, 5, NULL);

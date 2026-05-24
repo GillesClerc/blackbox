@@ -5,6 +5,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/semphr.h"
+#include "minimp3.h"
 #include <math.h>
 #include <string.h>
 #include <stdlib.h>
@@ -269,6 +270,91 @@ void audio_stop(void)
         pcm_write(PCM5122_REG_MUTE,  0x11);
         pcm_write(PCM5122_REG_POWER, 0x10);
     }
+}
+
+// ── Musique de fond MP3 ───────────────────────────────────────────────────────
+
+#define MP3_BG_VOLUME   0.15f   // 15 % amplitude : discret, non-intrusif
+
+static const uint8_t *s_mp3_data = NULL;
+static size_t         s_mp3_size = 0;
+
+// Buffers statiques pour éviter 7 KB de stack dans la tâche
+static int16_t s_mp3_pcm[MINIMP3_MAX_SAMPLES_PER_FRAME];
+static int16_t s_mp3_stereo[MINIMP3_MAX_SAMPLES_PER_FRAME * 2];
+static mp3dec_t s_mp3_dec;
+
+static void bg_mp3_task_fn(void *arg)
+{
+    mp3dec_init(&s_mp3_dec);
+    const uint8_t *ptr       = s_mp3_data;
+    int            remaining = (int)s_mp3_size;
+
+    while (s_bg_run) {
+        if (s_fg_play) { vTaskDelay(pdMS_TO_TICKS(20)); continue; }
+
+        if (remaining < 4) {
+            // Fin de fichier → boucle
+            mp3dec_init(&s_mp3_dec);
+            ptr       = s_mp3_data;
+            remaining = (int)s_mp3_size;
+            ESP_LOGD(TAG, "MP3 loop");
+            continue;
+        }
+
+        mp3dec_frame_info_t info;
+        int samples = mp3dec_decode_frame(&s_mp3_dec, ptr, remaining,
+                                          s_mp3_pcm, &info);
+
+        if (info.frame_bytes > 0) {
+            ptr       += info.frame_bytes;
+            remaining -= info.frame_bytes;
+        } else {
+            // Frame illisible : sauter 1 octet et continuer
+            ptr++; remaining--;
+            continue;
+        }
+
+        if (samples <= 0) continue;
+
+        // Mono → stéréo entrelacé + réduction volume
+        int out_s = samples * 2;
+        if (info.channels == 1) {
+            for (int i = 0; i < samples; i++) {
+                int16_t v = (int16_t)(s_mp3_pcm[i] * MP3_BG_VOLUME);
+                s_mp3_stereo[i * 2]     = v;
+                s_mp3_stereo[i * 2 + 1] = v;
+            }
+        } else {
+            for (int i = 0; i < out_s; i++)
+                s_mp3_stereo[i] = (int16_t)(s_mp3_pcm[i] * MP3_BG_VOLUME);
+        }
+
+        if (s_fg_play) continue;  // vérifie à nouveau avant d'écrire
+
+        if (xSemaphoreTake(s_mutex, pdMS_TO_TICKS(100)) == pdTRUE) {
+            if (!s_fg_play) {
+                size_t w;
+                i2s_channel_write(s_tx, s_mp3_stereo,
+                                  out_s * sizeof(int16_t), &w, pdMS_TO_TICKS(200));
+            }
+            xSemaphoreGive(s_mutex);
+        }
+    }
+    s_bg_task = NULL;
+    vTaskDelete(NULL);
+}
+
+void audio_bg_mp3_start(const uint8_t *data, size_t size)
+{
+    if (!data || !size) return;
+    audio_bg_stop();
+    s_mp3_data = data;
+    s_mp3_size = size;
+    s_bg_run   = true;
+    // Stack 10 KB : mp3dec_t (~2 KB) + frames + appel interne minimp3
+    xTaskCreate(bg_mp3_task_fn, "audio_bg_mp3", 10240, NULL, 3, &s_bg_task);
+    ESP_LOGI(TAG, "bg MP3 démarré (%u kB)", (unsigned)(size / 1024));
 }
 
 void audio_bg_start(const audio_bg_note_t *notes, int count)
