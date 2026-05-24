@@ -240,6 +240,9 @@ static void enter_step(const char *id) {
     s_step_entered = xTaskGetTickCount();
     s_hint_idx     = 0;
 
+    // Purger les events du step précédent pour éviter les faux positifs
+    xQueueReset(s_queue);
+
     const char *type = cJSON_GetStringValue(cJSON_GetObjectItem(step, "type"));
     ESP_LOGI(TAG, "→ [%s] (%s)", id, type ? type : "?");
 }

@@ -17,10 +17,13 @@
 extern const char    capitaine_verdier_json_start[] asm("_binary_capitaine_verdier_json_start");
 extern const char    capitaine_verdier_json_end[]   asm("_binary_capitaine_verdier_json_end");
 
-// ambient.mp3 embarqué uniquement si le fichier existe au moment du build
-// (voir firmware/main/CMakeLists.txt). Sinon ces symboles sont NULL (weak).
-extern const uint8_t _binary_ambient_mp3_start[] __attribute__((weak));
-extern const uint8_t _binary_ambient_mp3_end[]   __attribute__((weak));
+// ambient.mp3 embarqué uniquement si le fichier existe au moment du build.
+// HAS_AMBIENT_MP3 est défini par CMakeLists.txt quand le fichier est présent.
+// Un extern fort (sans weak) est nécessaire pour que le linker inclue l'objet.
+#ifdef HAS_AMBIENT_MP3
+extern const uint8_t _binary_ambient_mp3_start[];
+extern const uint8_t _binary_ambient_mp3_end[];
+#endif
 
 // ─── Layout écran ────────────────────────────────────────────────────────────
 //
@@ -55,8 +58,9 @@ extern const uint8_t _binary_ambient_mp3_end[]   __attribute__((weak));
 #define COL_KEY_BG    0x0000
 #define COL_BORDER    0x07FF  // cyan
 
-// ─── Musique de fond : ambiance sous-marine ───────────────────────────────────
+// ─── Musique de fond : ambiance sous-marine (fallback sans MP3) ──────────────
 
+#ifndef HAS_AMBIENT_MP3
 static const audio_bg_note_t s_ambient[] = {
     {110, 250, 1800},  // A2 - grave profond
     {  0,   0,  600},
@@ -72,6 +76,7 @@ static const audio_bg_note_t s_ambient[] = {
     {110, 200,  800},
     {  0,   0, 3000},  // silence étendu
 };
+#endif // HAS_AMBIENT_MP3
 
 // ─── Helpers display ─────────────────────────────────────────────────────────
 
@@ -442,12 +447,12 @@ void app_main(void)
     ESP_ERROR_CHECK(scenario_engine_start());
 
     // Musique de fond : MP3 embarqué si dispo, sinon tons synthétiques
-    if (_binary_ambient_mp3_start) {
-        audio_bg_mp3_start(_binary_ambient_mp3_start,
-                           _binary_ambient_mp3_end - _binary_ambient_mp3_start);
-    } else {
-        audio_bg_start(s_ambient, sizeof(s_ambient) / sizeof(s_ambient[0]));
-    }
+#ifdef HAS_AMBIENT_MP3
+    audio_bg_mp3_start(_binary_ambient_mp3_start,
+                       _binary_ambient_mp3_end - _binary_ambient_mp3_start);
+#else
+    audio_bg_start(s_ambient, sizeof(s_ambient) / sizeof(s_ambient[0]));
+#endif
 
     // Clavier
     xTaskCreate(touch_task, "touch", 4096, NULL, 5, NULL);

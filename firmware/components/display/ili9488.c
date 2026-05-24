@@ -4,6 +4,7 @@
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "freertos/semphr.h"
 #include <string.h>
 
 #define TAG "ili9488"
@@ -17,8 +18,9 @@
 #define DMA_BUF_BYTES  (DMA_BUF_PIXELS * BYTES_PER_PIXEL)  // 4080 bytes
 
 static spi_device_handle_t s_spi;
-static gpio_num_t s_pin_dc  = ILI9488_PIN_DC;
-static gpio_num_t s_pin_rst = ILI9488_PIN_RST;
+static gpio_num_t          s_pin_dc  = ILI9488_PIN_DC;
+static gpio_num_t          s_pin_rst = ILI9488_PIN_RST;
+static SemaphoreHandle_t   s_mutex   = NULL;
 
 static uint8_t s_dma_buf[DMA_BUF_BYTES] __attribute__((aligned(4)));
 
@@ -221,6 +223,9 @@ esp_err_t ili9488_init(void)
     ret = spi_bus_add_device(SPI2_HOST, &dev, &s_spi);
     if (ret != ESP_OK) return ret;
 
+    s_mutex = xSemaphoreCreateRecursiveMutex();
+    if (!s_mutex) return ESP_ERR_NO_MEM;
+
     ili9488_init_seq();
     ESP_LOGI(TAG, "ILI9488 initialisé %dx%d @ 20MHz SPI2", ILI9488_WIDTH, ILI9488_HEIGHT);
     return ESP_OK;
@@ -254,12 +259,13 @@ static inline void rgb565_to_666(uint16_t c, uint8_t *r, uint8_t *g, uint8_t *b)
 void ili9488_fill_rect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color)
 {
     if (w == 0 || h == 0) return;
+    xSemaphoreTakeRecursive(s_mutex, portMAX_DELAY);
+
     set_window(x, y, x + w - 1, y + h - 1);
 
     uint8_t r, g, b;
     rgb565_to_666(color, &r, &g, &b);
 
-    // Remplir le buffer DMA avec la couleur répétée
     for (int i = 0; i < DMA_BUF_PIXELS; i++) {
         s_dma_buf[i * 3]     = r;
         s_dma_buf[i * 3 + 1] = g;
@@ -271,12 +277,14 @@ void ili9488_fill_rect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t 
     while (remaining > 0) {
         uint32_t chunk = remaining > DMA_BUF_PIXELS ? DMA_BUF_PIXELS : remaining;
         spi_transaction_t t = {
-            .length    = chunk * 24,   // 3 bytes * 8 bits
+            .length    = chunk * 24,
             .tx_buffer = s_dma_buf,
         };
         spi_device_polling_transmit(s_spi, &t);
         remaining -= chunk;
     }
+
+    xSemaphoreGiveRecursive(s_mutex);
 }
 
 void ili9488_fill(uint16_t color)
@@ -287,16 +295,19 @@ void ili9488_fill(uint16_t color)
 void ili9488_draw_pixel(uint16_t x, uint16_t y, uint16_t color)
 {
     if (x >= ILI9488_WIDTH || y >= ILI9488_HEIGHT) return;
+    xSemaphoreTakeRecursive(s_mutex, portMAX_DELAY);
     set_window(x, y, x, y);
     uint8_t r, g, b;
     rgb565_to_666(color, &r, &g, &b);
     uint8_t px[] = { r, g, b };
     send_bytes(px, 3);
+    xSemaphoreGiveRecursive(s_mutex);
 }
 
 void ili9488_draw_char(uint16_t x, uint16_t y, char c, uint16_t fg, uint16_t bg, uint8_t scale)
 {
     if (c < 32 || c > 126) c = ' ';
+    xSemaphoreTakeRecursive(s_mutex, portMAX_DELAY);
     const uint8_t *glyph = s_font5x7[(uint8_t)(c - 32)];
     for (uint8_t col = 0; col < 5; col++) {
         uint8_t bits = glyph[col];
@@ -306,16 +317,19 @@ void ili9488_draw_char(uint16_t x, uint16_t y, char c, uint16_t fg, uint16_t bg,
         }
     }
     ili9488_fill_rect(x + 5 * scale, y, scale, 7 * scale, bg);
+    xSemaphoreGiveRecursive(s_mutex);
 }
 
 void ili9488_draw_string(uint16_t x, uint16_t y, const char *str, uint16_t fg, uint16_t bg, uint8_t scale)
 {
     uint16_t cx = x;
+    xSemaphoreTakeRecursive(s_mutex, portMAX_DELAY);
     while (*str) {
         if (cx + 6 * scale > ILI9488_WIDTH) break;
         ili9488_draw_char(cx, y, *str++, fg, bg, scale);
         cx += 6 * scale;
     }
+    xSemaphoreGiveRecursive(s_mutex);
 }
 
 // ---------- Écran de test ----------

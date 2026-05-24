@@ -2,6 +2,7 @@
 #include "i2c_bus.h"
 #include "esp_log.h"
 #include "driver/i2s_std.h"
+#include "driver/gpio.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/semphr.h"
@@ -26,8 +27,8 @@
 #define CHUNK_SAMPLES   (SR * 20 / 1000)  // 20ms chunks — granularité interruption bg
 #define FADE_IN_S       (SR * 5  / 1000)  // 5ms  fade-in
 #define FADE_OUT_S      (SR * 12 / 1000)  // 12ms fade-out
-#define AMPLITUDE_FG    12000.0f          // foreground
-#define AMPLITUDE_BG     3500.0f          // background (discret)
+#define AMPLITUDE_FG     3000.0f          // foreground (bips touch, équilibré vs MP3 bg)
+#define AMPLITUDE_BG     1000.0f          // background tons synthétiques (fallback sans MP3)
 
 static i2s_chan_handle_t        s_tx       = NULL;
 static i2c_master_dev_handle_t  s_dac      = NULL;
@@ -141,13 +142,23 @@ static void bg_task_fn(void *arg)
             }
         }
 
-        // Gap en tranches pour réagir à s_fg_play rapidement
-        uint32_t gap = n->gap_ms;
-        while (gap > 0 && s_bg_run) {
-            if (s_fg_play) { vTaskDelay(pdMS_TO_TICKS(20)); gap = gap > 20 ? gap - 20 : 0; continue; }
-            uint32_t sl = gap < 50 ? gap : 50;
-            vTaskDelay(pdMS_TO_TICKS(sl));
-            gap -= sl;
+        // Gap : alimenter le DMA avec du silence (mutex obligatoire — même canal I2S)
+        uint32_t gap_ms = n->gap_ms;
+        while (gap_ms > 0 && s_bg_run) {
+            if (s_fg_play) {
+                vTaskDelay(pdMS_TO_TICKS(20));
+                gap_ms = gap_ms > 20 ? gap_ms - 20 : 0;
+                continue;
+            }
+            if (xSemaphoreTake(s_mutex, pdMS_TO_TICKS(30)) == pdTRUE) {
+                if (!s_fg_play) {
+                    size_t w;
+                    i2s_channel_write(s_tx, s_silence,
+                                      CHUNK_SAMPLES * 2 * sizeof(int16_t), &w, pdMS_TO_TICKS(30));
+                }
+                xSemaphoreGive(s_mutex);
+            }
+            gap_ms = gap_ms > 20 ? gap_ms - 20 : 0;
         }
 
         idx = (idx + 1) % s_bg_count;
@@ -160,27 +171,12 @@ static void bg_task_fn(void *arg)
 
 esp_err_t audio_init(i2c_master_bus_handle_t bus)
 {
-    i2c_device_config_t dev_cfg = {
-        .dev_addr_length = I2C_ADDR_BIT_LEN_7,
-        .device_address  = PCM5122_I2C_ADDR,
-        .scl_speed_hz    = I2C_BUS_FREQ,
-    };
-    ESP_ERROR_CHECK(i2c_master_bus_add_device(bus, &dev_cfg, &s_dac));
-
-    pcm_write(PCM5122_REG_PAGE,   0x00);
-    pcm_write(PCM5122_REG_RESET,  0x11);
-    vTaskDelay(pdMS_TO_TICKS(15));
-    pcm_write(PCM5122_REG_RESET,  0x00);
-    pcm_write(PCM5122_REG_POWER,  0x00);
-    pcm_write(PCM5122_REG_PLLSEL, 0x01);
-    pcm_write(PCM5122_REG_DACSEL, 0x10);
-    pcm_write(PCM5122_REG_IGNORE, 0x01);
-    pcm_write(PCM5122_REG_VOL_L,  0x78);
-    pcm_write(PCM5122_REG_VOL_R,  0x78);
-    pcm_write(PCM5122_REG_MUTE,   0x00);
-    ESP_LOGI(TAG, "PCM5122PW init");
-
+    // ── 1. I2S : slots 32-bit → BCLK = 44100×64 = 2.82 MHz
+    //    Le PCM5122 PLL multiplie ×4 (au lieu de ×8 en 16-bit slots) → moins de jitter
     i2s_chan_config_t chan_cfg = I2S_CHANNEL_DEFAULT_CONFIG(I2S_NUM_0, I2S_ROLE_MASTER);
+    chan_cfg.auto_clear    = true;
+    chan_cfg.dma_desc_num  = 8;
+    chan_cfg.dma_frame_num = 480;
     ESP_ERROR_CHECK(i2s_new_channel(&chan_cfg, &s_tx, NULL));
 
     i2s_std_config_t std_cfg = {
@@ -196,9 +192,76 @@ esp_err_t audio_init(i2c_master_bus_handle_t bus)
             .invert_flags = { .mclk_inv = false, .bclk_inv = false, .ws_inv = false },
         },
     };
+    // Forcer slot 32-bit : données 16-bit left-aligned + 16 zéros de padding
+    std_cfg.slot_cfg.slot_bit_width = I2S_SLOT_BIT_WIDTH_32BIT;
+    std_cfg.slot_cfg.ws_width       = 32;
+
     ESP_ERROR_CHECK(i2s_channel_init_std_mode(s_tx, &std_cfg));
     ESP_ERROR_CHECK(i2s_channel_enable(s_tx));
-    vTaskDelay(pdMS_TO_TICKS(200));
+
+    gpio_set_drive_capability(AUDIO_PIN_BCLK, GPIO_DRIVE_CAP_1);
+    gpio_set_drive_capability(AUDIO_PIN_LRCK, GPIO_DRIVE_CAP_1);
+    gpio_set_drive_capability(AUDIO_PIN_DOUT, GPIO_DRIVE_CAP_1);
+
+    vTaskDelay(pdMS_TO_TICKS(100));
+
+    // ── 1b. Scan I2C pour diagnostic PCM5122
+    ESP_LOGI(TAG, "I2C scan (plage 0x08-0x77) :");
+    for (uint8_t addr = 0x08; addr <= 0x77; addr++) {
+        if (i2c_master_probe(bus, addr, 50) == ESP_OK) {
+            ESP_LOGI(TAG, "  → device trouvé à 0x%02X", addr);
+        }
+    }
+
+    // ── 2. PCM5122
+    i2c_device_config_t dev_cfg = {
+        .dev_addr_length = I2C_ADDR_BIT_LEN_7,
+        .device_address  = PCM5122_I2C_ADDR,
+        .scl_speed_hz    = I2C_BUS_FREQ,
+    };
+    ESP_ERROR_CHECK(i2c_master_bus_add_device(bus, &dev_cfg, &s_dac));
+
+    // PCM5122 en mode I2C (MODE pins à GND) → config PLL complète obligatoire.
+    // BCLK = 44100×64 = 2,822,400 Hz. PLL cible = BCLK×16 = 45,158,400 Hz.
+    pcm_write(0x00, 0x00);   // Page 0
+    pcm_write(0x02, 0x10);   // Standby pendant config
+    pcm_write(0x25, 0x7B);   // Ignorer erreurs clock (SCK halt, detect, PLL unlock)
+    pcm_write(0x0D, 0x10);   // PLL source = BCK
+    pcm_write(0x0E, 0x10);   // DAC clock = PLL
+    pcm_write(0x04, 0x01);   // PLL enable
+    // PLL: 2,822,400 × 16 / 1 = 45,158,400 Hz (1024×fs)
+    pcm_write(0x14, 0x01);   // P = 1
+    pcm_write(0x15, 0x10);   // J = 16
+    pcm_write(0x16, 0x00);   // D[13:8] = 0
+    pcm_write(0x17, 0x00);   // D[7:0] = 0
+    pcm_write(0x18, 0x01);   // R = 1
+    // Dividers : PLL(45.16MHz) → DAC/DSP/NCP
+    pcm_write(0x1B, 0x01);   // DSP divider = 1 → 45.16 MHz
+    pcm_write(0x1C, 0x04);   // DAC divider = 4 → 11.29 MHz = 256×fs
+    pcm_write(0x1D, 0x04);   // NCP divider = 4 → 11.29 MHz
+    pcm_write(0x1E, 0x00);   // OSR = auto
+    // Filtre anti-artefact : ringing-less low latency FIR
+    pcm_write(0x2B, 0x07);   // DSP program 7 : pas de pre-ringing, transitions douces
+    pcm_write(0x3B, 0x00);   // Désactiver auto-mute (évite pops silence→audio)
+    pcm_write(0x3F, 0x70);   // Volume ramp : montée rapide, descente progressive
+    // Format I2S standard
+    pcm_write(0x28, 0x00);   // I2S format
+    // Volume hardware : -6 dB
+    pcm_write(0x3D, 0x3C);   // Vol L (0x30=0dB, +1 = -0.5dB)
+    pcm_write(0x3E, 0x3C);   // Vol R
+    pcm_write(0x03, 0x00);   // Unmute
+    pcm_write(0x02, 0x00);   // Exit standby → PLL lock sur BCK
+    vTaskDelay(pdMS_TO_TICKS(100));
+
+    // Vérification I2C : lire le registre volume pour confirmer que les écritures passent
+    uint8_t reg = PCM5122_REG_VOL_L;
+    uint8_t readback = 0;
+    esp_err_t err = i2c_master_transmit_receive(s_dac, &reg, 1, &readback, 1, 100);
+    if (err == ESP_OK) {
+        ESP_LOGI(TAG, "PCM5122 readback VOL_L=0x%02X (attendu 0x3C)", readback);
+    } else {
+        ESP_LOGW(TAG, "PCM5122 I2C readback FAILED: %s", esp_err_to_name(err));
+    }
 
     s_mutex = xSemaphoreCreateMutex();
     if (!s_mutex) return ESP_ERR_NO_MEM;
@@ -213,9 +276,11 @@ void audio_play_tone(uint16_t freq_hz, uint16_t dur_ms)
     s_fg_play = true;
     if (xSemaphoreTake(s_mutex, pdMS_TO_TICKS(500)) == pdTRUE) {
         write_tone_internal(freq_hz, dur_ms, false, AMPLITUDE_FG);
+        s_fg_play = false;  // clear avant release pour que bg ne reprenne pas entre les deux
         xSemaphoreGive(s_mutex);
+    } else {
+        s_fg_play = false;  // timeout : ne pas laisser le flag levé
     }
-    s_fg_play = false;
 }
 
 void audio_play_sequence(const uint16_t *freqs, const uint16_t *durs, int count, uint16_t gap_ms)
@@ -227,7 +292,6 @@ void audio_play_sequence(const uint16_t *freqs, const uint16_t *durs, int count,
             if (freqs[i] > 0)
                 write_tone_internal(freqs[i], durs[i], false, AMPLITUDE_FG);
             if (gap_ms > 0 && i < count - 1) {
-                // Silence inter-note via buffer statique
                 size_t gap_s = (size_t)SR * gap_ms / 1000;
                 size_t w;
                 while (gap_s > 0) {
@@ -237,9 +301,11 @@ void audio_play_sequence(const uint16_t *freqs, const uint16_t *durs, int count,
                 }
             }
         }
+        s_fg_play = false;
         xSemaphoreGive(s_mutex);
+    } else {
+        s_fg_play = false;
     }
-    s_fg_play = false;
 }
 
 esp_err_t audio_play_raw(const int16_t *samples, size_t num_samples, uint32_t sr)
@@ -258,7 +324,7 @@ esp_err_t audio_play_raw(const int16_t *samples, size_t num_samples, uint32_t sr
 void audio_set_volume(uint8_t vol_pct)
 {
     if (!s_dac) return;
-    uint8_t v = (uint8_t)((uint32_t)(vol_pct > 100 ? 100 : vol_pct) * 0x78 / 100);
+    uint8_t v = (uint8_t)((uint32_t)(vol_pct > 100 ? 100 : vol_pct) * 0xCF / 100);
     pcm_write(PCM5122_REG_VOL_L, v);
     pcm_write(PCM5122_REG_VOL_R, v);
 }
@@ -274,7 +340,7 @@ void audio_stop(void)
 
 // ── Musique de fond MP3 ───────────────────────────────────────────────────────
 
-#define MP3_BG_VOLUME   0.15f   // 15 % amplitude : discret, non-intrusif
+#define MP3_BG_VOLUME   0.08f   // ~8 % amplitude : -6dB vs avant, évite écrêtage ampli
 
 static const uint8_t *s_mp3_data = NULL;
 static size_t         s_mp3_size = 0;
@@ -294,11 +360,11 @@ static void bg_mp3_task_fn(void *arg)
         if (s_fg_play) { vTaskDelay(pdMS_TO_TICKS(20)); continue; }
 
         if (remaining < 4) {
-            // Fin de fichier → boucle
             mp3dec_init(&s_mp3_dec);
             ptr       = s_mp3_data;
             remaining = (int)s_mp3_size;
             ESP_LOGD(TAG, "MP3 loop");
+            taskYIELD();
             continue;
         }
 
@@ -310,12 +376,12 @@ static void bg_mp3_task_fn(void *arg)
             ptr       += info.frame_bytes;
             remaining -= info.frame_bytes;
         } else {
-            // Frame illisible : sauter 1 octet et continuer
             ptr++; remaining--;
+            taskYIELD();
             continue;
         }
 
-        if (samples <= 0) continue;
+        if (samples <= 0) { taskYIELD(); continue; }
 
         // Mono → stéréo entrelacé + réduction volume
         int out_s = samples * 2;
@@ -330,7 +396,7 @@ static void bg_mp3_task_fn(void *arg)
                 s_mp3_stereo[i] = (int16_t)(s_mp3_pcm[i] * MP3_BG_VOLUME);
         }
 
-        if (s_fg_play) continue;  // vérifie à nouveau avant d'écrire
+        if (s_fg_play) continue;
 
         if (xSemaphoreTake(s_mutex, pdMS_TO_TICKS(100)) == pdTRUE) {
             if (!s_fg_play) {
@@ -352,8 +418,9 @@ void audio_bg_mp3_start(const uint8_t *data, size_t size)
     s_mp3_data = data;
     s_mp3_size = size;
     s_bg_run   = true;
-    // Stack 10 KB : mp3dec_t (~2 KB) + frames + appel interne minimp3
-    xTaskCreate(bg_mp3_task_fn, "audio_bg_mp3", 10240, NULL, 3, &s_bg_task);
+    // Stack 24 KB : mp3dec_scratch_t alloué sur la pile de mp3dec_decode_frame = ~16 KB
+    // (grbuf[2][576]=4608 + syn[33][64]=8448 + maindata[2815] + reste) + overhead FreeRTOS
+    xTaskCreate(bg_mp3_task_fn, "audio_bg_mp3", 24576, NULL, 5, &s_bg_task);
     ESP_LOGI(TAG, "bg MP3 démarré (%u kB)", (unsigned)(size / 1024));
 }
 
@@ -364,7 +431,7 @@ void audio_bg_start(const audio_bg_note_t *notes, int count)
     s_bg_notes = notes;
     s_bg_count = count;
     s_bg_run   = true;
-    xTaskCreate(bg_task_fn, "audio_bg", 4096, NULL, 3, &s_bg_task);
+    xTaskCreate(bg_task_fn, "audio_bg", 4096, NULL, 5, &s_bg_task);
     ESP_LOGI(TAG, "bg music démarrée (%d notes)", count);
 }
 
