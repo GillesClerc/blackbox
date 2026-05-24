@@ -3,27 +3,33 @@
 #include "esp_err.h"
 #include "driver/i2c_master.h"
 
-// Pins I2S vers PCM5122PW (modifiables via menuconfig si besoin)
-#define AUDIO_PIN_BCLK    4   // ESP32-S3 DevKitC-1
+#define AUDIO_PIN_BCLK    4
 #define AUDIO_PIN_LRCK    5
 #define AUDIO_PIN_DOUT    6
-
-// Adresse I2C du PCM5122PW (ADR1=0, ADR2=0)
 #define PCM5122_I2C_ADDR 0x4C
 
-// Initialise le DAC PCM5122PW via I2C + le périphérique I2S master.
-// bus : handle du bus I2C partagé (initialisé par i2c_bus_init()).
 esp_err_t audio_init(i2c_master_bus_handle_t bus);
-
-// Joue des samples PCM 16-bit stéréo entrelacés (L, R, L, R...).
-// Bloquant jusqu'à la fin de la transmission.
 esp_err_t audio_play_raw(const int16_t *samples, size_t num_samples, uint32_t sample_rate_hz);
 
-// Génère un bip sinusoïdal (approx. carré) à la fréquence donnée.
+// Joue un bip sinusoïdal avec enveloppe (anti-crissement).
 void audio_play_tone(uint16_t freq_hz, uint16_t duration_ms);
 
-// Volume : 0 = muet, 100 = 0 dBFS nominal.
-void audio_set_volume(uint8_t vol_percent);
+// Joue une séquence de notes en une seule opération foreground (pas d'interruption bg entre notes).
+// gap_ms : silence entre chaque note.
+void audio_play_sequence(const uint16_t *freqs, const uint16_t *durs, int count, uint16_t gap_ms);
 
-// Coupe la sortie (mise en standby du DAC).
+void audio_set_volume(uint8_t vol_percent);
 void audio_stop(void);
+
+// ── Musique de fond ───────────────────────────────────────────────────────────
+// Note avec fréquence (0 = silence), durée et gap après.
+typedef struct {
+    uint16_t freq;
+    uint16_t dur_ms;
+    uint16_t gap_ms;
+} audio_bg_note_t;
+
+// Démarre une boucle de fond (tâche FreeRTOS distincte, priorité basse).
+// Les tones foreground interrompent proprement la boucle.
+void audio_bg_start(const audio_bg_note_t *notes, int count);
+void audio_bg_stop(void);

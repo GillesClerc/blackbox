@@ -2,7 +2,7 @@
   "meta": {
     "id": "capitaine_verdier",
     "title": "Le Mystère du Capitaine Verdier",
-    "version": "1.0",
+    "version": "1.1",
     "duration_min": 20,
     "players": "2-4"
   },
@@ -11,9 +11,9 @@
       "id": "intro",
       "type": "narrative",
       "do": [
-        {"screen_main": {"text": "1957. Le sous-marin\nVerdier disparait\nen mer du Nord..."}},
-        {"led": {"target": "all", "color": "#001F4D", "mode": "pulse"}},
-        {"audio": {"play": "intro_ambient"}}
+        {"audio": {"play": "intro_ambient"}},
+        {"screen_main": {"text": "1957.\n\nLe sous-marin VERDIER\ndisparait en mer du\nNord avec 42 hommes.\n\nSa balise de detresse\nvient de s'activer.\n\nVous avez 20 minutes."}},
+        {"led": {"target": "all", "color": "#001F4D", "mode": "pulse"}}
       ],
       "next": "intro2"
     },
@@ -21,7 +21,7 @@
       "id": "intro2",
       "type": "narrative",
       "do": [
-        {"screen_main": {"text": "Vous avez retrouve\nla balise de\ndetresse du bord."}}
+        {"screen_main": {"text": "MISSION\n\nTrois enigmes gardent\nles secrets du bord.\n\nETAPE 1/3\nPosez le medaillon\nVerdier sur la zone\nNFC de la box\npour vous identifier."}}
       ],
       "next": "attente_medallion"
     },
@@ -35,21 +35,21 @@
         {
           "delay_sec": 30,
           "do": [
-            {"screen_secondary": {"text": "Posez le medallion\nVerdier sur la\nsurface de la box"}}
+            {"screen_secondary": {"text": "Le medaillon Verdier\nest un disque laiton\ngrave aux armes\ndu capitaine."}}
           ]
         },
         {
           "delay_sec": 90,
           "do": [
-            {"screen_secondary": {"text": "Le medallion est\ndans l'enveloppe\ncamel..."}},
+            {"screen_secondary": {"text": "Le medaillon est\ndans l'enveloppe\ncamel ci-jointe."}},
             {"audio": {"play": "hint_medallion"}}
           ]
         }
       ],
       "do": [
         {"audio": {"play": "activation"}},
-        {"screen_main": {"text": "SIGNAL DETECTE !\n\nEpreuve 1 :\nLa Boussole"}},
-        {"led": {"target": "edges", "color": "#00AA88", "mode": "solid"}}
+        {"led": {"target": "all", "color": "#00AA88", "mode": "solid"}},
+        {"screen_main": {"text": "IDENTITE VERIFIEE\n\nENIGME 1 / 3\nLA BOUSSOLE\n\nLe VERDIER naviguait\nvers un cap secret.\nTournez la molette\njusqu'a la bonne\ndirection."}}
       ],
       "next": "cap_boussole"
     },
@@ -63,25 +63,25 @@
         {
           "delay_sec": 30,
           "do": [
-            {"screen_secondary": {"text": "Indice : le sous-\nmarin naviguait\nvers l'Ouest..."}}
+            {"screen_secondary": {"text": "Le dernier message\nradio parlait d'un\ncap vers l'Ouest."}}
           ]
         },
         {
           "delay_sec": 70,
           "do": [
-            {"screen_secondary": {"text": "L'Ouest = 270 degres"}},
+            {"screen_secondary": {"text": "Cap Ouest = 270\ndegres sur la rose\ndes vents."}},
             {"audio": {"play": "hint_compass"}}
           ]
         }
       ],
       "do_success": [
         {"audio": {"play": "correct"}},
-        {"led": {"target": "edges", "color": "#00FF88", "mode": "flash"}},
-        {"screen_main": {"text": "Cap 270 valide !\n\nEpreuve 2 :\nLe Code Secret"}}
+        {"led": {"target": "all", "color": "#00FF88", "mode": "flash"}},
+        {"screen_main": {"text": "CAP 270 VALIDE !\n\nENIGME 2 / 3\nLE CODE SECRET\n\nLe carnet de bord\ndu capitaine contient\nun code. Consultez-le\net entrez-le sur\nle clavier numerique."}}
       ],
       "do_fail": [
         {"audio": {"play": "wrong"}},
-        {"screen_secondary": {"text": "Pas ce cap..."}},
+        {"screen_secondary": {"text": "Mauvais cap.\nCherchez la direction\nde l'Ouest."}},
         {"incr_var": {"compass_fails": 1}}
       ],
       "next": "check_compass"
@@ -98,7 +98,7 @@
       "id": "hint_compass_force",
       "type": "narrative",
       "do": [
-        {"screen_secondary": {"text": "Le cap est :\n270 degres\n(plein Ouest)"}},
+        {"screen_secondary": {"text": "AIDE : le cap est\n270 degres\n(plein Ouest)."}},
         {"audio": {"play": "hint_compass_final"}},
         {"set_var": {"compass_fails": 0}}
       ],
@@ -114,25 +114,25 @@
         {
           "delay_sec": 45,
           "do": [
-            {"screen_secondary": {"text": "Indice : la date\ndu naufrage,\ninversee..."}}
+            {"screen_secondary": {"text": "Le code est cache\ndans le carnet.\nTrouvez la date du\nnaufrage... inversee."}}
           ]
         },
         {
           "delay_sec": 100,
           "do": [
-            {"screen_secondary": {"text": "Date du naufrage :\n4937 — inversez"}},
+            {"screen_secondary": {"text": "Date du naufrage :\n4 9 3 7\nInversee : 7 3 9 4"}},
             {"audio": {"play": "hint_code"}}
           ]
         }
       ],
       "do_success": [
         {"audio": {"play": "correct"}},
-        {"led": {"target": "all", "color": "#00FF88", "mode": "pulse"}},
-        {"screen_main": {"text": "Code 7394 valide !\n\nEpreuve 3 :\nL'Inclinaison"}}
+        {"led": {"target": "all", "color": "#0066FF", "mode": "pulse"}},
+        {"screen_main": {"text": "CODE 7394 ACCEPTE !\n\nENIGME 3 / 3\nL'INCLINAISON\n\nLe compartiment de\nsecours ne s'ouvre\nqu'a 15 degres\nd'inclinaison. Penchez\nla box vers l'avant."}}
       ],
       "do_fail": [
         {"audio": {"play": "wrong"}},
-        {"screen_secondary": {"text": "Code incorrect..."}},
+        {"screen_secondary": {"text": "Code incorrect.\nConsultez a nouveau\nle carnet de bord."}},
         {"incr_var": {"code_fails": 1}}
       ],
       "next": "check_code"
@@ -149,7 +149,7 @@
       "id": "hint_code_force",
       "type": "narrative",
       "do": [
-        {"screen_secondary": {"text": "Le code du journal\nde bord : 7394"}},
+        {"screen_secondary": {"text": "AIDE : le code est\n7 3 9 4"}},
         {"audio": {"play": "hint_code_final"}},
         {"set_var": {"code_fails": 0}}
       ],
@@ -165,25 +165,25 @@
         {
           "delay_sec": 25,
           "do": [
-            {"screen_secondary": {"text": "Inclinez la box\nvers l'avant : ~15"}}
+            {"screen_secondary": {"text": "Inclinez la box\nvers l'avant d'environ\n15 degres."}}
           ]
         },
         {
           "delay_sec": 65,
           "do": [
-            {"audio": {"play": "hint_tilt"}},
-            {"screen_secondary": {"text": "15 degres exactement"}}
+            {"screen_secondary": {"text": "15 degres exactement.\nTenez la position\nquelques secondes."}},
+            {"audio": {"play": "hint_tilt"}}
           ]
         }
       ],
       "do_success": [
         {"audio": {"play": "victoire"}},
-        {"servo": {"id": "main", "action": "open"}},
+        {"flash": {"color": "#FFD700", "count": 5}},
         {"led": {"target": "all", "color": "#FFD700", "mode": "cycle"}},
-        {"screen_main": {"text": "ACCES AUTORISE !\n\nLe compartiment\ns'ouvre..."}}
+        {"screen_main": {"text": "ACCES AUTORISE !\n\nLe compartiment\nsecret du VERDIER\ns'est ouvert.\n\nVous avez resolu\nle mystere du\nCapitaine Verdier !"}}
       ],
       "do_fail": [
-        {"screen_secondary": {"text": "Pas cette inclinaison"}}
+        {"screen_secondary": {"text": "Cette inclinaison\nn'est pas la bonne.\nEssayez encore."}}
       ],
       "next": "epilogue"
     },
@@ -191,7 +191,7 @@
       "id": "epilogue",
       "type": "narrative",
       "do": [
-        {"screen_main": {"text": "BRAVO !\n\nVous avez elucide\nle mystere du\nCapitaine Verdier"}},
+        {"screen_main": {"text": "MISSION ACCOMPLIE\n\nDans le compartiment\nvous trouvez le\ndernier journal chiffre\ndu capitaine.\n\nL'histoire du VERDIER\npeut enfin etre\nrevele au monde."}},
         {"led": {"target": "all", "color": "#FFD700", "mode": "cycle"}}
       ],
       "next": "end"
@@ -200,7 +200,7 @@
       "id": "end",
       "type": "end",
       "do": [
-        {"screen_main": {"text": "Merci d'avoir joue !\n\nA bientot..."}},
+        {"screen_main": {"text": "BRAVO !\n\nMerci d'avoir joue\na EscapeBox.\n\nVotre temps a ete\nenregistre."}},
         {"led": {"target": "all", "color": "#001F4D", "mode": "pulse"}}
       ]
     }
