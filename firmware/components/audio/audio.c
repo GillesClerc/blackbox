@@ -78,6 +78,7 @@ esp_err_t audio_init(i2c_master_bus_handle_t bus) {
     };
     ESP_ERROR_CHECK(i2s_channel_init_std_mode(s_tx, &std_cfg));
     ESP_ERROR_CHECK(i2s_channel_enable(s_tx));
+    vTaskDelay(pdMS_TO_TICKS(200));  // PLL lock PCM5122
     ESP_LOGI(TAG, "I2S démarré (BCLK=%d, LRCK=%d, DOUT=%d)",
              AUDIO_PIN_BCLK, AUDIO_PIN_LRCK, AUDIO_PIN_DOUT);
     return ESP_OK;
@@ -125,6 +126,7 @@ void audio_play_tone(uint16_t freq_hz, uint16_t duration_ms) {
         }
         size_t written;
         i2s_channel_write(s_tx, buf, n * 2 * sizeof(int16_t), &written, portMAX_DELAY);
+        vTaskDelay(1);  // yield watchdog entre chunks
         remaining -= n;
     }
     free(buf);
