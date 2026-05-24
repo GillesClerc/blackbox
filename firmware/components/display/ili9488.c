@@ -318,35 +318,6 @@ void ili9488_draw_string(uint16_t x, uint16_t y, const char *str, uint16_t fg, u
     }
 }
 
-// ---------- Image RGB565 ----------
-
-void ili9488_draw_image(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const uint16_t *data)
-{
-    set_window(x, y, x + w - 1, y + h - 1);
-
-    gpio_set_level(s_pin_dc, 1);
-    uint32_t total = (uint32_t)w * h;
-    uint32_t i = 0;
-
-    while (i < total) {
-        uint32_t chunk = (total - i) > DMA_BUF_PIXELS ? DMA_BUF_PIXELS : (total - i);
-
-        for (uint32_t j = 0; j < chunk; j++) {
-            uint16_t c = data[i + j];
-            s_dma_buf[j * 3]     = ((c >> 11) & 0x1F) << 3;
-            s_dma_buf[j * 3 + 1] = ((c >>  5) & 0x3F) << 2;
-            s_dma_buf[j * 3 + 2] = ( c        & 0x1F) << 3;
-        }
-
-        spi_transaction_t t = {
-            .length    = chunk * 24,
-            .tx_buffer = s_dma_buf,
-        };
-        spi_device_polling_transmit(s_spi, &t);
-        i += chunk;
-    }
-}
-
 // ---------- Écran de test ----------
 
 void ili9488_test_screen(void)

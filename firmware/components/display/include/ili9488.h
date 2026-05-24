@@ -30,5 +30,4 @@ void ili9488_fill_rect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t 
 void ili9488_draw_pixel(uint16_t x, uint16_t y, uint16_t color);
 void ili9488_draw_char(uint16_t x, uint16_t y, char c, uint16_t fg, uint16_t bg, uint8_t scale);
 void ili9488_draw_string(uint16_t x, uint16_t y, const char *str, uint16_t fg, uint16_t bg, uint8_t scale);
-void ili9488_draw_image(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const uint16_t *data);
 void ili9488_test_screen(void);
