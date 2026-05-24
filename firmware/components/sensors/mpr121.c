@@ -75,7 +75,8 @@ esp_err_t mpr121_read(mpr121_data_t *out)
     if (!s_dev) return ESP_ERR_INVALID_STATE;
 
     uint8_t buf[2];
-    ESP_ERROR_CHECK(i2c_bus_read_regs(s_dev, REG_TOUCH_STATUS_0, buf, 2));
+    esp_err_t ret = i2c_bus_read_regs(s_dev, REG_TOUCH_STATUS_0, buf, 2);
+    if (ret != ESP_OK) return ret;
 
     out->touched = (uint16_t)buf[0] | ((uint16_t)(buf[1] & 0x0F) << 8);
     for (int i = 0; i < MPR121_NUM_CH; i++) {
