@@ -4,9 +4,9 @@
 #include "driver/i2c_master.h"
 
 // Pins I2S vers PCM5122PW (modifiables via menuconfig si besoin)
-#define AUDIO_PIN_BCLK   26
-#define AUDIO_PIN_LRCK   25
-#define AUDIO_PIN_DOUT   27
+#define AUDIO_PIN_BCLK    4   // ESP32-S3 DevKitC-1
+#define AUDIO_PIN_LRCK    5
+#define AUDIO_PIN_DOUT    6
 
 // Adresse I2C du PCM5122PW (ADR1=0, ADR2=0)
 #define PCM5122_I2C_ADDR 0x4C

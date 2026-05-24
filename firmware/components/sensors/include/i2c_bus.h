@@ -4,7 +4,7 @@
 
 // Pins I2C partagées par tous les capteurs + audio DAC
 #define I2C_BUS_SDA  21
-#define I2C_BUS_SCL  22
+#define I2C_BUS_SCL  42   // GPIO22 absent sur DevKitC-1 — GPIO42 disponible
 #define I2C_BUS_FREQ 400000  // 400 kHz Fast Mode
 
 // Initialise le bus I2C master (à appeler une fois depuis app_main).
