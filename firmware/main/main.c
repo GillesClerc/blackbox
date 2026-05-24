@@ -6,13 +6,14 @@
 #include "i2c_bus.h"
 #include "audio.h"
 #include "mpr121.h"
+#include "leds.h"
 #include <stdio.h>
 
 #define TAG "main"
 
 // ─── Helpers affichage ──────────────────────────────────────────────────────
 
-static uint16_t s_screen_y = 4;  // curseur vertical courant
+static uint16_t s_screen_y = 4;
 
 static void screen_log(const char *msg, uint16_t color)
 {
@@ -26,72 +27,81 @@ static void screen_ok(const char *msg)  { screen_log(msg, COLOR_GREEN); }
 static void screen_err(const char *msg) { screen_log(msg, COLOR_RED);   }
 static void screen_info(const char *msg){ screen_log(msg, COLOR_CYAN);  }
 
-// ─── Test 1 : scan I2C affiché sur écran ────────────────────────────────────
+// ─── Test 1 : scan I2C ──────────────────────────────────────────────────────
 
-static bool s_pcm_found  = false;
-static bool s_mpr_found  = false;
+static bool s_mpr_found = false;
 
 static void test_i2c_scan(void)
 {
-    screen_info("Scan I2C...");
+    char line[32];
+    snprintf(line, sizeof(line), "I2C SDA=%d SCL=%d 100kHz", I2C_BUS_SDA, I2C_BUS_SCL);
+    screen_info(line);
+
+    int found = 0;
     i2c_master_bus_handle_t bus = i2c_bus_handle();
 
     for (uint8_t addr = 0x08; addr < 0x78; addr++) {
-        if (i2c_master_probe(bus, addr, pdMS_TO_TICKS(10)) != ESP_OK) continue;
-
-        char line[24];
-        if (addr == 0x4C) {
-            snprintf(line, sizeof(line), "  0x4C PCM5122 OK");
-            screen_ok(line);
-            s_pcm_found = true;
-        } else if (addr == 0x5A) {
-            snprintf(line, sizeof(line), "  0x5A MPR121  OK");
-            screen_ok(line);
-            s_mpr_found = true;
-        } else {
-            snprintf(line, sizeof(line), "  0x%02X inconnu", addr);
-            screen_info(line);
+        esp_err_t ret = i2c_master_probe(bus, addr, 20);  // 20ms, API dédiée probe
+        if (ret == ESP_OK) {
+            found++;
+            if (addr == 0x5A) {
+                screen_ok("0x5A MPR121 OK");
+                s_mpr_found = true;
+            } else {
+                snprintf(line, sizeof(line), "0x%02X trouve!", addr);
+                screen_info(line);
+            }
+            ESP_LOGI(TAG, "I2C found 0x%02X", addr);
         }
     }
 
-    if (!s_pcm_found) screen_err("  0x4C PCM5122 ABSENT");
-    if (!s_mpr_found) screen_err("  0x5A MPR121  ABSENT");
+    // Diagnostic ciblé 0x5A : afficher l'erreur brute si absent
+    if (!s_mpr_found) {
+        esp_err_t ret = i2c_master_probe(bus, 0x5A, 50);
+        snprintf(line, sizeof(line), "0x5A err:%s", esp_err_to_name(ret));
+        screen_err(line);
+        ESP_LOGE(TAG, "MPR121 probe: %s", esp_err_to_name(ret));
+    }
+
+    if (found == 0) {
+        screen_err("0 device - bus mort?");
+        // Tenter aussi les adresses autour de 0x5A (ADDR pin flottant?)
+        for (uint8_t a = 0x58; a <= 0x5D; a++) {
+            esp_err_t r = i2c_master_probe(bus, a, 50);
+            ESP_LOGI(TAG, "probe 0x%02X: %s", a, esp_err_to_name(r));
+            if (r == ESP_OK) {
+                snprintf(line, sizeof(line), "0x%02X REPOND!", a);
+                screen_ok(line);
+                found++;
+            }
+        }
+    }
 }
 
-// ─── Test 2 : audio ─────────────────────────────────────────────────────────
+// ─── Test 2 : audio I2S ─────────────────────────────────────────────────────
 
 static void test_audio(void)
 {
-    if (!s_pcm_found) {
-        screen_err("Audio skip: PCM5122 absent");
-        return;
-    }
-
+    screen_info("Audio I2S (hw mode)...");
     esp_err_t ret = audio_init(i2c_bus_handle());
     if (ret != ESP_OK) {
         screen_err("Audio init FAIL");
         return;
     }
-    screen_ok("Audio init OK");
-
-    screen_info("Lecture gamme...");
     static const uint16_t notes[] = { 262, 294, 330, 349, 392, 440, 494, 523, 0 };
     for (int i = 0; notes[i]; i++) {
         audio_play_tone(notes[i], 180);
-        vTaskDelay(pdMS_TO_TICKS(40));
+        vTaskDelay(pdMS_TO_TICKS(30));
     }
-    audio_play_tone(880, 80);
-    vTaskDelay(pdMS_TO_TICKS(60));
-    audio_play_tone(880, 80);
+    audio_play_tone(880, 100);
     screen_ok("Audio OK");
 }
 
-// ─── Test 3 : touch → écran ─────────────────────────────────────────────────
+// ─── Test 3 : touch ─────────────────────────────────────────────────────────
 
-#define TOUCH_OFFSET_Y  (s_screen_y + 10)
-#define GRID_COLS   4
-#define GRID_ROWS   3
-#define CELL_W      (ILI9488_WIDTH / GRID_COLS)   // 80
+#define GRID_COLS  4
+#define GRID_ROWS  3
+#define CELL_W     (ILI9488_WIDTH / GRID_COLS)
 
 static uint16_t s_grid_top;
 
@@ -104,10 +114,8 @@ static void draw_cell(int ch, bool touched)
     uint16_t y = s_grid_top + row * cell_h + 3;
     uint16_t w = CELL_W - 6;
     uint16_t h = cell_h - 6;
-
     uint16_t bg = touched ? COLOR_GREEN : 0x2124;
     ili9488_fill_rect(x, y, w, h, bg);
-
     char label[3];
     snprintf(label, sizeof(label), "%d", ch);
     uint16_t lw = (ch < 10) ? 12 : 24;
@@ -123,42 +131,31 @@ static void test_touch_task(void *arg)
         return;
     }
 
+    screen_info("MPR: init...");
     esp_err_t ret = mpr121_init(i2c_bus_handle());
     if (ret != ESP_OK) {
-        screen_err("MPR121 init FAIL");
+        char msg[32];
+        snprintf(msg, sizeof(msg), "MPR fail: %s", esp_err_to_name(ret));
+        screen_err(msg);
         vTaskDelete(NULL);
         return;
     }
-    screen_ok("MPR121 init OK");
-    vTaskDelay(pdMS_TO_TICKS(500));
+    screen_ok("MPR121 OK - touche!");
+    vTaskDelay(pdMS_TO_TICKS(400));
 
-    // Barre de titre grille
-    s_grid_top = s_screen_y + 4;
-    ili9488_fill_rect(0, s_screen_y, ILI9488_WIDTH, 20, 0x000F);
-    ili9488_draw_string(4, s_screen_y + 3, "TOUCH — appuie sur les pads",
-                        COLOR_CYAN, 0x000F, 1);
-    s_screen_y += 22;
     s_grid_top = s_screen_y;
-
     for (int i = 0; i < MPR121_NUM_CH; i++) draw_cell(i, false);
 
     mpr121_data_t prev = {0}, curr;
-
     while (1) {
         ret = mpr121_read(&curr);
-        if (ret == ESP_OK) {
-            if (curr.touched != prev.touched) {
-                for (int i = 0; i < MPR121_NUM_CH; i++) {
-                    if (curr.ch[i] != prev.ch[i])
-                        draw_cell(i, curr.ch[i]);
-                }
-                if (curr.touched && s_pcm_found)
-                    audio_play_tone(660, 50);
-                ESP_LOGI(TAG, "touch 0x%03X", curr.touched);
-                prev = curr;
+        if (ret == ESP_OK && curr.touched != prev.touched) {
+            for (int i = 0; i < MPR121_NUM_CH; i++) {
+                if (curr.ch[i] != prev.ch[i]) draw_cell(i, curr.ch[i]);
             }
-        } else {
-            ESP_LOGW(TAG, "mpr121_read err %s", esp_err_to_name(ret));
+            if (curr.touched) audio_play_tone(660, 40);
+            ESP_LOGI(TAG, "touch 0x%03X", curr.touched);
+            prev = curr;
         }
         vTaskDelay(pdMS_TO_TICKS(20));
     }
@@ -168,16 +165,19 @@ static void test_touch_task(void *arg)
 
 void app_main(void)
 {
+    // Éteindre la LED RGB intégrée (GPIO38) dès le boot
+    leds_init(38, 1);
+    leds_clear();
+    leds_show();
+
     ESP_ERROR_CHECK(ili9488_init());
     ili9488_fill(COLOR_BLACK);
-
     screen_info("EscapeBox S3 boot");
     vTaskDelay(pdMS_TO_TICKS(200));
 
     ESP_ERROR_CHECK(i2c_bus_init());
-
     test_i2c_scan();
-    vTaskDelay(pdMS_TO_TICKS(400));
+    vTaskDelay(pdMS_TO_TICKS(300));
 
     test_audio();
     vTaskDelay(pdMS_TO_TICKS(300));

@@ -27,7 +27,7 @@ static i2c_master_dev_handle_t s_dev = NULL;
 static esp_err_t write_reg(uint8_t reg, uint8_t val)
 {
     uint8_t buf[2] = { reg, val };
-    return i2c_master_transmit(s_dev, buf, 2, pdMS_TO_TICKS(10));
+    return i2c_master_transmit(s_dev, buf, 2, 100);
 }
 
 esp_err_t mpr121_init(i2c_master_bus_handle_t bus)
@@ -35,35 +35,32 @@ esp_err_t mpr121_init(i2c_master_bus_handle_t bus)
     i2c_device_config_t dev_cfg = {
         .dev_addr_length = I2C_ADDR_BIT_LEN_7,
         .device_address  = MPR121_ADDR,
-        .scl_speed_hz    = 400000,
+        .scl_speed_hz    = I2C_BUS_FREQ,
     };
     ESP_ERROR_CHECK(i2c_master_bus_add_device(bus, &dev_cfg, &s_dev));
 
-    // Soft reset
-    ESP_ERROR_CHECK(write_reg(REG_SRST, 0x63));
+#define WR(r, v) do { esp_err_t e = write_reg((r),(v)); if (e != ESP_OK) return e; } while(0)
+
+    WR(REG_SRST, 0x63);
     vTaskDelay(pdMS_TO_TICKS(10));
 
-    // Arrêter le scanning avant config (ECR=0x00)
-    ESP_ERROR_CHECK(write_reg(REG_ECR, 0x00));
+    WR(REG_ECR, 0x00);
+    WR(REG_MHD_RISING,  0x01);
+    WR(REG_NHD_RISING,  0x01);
+    WR(REG_NCL_RISING,  0x0E);
+    WR(REG_FDL_RISING,  0x00);
+    WR(REG_MHD_FALLING, 0x01);
+    WR(REG_NHD_FALLING, 0x05);
+    WR(REG_NCL_FALLING, 0x01);
+    WR(REG_FDL_FALLING, 0x00);
 
-    // Baseline tracking (valeurs standard NXP)
-    ESP_ERROR_CHECK(write_reg(REG_MHD_RISING,  0x01));
-    ESP_ERROR_CHECK(write_reg(REG_NHD_RISING,  0x01));
-    ESP_ERROR_CHECK(write_reg(REG_NCL_RISING,  0x0E));
-    ESP_ERROR_CHECK(write_reg(REG_FDL_RISING,  0x00));
-    ESP_ERROR_CHECK(write_reg(REG_MHD_FALLING, 0x01));
-    ESP_ERROR_CHECK(write_reg(REG_NHD_FALLING, 0x05));
-    ESP_ERROR_CHECK(write_reg(REG_NCL_FALLING, 0x01));
-    ESP_ERROR_CHECK(write_reg(REG_FDL_FALLING, 0x00));
-
-    // Seuils touch/release pour les 12 électrodes
     for (int i = 0; i < MPR121_NUM_CH; i++) {
-        ESP_ERROR_CHECK(write_reg(REG_ELE0_TOUCH_TH   + 2 * i, MPR121_TOUCH_TH));
-        ESP_ERROR_CHECK(write_reg(REG_ELE0_RELEASE_TH + 2 * i, MPR121_RELEASE_TH));
+        WR(REG_ELE0_TOUCH_TH   + 2 * i, MPR121_TOUCH_TH);
+        WR(REG_ELE0_RELEASE_TH + 2 * i, MPR121_RELEASE_TH);
     }
 
-    // Activer 12 électrodes + baseline tracking depuis valeur initiale (CL=10)
-    ESP_ERROR_CHECK(write_reg(REG_ECR, 0x8C));
+    WR(REG_ECR, 0x8C);
+#undef WR
 
     ESP_LOGI(TAG, "MPR121 initialisé (%d canaux, seuils touch=%d release=%d)",
              MPR121_NUM_CH, MPR121_TOUCH_TH, MPR121_RELEASE_TH);

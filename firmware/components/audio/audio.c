@@ -1,4 +1,5 @@
 #include "audio.h"
+#include "i2c_bus.h"
 #include "esp_log.h"
 #include "driver/i2s_std.h"
 #include "freertos/FreeRTOS.h"
@@ -41,7 +42,7 @@ esp_err_t audio_init(i2c_master_bus_handle_t bus) {
     i2c_device_config_t dev_cfg = {
         .dev_addr_length = I2C_ADDR_BIT_LEN_7,
         .device_address  = PCM5122_I2C_ADDR,
-        .scl_speed_hz    = 400000,
+        .scl_speed_hz    = I2C_BUS_FREQ,
     };
     ESP_ERROR_CHECK(i2c_master_bus_add_device(bus, &dev_cfg, &s_dac));
 
@@ -126,9 +127,13 @@ void audio_play_tone(uint16_t freq_hz, uint16_t duration_ms) {
         }
         size_t written;
         i2s_channel_write(s_tx, buf, n * 2 * sizeof(int16_t), &written, portMAX_DELAY);
-        vTaskDelay(1);  // yield watchdog entre chunks
+        vTaskDelay(1);
         remaining -= n;
     }
+    // Silence pour éviter le crunch à la fin (coupure abrupte DMA → zéros)
+    memset(buf, 0, chunk * 2 * sizeof(int16_t));
+    size_t written;
+    i2s_channel_write(s_tx, buf, chunk * 2 * sizeof(int16_t), &written, portMAX_DELAY);
     free(buf);
 }
 
@@ -142,7 +147,8 @@ void audio_set_volume(uint8_t vol_percent) {
 }
 
 void audio_stop(void) {
-    if (!s_dac) return;
-    pcm_write(PCM5122_REG_MUTE, 0x11);   // mute L + R
-    pcm_write(PCM5122_REG_POWER, 0x10);  // standby
+    if (s_dac) {
+        pcm_write(PCM5122_REG_MUTE, 0x11);
+        pcm_write(PCM5122_REG_POWER, 0x10);
+    }
 }

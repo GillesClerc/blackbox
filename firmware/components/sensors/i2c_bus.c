@@ -34,13 +34,13 @@ i2c_master_bus_handle_t i2c_bus_handle(void) {
 
 esp_err_t i2c_bus_write_reg(i2c_master_dev_handle_t dev, uint8_t reg, uint8_t val) {
     uint8_t buf[2] = { reg, val };
-    return i2c_master_transmit(dev, buf, 2, pdMS_TO_TICKS(100));
+    return i2c_master_transmit(dev, buf, 2, 100);
 }
 
 esp_err_t i2c_bus_read_reg(i2c_master_dev_handle_t dev, uint8_t reg, uint8_t *out) {
-    return i2c_master_transmit_receive(dev, &reg, 1, out, 1, pdMS_TO_TICKS(100));
+    return i2c_master_transmit_receive(dev, &reg, 1, out, 1, 100);
 }
 
 esp_err_t i2c_bus_read_regs(i2c_master_dev_handle_t dev, uint8_t reg, uint8_t *buf, size_t len) {
-    return i2c_master_transmit_receive(dev, &reg, 1, buf, len, pdMS_TO_TICKS(100));
+    return i2c_master_transmit_receive(dev, &reg, 1, buf, len, 100);
 }

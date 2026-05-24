@@ -4,7 +4,7 @@
 
 // Pins I2C partagées par tous les capteurs + audio DAC
 #define I2C_BUS_SDA  21
-#define I2C_BUS_SCL  42   // GPIO22 absent sur DevKitC-1 — GPIO42 disponible
+#define I2C_BUS_SCL  17   // GPIO38=LED, GPIO42=JTAG, GPIO16=WS2812 — GPIO17 libre
 #define I2C_BUS_FREQ 100000  // 100 kHz — stable sur breadboard (400kHz KO)
 
 // Initialise le bus I2C master (à appeler une fois depuis app_main).
