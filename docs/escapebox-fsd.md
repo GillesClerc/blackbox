@@ -136,7 +136,7 @@ Scores et stats remontés à la prochaine synchro
 
 #### 2.2.1 SoC principal
 
-**ESP32-S3-DevKitC-1-N8R8** (proto) → **ESP32-S3-WROOM-1-N16R8** (série)
+ **ESP32-S3-DevKitC-1** (proto) **ESP32-S3-WROOM-1-N16R8** (série)
 
 #### 2.2.2 Capteurs et actionneurs
 
@@ -264,7 +264,9 @@ Prochaine énigme débloquée
 
 **Proto Phase 1** : ESP32-S3-DevKitC-1 sur headers femelles + PCB capteurs.
 
-**Proto Phase 2** : Module WROOM-1-N16R8 soudé directement sur PCB custom tout-en-un, PCBA par JLCPCB.
+**Proto Phase 2** : Module WROOM-1-N16R8 sur breadboard avec cable enterconnecté avec les devices pour débug.
+
+**Proto Phase 3** : Module WROOM-1-N16R8 soudé directement sur PCB custom tout-en-un, PCBA par JLCPCB.
 
 **Architecture PCB interne** :
 
@@ -276,6 +278,7 @@ Un bus backbone JST court le long de la structure interne de la box. Chaque PCB 
 Avantages : assemblage sans soudure volante, remplacement/upgrade d'une face sans toucher au reste, câblage propre et maintenable en production.
 
 **Boîtier** :
+- Phase proto : Imprimé en 3D
 - Phase 1 : MDF découpé laser + peinture noire + détails laiton minimal (Lite)
 - Phase 2 : Bois massif (noyer/chêne) + ardoise composite + laiton brossé + plateau rotatif avec roulement à billes 100-150mm + AS5600 + aimant néodyme diamétral(Pro)
 
@@ -648,7 +651,7 @@ M2 → M3   : intégration complète + playtests
 **Objectif :** Valider que le hardware fonctionne et que les gens veulent jouer
 
 **Hardware :**
-- [ ] ESP32-S3-DevKitC-1 + Joy-iT TFT 1.8" → valider affichage
+- [ ] ESP32-S3-WROOM-1-N16R8 + écran → valider affichage
 - [ ] Cabler microphone MEMS i2s -> valider le micro
 - [ ] Câbler PN532 breakout → valider NFC
 - [ ] Câbler MTCH2120 → valider keypad capacitif
@@ -671,7 +674,7 @@ M2 → M3   : intégration complète + playtests
 - [x] Driver servos SG90 MCPWM (écrit — tester sur ESP32-S3 uniquement, GPIO1/2 incompatibles Lolin)
 - [x] Système de fichiers SD SPI+FAT (écrit — validation hardware en attente)
 - [x] Driver ST7735 1.8" SPI DMA 40MHz (validé dev board)
-- [ ] Driver ILI9488 4" SPI (LVGL ou esp_lcd — cible Phase 1 cube)
+- [ ] Driver ILI9488 4" SPI (LVGL ou esp_lcd, à valider )
 - [ ] Driver audio MP3 playback (ESP-ADF submodule ou minimp3 natif)
 
 **Web Platform :**
