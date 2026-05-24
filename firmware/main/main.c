@@ -1,186 +1,362 @@
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#include "driver/i2c_master.h"
 #include "ili9488.h"
 #include "i2c_bus.h"
 #include "audio.h"
 #include "mpr121.h"
 #include "leds.h"
+#include "scenario_engine.h"
+#include "cJSON.h"
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 
 #define TAG "main"
 
-// ─── Helpers affichage ──────────────────────────────────────────────────────
+// JSON scénario embarqué (généré par la directive EMBED_TXTFILES du CMakeLists)
+extern const char capitaine_verdier_json_start[] asm("_binary_capitaine_verdier_json_start");
+extern const char capitaine_verdier_json_end[]   asm("_binary_capitaine_verdier_json_end");
 
-static uint16_t s_screen_y = 4;
+// ─── Layout écran ────────────────────────────────────────────────────────────
+//
+//  y=0    ┌──────────────────────────────┐
+//         │ barre de statut (22px)       │
+//  y=22   ├──────────────────────────────┤
+//         │                              │
+//         │  zone narrative principale   │
+//         │  (22..340, scale=2, wrap 26) │
+//         │                              │
+//  y=340  ├──────────────────────────────┤
+//         │  zone secondaire / hint      │
+//         │  (340..460, scale=2)         │
+//  y=460  ├──────────────────────────────┤
+//         │  zone saisie clavier (460..) │
+//  y=480  └──────────────────────────────┘
 
-static void screen_log(const char *msg, uint16_t color)
+#define Y_STATUS    0
+#define H_STATUS   22
+#define Y_MAIN     22
+#define H_MAIN    318
+#define Y_SECONDARY 340
+#define H_SECONDARY 120
+#define Y_KEYPAD    460
+#define H_KEYPAD     20
+
+// ─── LED helpers ─────────────────────────────────────────────────────────────
+
+static void led_set_hex(const char *hex_color)
 {
-    ili9488_fill_rect(0, s_screen_y, ILI9488_WIDTH, 18, COLOR_BLACK);
-    ili9488_draw_string(4, s_screen_y, msg, color, COLOR_BLACK, 2);
-    s_screen_y += 20;
-    ESP_LOGI(TAG, "%s", msg);
+    if (!hex_color || hex_color[0] != '#' || strlen(hex_color) < 7) {
+        leds_clear();
+    } else {
+        // Luminosité réduite pour le dev (LED RGB intégrée très brillante)
+        leds_fill_hex(hex_color, 32);
+    }
+    leds_show();
 }
 
-static void screen_ok(const char *msg)  { screen_log(msg, COLOR_GREEN); }
-static void screen_err(const char *msg) { screen_log(msg, COLOR_RED);   }
-static void screen_info(const char *msg){ screen_log(msg, COLOR_CYAN);  }
+// ─── Affichage helpers ───────────────────────────────────────────────────────
 
-// ─── Test 1 : scan I2C ──────────────────────────────────────────────────────
-
-static bool s_mpr_found = false;
-
-static void test_i2c_scan(void)
+static void draw_status(const char *step_id)
 {
-    char line[32];
-    snprintf(line, sizeof(line), "I2C SDA=%d SCL=%d 100kHz", I2C_BUS_SDA, I2C_BUS_SCL);
-    screen_info(line);
+    ili9488_fill_rect(0, Y_STATUS, ILI9488_WIDTH, H_STATUS, 0x2945);
+    char buf[40];
+    snprintf(buf, sizeof(buf), "EscapeBox > %s", step_id ? step_id : "...");
+    ili9488_draw_string(4, Y_STATUS + 3, buf, COLOR_CYAN, 0x2945, 1);
+}
 
-    int found = 0;
-    i2c_master_bus_handle_t bus = i2c_bus_handle();
+static void draw_main_text(const char *text)
+{
+    ili9488_fill_rect(0, Y_MAIN, ILI9488_WIDTH, H_MAIN, COLOR_BLACK);
+    if (!text) return;
+    // Découpe les '\n' et affiche ligne par ligne (scale=2 → 16px/ligne + 4px)
+    char buf[128];
+    strncpy(buf, text, sizeof(buf) - 1);
+    buf[sizeof(buf) - 1] = '\0';
+    uint16_t y = Y_MAIN + 8;
+    char *line = strtok(buf, "\n");
+    while (line && y < Y_SECONDARY - 20) {
+        ili9488_draw_string(8, y, line, COLOR_WHITE, COLOR_BLACK, 2);
+        y += 22;
+        line = strtok(NULL, "\n");
+    }
+}
 
-    for (uint8_t addr = 0x08; addr < 0x78; addr++) {
-        esp_err_t ret = i2c_master_probe(bus, addr, 20);  // 20ms, API dédiée probe
-        if (ret == ESP_OK) {
-            found++;
-            if (addr == 0x5A) {
-                screen_ok("0x5A MPR121 OK");
-                s_mpr_found = true;
-            } else {
-                snprintf(line, sizeof(line), "0x%02X trouve!", addr);
-                screen_info(line);
+static void draw_secondary_text(const char *text)
+{
+    ili9488_fill_rect(0, Y_SECONDARY, ILI9488_WIDTH, H_SECONDARY, 0x0820);
+    if (!text) return;
+    char buf[128];
+    strncpy(buf, text, sizeof(buf) - 1);
+    buf[sizeof(buf) - 1] = '\0';
+    uint16_t y = Y_SECONDARY + 6;
+    char *line = strtok(buf, "\n");
+    while (line && y < Y_KEYPAD - 18) {
+        ili9488_draw_string(8, y, line, COLOR_YELLOW, 0x0820, 2);
+        y += 22;
+        line = strtok(NULL, "\n");
+    }
+}
+
+static void draw_keypad_input(const char *code, int len)
+{
+    ili9488_fill_rect(0, Y_KEYPAD, ILI9488_WIDTH, H_KEYPAD, COLOR_BLACK);
+    if (len == 0) return;
+    // Affiche les chiffres saisis sous forme de tirets puis chiffres
+    char display[32] = "> ";
+    for (int i = 0; i < len && i < 16; i++) {
+        char c[2] = { code[i], '\0' };
+        strcat(display, c);
+    }
+    ili9488_draw_string(4, Y_KEYPAD + 2, display, COLOR_GREEN, COLOR_BLACK, 2);
+}
+
+// ─── Mapping audio play → fréquence/durée ────────────────────────────────────
+
+typedef struct { const char *name; uint16_t freq; uint16_t dur_ms; } tone_map_t;
+
+static void play_audio(const char *play_name)
+{
+    static const tone_map_t tones[] = {
+        {"intro_ambient",      220, 800},
+        {"activation",         523, 200},
+        {"correct",            659, 150},
+        {"wrong",              147, 400},
+        {"victoire",           784, 500},
+        {"hint_medallion",     330, 300},
+        {"hint_compass",       370, 300},
+        {"hint_compass_final", 392, 400},
+        {"hint_code",          349, 300},
+        {"hint_code_final",    392, 400},
+        {"hint_tilt",          415, 300},
+        {NULL, 0, 0}
+    };
+
+    for (int i = 0; tones[i].name; i++) {
+        if (strcmp(play_name, tones[i].name) == 0) {
+            audio_play_tone(tones[i].freq, tones[i].dur_ms);
+            if (strcmp(play_name, "correct") == 0) {
+                vTaskDelay(pdMS_TO_TICKS(80));
+                audio_play_tone(784, 150);
+                vTaskDelay(pdMS_TO_TICKS(80));
+                audio_play_tone(1047, 300);
+            } else if (strcmp(play_name, "victoire") == 0) {
+                vTaskDelay(pdMS_TO_TICKS(100));
+                audio_play_tone(988, 200);
+                vTaskDelay(pdMS_TO_TICKS(100));
+                audio_play_tone(1175, 500);
             }
-            ESP_LOGI(TAG, "I2C found 0x%02X", addr);
+            return;
         }
     }
+    // Tone générique pour les noms inconnus
+    audio_play_tone(440, 150);
+}
 
-    // Diagnostic ciblé 0x5A : afficher l'erreur brute si absent
-    if (!s_mpr_found) {
-        esp_err_t ret = i2c_master_probe(bus, 0x5A, 50);
-        snprintf(line, sizeof(line), "0x5A err:%s", esp_err_to_name(ret));
-        screen_err(line);
-        ESP_LOGE(TAG, "MPR121 probe: %s", esp_err_to_name(ret));
-    }
+// ─── Callbacks actions scénario ───────────────────────────────────────────────
 
-    if (found == 0) {
-        screen_err("0 device - bus mort?");
-        // Tenter aussi les adresses autour de 0x5A (ADDR pin flottant?)
-        for (uint8_t a = 0x58; a <= 0x5D; a++) {
-            esp_err_t r = i2c_master_probe(bus, a, 50);
-            ESP_LOGI(TAG, "probe 0x%02X: %s", a, esp_err_to_name(r));
-            if (r == ESP_OK) {
-                snprintf(line, sizeof(line), "0x%02X REPOND!", a);
-                screen_ok(line);
-                found++;
-            }
-        }
+static void action_screen_main(const char *name, const cJSON *params)
+{
+    (void)name;
+    const cJSON *text = cJSON_GetObjectItem(params, "text");
+    draw_main_text(text ? text->valuestring : NULL);
+    draw_status(scenario_engine_current_step());
+}
+
+static void action_screen_secondary(const char *name, const cJSON *params)
+{
+    (void)name;
+    const cJSON *text = cJSON_GetObjectItem(params, "text");
+    draw_secondary_text(text ? text->valuestring : NULL);
+}
+
+static void action_led(const char *name, const cJSON *params)
+{
+    (void)name;
+    const cJSON *color = cJSON_GetObjectItem(params, "color");
+    led_set_hex(color ? color->valuestring : NULL);
+}
+
+static void action_audio(const char *name, const cJSON *params)
+{
+    (void)name;
+    const cJSON *play = cJSON_GetObjectItem(params, "play");
+    if (play && play->valuestring) play_audio(play->valuestring);
+}
+
+static void action_servo(const char *name, const cJSON *params)
+{
+    (void)name; (void)params;
+    // Servo absent Phase 1 — log seulement
+    ESP_LOGI(TAG, "servo action (Phase 2)");
+}
+
+static void action_set_var(const char *name, const cJSON *params)
+{
+    (void)name;
+    cJSON *item = params ? params->child : NULL;
+    while (item) {
+        scenario_var_set(item->string, cJSON_IsNumber(item)
+            ? (char[]){0} : item->valuestring);
+        if (cJSON_IsNumber(item)) scenario_var_set_int(item->string, (int)item->valuedouble);
+        item = item->next;
     }
 }
 
-// ─── Test 2 : audio I2S ─────────────────────────────────────────────────────
-
-static void test_audio(void)
+static void action_incr_var(const char *name, const cJSON *params)
 {
-    screen_info("Audio I2S (hw mode)...");
-    esp_err_t ret = audio_init(i2c_bus_handle());
-    if (ret != ESP_OK) {
-        screen_err("Audio init FAIL");
-        return;
+    (void)name;
+    cJSON *item = params ? params->child : NULL;
+    while (item) {
+        int cur = scenario_var_get_int(item->string, 0);
+        scenario_var_set_int(item->string, cur + (int)item->valuedouble);
+        item = item->next;
     }
-    static const uint16_t notes[] = { 262, 294, 330, 349, 392, 440, 494, 523, 0 };
-    for (int i = 0; notes[i]; i++) {
-        audio_play_tone(notes[i], 180);
-        vTaskDelay(pdMS_TO_TICKS(30));
-    }
-    audio_play_tone(880, 100);
-    screen_ok("Audio OK");
 }
 
-// ─── Test 3 : touch ─────────────────────────────────────────────────────────
+// ─── Tâche clavier MPR121 ────────────────────────────────────────────────────
+//
+// Mapping 12 canaux :
+//   0-9  → chiffres 0-9
+//   10   → backspace  (maintenu 2s → simule rotary_value 270°)
+//   11   → confirmer  (maintenu 2s → simule rfid_read "04:VE:RD:01")
+//   9    →            (maintenu 2s → simule accel_tilt 15°)
 
-#define GRID_COLS  4
-#define GRID_ROWS  3
-#define CELL_W     (ILI9488_WIDTH / GRID_COLS)
+#define HOLD_TICKS   pdMS_TO_TICKS(2000)
 
-static uint16_t s_grid_top;
+static char  s_code[16];
+static int   s_code_len = 0;
 
-static void draw_cell(int ch, bool touched)
+static void touch_task(void *arg)
 {
-    uint16_t cell_h = (ILI9488_HEIGHT - s_grid_top) / GRID_ROWS;
-    int col = ch % GRID_COLS;
-    int row = ch / GRID_COLS;
-    uint16_t x = col * CELL_W + 3;
-    uint16_t y = s_grid_top + row * cell_h + 3;
-    uint16_t w = CELL_W - 6;
-    uint16_t h = cell_h - 6;
-    uint16_t bg = touched ? COLOR_GREEN : 0x2124;
-    ili9488_fill_rect(x, y, w, h, bg);
-    char label[3];
-    snprintf(label, sizeof(label), "%d", ch);
-    uint16_t lw = (ch < 10) ? 12 : 24;
-    ili9488_draw_string(x + (w - lw) / 2, y + (h - 14) / 2,
-                        label, COLOR_WHITE, bg, 2);
-}
-
-static void test_touch_task(void *arg)
-{
-    if (!s_mpr_found) {
-        screen_err("Touch skip: MPR121 absent");
-        vTaskDelete(NULL);
-        return;
-    }
-
-    screen_info("MPR: init...");
     esp_err_t ret = mpr121_init(i2c_bus_handle());
     if (ret != ESP_OK) {
-        char msg[32];
-        snprintf(msg, sizeof(msg), "MPR fail: %s", esp_err_to_name(ret));
-        screen_err(msg);
+        ESP_LOGW(TAG, "MPR121 absent: %s", esp_err_to_name(ret));
         vTaskDelete(NULL);
         return;
     }
-    screen_ok("MPR121 OK - touche!");
-    vTaskDelay(pdMS_TO_TICKS(400));
-
-    s_grid_top = s_screen_y;
-    for (int i = 0; i < MPR121_NUM_CH; i++) draw_cell(i, false);
+    ESP_LOGI(TAG, "MPR121 prêt");
 
     mpr121_data_t prev = {0}, curr;
+    // hold_start[ch] = tick de début du maintien (0 si non maintenu)
+    TickType_t hold_start[MPR121_NUM_CH] = {0};
+    bool       hold_fired[MPR121_NUM_CH] = {false};
+
     while (1) {
         ret = mpr121_read(&curr);
-        if (ret == ESP_OK && curr.touched != prev.touched) {
-            for (int i = 0; i < MPR121_NUM_CH; i++) {
-                if (curr.ch[i] != prev.ch[i]) draw_cell(i, curr.ch[i]);
+        if (ret != ESP_OK) { vTaskDelay(pdMS_TO_TICKS(50)); continue; }
+
+        TickType_t now = xTaskGetTickCount();
+
+        for (int i = 0; i < MPR121_NUM_CH; i++) {
+            if (curr.ch[i] && !prev.ch[i]) {
+                // Front montant
+                hold_start[i] = now;
+                hold_fired[i] = false;
+            } else if (!curr.ch[i] && prev.ch[i]) {
+                // Front descendant — action si pas de hold
+                if (!hold_fired[i]) {
+                    if (i >= 0 && i <= 9) {
+                        // Chiffre
+                        if (s_code_len < (int)(sizeof(s_code) - 1)) {
+                            s_code[s_code_len++] = '0' + i;
+                            s_code[s_code_len] = '\0';
+                            draw_keypad_input(s_code, s_code_len);
+                            audio_play_tone(880 + i * 50, 40);
+                        }
+                    } else if (i == 10) {
+                        // Backspace
+                        if (s_code_len > 0) {
+                            s_code[--s_code_len] = '\0';
+                            draw_keypad_input(s_code, s_code_len);
+                            audio_play_tone(400, 60);
+                        }
+                    } else if (i == 11) {
+                        // Confirmer → poster keypad_code
+                        if (s_code_len > 0) {
+                            scenario_event_t evt = { .type = EVT_KEYPAD_CODE };
+                            strncpy(evt.str, s_code, sizeof(evt.str) - 1);
+                            scenario_engine_post_event(&evt);
+                            s_code_len = 0;
+                            s_code[0] = '\0';
+                            draw_keypad_input(s_code, 0);
+                        }
+                    }
+                }
+                hold_start[i] = 0;
+            } else if (curr.ch[i] && !hold_fired[i]) {
+                // Maintenu — vérifier durée
+                if (hold_start[i] && (now - hold_start[i]) >= HOLD_TICKS) {
+                    hold_fired[i] = true;
+                    audio_play_tone(1200, 120);
+
+                    scenario_event_t evt = {0};
+                    if (i == 11) {
+                        // Simuler rfid_read
+                        evt.type = EVT_RFID_READ;
+                        strncpy(evt.str, "04:VE:RD:01", sizeof(evt.str) - 1);
+                        ESP_LOGI(TAG, "SIM rfid_read 04:VE:RD:01");
+                    } else if (i == 10) {
+                        // Simuler rotary_value 270
+                        evt.type = EVT_ROTARY_VALUE;
+                        evt.int_val = 270;
+                        ESP_LOGI(TAG, "SIM rotary_value 270");
+                    } else if (i == 9) {
+                        // Simuler accel_tilt 15°
+                        evt.type = EVT_ACCEL_TILT;
+                        evt.int_val = 15;
+                        ESP_LOGI(TAG, "SIM accel_tilt 15");
+                    }
+                    if (evt.type != EVT_NONE) scenario_engine_post_event(&evt);
+                }
             }
-            if (curr.touched) audio_play_tone(660, 40);
-            ESP_LOGI(TAG, "touch 0x%03X", curr.touched);
-            prev = curr;
         }
+
+        prev = curr;
         vTaskDelay(pdMS_TO_TICKS(20));
     }
 }
 
-// ─── app_main ───────────────────────────────────────────────────────────────
+// ─── app_main ────────────────────────────────────────────────────────────────
 
 void app_main(void)
 {
-    // Éteindre la LED RGB intégrée (GPIO38) dès le boot
+    // LED onboard off
     leds_init(38, 1);
     leds_clear();
     leds_show();
 
+    // Display
     ESP_ERROR_CHECK(ili9488_init());
     ili9488_fill(COLOR_BLACK);
-    screen_info("EscapeBox S3 boot");
-    vTaskDelay(pdMS_TO_TICKS(200));
+    draw_status("boot");
+    draw_main_text("EscapeBox S3\n\nChargement...");
+    vTaskDelay(pdMS_TO_TICKS(300));
 
+    // I2C + audio
     ESP_ERROR_CHECK(i2c_bus_init());
-    test_i2c_scan();
-    vTaskDelay(pdMS_TO_TICKS(300));
+    ESP_ERROR_CHECK(audio_init(i2c_bus_handle()));
 
-    test_audio();
-    vTaskDelay(pdMS_TO_TICKS(300));
+    // Scénario
+    scenario_engine_register_action("screen_main",      action_screen_main);
+    scenario_engine_register_action("screen_secondary", action_screen_secondary);
+    scenario_engine_register_action("led",              action_led);
+    scenario_engine_register_action("audio",            action_audio);
+    scenario_engine_register_action("servo",            action_servo);
+    scenario_engine_register_action("set_var",          action_set_var);
+    scenario_engine_register_action("incr_var",         action_incr_var);
 
-    xTaskCreate(test_touch_task, "touch", 4096, NULL, 5, NULL);
+    esp_err_t ret = scenario_engine_init(capitaine_verdier_json_start);
+    if (ret != ESP_OK) {
+        draw_main_text("scenario_engine_init\nFAIL");
+        ESP_LOGE(TAG, "scenario_engine_init: %s", esp_err_to_name(ret));
+        return;
+    }
+
+    ESP_ERROR_CHECK(scenario_engine_start());
+    ESP_LOGI(TAG, "Scénario démarré");
+
+    // Tâche touch (après le moteur pour éviter les events prématurés)
+    xTaskCreate(touch_task, "touch", 4096, NULL, 5, NULL);
 }
