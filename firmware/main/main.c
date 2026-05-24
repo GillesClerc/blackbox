@@ -192,29 +192,6 @@ static void action_servo(const char *name, const cJSON *params)
     ESP_LOGI(TAG, "servo action (Phase 2)");
 }
 
-static void action_set_var(const char *name, const cJSON *params)
-{
-    (void)name;
-    cJSON *item = params ? params->child : NULL;
-    while (item) {
-        scenario_var_set(item->string, cJSON_IsNumber(item)
-            ? (char[]){0} : item->valuestring);
-        if (cJSON_IsNumber(item)) scenario_var_set_int(item->string, (int)item->valuedouble);
-        item = item->next;
-    }
-}
-
-static void action_incr_var(const char *name, const cJSON *params)
-{
-    (void)name;
-    cJSON *item = params ? params->child : NULL;
-    while (item) {
-        int cur = scenario_var_get_int(item->string, 0);
-        scenario_var_set_int(item->string, cur + (int)item->valuedouble);
-        item = item->next;
-    }
-}
-
 // ─── Tâche clavier MPR121 ────────────────────────────────────────────────────
 //
 // Mapping 12 canaux :
@@ -338,21 +315,19 @@ void app_main(void)
     ESP_ERROR_CHECK(i2c_bus_init());
     ESP_ERROR_CHECK(audio_init(i2c_bus_handle()));
 
-    // Scénario
-    scenario_engine_register_action("screen_main",      action_screen_main);
-    scenario_engine_register_action("screen_secondary", action_screen_secondary);
-    scenario_engine_register_action("led",              action_led);
-    scenario_engine_register_action("audio",            action_audio);
-    scenario_engine_register_action("servo",            action_servo);
-    scenario_engine_register_action("set_var",          action_set_var);
-    scenario_engine_register_action("incr_var",         action_incr_var);
-
+    // Scénario — init d'abord (reset les handlers), register ensuite
     esp_err_t ret = scenario_engine_init(capitaine_verdier_json_start);
     if (ret != ESP_OK) {
         draw_main_text("scenario_engine_init\nFAIL");
         ESP_LOGE(TAG, "scenario_engine_init: %s", esp_err_to_name(ret));
         return;
     }
+
+    scenario_engine_register_action("screen_main",      action_screen_main);
+    scenario_engine_register_action("screen_secondary", action_screen_secondary);
+    scenario_engine_register_action("led",              action_led);
+    scenario_engine_register_action("audio",            action_audio);
+    scenario_engine_register_action("servo",            action_servo);
 
     ESP_ERROR_CHECK(scenario_engine_start());
     ESP_LOGI(TAG, "Scénario démarré");

@@ -146,7 +146,7 @@ Chaque PCB satellite ou composant se plug/déplugg via connecteur JST sur ce bus
 
 **Bus I2C** — distribué via backbone JST :
 
-> **Dev board ESP32 Lolin :** SDA=GPIO21, SCL=GPIO22 | **Cible ESP32-S3-WROOM-1-N16R8 :** SDA=GPIO8, SCL=GPIO9 (pull-up 4.7kΩ). Le firmware sélectionne les bons GPIO via `#define I2C_SDA / I2C_SCL` dans `sdkconfig.defaults`.
+> **Dev board ESP32-S3-DevKitC-1 :** SDA=GPIO21, SCL=GPIO17 (GPIO17=libre — GPIO38=LED RMT onboard, GPIO42=JTAG, GPIO16=WS2812 default à éviter) | **Cible ESP32-S3-WROOM-1-N16R8 :** SDA=GPIO8, SCL=GPIO9 (pull-up 4.7kΩ). Le firmware sélectionne les bons GPIO via `#define I2C_BUS_SDA / I2C_BUS_SCL` dans `i2c_bus.h`.
 
 
 | Adresse | Composant | Fonction |
@@ -674,7 +674,10 @@ M2 → M3   : intégration complète + playtests
 - [x] Driver servos SG90 MCPWM (écrit — tester sur ESP32-S3 uniquement, GPIO1/2 incompatibles Lolin)
 - [x] Système de fichiers SD SPI+FAT (écrit — validation hardware en attente)
 - [x] Driver ST7735 1.8" SPI DMA 40MHz (validé dev board)
-- [ ] Driver ILI9488 4" SPI (LVGL ou esp_lcd, à valider )
+- [x] Driver ILI9488 4" SPI (esp_lcd natif, sans LVGL, 40MHz DMA — validé DevKitC-1, GPIO8-12)
+- [x] MPR121 tactile capacitif 12 canaux — validé DevKitC-1 (I2C 0x5A, 100kHz, SDA=21/SCL=17)
+- [x] App scénario principale (main.c) — JSON embarqué, callbacks display/audio/led, keypad MPR121 relié au moteur, hold 2s pour simuler rfid/rotary/tilt
+- [x] Harness de test hardware (test.c) — LED RGB cycle, barres couleur, scan I2C, gamme audio, grille tactile interactive
 - [ ] Driver audio MP3 playback (ESP-ADF submodule ou minimp3 natif)
 
 **Web Platform :**
