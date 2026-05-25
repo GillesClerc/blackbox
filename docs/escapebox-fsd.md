@@ -183,15 +183,15 @@ Chaque PCB satellite ou composant se plug/déplugg via connecteur JST sur ce bus
 
 > **⚠ GPIO43=UART0_TX / GPIO44=UART0_RX** sur l'ESP32-S3-WROOM-1 — les utiliser pour SPI3 rend la console de debug inutilisable. CS et DC remappés sur GPIO47/GPIO46 (libres sur le module nu). À confirmer sur le schéma PCB final.
 
-**Bus I2S0** (audio sortie, GPIO5-7) :
+**Bus I2S0** (audio sortie, GPIO4-6) :
 
 | GPIO | Signal | Composant |
 |---|---|---|
-| GPIO5 | BCLK | PCM5122PW (I2S DAC stéréo) |
-| GPIO6 | LRCLK | PCM5122PW |
-| GPIO7 | DIN | PCM5122PW |
+| GPIO4 | BCLK | PCM5122PW (I2S DAC stéréo) |
+| GPIO5 | LRCLK | PCM5122PW |
+| GPIO6 | DIN | PCM5122PW |
 
-> PCM5122PW génère son propre clock maître (pas de MCLK externe nécessaire). Il est aussi contrôlé via I2C à l'adresse **0x4C** (volume, EQ DSP, mute). Sa sortie analogique LOUT/ROUT alimente le PAM8406 via condensateurs de couplage 100nF. Le **PAM8406** (Class D 5W+5W stéréo) ne nécessite aucun driver logiciel — purement analogique, piloté par SHDN pin.
+> PCM5122PW avec MODE pins à GND → mode I2C obligatoire. PLL configuré depuis BCK (×16 = 45.16 MHz). Filtre ringing-less low latency FIR (reg 0x2B=7), auto-mute off. Contrôlé via I2C à l'adresse **0x4C** (volume -6dB hardware, PLL, mute). I2S : 44100 Hz, 16-bit data, 32-bit slots (BCLK = 2.82 MHz), Philips standard. Sa sortie analogique LOUT/ROUT alimente le PAM8406 via condensateurs de couplage 100nF. Le **PAM8406** (Class D 5W+5W stéréo) ne nécessite aucun driver logiciel — purement analogique, piloté par SHDN pin. Amplitudes numériques réduites côté firmware pour éviter l'écrêtage (24dB gain PAM8406).
 
 **Bus I2S1** (audio entrée, GPIO15-17) :
 
@@ -330,8 +330,8 @@ Avantages : assemblage sans soudure volante, remplacement/upgrade d'une face san
 | led_strip via RMT | WS2812 LEDs (driver natif ESP-IDF) |
 | MCPWM | Servos (driver natif ESP-IDF) |
 | cJSON | Parsing config / API (inclus ESP-IDF) |
-| ESP-ADF | Playback MP3/WAV via I2S DMA — **SDK externe** (`git submodule`), non inclus dans ESP-IDF v6.1. Alternative : `minimp3` porté en composant natif. |
-| i2c_master (PCM5122) | Config DAC : volume, EQ DSP, mute via registres I2C (addr 0x4C) |
+| minimp3 | Décodeur MP3 single-header — musique de fond en boucle, tâche FreeRTOS bg (stack 24 KB) |
+| i2c_master (PCM5122) | Config DAC : PLL, volume, filtre, mute via registres I2C (addr 0x4C) |
 | i2c_master | MTCH2120 keypad, PN532 NFC, LSM6DSOTR, AS5600 |
 | NimBLE (ESP-IDF) | Provisioning WiFi via BLE |
 | esp_https_ota | OTA HTTPS |
@@ -629,7 +629,7 @@ POST /api/box/session
 | Jalon | Date cible | Critère de succès | Statut |
 |---|---|---|---|
 | M0 — Lancement | Mai 2026 | Hardware commandé, firmware validé dev board | ✅ |
-| M1 — Hardware | Juin 2026 | ESP32-S3 reçu, tous drivers validés sur target | ⏳ |
+| M1 — Hardware | Juin 2026 | ESP32-S3 reçu, drivers principaux validés (display, audio, touch, LEDs) | ✅ (partiel — NFC, capteurs restants en attente) |
 | M2 — Scénario + Boîtier | Juillet 2026 | Scénario chargé, prototype boîtier V1 jouable | ☐ |
 | M3 — Playtest FFF | Août-Septembre 2026 | 10-15 testeurs, go/no-go Phase 2 décidé | ☐ |
 
@@ -651,34 +651,34 @@ M2 → M3   : intégration complète + playtests
 **Objectif :** Valider que le hardware fonctionne et que les gens veulent jouer
 
 **Hardware :**
-- [ ] ESP32-S3-WROOM-1-N16R8 + écran → valider affichage
-- [ ] Cabler microphone MEMS i2s -> valider le micro
+- [x] ESP32-S3-WROOM-1-N16R8 + ILI9488 4" → affichage validé (SPI2, 20MHz DMA)
+- [x] Câbler PCM5122PW (I2S + I2C 0x4C) + PAM8406 + speakers 8Ω/5W → audio validé (PLL, filtre, MP3 bg)
+- [x] Câbler MPR121 breakout → keypad capacitif 12 canaux validé (I2C 0x5A)
+- [x] Câbler WS2812 → LEDs validées (RMT, GPIO38)
 - [ ] Câbler PN532 breakout → valider NFC
-- [ ] Câbler MTCH2120 → valider keypad capacitif
-- [ ] Câbler servo SG90 → valider compartiment
-- [ ] Câbler PCM5122PW (I2S + I2C 0x4C) + PAM8406 + 2× speakers 3W 4Ω → valider audio MP3 stéréo
-- [ ] Valider contrôle volume logiciel via I2C (fade-in/out propre)
-- [ ] Tester EQ DSP PCM5122 sur un scénario (pas de distorsion)
+- [ ] Câbler MTCH2120 → valider keypad capacitif (Phase 2 PCB)
+- [ ] Câbler servo SG90 → valider compartiment (Phase 2)
 - [ ] Câbler LSM6DSOTR, BMP280, VEML7700, AS5600 → valider I2C bus complet
-- [ ] Câbler WS2812 → valider LEDs
-- [ ] Tester le moteur de scénario YAML sur le hardware assemblé
+- [ ] Câbler microphone MEMS I2S → valider micro
+- [ ] Tester le moteur de scénario YAML sur le hardware assemblé complet
 
 **Firmware :**
 - [x] Moteur de scénario JSON (state machine, hints, variables, branches, do_fail)
-- [x] Scénario "Capitaine Verdier" — YAML + JSON, 3 énigmes (boussole, code, inclinaison)
-- [x] Driver audio PCM5122PW (I2S + I2C config, tone generator)
-- [x] Driver LEDs WS2812B (RMT, GRB, show)
-- [x] Drivers I2C (LSM6DSOTR, AS5600, VEML7700, MTCH2120, MPR121)
+- [x] Scénario "Capitaine Verdier" — YAML + JSON, 12 steps, 3 énigmes (boussole, code, inclinaison)
+- [x] Driver audio PCM5122PW — I2S 32-bit slots + I2C PLL config, filtre ringing-less FIR, volume -6dB hw
+- [x] Musique de fond MP3 — minimp3 décodage tâche bg (24 KB stack), MP3 embarqué en flash
+- [x] Driver ILI9488 4" SPI DMA 20MHz — font 5x7, mutex thread-safe, validé DevKitC-1
+- [x] MPR121 tactile capacitif 12 canaux — validé DevKitC-1 (I2C 0x5A, 100kHz, SDA=21/SCL=17)
+- [x] Driver LEDs WS2812B (RMT, GRB, show) — validé
+- [x] Drivers I2C (LSM6DSOTR, AS5600, VEML7700, MTCH2120, MPR121) — écrits
 - [x] Outil YAML→JSON (tools/yaml2json.py avec validation)
 - [x] Driver NFC PN532 (écrit — validation hardware en attente)
-- [x] Driver servos SG90 MCPWM (écrit — tester sur ESP32-S3 uniquement, GPIO1/2 incompatibles Lolin)
+- [x] Driver servos SG90 MCPWM (écrit — Phase 2)
 - [x] Système de fichiers SD SPI+FAT (écrit — validation hardware en attente)
-- [x] Driver ST7735 1.8" SPI DMA 40MHz (validé dev board)
-- [x] Driver ILI9488 4" SPI (esp_lcd natif, sans LVGL, 40MHz DMA — validé DevKitC-1, GPIO8-12)
-- [x] MPR121 tactile capacitif 12 canaux — validé DevKitC-1 (I2C 0x5A, 100kHz, SDA=21/SCL=17)
-- [x] App scénario principale (main.c) — JSON embarqué, callbacks display/audio/led, keypad MPR121 relié au moteur, hold 2s pour simuler rfid/rotary/tilt
+- [x] App scénario principale (main.c) — JSON embarqué, callbacks display/audio/led, keypad MPR121, hold 2s pour simuler rfid/rotary/tilt
 - [x] Harness de test hardware (test.c) — LED RGB cycle, barres couleur, scan I2C, gamme audio, grille tactile interactive
-- [ ] Driver audio MP3 playback (ESP-ADF submodule ou minimp3 natif)
+- [x] Flash 8 MB config avec partition custom (7.9 MB app, supporte MP3 4+ MB)
+- [ ] Intégration LVGL pour interface graphique écrans
 
 **Web Platform :**
 - [ ] Projet Next.js + Supabase initialisé (Route Groups : `(marketing)`, `(app)`, `(studio)` + `middleware.ts` Supabase)
