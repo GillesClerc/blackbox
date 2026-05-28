@@ -295,7 +295,7 @@ Avantages : assemblage sans soudure volante, remplacement/upgrade d'une face san
 │  │                                                          │    │
 │  │  wifi_manager  (BLE provisioning + sync)                 │    │
 │  │  ota_manager   (esp_https_ota)                           │    │
-│  │  audio_player  (I2S DMA, MP3 via ESP-ADF)               │    │
+│  │  audio_player  (I2S DMA, MP3 via minimp3)               │    │
 │  │  audio_capture (I2S micro, analyse niveau/rythme)        │    │
 │  └─────────────────────────────────────────────────────────┘    │
 │                                                                  │
@@ -330,7 +330,7 @@ Avantages : assemblage sans soudure volante, remplacement/upgrade d'une face san
 | led_strip via RMT | WS2812 LEDs (driver natif ESP-IDF) |
 | MCPWM | Servos (driver natif ESP-IDF) |
 | cJSON | Parsing config / API (inclus ESP-IDF) |
-| minimp3 | Décodeur MP3 single-header — musique de fond en boucle, tâche FreeRTOS bg (stack 24 KB) |
+| minimp3 | Décodeur MP3 single-header — musique de fond en boucle, tâche FreeRTOS bg (stack 24 KB). ESP-ADF évalué en Phase 2+ uniquement si un vrai pipeline multi-format/streaming devient nécessaire. |
 | i2c_master (PCM5122) | Config DAC : PLL, volume, filtre, mute via registres I2C (addr 0x4C) |
 | i2c_master | MTCH2120 keypad, PN532 NFC, LSM6DSOTR, AS5600 |
 | NimBLE (ESP-IDF) | Provisioning WiFi via BLE |
@@ -340,7 +340,9 @@ Avantages : assemblage sans soudure volante, remplacement/upgrade d'une face san
 
 #### 2.3.2 Format des scénarios (YAML)
 
-Chaque scénario est un fichier YAML décrivant une machine à états finis (state machine). Le firmware parse ce fichier au démarrage de la partie et l'exécute sans aucune logique codée en dur.
+Chaque scénario est un fichier YAML décrivant une machine à états finis (state machine). Le YAML est le **format auteur** (source de vérité) ; il est converti en **JSON** par `tools/yaml2json.py` (avec validation de schéma), et c'est ce **JSON** que le firmware embarque et parse (via cJSON) au démarrage — sans aucune logique codée en dur. Le `.json` est un **artefact généré** : ne jamais l'éditer à la main, régénérer depuis le YAML.
+
+> Note pipeline : `yaml2json.py` désactive la résolution YAML 1.1 de `on/off/yes/no` en booléens, car le DSL utilise `on:` (déclencheur d'événement) et `off` (mode LED) comme chaînes.
 
 **Structure de base :**
 

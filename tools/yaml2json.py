@@ -20,6 +20,22 @@ try:
 except ImportError:
     sys.exit("Erreur : pyyaml non installé — pip install pyyaml")
 
+# Le DSL scénario utilise 'on:' (déclencheur) et 'off' (mode LED) comme chaînes.
+# Or PyYAML (spec YAML 1.1) résout on/off/yes/no en booléens → 'on:' deviendrait
+# la clé True. On retire ces résolveurs pour ce loader (true/false restent booléens).
+class ScenarioLoader(yaml.SafeLoader):
+    pass
+
+ScenarioLoader.yaml_implicit_resolvers = {
+    k: list(v) for k, v in ScenarioLoader.yaml_implicit_resolvers.items()
+}
+for _ch in "oOyYnN":
+    if _ch in ScenarioLoader.yaml_implicit_resolvers:
+        ScenarioLoader.yaml_implicit_resolvers[_ch] = [
+            (tag, rx) for (tag, rx) in ScenarioLoader.yaml_implicit_resolvers[_ch]
+            if tag != "tag:yaml.org,2002:bool"
+        ]
+
 # --- Schéma de validation ---
 
 VALID_STEP_TYPES = {"narrative", "trigger", "input", "branch", "end"}
@@ -28,7 +44,7 @@ VALID_EVENT_TYPES = {
     "hall_detected", "breath_detected", "accel_tilt",
 }
 VALID_ACTIONS = {
-    "screen_main", "screen_secondary", "audio", "led", "servo",
+    "screen_main", "screen_secondary", "audio", "led", "servo", "flash",
     "set_var", "incr_var",
 }
 VALID_LED_MODES = {"solid", "pulse", "flash", "cycle", "off"}
@@ -194,7 +210,7 @@ def validate_scenario(data: dict) -> bool:
 def yaml_to_json(yaml_path: Path, json_path: Path):
     print(f"Lecture : {yaml_path}")
     with open(yaml_path, encoding="utf-8") as f:
-        data = yaml.safe_load(f)
+        data = yaml.load(f, Loader=ScenarioLoader)
 
     print("Validation...")
     ok = validate_scenario(data)

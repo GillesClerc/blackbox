@@ -27,7 +27,7 @@ SUPABASE_SERVICE_ROLE_KEY=eyJ...
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
 STRIPE_SECRET_KEY=sk_test_...
 STRIPE_WEBHOOK_SECRET=whsec_...
-BOX_SHARED_SECRET=<openssl rand -hex 32>
+BOX_MASTER_SECRET=<openssl rand -hex 32>   # master de dérivation par-box (jamais embarqué)
 NEXT_PUBLIC_APP_URL=https://box.agill.es
 ```
 
@@ -56,7 +56,7 @@ npm install @supabase/supabase-js @supabase/ssr \
             stripe @stripe/stripe-js \
             jose js-yaml zod lucide-react
 ```
-> `jose` signe/vérifie les JWT box sans dépendance native Node.js (compatible Edge Runtime).
+> `jose` signe/vérifie les JWT box. En Next.js 16, le `proxy` (ex-`middleware`) tourne en runtime **nodejs** (l'edge n'y est plus supporté) — `jose` comme le module natif `crypto` y fonctionnent sans souci.
 
 ---
 
@@ -73,22 +73,17 @@ web/
     (auth)/
       login/page.tsx
       register/page.tsx
-    (app)/
-      layout.tsx                                # Shell authentifié
-      shop/page.tsx
-      shop/[slug]/page.tsx
+    (app)/                                      # route group : N'AJOUTE PAS de segment URL
+      layout.tsx                                # Shell authentifié — pages servies à la racine :
+      shop/page.tsx                             #   → /shop  (PAS /app/shop)
+      shop/[slug]/page.tsx                      #   → /shop/[slug]
       checkout/success/page.tsx
       checkout/cancel/page.tsx
-      library/page.tsx
-      devices/page.tsx
+      library/page.tsx                          #   → /library
+      devices/page.tsx                          #   → /devices
       devices/add/page.tsx
-      scores/page.tsx
-      account/page.tsx
-    (studio)/
-      page.tsx                                  # Guard plan Pro+ (Phase 3)
-      new/page.tsx
-      [id]/edit/page.tsx
-      [id]/simulate/page.tsx
+      scores/page.tsx                           #   → /scores
+      account/page.tsx                          #   → /account
     api/
       box/
         challenge/route.ts                      # GET  — nonce HMAC (usage unique, TTL 60s)
@@ -99,6 +94,11 @@ web/
       checkout/route.ts
       webhooks/
         stripe/route.ts
+    studio/                                     # vrai segment /studio/* (PAS un route group)
+      page.tsx
+      new/page.tsx
+      [id]/edit/page.tsx
+      [id]/simulate/page.tsx
   components/
     ui/                                         # shadcn/ui (auto-généré)
     ScenarioCard.tsx
@@ -111,7 +111,7 @@ web/
     stripe.ts
     scenario-engine.ts                          # Port JS du moteur firmware
     box-auth.ts
-  middleware.ts
+  proxy.ts                                      # Next 16 : ex-middleware.ts (runtime nodejs)
   public/
     scenarios/
       capitaine-verdier.yaml                    # Copié depuis firmware/scenarios/
@@ -163,12 +163,18 @@ export function createClient() {
 }
 ```
 
-**`middleware.ts`**
+**`proxy.ts`** *(Next.js 16 : `middleware.ts` est déprécié → renommé `proxy.ts`, fonction `proxy`, runtime nodejs)*
 ```typescript
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-export async function middleware(request: NextRequest) {
+// Les pages protégées vivent dans le route group (app)/ → servies à la racine
+// (/shop, /library, /devices, /scores, /account). Un route group NE crée PAS
+// de segment d'URL : tester startsWith('/app') ne matcherait jamais. On liste
+// donc les préfixes réels.
+const PROTECTED = ['/shop', '/library', '/devices', '/scores', '/account', '/checkout', '/studio']
+
+export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(
@@ -191,7 +197,7 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   const { pathname } = request.nextUrl
 
-  if (!user && (pathname.startsWith('/app') || pathname.startsWith('/studio'))) {
+  if (!user && PROTECTED.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)
@@ -206,16 +212,25 @@ export const config = {
   matcher: ['/((?!_next/static|_next/image|favicon.ico|api/).*)'],
 }
 ```
+> ⚠️ Collision de route à éviter : `app/page.tsx` (landing, `/`) et un éventuel `(studio)/page.tsx` résolvent tous deux vers `/` → build en échec. D'où le **vrai dossier `studio/`** (segment `/studio`) plutôt qu'un route group.
 
 **`lib/box-auth.ts`**
+
+> 🔐 **Secret par box, pas de secret global.** Ne jamais utiliser un `BOX_SHARED_SECRET` unique compilé dans tous les firmwares : son extraction depuis une seule box (dump flash) compromettrait *toutes* les box (forge de JWT, faux scores). Chaque box a un secret **dérivé de son UID eFuse** via un master serveur jamais embarqué : `box_secret = HKDF(BOX_MASTER_SECRET, box_uid)`. Le firmware ne stocke que *son* secret dérivé (idéalement en eFuse/flash chiffrée) ; le serveur le recalcule à la volée.
+
 ```typescript
 import { SignJWT, jwtVerify } from 'jose'
-import { createHmac, timingSafeEqual, randomUUID } from 'crypto'
+import { createHmac, hkdfSync, timingSafeEqual, randomUUID } from 'crypto'
 
-const secret = new TextEncoder().encode(process.env.BOX_SHARED_SECRET!)
+const masterSecret = process.env.BOX_MASTER_SECRET! // 32+ octets, jamais embarqué
+
+// Secret propre à une box, dérivé de son UID (jamais stocké tel quel côté serveur)
+function boxSecret(boxUid: string): Buffer {
+  return Buffer.from(hkdfSync('sha256', masterSecret, '', `escapebox:${boxUid}`, 32))
+}
 
 export function verifyBoxHmac(boxUid: string, challenge: string, hmac: string): boolean {
-  const expected = createHmac('sha256', process.env.BOX_SHARED_SECRET!)
+  const expected = createHmac('sha256', boxSecret(boxUid))
     .update(`${boxUid}:${challenge}`)
     .digest('hex')
   const a = Buffer.from(expected)
@@ -351,6 +366,17 @@ create table public.game_sessions (
 );
 -- Insertion via service_role (firmware) — pas de RLS user
 
+-- Challenges box (anti-replay du nonce d'auth)
+-- Indispensable : une Map en mémoire ne survit ni aux restarts ni au multi-instance.
+create table public.box_challenges (
+  challenge text primary key,
+  box_uid text not null,
+  expires_at timestamptz not null,          -- now() + 60s
+  used boolean default false
+);
+-- /api/box/challenge insère ; /api/box/auth vérifie (non used, non expiré) puis used=true.
+-- Purge périodique : delete from box_challenges where expires_at < now();
+
 -- Seed
 insert into public.scenarios (slug, title, description, price_chf, difficulty, duration_min, yaml_path)
 values ('capitaine-verdier', 'Le Trésor du Capitaine Verdier',
@@ -389,7 +415,7 @@ stripe listen --forward-to localhost:3000/api/webhooks/stripe
 
 | Fichier | Rôle |
 |---------|------|
-| `web/middleware.ts` | Refresh session Supabase + protection `/app/*` et `/studio/*` |
+| `web/proxy.ts` | (Next 16, ex-middleware) Refresh session Supabase + protection des préfixes réels (`/shop`, `/library`, `/devices`, `/scores`, `/account`, `/checkout`, `/studio`) |
 | `web/lib/supabase/server.ts` | Client SSR (async cookies) |
 | `web/lib/box-auth.ts` | HMAC challenge + JWT 2h (jose) |
 | `web/app/api/box/challenge/route.ts` | Nonce anti-replay (usage unique, TTL 60s) |
