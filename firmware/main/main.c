@@ -126,16 +126,17 @@ static void lv_task_fn(void *arg)
 {
     (void)arg;
     while (1) {
-        if (xSemaphoreTake(s_lv_mutex, pdMS_TO_TICKS(50)) == pdTRUE) {
+        if (xSemaphoreTakeRecursive(s_lv_mutex, pdMS_TO_TICKS(50)) == pdTRUE) {
             lv_timer_handler();
-            xSemaphoreGive(s_lv_mutex);
+            xSemaphoreGiveRecursive(s_lv_mutex);
         }
         vTaskDelay(pdMS_TO_TICKS(10));
     }
 }
 
-void ui_lock(void)   { if (s_lv_mutex) xSemaphoreTake(s_lv_mutex, portMAX_DELAY); }
-void ui_unlock(void) { if (s_lv_mutex) xSemaphoreGive(s_lv_mutex); }
+// Mutex récursif : un même contexte peut imbriquer plusieurs ui_lock sans deadlock.
+void ui_lock(void)   { if (s_lv_mutex) xSemaphoreTakeRecursive(s_lv_mutex, portMAX_DELAY); }
+void ui_unlock(void) { if (s_lv_mutex) xSemaphoreGiveRecursive(s_lv_mutex); }
 
 // ─── Animations (callbacks d'exécution lv_anim) ──────────────────────────────
 
@@ -620,7 +621,7 @@ void app_main(void)
     ESP_ERROR_CHECK(esp_timer_create(&tick_args, &tick_timer));
     ESP_ERROR_CHECK(esp_timer_start_periodic(tick_timer, 1000));
 
-    s_lv_mutex = xSemaphoreCreateMutex();
+    s_lv_mutex = xSemaphoreCreateRecursiveMutex();
 
     // ── Boot screen ─────────────────────────────────────────────────────
     ui_lock();
@@ -696,7 +697,15 @@ void app_main(void)
     scenario_engine_register_action("servo",            action_servo);
     scenario_engine_register_action("flash",            action_flash);
 
-    ESP_ERROR_CHECK(scenario_engine_start());
+    ret = scenario_engine_start();
+    if (ret != ESP_OK) {
+        ui_lock();
+        lv_label_set_text(s_lbl_main, "ERREUR : demarrage scenario");
+        lv_obj_set_style_text_color(s_lbl_main, lv_color_hex(C_RED), 0);
+        ui_unlock();
+        ESP_LOGE(TAG, "scenario_engine_start: %s", esp_err_to_name(ret));
+        return;
+    }
 
 #ifdef HAS_AMBIENT_MP3
     audio_bg_mp3_start(_binary_ambient_mp3_start,
