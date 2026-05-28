@@ -1,5 +1,6 @@
 #pragma once
 #include <stdint.h>
+#include <stdbool.h>
 #include "esp_err.h"
 
 #define ILI9488_WIDTH   320
@@ -31,3 +32,7 @@ void ili9488_draw_pixel(uint16_t x, uint16_t y, uint16_t color);
 void ili9488_draw_char(uint16_t x, uint16_t y, char c, uint16_t fg, uint16_t bg, uint8_t scale);
 void ili9488_draw_string(uint16_t x, uint16_t y, const char *str, uint16_t fg, uint16_t bg, uint8_t scale);
 void ili9488_test_screen(void);
+
+// LVGL flush callback : convertit RGB565 → RGB666 et envoie via SPI DMA.
+// Passer comme flush_cb à lv_display_set_flush_cb().
+void ili9488_lvgl_flush(void *disp, const void *area, uint8_t *color_map);

@@ -5,6 +5,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/semphr.h"
+#include "lvgl.h"
 #include <string.h>
 
 #define TAG "ili9488"
@@ -353,4 +354,42 @@ void ili9488_test_screen(void)
     ili9488_draw_string(14, 256, "320x480 18bit", COLOR_CYAN,  COLOR_BLACK, 2);
 
     ESP_LOGI("ili9488", "test_screen affiché");
+}
+
+// ---------- LVGL flush callback ----------
+
+void ili9488_lvgl_flush(void *disp_ptr, const void *area_ptr, uint8_t *color_map)
+{
+    lv_display_t *disp = disp_ptr;
+    const lv_area_t *area = area_ptr;
+
+    uint16_t x1 = area->x1, y1 = area->y1;
+    uint16_t x2 = area->x2, y2 = area->y2;
+    uint32_t total = (uint32_t)(x2 - x1 + 1) * (y2 - y1 + 1);
+
+    xSemaphoreTakeRecursive(s_mutex, portMAX_DELAY);
+    set_window(x1, y1, x2, y2);
+    gpio_set_level(s_pin_dc, 1);
+
+    const uint16_t *src = (const uint16_t *)color_map;
+    uint32_t sent = 0;
+
+    while (sent < total) {
+        uint32_t chunk = (total - sent) > DMA_BUF_PIXELS ? DMA_BUF_PIXELS : (total - sent);
+        for (uint32_t i = 0; i < chunk; i++) {
+            uint16_t c = src[sent + i];
+            s_dma_buf[i * 3]     = ((c >> 11) & 0x1F) << 3;
+            s_dma_buf[i * 3 + 1] = ((c >>  5) & 0x3F) << 2;
+            s_dma_buf[i * 3 + 2] = ( c        & 0x1F) << 3;
+        }
+        spi_transaction_t t = {
+            .length    = chunk * 24,
+            .tx_buffer = s_dma_buf,
+        };
+        spi_device_polling_transmit(s_spi, &t);
+        sent += chunk;
+    }
+
+    xSemaphoreGiveRecursive(s_mutex);
+    lv_display_flush_ready(disp);
 }

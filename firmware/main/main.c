@@ -1,4 +1,5 @@
 #include "esp_log.h"
+#include "esp_timer.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "ili9488.h"
@@ -8,159 +9,343 @@
 #include "leds.h"
 #include "scenario_engine.h"
 #include "cJSON.h"
+#include "lvgl.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 
 #define TAG "main"
 
-extern const char    capitaine_verdier_json_start[] asm("_binary_capitaine_verdier_json_start");
-extern const char    capitaine_verdier_json_end[]   asm("_binary_capitaine_verdier_json_end");
+extern const char capitaine_verdier_json_start[] asm("_binary_capitaine_verdier_json_start");
+extern const char capitaine_verdier_json_end[]   asm("_binary_capitaine_verdier_json_end");
 
-// ambient.mp3 embarqué uniquement si le fichier existe au moment du build.
-// HAS_AMBIENT_MP3 est défini par CMakeLists.txt quand le fichier est présent.
-// Un extern fort (sans weak) est nécessaire pour que le linker inclue l'objet.
 #ifdef HAS_AMBIENT_MP3
 extern const uint8_t _binary_ambient_mp3_start[];
 extern const uint8_t _binary_ambient_mp3_end[];
 #endif
 
-// ─── Layout écran ────────────────────────────────────────────────────────────
-//
-//  y=0   ┌────────────────────────────────┐
-//        │ HEADER  30px (titre + étape)   │
-//  y=30  ├── sep 2px ─────────────────────┤
-//  y=32  │                                │
-//        │  ZONE MAIN  298px              │
-//        │  (texte narratif + typewriter) │
-//  y=330 ├── sep 2px ─────────────────────┤
-//  y=332 │  ZONE HINT  118px              │
-//        │  (indices, feedback)           │
-//  y=450 ├── sep 2px ─────────────────────┤
-//  y=452 │  ZONE CLAVIER  28px            │
-//  y=480 └────────────────────────────────┘
+// ─── Thème visuel ────────────────────────────────────────────────────────────
 
-#define Y_HDR      0
-#define H_HDR     30
-#define Y_SEP1    30
-#define Y_MAIN    32
-#define H_MAIN   298
-#define Y_SEP2   330
-#define Y_HINT   332
-#define H_HINT   118
-#define Y_SEP3   450
-#define Y_KEY    452
-#define H_KEY     28
+#define C_BG         0x080C18
+#define C_PANEL      0x10182C
+#define C_HINT_BG    0x0C1A28
+#define C_INPUT_BG   0x0C1220
+#define C_HDR_BG     0x0C1024
+#define C_GOLD       0xFFD700
+#define C_CYAN       0x00E5FF
+#define C_TEXT       0xE8E8E8
+#define C_TEXT_DIM   0x506070
+#define C_HINT_COL   0xFFCC00
+#define C_GREEN      0x00FF88
+#define C_RED        0xFF4455
+#define C_BORDER     0x1C2E4A
+#define C_DOT_DONE   0x00E5FF
+#define C_DOT_ACTIVE 0xFFD700
+#define C_DOT_PEND   0x1A2A3A
 
-#define COL_HDR_BG    0x000C  // bleu nuit très sombre
-#define COL_MAIN_BG   0x0000  // noir
-#define COL_HINT_BG   0x0820  // teal foncé
-#define COL_KEY_BG    0x0000
-#define COL_BORDER    0x07FF  // cyan
+// ─── LVGL ────────────────────────────────────────────────────────────────────
 
-// ─── Musique de fond : ambiance sous-marine (fallback sans MP3) ──────────────
+#define LV_BUF_LINES  48
+#define LV_BUF_SIZE   (ILI9488_WIDTH * LV_BUF_LINES * sizeof(lv_color_t))
+
+static lv_display_t      *s_lv_disp  = NULL;
+static SemaphoreHandle_t  s_lv_mutex = NULL;
+
+static lv_obj_t *s_header;
+static lv_obj_t *s_lbl_title;
+static lv_obj_t *s_dots[3];
+static lv_obj_t *s_main_panel;
+static lv_obj_t *s_lbl_main;
+static lv_obj_t *s_hint_panel;
+static lv_obj_t *s_lbl_hint_hdr;
+static lv_obj_t *s_lbl_hint;
+static lv_obj_t *s_input_bar;
+static lv_obj_t *s_lbl_input;
+static lv_obj_t *s_flash_overlay;
+
+// ─── Typewriter (effet machine à écrire via timer LVGL) ─────────────────────
+
+typedef struct {
+    lv_timer_t *timer;
+    lv_obj_t   *label;
+    char        buf[512];
+    int         pos;
+} tw_t;
+
+static tw_t s_tw_main;
+static tw_t s_tw_hint;
+
+static void tw_cb(lv_timer_t *t)
+{
+    tw_t *tw = lv_timer_get_user_data(t);
+    int len = (int)strlen(tw->buf);
+    if (tw->pos >= len) {
+        lv_timer_delete(t);
+        tw->timer = NULL;
+        return;
+    }
+    tw->pos++;
+    char save = tw->buf[tw->pos];
+    tw->buf[tw->pos] = '\0';
+    lv_label_set_text(tw->label, tw->buf);
+    tw->buf[tw->pos] = save;
+}
+
+static void tw_start(tw_t *tw, lv_obj_t *label, const char *text, uint32_t ms)
+{
+    if (tw->timer) { lv_timer_delete(tw->timer); tw->timer = NULL; }
+    strncpy(tw->buf, text ? text : "", sizeof(tw->buf) - 1);
+    tw->buf[sizeof(tw->buf) - 1] = '\0';
+    tw->pos   = 0;
+    tw->label = label;
+    lv_label_set_text(label, "");
+    tw->timer = lv_timer_create(tw_cb, ms, tw);
+}
+
+static void tw_stop(tw_t *tw)
+{
+    if (tw->timer) { lv_timer_delete(tw->timer); tw->timer = NULL; }
+}
+
+// ─── Musique de fond (fallback sans MP3) ─────────────────────────────────────
 
 #ifndef HAS_AMBIENT_MP3
 static const audio_bg_note_t s_ambient[] = {
-    {110, 250, 1800},  // A2 - grave profond
-    {  0,   0,  600},
-    {138, 180, 1200},  // C#3
-    {  0,   0,  400},
-    {123, 200, 2000},  // B2
-    {  0,   0, 1000},
-    {110, 350, 2500},  // A2 long
-    {  0,   0, 1400},
-    {147, 200, 1000},  // D3
-    {138, 150, 1500},  // C#3
-    {  0,   0, 2200},  // longue pause
-    {110, 200,  800},
-    {  0,   0, 3000},  // silence étendu
+    {110, 250, 1800}, {0, 0, 600}, {138, 180, 1200}, {0, 0, 400},
+    {123, 200, 2000}, {0, 0, 1000}, {110, 350, 2500}, {0, 0, 1400},
+    {147, 200, 1000}, {138, 150, 1500}, {0, 0, 2200},
+    {110, 200, 800},  {0, 0, 3000},
 };
-#endif // HAS_AMBIENT_MP3
+#endif
 
-// ─── Helpers display ─────────────────────────────────────────────────────────
+// ─── LVGL tick / task / lock ─────────────────────────────────────────────────
 
-// Dessine le texte caractère par caractère avec une pause entre chaque.
-// Gère '\n' et le retour à la ligne automatique sur la largeur.
-static void typewriter(uint16_t x0, uint16_t y0, uint16_t y_max,
-                       const char *text, uint16_t fg, uint16_t bg,
-                       uint8_t scale, uint16_t delay_ms)
+static void lv_tick_cb(void *arg) { (void)arg; lv_tick_inc(1); }
+
+static void lv_task_fn(void *arg)
 {
-    if (!text) return;
-    uint16_t cw  = scale * 6;
-    uint16_t lh  = scale * 8 + 4;
-    uint16_t x   = x0;
-    uint16_t y   = y0;
-    for (const char *p = text; *p && y + lh <= y_max; p++) {
-        if (*p == '\n') {
-            x = x0; y += lh; continue;
+    (void)arg;
+    while (1) {
+        if (xSemaphoreTake(s_lv_mutex, pdMS_TO_TICKS(50)) == pdTRUE) {
+            lv_timer_handler();
+            xSemaphoreGive(s_lv_mutex);
         }
-        if (x + cw > ILI9488_WIDTH - 4) {
-            x = x0; y += lh;
-            if (y + lh > y_max) break;
-        }
-        ili9488_draw_char(x, y, *p, fg, bg, scale);
-        x += cw;
-        if (delay_ms) vTaskDelay(pdMS_TO_TICKS(delay_ms));
+        vTaskDelay(pdMS_TO_TICKS(10));
     }
 }
 
-static void draw_separator(uint16_t y)
+void ui_lock(void)   { if (s_lv_mutex) xSemaphoreTake(s_lv_mutex, portMAX_DELAY); }
+void ui_unlock(void) { if (s_lv_mutex) xSemaphoreGive(s_lv_mutex); }
+
+// ─── Animations (callbacks d'exécution lv_anim) ──────────────────────────────
+
+static void anim_shadow_opa_cb(void *obj, int32_t v)
 {
-    ili9488_fill_rect(0, y, ILI9488_WIDTH, 2, COL_BORDER);
+    lv_obj_set_style_shadow_opa((lv_obj_t *)obj, (lv_opa_t)v, 0);
 }
 
-// En-tête : titre du scénario + indicateur d'étape (ex. "2/3")
-static void draw_header(int step_num, int step_total)
+static void anim_text_opa_cb(void *obj, int32_t v)
 {
-    ili9488_fill_rect(0, Y_HDR, ILI9488_WIDTH, H_HDR, COL_HDR_BG);
-    ili9488_draw_string(8, 9, "CAPITAINE VERDIER", COLOR_GOLD, COL_HDR_BG, 1);
-    if (step_num > 0) {
-        char buf[16];
-        snprintf(buf, sizeof(buf), "%d / %d", step_num, step_total);
-        uint16_t bw = (uint16_t)(strlen(buf) * 6);
-        ili9488_draw_string(ILI9488_WIDTH - bw - 8, 9, buf, COLOR_CYAN, COL_HDR_BG, 1);
+    lv_obj_set_style_text_opa((lv_obj_t *)obj, (lv_opa_t)v, 0);
+}
+
+// Fondu d'apparition du texte d'un label (0 → opaque)
+static void anim_fade_in(lv_obj_t *obj, uint32_t ms, uint32_t delay)
+{
+    lv_obj_set_style_text_opa(obj, LV_OPA_TRANSP, 0);
+    lv_anim_t a;
+    lv_anim_init(&a);
+    lv_anim_set_var(&a, obj);
+    lv_anim_set_exec_cb(&a, anim_text_opa_cb);
+    lv_anim_set_values(&a, LV_OPA_TRANSP, LV_OPA_COVER);
+    lv_anim_set_duration(&a, ms);
+    lv_anim_set_delay(&a, delay);
+    lv_anim_start(&a);
+}
+
+// ─── UI helpers ──────────────────────────────────────────────────────────────
+
+static void ui_update_dots(int step_num)
+{
+    for (int i = 0; i < 3; i++) {
+        lv_anim_delete(s_dots[i], anim_shadow_opa_cb);  // stoppe une éventuelle pulsation
+        uint32_t c;
+        bool active = false;
+        if      (i + 1 < step_num)  c = C_DOT_DONE;
+        else if (i + 1 == step_num) { c = C_DOT_ACTIVE; active = true; }
+        else                         c = C_DOT_PEND;
+        lv_obj_set_style_bg_color(s_dots[i], lv_color_hex(c), 0);
+
+        if (active) {
+            lv_obj_set_style_shadow_width(s_dots[i], 12, 0);
+            lv_obj_set_style_shadow_color(s_dots[i], lv_color_hex(C_DOT_ACTIVE), 0);
+            // Halo qui pulse en continu tant que l'énigme est active
+            lv_anim_t a;
+            lv_anim_init(&a);
+            lv_anim_set_var(&a, s_dots[i]);
+            lv_anim_set_exec_cb(&a, anim_shadow_opa_cb);
+            lv_anim_set_values(&a, LV_OPA_20, LV_OPA_COVER);
+            lv_anim_set_duration(&a, 750);
+            lv_anim_set_playback_duration(&a, 750);
+            lv_anim_set_repeat_count(&a, LV_ANIM_REPEAT_INFINITE);
+            lv_anim_start(&a);
+        } else {
+            lv_obj_set_style_shadow_width(s_dots[i], 0, 0);
+        }
     }
-    draw_separator(Y_SEP1);
 }
 
-static void draw_main_text(const char *text, uint16_t border_color)
+static uint32_t accent_for_step(int num)
 {
-    ili9488_fill_rect(0, Y_MAIN, ILI9488_WIDTH, H_MAIN, COL_MAIN_BG);
-    // Bordure colorée (2px gauche + droite)
-    ili9488_fill_rect(0,                   Y_MAIN, 2, H_MAIN, border_color);
-    ili9488_fill_rect(ILI9488_WIDTH - 2,   Y_MAIN, 2, H_MAIN, border_color);
-    draw_separator(Y_SEP2);
-    typewriter(8, Y_MAIN + 10, Y_SEP2 - 4, text, COLOR_WHITE, COL_MAIN_BG, 2, 18);
+    switch (num) {
+        case 1:  return 0x00FF88;
+        case 2:  return 0x4488FF;
+        case 3:  return C_GOLD;
+        default: return C_CYAN;
+    }
 }
 
-static void clear_hint(void)
+static void ui_update_input(const char *code, int len)
 {
-    ili9488_fill_rect(0, Y_HINT, ILI9488_WIDTH, H_HINT, COL_HINT_BG);
-    draw_separator(Y_SEP3);
-    // Label permanent discret
-    ili9488_draw_string(8, Y_HINT + 6, ">> ATTENTE INDICE...", 0x39E7, COL_HINT_BG, 1);
-}
-
-static void draw_hint_text(const char *text)
-{
-    ili9488_fill_rect(0, Y_HINT, ILI9488_WIDTH, H_HINT, COL_HINT_BG);
-    draw_separator(Y_SEP3);
-    ili9488_draw_string(8, Y_HINT + 4, ">> INDICE :", COLOR_YELLOW, COL_HINT_BG, 1);
-    typewriter(8, Y_HINT + 18, Y_SEP3 - 2, text, COLOR_YELLOW, COL_HINT_BG, 2, 12);
-}
-
-static void draw_input(const char *code, int len)
-{
-    ili9488_fill_rect(0, Y_KEY, ILI9488_WIDTH, H_KEY, COL_KEY_BG);
+    if (!s_lbl_input) return;
     if (len == 0) {
-        ili9488_draw_string(8, Y_KEY + 6, "[ entrez le code... ]", 0x39E7, COL_KEY_BG, 1);
+        lv_label_set_text(s_lbl_input, "");
+        lv_obj_set_style_text_color(s_lbl_input, lv_color_hex(C_TEXT_DIM), 0);
     } else {
-        char buf[20] = "> ";
-        strncat(buf, code, sizeof(buf) - 3);
-        strcat(buf, "_");
-        ili9488_draw_string(8, Y_KEY + 4, buf, COLOR_GREEN, COL_KEY_BG, 2);
+        char buf[24];
+        snprintf(buf, sizeof(buf), "> %s_", code);
+        lv_label_set_text(s_lbl_input, buf);
+        lv_obj_set_style_text_color(s_lbl_input, lv_color_hex(C_GREEN), 0);
     }
+}
+
+// ─── UI : écran de jeu ──────────────────────────────────────────────────────
+
+static void ui_create_game(void)
+{
+    lv_obj_t *scr = lv_screen_active();
+    lv_obj_remove_flag(scr, LV_OBJ_FLAG_SCROLLABLE);
+
+    // ── Header ──────────────────────────────────────────────────────────
+    s_header = lv_obj_create(scr);
+    lv_obj_set_size(s_header, 320, 46);
+    lv_obj_align(s_header, LV_ALIGN_TOP_MID, 0, 0);
+    lv_obj_set_style_bg_color(s_header, lv_color_hex(C_HDR_BG), 0);
+    lv_obj_set_style_bg_opa(s_header, LV_OPA_COVER, 0);
+    lv_obj_set_style_radius(s_header, 0, 0);
+    lv_obj_set_style_border_side(s_header, LV_BORDER_SIDE_BOTTOM, 0);
+    lv_obj_set_style_border_width(s_header, 1, 0);
+    lv_obj_set_style_border_color(s_header, lv_color_hex(C_GOLD), 0);
+    lv_obj_set_style_border_opa(s_header, LV_OPA_40, 0);
+    lv_obj_set_style_pad_all(s_header, 0, 0);
+    lv_obj_remove_flag(s_header, LV_OBJ_FLAG_SCROLLABLE);
+
+    s_lbl_title = lv_label_create(s_header);
+    lv_label_set_text(s_lbl_title, "CAPITAINE VERDIER");
+    lv_obj_set_style_text_color(s_lbl_title, lv_color_hex(C_GOLD), 0);
+    lv_obj_set_style_text_font(s_lbl_title, &lv_font_montserrat_16, 0);
+    lv_obj_align(s_lbl_title, LV_ALIGN_LEFT_MID, 12, 0);
+
+    for (int i = 0; i < 3; i++) {
+        s_dots[i] = lv_obj_create(s_header);
+        lv_obj_set_size(s_dots[i], 10, 10);
+        lv_obj_set_style_radius(s_dots[i], 5, 0);
+        lv_obj_set_style_bg_color(s_dots[i], lv_color_hex(C_DOT_PEND), 0);
+        lv_obj_set_style_bg_opa(s_dots[i], LV_OPA_COVER, 0);
+        lv_obj_set_style_border_width(s_dots[i], 0, 0);
+        lv_obj_set_style_pad_all(s_dots[i], 0, 0);
+        lv_obj_align(s_dots[i], LV_ALIGN_RIGHT_MID, -12 - (2 - i) * 18, 0);
+    }
+
+    // ── Panneau narratif principal ──────────────────────────────────────
+    s_main_panel = lv_obj_create(scr);
+    lv_obj_set_size(s_main_panel, 304, 286);
+    lv_obj_align(s_main_panel, LV_ALIGN_TOP_MID, 0, 50);
+    lv_obj_set_style_bg_color(s_main_panel, lv_color_hex(C_PANEL), 0);
+    lv_obj_set_style_bg_opa(s_main_panel, LV_OPA_COVER, 0);
+    lv_obj_set_style_radius(s_main_panel, 8, 0);
+    lv_obj_set_style_border_side(s_main_panel, LV_BORDER_SIDE_LEFT, 0);
+    lv_obj_set_style_border_width(s_main_panel, 3, 0);
+    lv_obj_set_style_border_color(s_main_panel, lv_color_hex(C_CYAN), 0);
+    lv_obj_set_style_outline_width(s_main_panel, 1, 0);
+    lv_obj_set_style_outline_color(s_main_panel, lv_color_hex(C_BORDER), 0);
+    lv_obj_set_style_outline_pad(s_main_panel, 0, 0);
+    lv_obj_set_style_pad_left(s_main_panel, 14, 0);
+    lv_obj_set_style_pad_right(s_main_panel, 12, 0);
+    lv_obj_set_style_pad_top(s_main_panel, 12, 0);
+    lv_obj_set_style_pad_bottom(s_main_panel, 8, 0);
+    lv_obj_set_scrollbar_mode(s_main_panel, LV_SCROLLBAR_MODE_OFF);
+    lv_obj_remove_flag(s_main_panel, LV_OBJ_FLAG_SCROLLABLE);
+
+    s_lbl_main = lv_label_create(s_main_panel);
+    lv_label_set_long_mode(s_lbl_main, LV_LABEL_LONG_WRAP);
+    lv_obj_set_width(s_lbl_main, 274);
+    lv_label_set_text(s_lbl_main, "");
+    lv_obj_set_style_text_color(s_lbl_main, lv_color_hex(C_TEXT), 0);
+    lv_obj_set_style_text_font(s_lbl_main, &lv_font_montserrat_20, 0);
+    lv_obj_set_style_text_line_space(s_lbl_main, 3, 0);
+    lv_obj_align(s_lbl_main, LV_ALIGN_TOP_LEFT, 0, 0);
+
+    // ── Panneau indices ─────────────────────────────────────────────────
+    s_hint_panel = lv_obj_create(scr);
+    lv_obj_set_size(s_hint_panel, 304, 96);
+    lv_obj_align(s_hint_panel, LV_ALIGN_TOP_MID, 0, 340);
+    lv_obj_set_style_bg_color(s_hint_panel, lv_color_hex(C_HINT_BG), 0);
+    lv_obj_set_style_bg_opa(s_hint_panel, LV_OPA_COVER, 0);
+    lv_obj_set_style_radius(s_hint_panel, 8, 0);
+    lv_obj_set_style_border_width(s_hint_panel, 1, 0);
+    lv_obj_set_style_border_color(s_hint_panel, lv_color_hex(0x1A3040), 0);
+    lv_obj_set_style_pad_left(s_hint_panel, 12, 0);
+    lv_obj_set_style_pad_right(s_hint_panel, 12, 0);
+    lv_obj_set_style_pad_top(s_hint_panel, 8, 0);
+    lv_obj_set_style_pad_bottom(s_hint_panel, 6, 0);
+    lv_obj_set_scrollbar_mode(s_hint_panel, LV_SCROLLBAR_MODE_OFF);
+    lv_obj_remove_flag(s_hint_panel, LV_OBJ_FLAG_SCROLLABLE);
+
+    s_lbl_hint_hdr = lv_label_create(s_hint_panel);
+    lv_label_set_text(s_lbl_hint_hdr, "En attente...");
+    lv_obj_set_style_text_color(s_lbl_hint_hdr, lv_color_hex(C_TEXT_DIM), 0);
+    lv_obj_set_style_text_font(s_lbl_hint_hdr, &lv_font_montserrat_14, 0);
+    lv_obj_align(s_lbl_hint_hdr, LV_ALIGN_TOP_LEFT, 0, 0);
+
+    s_lbl_hint = lv_label_create(s_hint_panel);
+    lv_label_set_long_mode(s_lbl_hint, LV_LABEL_LONG_WRAP);
+    lv_obj_set_width(s_lbl_hint, 276);
+    lv_label_set_text(s_lbl_hint, "");
+    lv_obj_set_style_text_color(s_lbl_hint, lv_color_hex(C_HINT_COL), 0);
+    lv_obj_set_style_text_font(s_lbl_hint, &lv_font_montserrat_16, 0);
+    lv_obj_set_style_text_line_space(s_lbl_hint, 2, 0);
+    lv_obj_align(s_lbl_hint, LV_ALIGN_TOP_LEFT, 0, 18);
+
+    // ── Barre de saisie clavier ─────────────────────────────────────────
+    s_input_bar = lv_obj_create(scr);
+    lv_obj_set_size(s_input_bar, 304, 36);
+    lv_obj_align(s_input_bar, LV_ALIGN_TOP_MID, 0, 440);
+    lv_obj_set_style_bg_color(s_input_bar, lv_color_hex(C_INPUT_BG), 0);
+    lv_obj_set_style_bg_opa(s_input_bar, LV_OPA_COVER, 0);
+    lv_obj_set_style_radius(s_input_bar, 6, 0);
+    lv_obj_set_style_border_width(s_input_bar, 1, 0);
+    lv_obj_set_style_border_color(s_input_bar, lv_color_hex(C_BORDER), 0);
+    lv_obj_set_style_pad_all(s_input_bar, 0, 0);
+    lv_obj_set_style_pad_left(s_input_bar, 12, 0);
+    lv_obj_remove_flag(s_input_bar, LV_OBJ_FLAG_SCROLLABLE);
+
+    s_lbl_input = lv_label_create(s_input_bar);
+    lv_label_set_text(s_lbl_input, "");
+    lv_obj_set_style_text_color(s_lbl_input, lv_color_hex(C_TEXT_DIM), 0);
+    lv_obj_set_style_text_font(s_lbl_input, &lv_font_montserrat_16, 0);
+    lv_obj_align(s_lbl_input, LV_ALIGN_LEFT_MID, 0, 0);
+
+    // ── Flash overlay (caché par défaut, affiché par-dessus tout) ────────
+    s_flash_overlay = lv_obj_create(scr);
+    lv_obj_set_size(s_flash_overlay, 320, 480);
+    lv_obj_set_pos(s_flash_overlay, 0, 0);
+    lv_obj_set_style_bg_color(s_flash_overlay, lv_color_hex(C_GOLD), 0);
+    lv_obj_set_style_bg_opa(s_flash_overlay, LV_OPA_COVER, 0);
+    lv_obj_set_style_border_width(s_flash_overlay, 0, 0);
+    lv_obj_set_style_radius(s_flash_overlay, 0, 0);
+    lv_obj_set_style_pad_all(s_flash_overlay, 0, 0);
+    lv_obj_add_flag(s_flash_overlay, LV_OBJ_FLAG_HIDDEN);
 }
 
 // ─── Helpers LED ─────────────────────────────────────────────────────────────
@@ -170,17 +355,16 @@ static void led_hex(const char *hex)
     if (!hex || hex[0] != '#' || strlen(hex) < 7)
         leds_clear();
     else
-        leds_fill_hex(hex, 80);  // brightness 80/255 ≈ 31%
+        leds_fill_hex(hex, 80);
     leds_show();
 }
 
-// ─── Mapping audio play → tonalités ──────────────────────────────────────────
+// ─── Audio ───────────────────────────────────────────────────────────────────
 
 static void play_audio(const char *name)
 {
     if (!name) return;
 
-    // Séquences multi-notes (correct, wrong, victoire)
     if (strcmp(name, "correct") == 0) {
         static const uint16_t f[] = {659, 784, 1047};
         static const uint16_t d[] = {130, 130,  280};
@@ -206,14 +390,12 @@ static void play_audio(const char *name)
         return;
     }
     if (strcmp(name, "intro_ambient") == 0) {
-        // Courte mélodie d'intro avant la boucle bg
         static const uint16_t f[] = {110, 138, 165, 185};
         static const uint16_t d[] = {350, 250, 250, 500};
         audio_play_sequence(f, d, 4, 80);
         return;
     }
 
-    // Notes simples
     typedef struct { const char *n; uint16_t f; uint16_t d; } m_t;
     static const m_t tbl[] = {
         {"hint_medallion",      330, 350},
@@ -230,10 +412,10 @@ static void play_audio(const char *name)
             return;
         }
     }
-    audio_play_tone(440, 120); // fallback
+    audio_play_tone(440, 120);
 }
 
-// ─── Étape courante → numéro (pour l'en-tête) ────────────────────────────────
+// ─── Progression ─────────────────────────────────────────────────────────────
 
 static void step_progress(const char *id, int *num, int *total)
 {
@@ -249,38 +431,40 @@ static void step_progress(const char *id, int *num, int *total)
     *num = 0;
 }
 
-// Couleur de bordure selon l'étape
-static uint16_t border_for_step(int num)
-{
-    switch (num) {
-        case 1:  return 0x07E0; // vert
-        case 2:  return 0x001F; // bleu
-        case 3:  return COLOR_GOLD;
-        default: return COL_BORDER; // cyan
-    }
-}
-
-// ─── Callbacks actions scénario ───────────────────────────────────────────────
+// ─── Callbacks actions scénario ──────────────────────────────────────────────
 
 static void action_screen_main(const char *name, const cJSON *params)
 {
     (void)name;
     const cJSON *text = cJSON_GetObjectItem(params, "text");
-
     const char *step = scenario_engine_current_step();
     int num, total;
     step_progress(step, &num, &total);
 
-    draw_header(num, total);
-    clear_hint();           // effacer les hints de l'étape précédente
-    draw_main_text(text ? text->valuestring : "", border_for_step(num));
+    ui_lock();
+    ui_update_dots(num);
+    lv_obj_set_style_border_color(s_main_panel, lv_color_hex(accent_for_step(num)), 0);
+
+    tw_stop(&s_tw_hint);
+    lv_label_set_text(s_lbl_hint_hdr, "En attente...");
+    lv_obj_set_style_text_color(s_lbl_hint_hdr, lv_color_hex(C_TEXT_DIM), 0);
+    lv_label_set_text(s_lbl_hint, "");
+
+    tw_start(&s_tw_main, s_lbl_main, text ? text->valuestring : "", 20);
+    ui_unlock();
 }
 
 static void action_screen_secondary(const char *name, const cJSON *params)
 {
     (void)name;
     const cJSON *text = cJSON_GetObjectItem(params, "text");
-    draw_hint_text(text ? text->valuestring : "");
+
+    ui_lock();
+    lv_label_set_text(s_lbl_hint_hdr, ">> INDICE");
+    lv_obj_set_style_text_color(s_lbl_hint_hdr, lv_color_hex(C_HINT_COL), 0);
+    anim_fade_in(s_lbl_hint_hdr, 350, 0);
+    tw_start(&s_tw_hint, s_lbl_hint, text ? text->valuestring : "", 15);
+    ui_unlock();
 }
 
 static void action_led(const char *name, const cJSON *params)
@@ -311,28 +495,27 @@ static void action_flash(const char *name, const cJSON *params)
     const char  *hex    = (color && color->valuestring) ? color->valuestring : "#FFD700";
     int          n      = (count && cJSON_IsNumber(count)) ? count->valueint : 4;
 
-    // Flash LED + écran simultanément
+    uint32_t c = C_GOLD;
+    if (hex[0] == '#' && strlen(hex) >= 7)
+        c = (uint32_t)strtol(hex + 1, NULL, 16);
+
     for (int i = 0; i < n; i++) {
         leds_fill_hex(hex, 255); leds_show();
-        ili9488_fill(COLOR_GOLD);
+        ui_lock();
+        lv_obj_set_style_bg_color(s_flash_overlay, lv_color_hex(c), 0);
+        lv_obj_remove_flag(s_flash_overlay, LV_OBJ_FLAG_HIDDEN);
+        ui_unlock();
         vTaskDelay(pdMS_TO_TICKS(100));
+
         leds_clear(); leds_show();
-        ili9488_fill(COLOR_BLACK);
+        ui_lock();
+        lv_obj_add_flag(s_flash_overlay, LV_OBJ_FLAG_HIDDEN);
+        ui_unlock();
         vTaskDelay(pdMS_TO_TICKS(80));
     }
-    // Rétablir l'en-tête après le flash
-    const char *step = scenario_engine_current_step();
-    int num, total;
-    step_progress(step, &num, &total);
-    draw_header(num, total);
 }
 
 // ─── Tâche clavier MPR121 ────────────────────────────────────────────────────
-//
-// Canaux :  0-9  → chiffres
-//           10   → backspace  (hold 2s = simule rotary_value 270)
-//           11   → confirmer  (hold 2s = simule rfid_read "04:VE:RD:01")
-//           9    →            (hold 2s = simule accel_tilt 15°)
 
 #define HOLD_TICKS pdMS_TO_TICKS(2000)
 
@@ -341,6 +524,7 @@ static int  s_code_len = 0;
 
 static void touch_task(void *arg)
 {
+    (void)arg;
     esp_err_t ret = mpr121_init(i2c_bus_handle());
     if (ret != ESP_OK) {
         ESP_LOGW(TAG, "MPR121 absent: %s", esp_err_to_name(ret));
@@ -363,7 +547,7 @@ static void touch_task(void *arg)
             bool held  = curr.ch[i] && !hold_fired[i] && hold_start[i]
                          && (now - hold_start[i]) >= HOLD_TICKS;
 
-            if (rose)  { hold_start[i] = now; hold_fired[i] = false; }
+            if (rose) { hold_start[i] = now; hold_fired[i] = false; }
 
             if (held) {
                 hold_fired[i] = true;
@@ -380,13 +564,17 @@ static void touch_task(void *arg)
                     if (s_code_len < (int)(sizeof(s_code) - 1)) {
                         s_code[s_code_len++] = '0' + i;
                         s_code[s_code_len]   = '\0';
-                        draw_input(s_code, s_code_len);
+                        ui_lock();
+                        ui_update_input(s_code, s_code_len);
+                        ui_unlock();
                         audio_play_tone(880 + i * 40, 40);
                     }
                 } else if (i == 10) {
                     if (s_code_len > 0) {
                         s_code[--s_code_len] = '\0';
-                        draw_input(s_code, s_code_len);
+                        ui_lock();
+                        ui_update_input(s_code, s_code_len);
+                        ui_unlock();
                         audio_play_tone(440, 50);
                     }
                 } else if (i == 11) {
@@ -395,7 +583,9 @@ static void touch_task(void *arg)
                         strncpy(evt.str, s_code, sizeof(evt.str) - 1);
                         scenario_engine_post_event(&evt);
                         s_code_len = 0; s_code[0] = '\0';
-                        draw_input(NULL, 0);
+                        ui_lock();
+                        ui_update_input(NULL, 0);
+                        ui_unlock();
                     }
                 }
                 hold_start[i] = 0;
@@ -411,19 +601,69 @@ static void touch_task(void *arg)
 
 void app_main(void)
 {
-    // LED off
     leds_init(38, 1);
     leds_clear();
     leds_show();
 
-    // Display : boot screen
     ESP_ERROR_CHECK(ili9488_init());
-    ili9488_fill(COL_HDR_BG);
-    ili9488_fill_rect(0, H_HDR, ILI9488_WIDTH, ILI9488_HEIGHT - H_HDR, COL_MAIN_BG);
-    draw_separator(Y_SEP1);
-    ili9488_draw_string(8, 9, "ESCAPEBOX", COLOR_GOLD, COL_HDR_BG, 1);
-    ili9488_draw_string(8, 60, "Chargement...", COLOR_CYAN, COL_MAIN_BG, 2);
-    vTaskDelay(pdMS_TO_TICKS(400));
+
+    // LVGL
+    lv_init();
+    static uint8_t buf1[LV_BUF_SIZE] __attribute__((aligned(4)));
+    static uint8_t buf2[LV_BUF_SIZE] __attribute__((aligned(4)));
+    s_lv_disp = lv_display_create(ILI9488_WIDTH, ILI9488_HEIGHT);
+    lv_display_set_flush_cb(s_lv_disp, (lv_display_flush_cb_t)ili9488_lvgl_flush);
+    lv_display_set_buffers(s_lv_disp, buf1, buf2, LV_BUF_SIZE, LV_DISPLAY_RENDER_MODE_PARTIAL);
+
+    const esp_timer_create_args_t tick_args = { .callback = lv_tick_cb, .name = "lv_tick" };
+    esp_timer_handle_t tick_timer;
+    ESP_ERROR_CHECK(esp_timer_create(&tick_args, &tick_timer));
+    ESP_ERROR_CHECK(esp_timer_start_periodic(tick_timer, 1000));
+
+    s_lv_mutex = xSemaphoreCreateMutex();
+
+    // ── Boot screen ─────────────────────────────────────────────────────
+    ui_lock();
+    lv_obj_t *scr = lv_screen_active();
+    lv_obj_set_style_bg_color(scr, lv_color_hex(C_BG), 0);
+    lv_obj_set_style_bg_opa(scr, LV_OPA_COVER, 0);
+
+    lv_obj_t *boot_title = lv_label_create(scr);
+    lv_label_set_text(boot_title, "ESCAPEBOX");
+    lv_obj_set_style_text_color(boot_title, lv_color_hex(C_GOLD), 0);
+    lv_obj_set_style_text_font(boot_title, &lv_font_montserrat_28, 0);
+    lv_obj_set_style_text_letter_space(boot_title, 4, 0);
+    lv_obj_align(boot_title, LV_ALIGN_CENTER, 0, -50);
+
+    lv_obj_t *boot_line = lv_obj_create(scr);
+    lv_obj_set_size(boot_line, 120, 2);
+    lv_obj_set_style_bg_color(boot_line, lv_color_hex(C_GOLD), 0);
+    lv_obj_set_style_bg_opa(boot_line, LV_OPA_60, 0);
+    lv_obj_set_style_border_width(boot_line, 0, 0);
+    lv_obj_set_style_radius(boot_line, 1, 0);
+    lv_obj_set_style_pad_all(boot_line, 0, 0);
+    lv_obj_align(boot_line, LV_ALIGN_CENTER, 0, -18);
+
+    lv_obj_t *boot_sub = lv_label_create(scr);
+    lv_label_set_text(boot_sub, "Le Mystere du\nCapitaine Verdier");
+    lv_obj_set_style_text_color(boot_sub, lv_color_hex(C_CYAN), 0);
+    lv_obj_set_style_text_font(boot_sub, &lv_font_montserrat_16, 0);
+    lv_obj_set_style_text_align(boot_sub, LV_TEXT_ALIGN_CENTER, 0);
+    lv_obj_align(boot_sub, LV_ALIGN_CENTER, 0, 14);
+
+    lv_obj_t *boot_load = lv_label_create(scr);
+    lv_label_set_text(boot_load, "Initialisation...");
+    lv_obj_set_style_text_color(boot_load, lv_color_hex(C_TEXT_DIM), 0);
+    lv_obj_set_style_text_font(boot_load, &lv_font_montserrat_14, 0);
+    lv_obj_align(boot_load, LV_ALIGN_CENTER, 0, 70);
+
+    anim_fade_in(boot_title, 500, 0);
+    anim_fade_in(boot_sub, 500, 250);
+    anim_fade_in(boot_load, 400, 550);
+    ui_unlock();
+
+    xTaskCreate(lv_task_fn, "lvgl", 8192, NULL, 4, NULL);
+    vTaskDelay(pdMS_TO_TICKS(1100));
 
     // I2C + audio
     ESP_ERROR_CHECK(i2c_bus_init());
@@ -432,10 +672,22 @@ void app_main(void)
     // Scénario
     esp_err_t ret = scenario_engine_init(capitaine_verdier_json_start);
     if (ret != ESP_OK) {
-        ili9488_draw_string(8, 90, "SCENARIO FAIL", COLOR_RED, COL_MAIN_BG, 2);
+        ui_lock();
+        lv_label_set_text(boot_sub, "ERREUR SCENARIO");
+        lv_obj_set_style_text_color(boot_sub, lv_color_hex(C_RED), 0);
+        ui_unlock();
         ESP_LOGE(TAG, "scenario_engine_init: %s", esp_err_to_name(ret));
         return;
     }
+
+    // Transition boot → jeu
+    ui_lock();
+    lv_obj_delete(boot_title);
+    lv_obj_delete(boot_line);
+    lv_obj_delete(boot_sub);
+    lv_obj_delete(boot_load);
+    ui_create_game();
+    ui_unlock();
 
     scenario_engine_register_action("screen_main",      action_screen_main);
     scenario_engine_register_action("screen_secondary", action_screen_secondary);
@@ -446,7 +698,6 @@ void app_main(void)
 
     ESP_ERROR_CHECK(scenario_engine_start());
 
-    // Musique de fond : MP3 embarqué si dispo, sinon tons synthétiques
 #ifdef HAS_AMBIENT_MP3
     audio_bg_mp3_start(_binary_ambient_mp3_start,
                        _binary_ambient_mp3_end - _binary_ambient_mp3_start);
@@ -454,6 +705,5 @@ void app_main(void)
     audio_bg_start(s_ambient, sizeof(s_ambient) / sizeof(s_ambient[0]));
 #endif
 
-    // Clavier
     xTaskCreate(touch_task, "touch", 4096, NULL, 5, NULL);
 }
