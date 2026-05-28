@@ -344,6 +344,8 @@ Chaque scénario est un fichier YAML décrivant une machine à états finis (sta
 
 > Note pipeline : `yaml2json.py` désactive la résolution YAML 1.1 de `on/off/yes/no` en booléens, car le DSL utilise `on:` (déclencheur d'événement) et `off` (mode LED) comme chaînes.
 
+> ⚠️ L'exemple ci-dessous illustre le DSL **cible**. Certaines constructions (`type: combo` + `require_all`, hints `after_sec`/`after_attempts`, `do_fail_max`, `screen_compass`) ne sont **pas encore** implémentées. Le DSL réellement supporté par `yaml2json.py` et le firmware aujourd'hui : types `narrative/trigger/input/branch/end`, hints `delay_sec`, échec `do_fail`, actions `screen_main/screen_secondary/audio/led/servo/flash/set_var/incr_var`.
+
 **Structure de base :**
 
 Exemple:

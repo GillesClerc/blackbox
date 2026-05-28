@@ -54,8 +54,9 @@ npx shadcn@latest init   # style: default, dark, CSS variables: yes
 ```bash
 npm install @supabase/supabase-js @supabase/ssr \
             stripe @stripe/stripe-js \
-            jose js-yaml zod lucide-react
+            jose zod lucide-react
 ```
+> Le scénario est servi au format **JSON** (artefact généré par `tools/yaml2json.py`, déjà parsé par le firmware) — pas de parseur YAML côté web.
 > `jose` signe/vérifie les JWT box. En Next.js 16, le `proxy` (ex-`middleware`) tourne en runtime **nodejs** (l'edge n'y est plus supporté) — `jose` comme le module natif `crypto` y fonctionnent sans souci.
 
 ---
@@ -114,7 +115,7 @@ web/
   proxy.ts                                      # Next 16 : ex-middleware.ts (runtime nodejs)
   public/
     scenarios/
-      capitaine-verdier.yaml                    # Copié depuis firmware/scenarios/
+      capitaine_verdier.json                    # Copié depuis firmware/scenarios/ (artefact généré)
   .env.local
   next.config.ts
 ```
@@ -142,7 +143,7 @@ export async function createClient() {
               cookieStore.set(name, value, options)
             )
           } catch {
-            // Server Component read-only — ignoré, middleware gère le refresh
+            // Server Component read-only — ignoré, proxy.ts gère le refresh
           }
         },
       },
@@ -224,6 +225,10 @@ import { createHmac, hkdfSync, timingSafeEqual, randomUUID } from 'crypto'
 
 const masterSecret = process.env.BOX_MASTER_SECRET! // 32+ octets, jamais embarqué
 
+// Clé de signature des JWT : propre au serveur (le JWT est émis ET vérifié côté
+// serveur), dérivée du master pour ne pas multiplier les secrets d'env.
+const jwtSecret = new TextEncoder().encode(masterSecret)
+
 // Secret propre à une box, dérivé de son UID (jamais stocké tel quel côté serveur)
 function boxSecret(boxUid: string): Buffer {
   return Buffer.from(hkdfSync('sha256', masterSecret, '', `escapebox:${boxUid}`, 32))
@@ -246,11 +251,11 @@ export async function signBoxJwt(payload: { boxUid: string; deviceId: string; ow
     .setJti(randomUUID())
     .setIssuedAt()
     .setExpirationTime('2h')
-    .sign(secret)
+    .sign(jwtSecret)
 }
 
 export async function verifyBoxJwt(token: string) {
-  const { payload } = await jwtVerify(token, secret)
+  const { payload } = await jwtVerify(token, jwtSecret)
   return payload as { sub: string; device_id: string; owner_id: string; jti: string }
 }
 ```
@@ -321,7 +326,7 @@ create table public.scenarios (
   price_chf numeric(10,2) not null default 0,
   stripe_price_id text,
   cover_url text,
-  yaml_path text,
+  scenario_path text,                           -- artefact JSON généré (yaml2json.py)
   active boolean default true,
   created_at timestamptz default now()
 );
@@ -378,10 +383,10 @@ create table public.box_challenges (
 -- Purge périodique : delete from box_challenges where expires_at < now();
 
 -- Seed
-insert into public.scenarios (slug, title, description, price_chf, difficulty, duration_min, yaml_path)
-values ('capitaine-verdier', 'Le Trésor du Capitaine Verdier',
+insert into public.scenarios (slug, title, description, price_chf, difficulty, duration_min, scenario_path)
+values ('capitaine_verdier', 'Le Mystère du Capitaine Verdier',
         'Un mystère maritime en 3 énigmes.', 19.00, 3, 60,
-        '/scenarios/capitaine-verdier.yaml');
+        '/scenarios/capitaine_verdier.json');
 ```
 
 ---
