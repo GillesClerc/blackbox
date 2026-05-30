@@ -132,6 +132,8 @@ Scores et stats remontés à la prochaine synchro
 └──────────────────────┘
 ```
 
+> **Deux couches à ne pas confondre.** Côté web, le *proxy* Next.js (`proxy.ts`, ex-`middleware.ts`) n'intercepte que les requêtes du **navigateur** (auth, redirections) — il ne parle jamais à la box. Côté matériel, la liaison box↔cloud est une **couche de synchronisation device-to-cloud** : la box est un simple client HTTPS qui appelle l'API REST (§6.1) **à la demande** (sync au boot si WiFi + sync manuelle), jamais en connexion permanente. Aucun framework dédié type ESP RainMaker n'est utilisé — le backend e-commerce (Supabase + Stripe) impose un protocole propre.
+
 ### 2.2 Hardware / Platform Architecture
 
 #### 2.2.1 SoC principal
@@ -806,6 +808,9 @@ Critères produit — go/no-go Phase 2 :
 - [ ] Mode AP de récupération (si WiFi perdu)
 - [ ] Gestion multi-scénarios sur SD
 - [ ] 3 scénarios YAML complets avec audio
+- [ ] Menu on-device tactile LVGL : accueil (sélection scénario) + Réglages (volume, luminosité, langue, reconfig WiFi, diagnostic réseau, infos box, reset usine)
+- [ ] Sync auto au boot non bloquante (fallback offline si pas de WiFi)
+- [ ] Mode dev (déverrouillage 7× version firmware, flag NVS) + Mode Test diagnostic capteurs/actionneurs
 
 **Web Platform :**
 - [ ] Système de synchro complet côté serveur
@@ -1135,23 +1140,72 @@ middleware.ts                       → Supabase updateSession (protège (app) e
 
 ### 6.4 Interface Utilisateur — Box (Menu on-device)
 
-**Écran principal — États :**
+**Navigation : tactile (LVGL) sur l'écran ILI9488 4".** Le rotary encoder reste optionnel (raccourci Phase 2 Pro), non requis en Phase 1.
+
+**États de l'écran :**
 
 ```
 BOOT          → Logo EscapeBox + animation (< 5s)
-MENU          → Liste des scénarios installés (scroll rotary)
-PLAYING       → Affichage scénario en cours
+MENU          → Accueil : liste des scénarios installés (cartes tactiles)
+PLAYING       → Scénario en cours
 SYNC          → Barre de progression download
-SETTINGS      → WiFi, langue, version firmware
+SETTINGS      → Réglages (voir arborescence 6.4.2)
+TEST          → Mode Test capteurs (dev only, voir 6.4.3)
 CHARGING      → Indicateur de charge (si batterie faible)
-ERROR         → Message d'erreur + code QR support
+ERROR         → Message d'erreur + QR code support
 ```
 
-**Navigation menu :**
-- Rotary encoder : scroll dans les listes
-- Bouton rotary : sélection / confirmation
-- Appui long bouton : retour / annuler
-- Double appui : raccourci synchro
+#### 6.4.1 Écran d'accueil (MENU)
+
+- **Header** : nom de la box · icône état WiFi (connecté / hors-ligne) · bouton ⟳ Synchroniser · bouton ⚙ Réglages.
+- **Corps** : liste scrollable des scénarios installés sous forme de cartes (titre, durée, difficulté, vignette). Tap sur une carte → écran Détails (synopsis, nb joueurs) → bouton **Lancer**.
+- Si aucun scénario installé : invite à synchroniser.
+
+#### 6.4.2 Arborescence Réglages
+
+```
+Réglages
+ ├ Volume              slider 0–100 % → registres I2C PCM5122 (0x4C) + amplitude soft
+ ├ Luminosité          slider 10–100 % → PWM backlight          ⚠ dépend câblage GPIO rétroéclairage
+ ├ Langue              FR / DE / EN                              ⚠ Phase 2 (dépend i18n UI + scénarios)
+ ├ Reconfigurer WiFi   relance le provisioning BLE (§6.2)
+ ├ Diagnostic réseau   SSID · RSSI · IP · état serveur (ping GET /box/challenge) · dernière sync
+ ├ Infos box           version firmware · box_uid · espace SD · uptime           [lecture seule]
+ ├ Reset usine         efface NVS (creds WiFi, prefs, association) → reprovisioning   ⚠ double confirmation
+ └ Mode Test           [visible uniquement si Mode dev déverrouillé — voir 6.4.3]
+```
+
+Les préférences (volume, luminosité, langue) sont persistées en **NVS** via `config_manager`.
+
+#### 6.4.3 Mode dev & Mode Test (diagnostic capteurs)
+
+**Déverrouillage (caché aux joueurs)** : dans `Réglages → Infos box`, taper **7 fois rapidement** (< 3 s) sur le champ « version firmware ». Un toast confirme « Mode dev activé », un flag persistant est écrit en NVS (`dev_mode=1`) et l'entrée **Mode Test** apparaît dans Réglages. Re-taper 7× le désactive.
+
+**Mode Test** affiche un dashboard temps réel (rafraîchi à la cadence du `sensor_manager`, ~50 ms) de **tous les capteurs/actionneurs**, pour déboguer le hardware sans recompiler :
+
+| Bloc | Données affichées | Phase (capteur) |
+|---|---|---|
+| Touch capacitif | état des 12 électrodes (bitmap live) + seuils | 1 (MPR121) |
+| Accéléro / gyro | x/y/z (g), tilt détecté, température | 1 (LSM6DSO) |
+| Luminosité ambiante | lux | 1 (VEML7700) |
+| Rotation plateau | angle brut 0–4095, vitesse | 2 (AS5600) |
+| NFC | UID de la dernière carte lue | 2 (PN532) |
+| Souffle / pression | pression hPa, seuil détection | 2 (BMP280) |
+| Hall / aimant | état booléen | 2 |
+| Audio | état I2S, volume courant, flag sous-tension | 1 |
+| WiFi | RSSI, IP | 1 |
+| Système | heap libre, PSRAM libre, uptime, temp SoC | 1 |
+
+**Actionneurs (boutons de test)** : jouer un ton / MP3 test · cycle LED WS2812 (R/V/B) · servo open/close · flash écran. Permet de valider chaque sortie isolément.
+
+> Le Mode Test ne lance jamais de scénario et n'altère pas la config — c'est un écran de pur diagnostic, invisible pour un joueur final tant que `dev_mode` n'est pas déverrouillé.
+
+#### 6.4.4 Comportement de synchronisation
+
+- **Auto au boot** : si le WiFi est connecté, la box lance une sync **silencieuse et non bloquante** en tâche de fond (Core 0). Sans réseau → sync sautée, la box reste pleinement jouable **offline** avec les scénarios déjà sur SD (R-05). Aucun écran de blocage.
+- **Manuelle** : bouton ⟳ du header d'accueil → écran SYNC avec progression.
+- **Flux** : auth HMAC challenge-response (§6.1) → JWT 2h → `GET /box/sync` → download des deltas (scénarios manquants / mis à jour) → **vérification signature ECDSA P-256** sur `(contenu + box_uid)` → écriture SD → purge des `revoked_scenarios`.
+- **Achat → box (modèle pull)** : un achat sur le site ajoute un droit côté serveur (`device_scenarios`, lié au `device_id` de la box) ; la box le découvre au **prochain `GET /box/sync`**, sans push temps réel. Pour une mise à dispo immédiate, le joueur déclenche une sync manuelle (ou scanne le QR d'activation, §6.3).
 
 ---
 

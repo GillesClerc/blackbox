@@ -356,6 +356,9 @@ alter table public.device_scenarios enable row level security;
 create policy "own device scenarios" on public.device_scenarios for all using (
   exists (select 1 from public.devices d where d.id = device_id and d.owner_id = auth.uid())
 );
+-- Modèle pull : le webhook Stripe insère ici le droit (device_id, scenario_id).
+-- La box ne reçoit aucun push — elle le découvre au prochain GET /api/box/sync
+-- (sync auto au boot si WiFi, ou manuelle depuis le menu). Voir FSD §6.4.4.
 
 -- Game sessions
 create table public.game_sessions (
