@@ -1,0 +1,349 @@
+══════════════════════════════════════════════════════════════════════════════
+  ESCAPEBOX — NETLIST COMPLETE
+  Format : texte structure pour reference lors du cablage dans Fusion 360
+  Convention : NET_NAME : PIN1, PIN2, PIN3, ...
+══════════════════════════════════════════════════════════════════════════════
+
+
+═══ ALIMENTATIONS ════════════════════════════════════════════════════════════
+
+NET 5V_USB:
+  J1.VBUS, U8.VIN, D1.A
+
+NET VBAT:
+  U8.BAT, U9.VDD, J10.+, C_BAT.+
+  (via switch ON/OFF vers les regulateurs)
+
+NET VBAT_SW:
+  U5.VIN, U6.VIN, U7.VIN, C23.+, C24.+
+
+NET 3V3_D (digital):
+  U5.VOUT, C13.+, C_A2.+
+  U1.3V3 (ESP32-S3 VDD)
+  U4.VDD (ICS-43434)
+  U11.VDD (PN532)
+  J2.VCC (ILI9488)
+  J3.VCC, J4.VCC, J5.VCC, J6.VCC (I2C satellites)
+  J7.VCC (GC9A01)
+  J8.VCC (potentiometres)
+  R3.1, R4.1 (pull-up I2C)
+  R5.1 (pull-up XSMT)
+  R6.1 (pull-up EN)
+
+NET 3V3_A (audio):
+  U6.VOUT, C14.+
+  U2.AVDD (pin 1), C1_AV.+
+  U2.DVDD (pin 19), C2_DV.+
+  U2.CPVDD (pin 5), C3_CP.+
+  U2.XSMT (pin 12) via R5
+
+NET 5V:
+  U7.VOUT, C25.+
+  J9.VCC (WS2812 + Hall)
+  U3.VDD (PAM8406)
+
+NET GND:
+  (toutes les masses — plan continu, pas de split)
+  J1.GND, U1.GND, U2.GND, U3.GND, U4.GND, U5.GND, U6.GND,
+  U7.GND, U8.GND, U9.GND, U10.GND, U11.GND,
+  J2.GND, J3.GND, J4.GND, J5.GND, J6.GND, J7.GND, J8.GND,
+  J9.GND, J10.GND,
+  tous condensateurs pin -, toutes resistances retour GND
+
+
+═══ BUS I2C ══════════════════════════════════════════════════════════════════
+
+NET I2C_SDA:
+  U1.GPIO21
+  R3.2 (pull-up 4.7kΩ vers 3V3_D)
+  U2.SDA (PCM5122 pin 14)
+  U11.SDA (PN532)
+  J3.SDA, J4.SDA, J5.SDA, J6.SDA (satellites)
+
+NET I2C_SCL:
+  U1.GPIO17
+  R4.2 (pull-up 4.7kΩ vers 3V3_D)
+  U2.SCL (PCM5122 pin 13)
+  U11.SCL (PN532)
+  J3.SCL, J4.SCL, J5.SCL, J6.SCL (satellites)
+
+
+═══ BUS I2S0 — AUDIO SORTIE ═════════════════════════════════════════════════
+
+NET I2S0_BCLK:
+  U1.GPIO4
+  U2.BCK (PCM5122 pin 16)
+
+NET I2S0_LRCK:
+  U1.GPIO5
+  U2.LRCK (PCM5122 pin 15)
+
+NET I2S0_DOUT:
+  U1.GPIO6
+  U2.DIN (PCM5122 pin 17)
+
+
+═══ BUS I2S1 — AUDIO ENTREE (MICRO) ═════════════════════════════════════════
+
+NET I2S1_SCK:
+  U1.GPIO16
+  U4.SCK (ICS-43434)
+
+NET I2S1_WS:
+  U1.GPIO18
+  U4.WS (ICS-43434)
+
+NET I2S1_SD:
+  U1.GPIO7
+  U4.SD (ICS-43434)
+
+
+═══ BUS SPI2 — ECRAN PRINCIPAL ══════════════════════════════════════════════
+
+NET SPI2_MOSI:
+  U1.GPIO11
+  J2.MOSI (ILI9488 SDI + XPT2046 DIN)
+
+NET SPI2_SCLK:
+  U1.GPIO12
+  J2.SCK (ILI9488 SCK + XPT2046 DCLK)
+
+NET SPI2_MISO:
+  U1.GPIO13
+  J2.MISO (XPT2046 DOUT)
+
+NET SPI2_CS_TFT:
+  U1.GPIO10
+  J2.CS_TFT (ILI9488 CS)
+
+NET SPI2_DC:
+  U1.GPIO9
+  J2.DC (ILI9488 D/CX)
+
+NET SPI2_RST:
+  U1.GPIO8
+  J2.RST (ILI9488 RESX)
+
+NET SPI2_CS_XPT:
+  U1.GPIO14
+  J2.CS_XPT (XPT2046 CS)
+
+NET SPI2_IRQ:
+  U1.GPIO15
+  J2.IRQ (XPT2046 PENIRQ)
+
+
+═══ BUS SPI3 — ECRAN ROND ═══════════════════════════════════════════════════
+
+NET SPI3_MOSI:
+  U1.GPIO38
+  J7.MOSI (GC9A01 SDA)
+
+NET SPI3_SCLK:
+  U1.GPIO39
+  J7.SCLK (GC9A01 SCL)
+
+NET SPI3_CS:
+  U1.GPIO40
+  J7.CS (GC9A01 CS)
+
+NET SPI3_DC:
+  U1.GPIO41
+  J7.DC (GC9A01 DC)
+
+NET SPI3_RST:
+  U1.GPIO42
+  J7.RST (GC9A01 RES)
+
+
+═══ ADC — POTENTIOMETRES ════════════════════════════════════════════════════
+
+NET POT1:
+  U1.GPIO1 (ADC1_CH0)
+  J8.POT1
+  C_F1.+ (100nF filtre, autre borne GND)
+
+NET POT2:
+  U1.GPIO2 (ADC1_CH1)
+  J8.POT2
+  C_F2.+ (100nF filtre)
+
+NET POT3:
+  U1.GPIO3 (ADC1_CH2)
+  J8.POT3
+  C_F3.+ (100nF filtre)
+
+
+═══ GPIO DIVERS ═════════════════════════════════════════════════════════════
+
+NET WS2812_DATA:
+  U1.GPIO48
+  R8.1 (330Ω serie)
+  R8.2 → J9.DATA (premiere LED WS2812)
+
+NET HALL_IN:
+  U1.GPIO47
+  R7.2 (pull-up 10kΩ, autre borne 3V3_D)
+  J9.HALL (vers A3144E sur satellite)
+
+NET BTN1:
+  U1.GPIO45
+  (pull-up externe vers 3V3_D si utilise)
+
+NET BTN2:
+  U1.GPIO46
+  (pull-up externe vers 3V3_D, input only)
+
+NET USB_DM:
+  U1.GPIO19
+  R11.2 (22Ω serie)
+  R11.1 → J1.D-
+
+NET USB_DP:
+  U1.GPIO20
+  R12.2 (22Ω serie)
+  R12.1 → J1.D+
+
+NET USB_CC1:
+  J1.CC1
+  R9.1 (5.1kΩ, autre borne GND)
+
+NET USB_CC2:
+  J1.CC2
+  R10.1 (5.1kΩ, autre borne GND)
+
+
+═══ PCM5122 — CONNEXIONS INTERNES ═══════════════════════════════════════════
+
+NET PCM_XSMT:
+  U2.XSMT (pin 12)
+  R5.2 (10kΩ pull-up vers 3V3_A → unmute)
+
+NET PCM_LDOO:
+  U2.LDOO (pin 20)
+  C_LDOO.+ (100nF vers GND, sortie LDO interne)
+
+NET PCM_OUTL:
+  U2.OUTL (pin 6)
+  R1.1 (100Ω filtre)
+
+NET PCM_OUTR:
+  U2.OUTR (pin 7)
+  R2.1 (100Ω filtre)
+
+NET AUDIO_L:
+  R1.2 (sortie filtre 100Ω)
+  C21.1 (22nF vers GND)
+  U3.INL (PAM8406 entree gauche)
+
+NET AUDIO_R:
+  R2.2 (sortie filtre 100Ω)
+  C22.1 (22nF vers GND)
+  U3.INR (PAM8406 entree droite)
+
+NET PCM_CAPP:
+  U2.CAPP (pin 4)
+  C19.+ (2.2µF/25V flying cap)
+
+NET PCM_CAPM:
+  U2.CAPM (pin 2)
+  C19.- (autre borne flying cap)
+  C20.+ (2.2µF/25V reservoir cap, autre borne vers VNEG)
+
+NET PCM_VNEG:
+  U2.VNEG (pin 3)
+  C20.- (reservoir cap)
+
+
+═══ PAM8406 — SORTIES HP ════════════════════════════════════════════════════
+
+NET HP_L+:
+  U3.OUTL+ → haut-parleur gauche +
+
+NET HP_L-:
+  U3.OUTL- → haut-parleur gauche -
+
+NET HP_R+:
+  U3.OUTR+ → haut-parleur droite +
+
+NET HP_R-:
+  U3.OUTR- → haut-parleur droite -
+
+NET PAM_SHDN:
+  U3.SHDN → 3V3_D via 10kΩ (toujours actif)
+
+
+═══ CHARGE BATTERIE ═════════════════════════════════════════════════════════
+
+NET TP_PROG:
+  U8.PROG → R_PROG (1.2kΩ vers GND → courant charge 1A)
+
+NET TP_STDBY:
+  U8.STDBY (LED charge terminee, optionnel)
+
+NET TP_CHRG:
+  U8.CHRG (LED en charge, optionnel)
+
+NET BAT_PROT:
+  U9.VCC → U8.BAT
+  U9.GND-1 → U10.S1
+  U9.GND-2 → U10.S2
+  U10.D1, U10.D2 → GND (vers connecteur batterie J10.-)
+
+
+═══ ESP32 — RESET ═══════════════════════════════════════════════════════════
+
+NET ESP_EN:
+  U1.EN
+  R6.2 (10kΩ pull-up vers 3V3_D)
+  C_EN.+ (100nF vers GND, filtre RC)
+
+
+═══ SATELLITE CAPTEURS (bus I2C sur JST) ════════════════════════════════════
+
+Sur le PCB satellite, les nets sont internes :
+
+NET SAT_I2C_SDA:
+  J_SAT.SDA (JST-SH pin 3)
+  U20.SDA (MTCH2120)
+  U21.SDA (LSM6DSOTR)
+  U22.SDA (VEML7700)
+  U23.SDA (BMP280)
+  U24.SDA (MLX90614)
+
+NET SAT_I2C_SCL:
+  J_SAT.SCL (JST-SH pin 4)
+  U20.SCL (MTCH2120)
+  U21.SCL (LSM6DSOTR)
+  U22.SCL (VEML7700)
+  U23.SCL (BMP280)
+  U24.SCL (MLX90614)
+
+NET SAT_3V3:
+  J_SAT.VCC (JST-SH pin 1)
+  U20.VDD, U21.VDD, U21.VDDIO, U22.VDD, U23.VDD, U23.VDDIO,
+  U24.VDD, U25.VDD (A3144E)
+  C30-C35.+ (decouplage 100nF chaque)
+
+
+═══ NOTES DE CABLAGE ════════════════════════════════════════════════════════
+
+1. Les condensateurs de decouplage doivent etre places au plus pres
+   des pins VDD de chaque composant, avec via GND adjacent.
+
+2. Le plan GND est sur le layer 2 (PCB 4 couches main board).
+   Il doit etre CONTINU — aucune fente, aucune coupure.
+
+3. Les traces I2S (BCLK, LRCK, DOUT) doivent etre courtes (< 3cm),
+   groupees, et blindees par des traces GND adjacentes.
+
+4. La zone audio (PCM5122 + LDO audio + filtre RC + PAM8406) doit
+   etre isolee dans un coin du PCB, sans traces digitales en dessous.
+
+5. L'antenne PN532 (si PCB integre) necessite un keepout zone
+   sans cuivre sous l'antenne boucle.
+
+6. Le micro ICS-43434 necessite un trou acoustique Ø1mm dans le PCB.
+
+
+══════════════════════════════════════════════════════════════════════════════

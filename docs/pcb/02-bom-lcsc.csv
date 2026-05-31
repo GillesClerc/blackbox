@@ -1,0 +1,40 @@
+Comment,Designator,Footprint,LCSC Part#,Qty,Board,Notes
+ESP32-S3-WROOM-1-N16R8,U1,ESP32-S3-WROOM-1,C2913202,1,Main,Module WiFi+BT 16MB flash 8MB PSRAM
+PCM5122PW,U2,TSSOP-20,C1540085,1,Main,DAC audio stereo I2S+I2C
+PAM8406DR,U3,SOP-16,C86270,1,Main,Ampli Class D 5W+5W stereo
+ICS-43434,U4,BGA-6 bottom-port,C5656610,1,Main,Micro MEMS I2S 24-bit
+AP2112K-3.3TRG1,U5,SOT-23-5,C51118,1,Main,LDO 3.3V digital 600mA
+AP2112K-3.3TRG1,U6,SOT-23-5,C51118,1,Main,LDO 3.3V audio 600mA
+MT3608,U7,SOT-23-6,C84817,1,Main,Boost 3.7V→5V 2A
+TP4056,U8,SOP-8,C382139,1,Main,Chargeur LiPo 1A
+DW01A,U9,SOT-23-6,C351410,1,Main,Protection batterie
+FS8205,U10,TSSOP-8,C32254,1,Main,Dual MOSFET protection
+PN5321A3HN/C106,U11,HVQFN-40,C28925,1,Main,NFC reader (equiv. PN532)
+USB-C 16pin SMD,J1,USB-C-16P,—,1,Main,Connecteur USB-C femelle (chercher sur SnapEDA)
+Connecteur FPC 40pin 0.5mm,J2,FPC-40P-0.5,—,1,Main,Vers ILI9488 4 pouces
+Connecteur JST-SH 4pin,J3-J6,JST-SH-4P,—,4,Main,Bus I2C vers satellites
+Connecteur JST-SH 8pin,J7,JST-SH-8P,—,1,Main,SPI3 vers GC9A01
+Connecteur JST-SH 6pin,J8,JST-SH-6P,—,1,Main,ADC potentiometres
+Connecteur JST-SH 4pin,J9,JST-SH-4P,—,1,Main,WS2812 + Hall
+Connecteur JST-PH 2pin,J10,JST-PH-2P,—,1,Main,Batterie LiPo
+Inductance 4.7µH,L1,1210,—,1,Main,Pour MT3608 boost
+100nF 16V ceramique,C1-C12,0402,—,12,Main,Decouplage (ESP32/PCM5122/capteurs)
+10µF 10V ceramique,C13-C18,0805,—,6,Main,Bulk decouplage (LDO/PCM5122)
+2.2µF 25V ceramique,C19-C20,0603,—,2,Main,Charge pump PCM5122
+22nF 50V ceramique,C21-C22,0603,—,2,Main,Filtre RC sortie audio
+1µF 10V ceramique,C23-C24,0402,—,2,Main,Entree LDOs
+22µF 10V ceramique,C25,0805,—,1,Main,Sortie MT3608 boost
+100Ω,R1-R2,0603,—,2,Main,Filtre RC sortie audio
+4.7kΩ,R3-R4,0402,—,2,Main,Pull-up I2C SDA/SCL
+10kΩ,R5-R7,0402,—,3,Main,Pull-up XSMT/EN/Hall
+330Ω,R8,0402,—,1,Main,Serie WS2812 data
+5.1kΩ,R9-R10,0402,—,2,Main,USB-C CC1/CC2
+22Ω,R11-R12,0402,—,2,Main,Serie USB D+/D-
+Diode Schottky SS14,D1,SMA,—,1,Main,Protection MT3608
+MTCH2120-I/MX,U20,QFN-20,—,1,Satellite,Touch capacitif 12ch (pas sur LCSC - DigiKey/Mouser)
+LSM6DSOTR,U21,LGA-14,C2655100,1,Satellite,Accelerometre+gyro 6 axes
+VEML7700-TT,U22,OPLGA,C1850416,1,Satellite,Capteur lumiere ambiante
+BMP280,U23,LGA-8,C83291,1,Satellite,Pression / souffle
+MLX90614ESF-AAA,U24,TO-39,C3663467,1,Satellite,Temperature IR sans contact
+A3144E,U25,TO-92S,—,1,Satellite,Hall effect sensor (chercher equiv. LCSC)
+100nF 16V ceramique,C30-C35,0402,—,6,Satellite,Decouplage capteurs
