@@ -66,7 +66,7 @@ Créer plusieurs feuilles dans le schéma pour la lisibilité :
 | 1 - Power | Alimentation : USB-C, bq24075, LiPo, LDOs, boost |
 | 2 - ESP32 | Module ESP32-S3 + découplage + reset + USB |
 | 3 - Audio | PCM5122 + filtre RC + PAM8406 + ICS-43434 |
-| 4 - Display | ILI9488 FPC + XPT2046 + GC9A01 connecteur |
+| 4 - Display | Connecteurs JST yeux (2× GC9A01) + e-ink bouche (SSD1680) |
 | 5 - Sensors | Bus I2C + connecteurs JST satellites |
 | 6 - IO | WS2812, potentiomètres, boutons, Hall |
 

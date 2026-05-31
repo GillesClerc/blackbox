@@ -1,0 +1,519 @@
+══════════════════════════════════════════════════════════════════════════════
+  ESCAPEBOX — SCHEMA PIN-A-PIN : ALIMENTATION COMPLETE
+  Sources : TI bq24075 (SLUS810N rev.N), Diodes AP2112 (DS39724 rev.2),
+            Aerosemi MT3608, HMSemi DW01A, Fortune Semi FS8205A-DS-17,
+            ST USBLC6-2SC6
+  VERIFIE CONTRE DATASHEETS OFFICIELS — 2026-05-31
+══════════════════════════════════════════════════════════════════════════════
+
+
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │     1. USB-C CONNECTEUR + PROTECTION ESD (USBLC6-2SC6)               │
+  └─────────────────────────────────────────────────────────────────────────┘
+
+                 USB-C Female (16 pin)
+                ┌───────────────────┐
+                │ VBUS ─────────────┼──── NET 5V_USB
+                │                   │
+                │ CC1 ──┤ R9=5.1k ├─┼──── GND
+                │ CC2 ──┤ R10=5.1k├─┼──── GND
+                │                   │
+                │ D- ───┤ R11=22R ├─┼──┐
+                │ D+ ───┤ R12=22R ├─┼──┼──┐
+                │                   │  │  │
+                │ GND ──────────────┼──┼──┼── GND
+                │ SHIELD ─┤ 1M ├───┼──┼──┼── GND
+                └───────────────────┘  │  │
+                                       │  │
+              USBLC6-2SC6 (U12, SOT-23-6)
+              Ref : ST datasheet USBLC6-2SC6
+              ┌────────────────────────┐
+              │                        │
+         ─────┤ Pin 1 : I/O1  ────────┤──── vers U1.GPIO19 (USB D-)
+              │                        │
+              ├ Pin 2 : GND ──────────┤──── GND
+              │                        │
+         ─────┤ Pin 3 : I/O2  ────────┤──── vers U1.GPIO20 (USB D+)
+              │                        │
+              ├ Pin 4 : I/O2  ────────┤──── relie a pin 3
+              │                        │
+              ├ Pin 5 : VBUS  ────────┤──── NET 5V_USB (ref clamping)
+              │                        │
+              ├ Pin 6 : I/O1  ────────┤──── relie a pin 1
+              │                        │
+              └────────────────────────┘
+
+  Capacitance : 3.5 pF max par ligne I/O.
+  Placer au plus pres du connecteur USB-C, traces courtes vers GND.
+
+
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │     2. CHARGEUR + POWER PATH — bq24075RGTR (U8, VQFN-16, 3x3mm)     │
+  └─────────────────────────────────────────────────────────────────────────┘
+
+  Ref : TI SLUS810N, Table 7-1, Figure 7-3 (pages 7-9)
+
+  Pinout complet verifie :
+  ┌──────┬────────┬──────┬────────┐
+  │ Pin  │ Nom    │ Pin  │ Nom    │
+  ├──────┼────────┼──────┼────────┤
+  │  1   │ TS     │  9   │ CHG    │
+  │  2   │ BAT    │ 10   │ OUT    │
+  │  3   │ BAT    │ 11   │ OUT    │
+  │  4   │ CE     │ 12   │ ILIM   │
+  │  5   │ EN2    │ 13   │ IN     │
+  │  6   │ EN1    │ 14   │ TMR    │
+  │  7   │ PGOOD  │ 15   │ SYSOFF │
+  │  8   │ VSS    │ 16   │ ISET   │
+  └──────┴────────┴──────┴────────┘
+  PAD = Exposed thermal pad, relie a VSS interne
+
+  ISET (pin 16) = courant de CHARGE batterie
+  ILIM (pin 12) = courant max d'ENTREE (USB)
+  Ce sont deux fonctions differentes !
+
+                    5V_USB
+                      │
+                   ┌──┴──┐
+                   │ 1uF │ C_IN (ceramique X5R, au plus pres pin 13)
+                   └──┬──┘
+                      │
+              ┌───────┴────────────────────────────────────────────────┐
+              │                    bq24075RGTR                         │
+              │                                                        │
+   TS ────────┤ Pin 1  : TS                                            │
+   divider    │          Entree thermistor NTC                         │
+   10k+10k    │          R_TS1=10k vers VSYS + R_TS2=10k vers GND    │
+              │          Diviseur 50% → desactive monitoring temp     │
+              │                                                        │
+   VBAT ──────┤ Pin 2  : BAT ─────┐                                   │
+              │                    ├── vers DW01A VCC puis LiPo B+     │
+   VBAT ──────┤ Pin 3  : BAT ─────┘                                   │
+              │          2 pins paralleles pour courant                 │
+              │          C_BAT = 4.7uF ceramique BAT-GND              │
+              │                                                        │
+   GND ───────┤ Pin 4  : CE (Charge Enable)                           │
+              │          ACTIVE LOW : LOW = charge ON                  │
+              │          Pull-down interne 285k                        │
+              │          NOTRE CONFIG : GND → charge toujours ON      │
+              │                                                        │
+   GND ───────┤ Pin 5  : EN2                                          │
+              │          Pull-down interne 285k                        │
+              │                                                        │
+   VSYS ──────┤ Pin 6  : EN1                                          │
+              │          Pull-down interne 285k                        │
+              │                                                        │
+              │          Table EN2/EN1 (ref datasheet SLUS810N p.11) : │
+              │          ┌──────┬──────┬──────────────────────┐        │
+              │          │ EN2  │ EN1  │ Limite courant IN    │        │
+              │          ├──────┼──────┼──────────────────────┤        │
+              │          │  0   │  0   │ 100 mA (USB100)      │        │
+              │          │  0   │  1   │ 500 mA (USB500)      │ ← CFG │
+              │          │  1   │  0   │ R_ILIM (programmable) │        │
+              │          │  1   │  1   │ Standby (USB suspend) │        │
+              │          └──────┴──────┴──────────────────────┘        │
+              │          NOTRE CONFIG : EN2=GND(L), EN1=VSYS(H) → 500mA│
+              │                                                        │
+   PGOOD ─────┤ Pin 7  : PGOOD (open drain, active low)               │
+              │          Pull-up 100k vers 3V3_D                       │
+              │          LOW = source USB presente et valide           │
+              │          (optionnel : peut connecter LED ou GPIO ESP32)│
+              │                                                        │
+   GND ───────┤ Pin 8  : VSS (masse principale)                       │
+              │          Relier au pad thermique                        │
+              │                                                        │
+   CHG ───────┤ Pin 9  : CHG (open drain, active low)                  │
+              │          Pull-up 100k vers 3V3_D                       │
+              │          LOW = charge en cours                          │
+              │          (optionnel : peut connecter LED)              │
+              │                                                        │
+   VSYS ──────┤ Pin 10 : OUT ─────┐                                   │
+              │                    ├── Sortie power path (VSYS)        │
+   VSYS ──────┤ Pin 11 : OUT ─────┘                                   │
+              │          2 pins paralleles pour courant                 │
+              │          C_OUT = 4.7uF ceramique OUT-GND              │
+              │          USB branche : ~4.4V                           │
+              │          Batterie seule : 3.0-4.2V                     │
+              │                                                        │
+   R_ILIM ────┤ Pin 12 : ILIM (Input current Limit)                   │
+              │          R_ILIM = 1.5k vers GND                        │
+              │          Actif quand EN2=H, EN1=L                      │
+              │          Dans notre config (500mA via EN), ce pin      │
+              │          n'est pas actif mais doit quand meme avoir    │
+              │          une resistance pour le mode RILIM eventuel    │
+              │                                                        │
+   5V_USB ────┤ Pin 13 : IN (entree USB)                               │
+              │          Plage : 4.35 - 6.6V                           │
+              │          C_IN = 1uF ceramique IN-GND                   │
+              │                                                        │
+   GND ───────┤ Pin 14 : TMR (Safety Timer)                            │
+              │          GND = tous les timers desactives             │
+              │          (float = valeurs par defaut)                  │
+              │          (18k-72k vers GND = timer programmable)       │
+              │                                                        │
+   GND ───────┤ Pin 15 : SYSOFF                                       │
+              │          Pull-UP interne 5M vers VBAT                  │
+              │          ⚠ Si flottant → HIGH → systeme OFF !         │
+              │          DOIT etre tire a GND pour mode normal         │
+              │          NOTRE CONFIG : GND (systeme ON)              │
+              │                                                        │
+   R_ISET ────┤ Pin 16 : ISET (charge current Set)                    │
+              │          Courant de charge de la batterie               │
+              │          I_CHG = K_ISET / R_ISET                       │
+              │          K_ISET = 890 (constante TI)                   │
+              │          Pour 1A : R_ISET = 890R (valeur exacte)       │
+              │          ⚠ Flottant = charge desactivee              │
+              │                                                        │
+   GND ───────┤ PAD    : Exposed thermal pad                           │
+              │          Relie a VSS en interne                        │
+              │          DOIT etre soude au plan GND                    │
+              │          Vias thermiques (4-6 vias Ø0.3mm)             │
+              └────────────────────────────────────────────────────────┘
+
+
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │     3. PROTECTION BATTERIE — DW01A (U9) + FS8205A (U10)             │
+  └─────────────────────────────────────────────────────────────────────────┘
+
+  ⚠ ATTENTION : le GND du DW01A ne va PAS au GND systeme !
+  Il va au POINT MILIEU entre les deux MOSFETs du FS8205A.
+  C'est ainsi que le DW01A mesure le courant (sense).
+
+  Ref : HMSemi DW01A datasheet p.2-3, Fortune Semi FS8205A-DS-17 p.3
+
+
+  DW01A (U9, SOT-23-6) — pinout verifie :
+  ┌──────┬──────┬──────────────────────────────┐
+  │ Pin  │ Nom  │ Fonction                     │
+  ├──────┼──────┼──────────────────────────────┤
+  │  1   │ OD   │ Gate decharge (→ FS8205 G1)  │
+  │  2   │ CS   │ Current sense (→ midpoint)   │
+  │  3   │ OC   │ Gate charge (→ FS8205 G2)    │
+  │  4   │ TD   │ Test delay (laisser NC)      │
+  │  5   │ VCC  │ Alim (→ VBAT via R 100R)     │
+  │  6   │ GND  │ Masse IC (→ midpoint S1/S2)  │
+  └──────┴──────┴──────────────────────────────┘
+
+  FS8205A (U10, TSSOP-8) — pinout verifie Fortune Semi officiel :
+  ┌──────┬──────┬──────────────────────────────┐
+  │ Pin  │ Nom  │ Fonction                     │
+  ├──────┼──────┼──────────────────────────────┤
+  │  1   │ D12  │ Drain commun (MOSFET 1+2)    │
+  │  2   │ S1   │ Source MOSFET 1              │
+  │  3   │ S1   │ Source MOSFET 1 (parallele)  │
+  │  4   │ G1   │ Gate MOSFET 1 (decharge)     │
+  │  5   │ G2   │ Gate MOSFET 2 (charge)       │
+  │  6   │ S2   │ Source MOSFET 2              │
+  │  7   │ S2   │ Source MOSFET 2 (parallele)  │
+  │  8   │ D12  │ Drain commun (MOSFET 1+2)    │
+  └──────┴──────┴──────────────────────────────┘
+
+  ⚠ Drain sur pins 1+8 (coins opposes), PAS 7+8 comme certaines
+  sources incorrectes l'indiquent. Verifier le marquage du lot !
+
+
+  Schema de cablage complet DW01A + FS8205A :
+
+                bq24075 BAT              J10.+ (LiPo B+)
+                (pin 2,3)                     │
+                    │                         │
+                    ├─── R_VCC=100R ──────────┤
+                    │                         │
+                    │    DW01A (U9)            │
+                    │    ┌──────────┐          │
+                    │    │ Pin 5 VCC├──────────┘ (via R_VCC)
+                    │    │          │
+                    │    │ Pin 4 TD │──── NC (flottant)
+                    │    │          │
+                    │    │ Pin 1 OD ├──────────── FS8205 Pin 4 (G1)
+                    │    │          │
+                    │    │ Pin 3 OC ├──────────── FS8205 Pin 5 (G2)
+                    │    │          │
+                    │    │ Pin 2 CS ├──┐
+                    │    │          │  │
+                    │    │ Pin 6 GND├──┤ MIDPOINT (jonction S1/S2)
+                    │    └──────────┘  │
+                    │                  │
+                    │    FS8205A (U10) │
+                    │    ┌────────────────────────────────┐
+                    │    │                                │
+                    │    │ Pin 1 D12 ─┐                   │
+                    │    │            ├── Drain commun    │
+                    │    │ Pin 8 D12 ─┘                   │
+                    │    │            │                   │
+                    │    │    connecte a J10.- (LiPo B-)  │
+                    │    │    et au GND SYSTEME            │
+                    │    │                                │
+                    │    │ Pin 2 S1 ──┐                   │
+                    │    │            ├── Source FET1     │
+                    │    │ Pin 3 S1 ──┘                   │
+                    │    │            │                   │
+                    │    │            └── MIDPOINT ───────┤
+                    │    │                                │
+                    │    │ Pin 6 S2 ──┐                   │
+                    │    │            ├── Source FET2     │
+                    │    │ Pin 7 S2 ──┘                   │
+                    │    │            │                   │
+                    │    │            └── vers DW01A      │
+                    │    │                CS + GND        │
+                    │    │                                │
+                    │    │ Pin 4 G1 ←── DW01A OD (pin 1) │
+                    │    │ Pin 5 G2 ←── DW01A OC (pin 3) │
+                    │    │                                │
+                    │    └────────────────────────────────┘
+
+  Flux de courant (mode normal, les 2 FETs ON) :
+  LiPo B+ → J10.+ → bq24075 BAT / DW01A VCC
+  LiPo B- → J10.- → FS8205 D12 (pin1,8) → FET2 → S2 (pin6,7)
+         → MIDPOINT → S1 (pin2,3) → FET1 → ... → GND systeme
+
+  Correction : en fait dans la topologie standard DW01A+FS8205 :
+  - D12 (drain commun) va vers B- du LiPo
+  - S2 → midpoint → S1
+  - S1 connecte au GND systeme (pack P-)
+  - DW01A GND + CS sont au midpoint (entre S1 et S2)
+
+
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │     4. LDO DIGITAL — AP2112K-3.3 #1 (U5, SOT-23-5)                  │
+  └─────────────────────────────────────────────────────────────────────────┘
+
+  Ref : BCD Semi / Diodes Inc AP2112 datasheet DS39724 rev.2
+
+  Pinout verifie (SOT-23-5) :
+  ┌──────┬──────┬──────────────────────┐
+  │ Pin  │ Nom  │ Fonction             │
+  ├──────┼──────┼──────────────────────┤
+  │  1   │ VIN  │ Entree (2.5-6.0V)    │
+  │  2   │ GND  │ Masse                │
+  │  3   │ EN   │ Enable (active HIGH) │
+  │  4   │ NC   │ Pas connecte         │
+  │  5   │ VOUT │ Sortie 3.3V regulee  │
+  └──────┴──────┴──────────────────────┘
+
+              VSYS (depuis bq24075 OUT)
+                │
+             ┌──┴──┐
+             │ 1uF │ C_D1 (ceramique, entree, au plus pres pin 1)
+             └──┬──┘
+                │
+       ┌────────┴──────────────────────────────────────┐
+       │          AP2112K-3.3 (U5)                     │
+       │                                                │
+  VSYS─┤ Pin 1 : VIN ─── entree 2.5-6.0V               │
+       │                                                │
+  GND──┤ Pin 2 : GND                                    │
+       │                                                │
+  VSYS─┤ Pin 3 : EN  ─── tier a VIN (always ON)         │
+       │                                                │
+       ├ Pin 4 : NC                                      │
+       │                                                │
+  3V3D─┤ Pin 5 : VOUT ── sortie 3.3V regulee            │
+       │                                                │
+       └────────────────────────────────────────────────┘
+                │
+             ┌──┴──┐
+             │10uF │ C_D2 (ceramique, sortie, au plus pres pin 5)
+             └──┬──┘
+                │
+              3.3V_D ──── ESP32-S3, ecrans, capteurs I2C,
+                          PN532, ICS-43434, pull-ups
+
+  Dropout : ~250 mV a 600mA
+  ⚠ VSYS min (batterie vide) = 3.0V → sortie peut chuter
+  sous 3.3V en fin de decharge. Le DW01A coupe a 2.4V.
+
+
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │     5. LDO AUDIO — AP2112K-3.3 #2 (U6, SOT-23-5)                   │
+  └─────────────────────────────────────────────────────────────────────────┘
+
+  Identique au LDO digital (meme IC, meme pinout) mais rail separe.
+
+              VSYS
+                │
+             ┌──┴──┐
+             │ 1uF │ C_A1
+             └──┬──┘
+                │
+       ┌────────┴──────────────────────────────────────┐
+       │          AP2112K-3.3 (U6)                     │
+       │                                                │
+  VSYS─┤ Pin 1 : VIN                                    │
+       │                                                │
+  GND──┤ Pin 2 : GND                                    │
+       │                                                │
+  VSYS─┤ Pin 3 : EN ─── tier a VIN                      │
+       │                                                │
+       ├ Pin 4 : NC                                      │
+       │                                                │
+  3V3A─┤ Pin 5 : VOUT ── sortie 3.3V audio               │
+       │                                                │
+       └────────────────────────────────────────────────┘
+                │
+             ┌──┴──┐
+             │10uF │ C_A2
+             └──┬──┘
+                │
+              3.3V_A ──── PCM5122 (AVDD, DVDD, CPVDD), XSMT pull-up
+
+  GND commun avec le LDO digital (PAS de split GND).
+  L'isolation est uniquement sur le rail VCC (3.3V_D vs 3.3V_A).
+
+
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │     6. BOOST 5V — MT3608 (U7, SOT-23-6)                             │
+  └─────────────────────────────────────────────────────────────────────────┘
+
+  Ref : Aerosemi MT3608 datasheet
+
+  Pinout verifie (SOT-23-6) :
+  ┌──────┬──────┬───────────────────────────────┐
+  │ Pin  │ Nom  │ Fonction                      │
+  ├──────┼──────┼───────────────────────────────┤
+  │  1   │ SW   │ Drain MOSFET interne (switch) │
+  │  2   │ GND  │ Masse                         │
+  │  3   │ FB   │ Feedback (ref 0.6V interne)   │
+  │  4   │ EN   │ Enable (active HIGH)          │
+  │  5   │ IN   │ Entree (2-24V)                │
+  │  6   │ NC   │ Pas connecte                  │
+  └──────┴──────┴───────────────────────────────┘
+
+  Circuit complet :
+
+              VSYS
+                │
+             ┌──┴──┐
+             │10uF │ C_B1 (ceramique, entree)
+             └──┬──┘
+                │
+                ├─── MT3608 Pin 5 (IN)
+                │
+                ├─── MT3608 Pin 4 (EN) ← tier a IN (always ON)
+                │
+             ┌──┴──┐
+             │22uH │ L1 (inductance blindee, I_sat > 2A)
+             └──┬──┘    ⚠ 22uH recommande pour 3.7V→5V
+                │         (4.7uH possible mais plus de ripple)
+                │
+                ├─── MT3608 Pin 1 (SW)
+                │
+             ┌──┴──┐
+             │ SS14│ D1 (Schottky, anode=SW, cathode=5V)
+             └──┬──┘
+                │
+                ├─── NET 5V
+                │
+             ┌──┴──┐
+             │22uF │ C_B2 (ceramique, sortie)
+             └──┬──┘
+                │
+               GND
+
+  Diviseur feedback :
+
+                5V
+                │
+             ┌──┴──┐
+             │750k │ R_FB_H (feedback haut)
+             └──┬──┘
+                │
+                ├─── MT3608 Pin 3 (FB)
+                │
+             ┌──┴──┐
+             │100k │ R_FB_L (feedback bas)
+             └──┬──┘
+                │
+               GND
+
+  VOUT = 0.6V × (1 + 750k/100k) = 0.6 × 8.5 = 5.1V
+  (5.1V acceptable pour WS2812 et PAM8406)
+
+  MT3608 Pin 2 (GND) ──── GND
+
+
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │     7. RESET ESP32-S3 (circuit EN)                                   │
+  └─────────────────────────────────────────────────────────────────────────┘
+
+       3.3V_D
+         │
+      ┌──┴──┐
+      │10k  │ R6 (pull-up)
+      └──┬──┘
+         │
+         ├─────── U1.EN (pin ESP32-S3)
+         │
+      ┌──┴──┐
+      │100nF│ C_EN (filtre bruit, tau = 10k × 100nF = 1ms)
+      └──┬──┘
+         │
+        GND
+
+
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │     8. RESUME CABLAGE — VUE GLOBALE PIN-A-PIN                       │
+  └─────────────────────────────────────────────────────────────────────────┘
+
+  USB-C VBUS ──── 5V_USB ──── bq24075 pin 13 (IN) + C_IN 1uF
+                              USBLC6 pin 5 (VBUS ref)
+
+  bq24075 pin 10,11 (OUT) ── VSYS ──┬── AP2112K U5 pin 1 (VIN) + pin 3 (EN)
+                                     ├── AP2112K U6 pin 1 (VIN) + pin 3 (EN)
+                                     ├── MT3608 U7 pin 5 (IN) + pin 4 (EN)
+                                     ├── R_TS1 10k (TS divider haut)
+                                     └── bq24075 pin 6 (EN1, HIGH=500mA)
+
+  bq24075 pin 2,3 (BAT) ──── R_VCC 100R ──── DW01A U9 pin 5 (VCC)
+                              ──── J10.+ (LiPo B+)
+                              ──── C_BAT 4.7uF vers GND
+
+  DW01A U9 pin 2 (CS)  ───── midpoint (jonction S1-S2 du FS8205)
+  DW01A U9 pin 6 (GND) ───── midpoint (idem)
+  DW01A U9 pin 1 (OD)  ───── FS8205 U10 pin 4 (G1)
+  DW01A U9 pin 3 (OC)  ───── FS8205 U10 pin 5 (G2)
+
+  FS8205 U10 pin 1,8 (D12) ── J10.- (LiPo B-) ── vers GND systeme
+  FS8205 U10 pin 2,3 (S1)  ── midpoint (vers DW01A CS+GND)
+  FS8205 U10 pin 6,7 (S2)  ── midpoint (jonction avec S1)
+
+  AP2112K U5 pin 5 (VOUT) ── 3.3V_D + C_D2 10uF
+  AP2112K U6 pin 5 (VOUT) ── 3.3V_A + C_A2 10uF
+  MT3608 VOUT (via D1)    ── 5V + C_B2 22uF
+
+  bq24075 pin 1 (TS) ────── R_TS1=10k vers VSYS + R_TS2=10k vers GND
+  bq24075 pin 4 (CE) ────── GND (LOW = charge ON)
+  bq24075 pin 5 (EN2) ───── GND (LOW)
+  bq24075 pin 6 (EN1) ───── VSYS (HIGH) → config EN2=L/EN1=H = 500mA
+  bq24075 pin 7 (PGOOD) ─── 100k pull-up 3V3_D (optionnel)
+  bq24075 pin 8 (VSS) ───── GND + pad thermique (vias)
+  bq24075 pin 9 (CHG) ──── 100k pull-up 3V3_D (optionnel)
+  bq24075 pin 12 (ILIM) ── R_ILIM=1.5k vers GND
+  bq24075 pin 14 (TMR) ─── GND (timers desactives)
+  bq24075 pin 15 (SYSOFF)─ GND (systeme ON) ⚠ NE PAS laisser flottant
+  bq24075 pin 16 (ISET) ── R_ISET=890R vers GND (1A charge)
+
+
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │     9. CHECKLIST CONDENSATEURS ALIMENTATION                          │
+  └─────────────────────────────────────────────────────────────────────────┘
+
+  │ Ref    │ Valeur     │ Package │ Position                    │
+  │────────│────────────│─────────│─────────────────────────────│
+  │ C_IN   │ 1uF/10V   │ 0402    │ bq24075 IN (pin13) → GND   │
+  │ C_BAT  │ 4.7uF/10V │ 0603    │ bq24075 BAT (pin2,3) → GND │
+  │ C_OUT  │ 4.7uF/10V │ 0603    │ bq24075 OUT (pin10,11)→GND │
+  │ C_D1   │ 1uF/10V   │ 0402    │ AP2112K U5 VIN (pin1)→GND  │
+  │ C_D2   │ 10uF/10V  │ 0805    │ AP2112K U5 VOUT (pin5)→GND │
+  │ C_A1   │ 1uF/10V   │ 0402    │ AP2112K U6 VIN (pin1)→GND  │
+  │ C_A2   │ 10uF/10V  │ 0805    │ AP2112K U6 VOUT (pin5)→GND │
+  │ C_B1   │ 10uF/10V  │ 0805    │ MT3608 IN (pin5) → GND     │
+  │ C_B2   │ 22uF/10V  │ 0805    │ MT3608 VOUT → GND          │
+  │ C_EN   │ 100nF/16V │ 0402    │ ESP32 EN → GND              │
+
+  Total condensateurs alimentation : 10 pieces
+  Tous ceramiques X5R ou X7R, placer au plus pres des pins IC.
+  Via GND adjacent a chaque capa.
+
+
+══════════════════════════════════════════════════════════════════════════════

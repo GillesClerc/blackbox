@@ -25,9 +25,9 @@ NET 3V3_D (digital):
   U1.3V3 (ESP32-S3 VDD)
   U4.VDD (ICS-43434)
   U11.VDD (PN532)
-  J2.VCC (ILI9488)
   J3.VCC, J4.VCC, J5.VCC, J6.VCC (I2C satellites)
-  J7.VCC (GC9A01)
+  J7.VCC (2x GC9A01 yeux)
+  J7b.VCC (SSD1680 e-ink bouche)
   J8.VCC (potentiometres)
   R3.1, R4.1 (pull-up I2C)
   R5.1 (pull-up XSMT)
@@ -42,14 +42,14 @@ NET 3V3_A (audio):
 
 NET 5V:
   U7.VOUT, C25.+
-  J9.VCC (WS2812 + Hall)
+  J9.VCC (WS2812)
   U3.VDD (PAM8406)
 
 NET GND:
   (toutes les masses — plan continu, pas de split)
   J1.GND, U1.GND, U2.GND, U3.GND, U4.GND, U5.GND, U6.GND,
-  U7.GND, U8.GND, U9.GND, U10.GND, U11.GND,
-  J2.GND, J3.GND, J4.GND, J5.GND, J6.GND, J7.GND, J8.GND,
+  U7.GND, U8.GND, U9.GND, U10.GND, U11.GND, U12.GND,
+  J3.GND, J4.GND, J5.GND, J6.GND, J7.GND, J7b.GND, J8.GND,
   J9.GND, J10.GND,
   tous condensateurs pin -, toutes resistances retour GND
 
@@ -58,14 +58,14 @@ NET GND:
 
 NET I2C_SDA:
   U1.GPIO21
-  R3.2 (pull-up 4.7kΩ vers 3V3_D)
+  R3.2 (pull-up 4.7k vers 3V3_D)
   U2.SDA (PCM5122 pin 14)
   U11.SDA (PN532)
   J3.SDA, J4.SDA, J5.SDA, J6.SDA (satellites)
 
 NET I2C_SCL:
   U1.GPIO17
-  R4.2 (pull-up 4.7kΩ vers 3V3_D)
+  R4.2 (pull-up 4.7k vers 3V3_D)
   U2.SCL (PCM5122 pin 13)
   U11.SCL (PN532)
   J3.SCL, J4.SCL, J5.SCL, J6.SCL (satellites)
@@ -101,62 +101,58 @@ NET I2S1_SD:
   U4.SD (ICS-43434)
 
 
-═══ BUS SPI2 — ECRAN PRINCIPAL ══════════════════════════════════════════════
+═══ BUS SPI2 — E-INK BOUCHE (SSD1680) ══════════════════════════════════════
 
 NET SPI2_MOSI:
   U1.GPIO11
-  J2.MOSI (ILI9488 SDI + XPT2046 DIN)
+  J7b.MOSI (SSD1680 DIN)
 
 NET SPI2_SCLK:
   U1.GPIO12
-  J2.SCK (ILI9488 SCK + XPT2046 DCLK)
+  J7b.SCLK (SSD1680 CLK)
 
-NET SPI2_MISO:
-  U1.GPIO13
-  J2.MISO (XPT2046 DOUT)
-
-NET SPI2_CS_TFT:
+NET SPI2_CS:
   U1.GPIO10
-  J2.CS_TFT (ILI9488 CS)
+  J7b.CS (SSD1680 CS)
 
 NET SPI2_DC:
   U1.GPIO9
-  J2.DC (ILI9488 D/CX)
+  J7b.DC (SSD1680 DC)
 
 NET SPI2_RST:
   U1.GPIO8
-  J2.RST (ILI9488 RESX)
+  J7b.RST (SSD1680 RST)
 
-NET SPI2_CS_XPT:
-  U1.GPIO14
-  J2.CS_XPT (XPT2046 CS)
-
-NET SPI2_IRQ:
-  U1.GPIO15
-  J2.IRQ (XPT2046 PENIRQ)
+NET SPI2_BUSY:
+  U1.GPIO13
+  J7b.BUSY (SSD1680 BUSY, active low, lecture seule)
 
 
-═══ BUS SPI3 — ECRAN ROND ═══════════════════════════════════════════════════
+═══ BUS SPI3 — YEUX (2x GC9A01) ════════════════════════════════════════════
 
 NET SPI3_MOSI:
   U1.GPIO38
-  J7.MOSI (GC9A01 SDA)
+  J7.MOSI (GC9A01 #1 SDA + GC9A01 #2 SDA, partage)
 
 NET SPI3_SCLK:
   U1.GPIO39
-  J7.SCLK (GC9A01 SCL)
+  J7.SCLK (GC9A01 #1 SCL + GC9A01 #2 SCL, partage)
 
-NET SPI3_CS:
+NET SPI3_CS_L:
   U1.GPIO40
-  J7.CS (GC9A01 CS)
+  J7.CS_L (GC9A01 #1 oeil gauche CS)
+
+NET SPI3_CS_R:
+  U1.GPIO14
+  J7.CS_R (GC9A01 #2 oeil droit CS)
 
 NET SPI3_DC:
   U1.GPIO41
-  J7.DC (GC9A01 DC)
+  J7.DC (GC9A01 #1 DC + GC9A01 #2 DC, partage)
 
 NET SPI3_RST:
   U1.GPIO42
-  J7.RST (GC9A01 RES)
+  J7.RST (GC9A01 #1 RES + GC9A01 #2 RES, partage)
 
 
 ═══ ADC — POTENTIOMETRES ════════════════════════════════════════════════════
@@ -181,11 +177,14 @@ NET POT3:
 
 NET WS2812_DATA:
   U1.GPIO48
-  R8.1 (330Ω serie)
-  R8.2 → J9.DATA (premiere LED WS2812)
+  R8.1 (330R serie)
+  R8.2 -> J9.DATA (premiere LED WS2812)
+
+NET GPIO15_RSV:
+  U1.GPIO15 (reserve, libre — ex-XPT2046 IRQ)
 
 NET GPIO47_RSV:
-  U1.GPIO47 (reserve, libre — TMAG5273 Hall migre sur bus I2C)
+  U1.GPIO47 (reserve, libre)
 
 NET BTN1:
   U1.GPIO45
@@ -197,33 +196,33 @@ NET BTN2:
 
 NET USB_DM:
   J1.D-
-  R11.1 (22Ω serie)
-  R11.2 → U12.IO1 (USBLC6-2SC6 protection ESD)
-  U12.IO1 → U1.GPIO19
+  R11.1 (22R serie)
+  R11.2 -> U12.IO1 (USBLC6-2SC6 protection ESD)
+  U12.IO1 -> U1.GPIO19
 
 NET USB_DP:
   J1.D+
-  R12.1 (22Ω serie)
-  R12.2 → U12.IO2 (USBLC6-2SC6 protection ESD)
-  U12.IO2 → U1.GPIO20
+  R12.1 (22R serie)
+  R12.2 -> U12.IO2 (USBLC6-2SC6 protection ESD)
+  U12.IO2 -> U1.GPIO20
 
 NET USB_ESD_VCC:
-  U12.VBUS → 5V_USB (reference clamping USBLC6-2SC6)
+  U12.VBUS -> 5V_USB (reference clamping USBLC6-2SC6)
 
 NET USB_CC1:
   J1.CC1
-  R9.1 (5.1kΩ, autre borne GND)
+  R9.1 (5.1k, autre borne GND)
 
 NET USB_CC2:
   J1.CC2
-  R10.1 (5.1kΩ, autre borne GND)
+  R10.1 (5.1k, autre borne GND)
 
 
 ═══ PCM5122 — CONNEXIONS INTERNES ═══════════════════════════════════════════
 
 NET PCM_XSMT:
   U2.XSMT (pin 12)
-  R5.2 (10kΩ pull-up vers 3V3_A → unmute)
+  R5.2 (10k pull-up vers 3V3_A -> unmute)
 
 NET PCM_LDOO:
   U2.LDOO (pin 20)
@@ -231,30 +230,30 @@ NET PCM_LDOO:
 
 NET PCM_OUTL:
   U2.OUTL (pin 6)
-  R1.1 (100Ω filtre)
+  R1.1 (100R filtre)
 
 NET PCM_OUTR:
   U2.OUTR (pin 7)
-  R2.1 (100Ω filtre)
+  R2.1 (100R filtre)
 
 NET AUDIO_L:
-  R1.2 (sortie filtre 100Ω)
+  R1.2 (sortie filtre 100R)
   C21.1 (22nF vers GND)
   U3.INL (PAM8406 entree gauche)
 
 NET AUDIO_R:
-  R2.2 (sortie filtre 100Ω)
+  R2.2 (sortie filtre 100R)
   C22.1 (22nF vers GND)
   U3.INR (PAM8406 entree droite)
 
 NET PCM_CAPP:
   U2.CAPP (pin 4)
-  C19.+ (2.2µF/25V flying cap)
+  C19.+ (2.2uF/25V flying cap)
 
 NET PCM_CAPM:
   U2.CAPM (pin 2)
   C19.- (autre borne flying cap)
-  C20.+ (2.2µF/25V reservoir cap, autre borne vers VNEG)
+  C20.+ (2.2uF/25V reservoir cap, autre borne vers VNEG)
 
 NET PCM_VNEG:
   U2.VNEG (pin 3)
@@ -264,58 +263,72 @@ NET PCM_VNEG:
 ═══ PAM8406 — SORTIES HP ════════════════════════════════════════════════════
 
 NET HP_L+:
-  U3.OUTL+ → haut-parleur gauche +
+  U3.OUTL+ -> haut-parleur gauche +
 
 NET HP_L-:
-  U3.OUTL- → haut-parleur gauche -
+  U3.OUTL- -> haut-parleur gauche -
 
 NET HP_R+:
-  U3.OUTR+ → haut-parleur droite +
+  U3.OUTR+ -> haut-parleur droite +
 
 NET HP_R-:
-  U3.OUTR- → haut-parleur droite -
+  U3.OUTR- -> haut-parleur droite -
 
 NET PAM_SHDN:
-  U3.SHDN → 3V3_D via 10kΩ (toujours actif)
+  U3.SHDN -> 3V3_D via 10k (toujours actif)
 
 
 ═══ CHARGE BATTERIE (bq24075 + DW01A/FS8205) ════════════════════════════════
 
 NET BQ_ILIM:
-  U8.ILIM → R_ILIM (1.5kΩ vers GND → courant charge max 1A)
+  U8.ILIM (pin 12) -> R_ILIM (1.5k vers GND, input current si mode RILIM)
+
+NET BQ_ISET:
+  U8.ISET (pin 16) -> R_ISET (890R vers GND -> courant charge 1A)
+
+NET BQ_TMR:
+  U8.TMR (pin 14) -> GND (timers desactives)
+
+NET BQ_SYSOFF:
+  U8.SYSOFF (pin 15) -> GND (systeme ON, NE PAS laisser flottant)
 
 NET BQ_TS:
-  U8.TS → R_TS1 (10kΩ vers VSYS) + R_TS2 (10kΩ vers GND)
+  U8.TS -> R_TS1 (10k vers VSYS) + R_TS2 (10k vers GND)
   (diviseur tension pour desactiver monitoring temperature)
 
 NET BQ_CE:
-  U8.CE → VSYS via 10kΩ (charge toujours active)
+  U8.CE (pin 4) -> GND (active LOW, LOW = charge ON)
 
 NET BQ_EN1:
-  U8.EN1 → VSYS (high)
+  U8.EN1 (pin 6) -> VSYS (HIGH)
 
 NET BQ_EN2:
-  U8.EN2 → VSYS (high)
-  (EN1=H, EN2=H → limite courant USB 500mA)
+  U8.EN2 (pin 5) -> GND (LOW)
+  (EN2=L, EN1=H -> limite courant USB 500mA, ref SLUS810N p.11)
 
 NET BQ_PGOOD:
-  U8.PGOOD (open drain, optionnel → LED ou GPIO ESP32)
+  U8.PGOOD (open drain, optionnel -> LED ou GPIO ESP32)
 
 NET BQ_CHG:
-  U8.CHG (open drain, optionnel → LED charge en cours)
+  U8.CHG (open drain, optionnel -> LED charge en cours)
 
 NET BAT_PROT:
-  U9.VCC → U8.BAT (bq24075)
-  U9.GND-1 → U10.S1
-  U9.GND-2 → U10.S2
-  U10.D1, U10.D2 → GND (vers connecteur batterie J10.-)
+  U9.VCC (pin 5) -> R_VCC 100R -> bq24075 BAT (pin 2,3) -> J10.+ (LiPo B+)
+  U9.CS (pin 2) -> midpoint (jonction S1/S2 FS8205)
+  U9.GND (pin 6) -> midpoint (idem, PAS le GND systeme)
+  U9.OD (pin 1) -> U10.G1 (pin 4)
+  U9.OC (pin 3) -> U10.G2 (pin 5)
+  U9.TD (pin 4) -> NC (flottant)
+  U10.D12 (pin 1, pin 8) -> J10.- (LiPo B-) -> GND systeme
+  U10.S1 (pin 2, pin 3) -> midpoint
+  U10.S2 (pin 6, pin 7) -> midpoint
 
 
 ═══ ESP32 — RESET ═══════════════════════════════════════════════════════════
 
 NET ESP_EN:
   U1.EN
-  R6.2 (10kΩ pull-up vers 3V3_D)
+  R6.2 (10k pull-up vers 3V3_D)
   C_EN.+ (100nF vers GND, filtre RC)
 
 
@@ -365,7 +378,10 @@ NET SAT_3V3:
 5. L'antenne PN532 (si PCB integre) necessite un keepout zone
    sans cuivre sous l'antenne boucle.
 
-6. Le micro ICS-43434 necessite un trou acoustique Ø1mm dans le PCB.
+6. Le micro ICS-43434 necessite un trou acoustique D1mm dans le PCB.
+
+7. Les deux GC9A01 et le SSD1680 sont des MODULES externes connectes
+   via JST-SH. Pas de composants ecran sur le PCB main.
 
 
 ══════════════════════════════════════════════════════════════════════════════

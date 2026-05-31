@@ -1,6 +1,6 @@
 ══════════════════════════════════════════════════════════════════════════════
   ESCAPEBOX — SCHEMA BLOC SYSTEME COMPLET
-  Cube 150×150×150mm — Architecture Main + Satellites
+  Cube 150x150x150mm — Architecture Main + Satellites
 ══════════════════════════════════════════════════════════════════════════════
 
 
@@ -11,62 +11,73 @@
                               USB-C (5V charge + CDC debug)
                                 │
   ┌─────────────────────────────┼─────────────────────────────────────────┐
-  │                      PCB MAIN (~100×100mm)                           │
+  │                      PCB MAIN (~100x100mm)                           │
   │                                                                       │
   │  ┌──────────────┐   ┌──────────────┐   ┌──────────────────────────┐  │
   │  │ ALIMENTATION │   │   ESP32-S3   │   │    AUDIO (zone isolee)   │  │
   │  │              │   │   WROOM-1    │   │                          │  │
   │  │ bq24075 PP   │   │   N16R8      │   │  PCM5122 DAC (I2C+I2S)  │  │
-  │  │ LiPo 3000mAh│   │              │   │       ↓                  │  │
-  │  │ AP2112K ×2   │   │  16MB flash  │   │  100Ω+22nF filtre RC    │  │
-  │  │ MT3608 boost │   │  8MB PSRAM   │   │       ↓                  │  │
+  │  │ LiPo 3000mAh│   │              │   │       |                  │  │
+  │  │ AP2112K x2   │   │  16MB flash  │   │  100R+22nF filtre RC     │  │
+  │  │ MT3608 boost │   │  8MB PSRAM   │   │       |                  │  │
   │  │              │   │              │   │  PAM8406 ampli 5W+5W     │  │
-  │  │ 3.3V_D ──────┼───┤ VDD         │   │       ↓                  │  │
-  │  │ 3.3V_A ──────┼───┼─────────────┼───┤ AVDD  HP stéréo          │  │
-  │  │ 5V     ──────┼───┼─────────────┼───┼──→ vers LEDs             │  │
+  │  │ 3.3V_D ──────┼───┤ VDD         │   │       |                  │  │
+  │  │ 3.3V_A ──────┼───┼─────────────┼───┤ AVDD  HP stereo          │  │
+  │  │ 5V     ──────┼───┼─────────────┼───┼──> vers LEDs             │  │
   │  └──────────────┘   │              │   └──────────────────────────┘  │
   │                     │              │                                  │
-  │  ┌──────────────┐   │   I2C ───────┼───→ JST-SH 4p ×4 (satellites) │
-  │  │ PN532 NFC    │←──┤   bus        │                                 │
+  │  ┌──────────────┐   │   I2C ───────┼───> JST-SH 4p x4 (satellites) │
+  │  │ PN532 NFC    │<──┤   bus        │                                 │
   │  │ (I2C 0x48)   │   │              │   ┌──────────────────────────┐  │
-  │  │ antenne PCB  │   │   SPI2 ──────┼───┤ FPC 40p → ILI9488 4"    │  │
-  │  └──────────────┘   │   (8-15)     │   │ + XPT2046 touch         │  │
+  │  │ antenne PCB  │   │   SPI2 ──────┼───┤ JST-SH 8p -> SSD1680    │  │
+  │  └──────────────┘   │   (8-13)     │   │ e-ink 2.9" (bouche)     │  │
   │                     │              │   └──────────────────────────┘  │
-  │  ┌──────────────┐   │   SPI3 ──────┼───→ JST-SH 8p (GC9A01)       │
-  │  │ ICS-43434    │←──┤   (38-42)    │                                 │
+  │  ┌──────────────┐   │   SPI3 ──────┼───> JST-SH 10p (2x GC9A01)   │
+  │  │ ICS-43434    │<──┤   (38-42,14) │      yeux gauche + droit      │
   │  │ micro MEMS   │   │              │   ┌──────────────────────────┐  │
   │  │ (I2S1 in)    │   │   I2S0 ──────┼───┤ vers PCM5122 (GPIO4-6)  │  │
   │  └──────────────┘   │   (4-6)      │   └──────────────────────────┘  │
   │                     │              │                                  │
-  │                     │   I2S1 ──────┼───→ vers ICS-43434 (GPIO7,16,18)│
+  │                     │   I2S1 ──────┼───> vers ICS-43434 (GPIO7,16,18)│
   │                     │   (7,16,18)  │                                 │
   │                     │              │                                  │
-  │                     │   ADC ───────┼───→ JST-SH 6p (pots)           │
+  │                     │   ADC ───────┼───> JST-SH 6p (pots)           │
   │                     │   (1-3)      │                                  │
   │                     │              │                                  │
-  │                     │   GPIO48 ────┼───→ JST-SH 4p (WS2812+Hall)    │
-  │                     │   GPIO47 ────┼───┘                              │
+  │                     │   GPIO48 ────┼───> JST-SH 4p (WS2812)         │
   │                     │              │                                  │
-  │                     │   USB ───────┼───→ USB-C (GPIO19-20)           │
-  │                     │   UART0 ─────┼───→ debug (GPIO43-44)           │
+  │                     │   USB ───────┼───> USB-C (GPIO19-20)           │
+  │                     │   UART0 ─────┼───> debug (GPIO43-44)           │
   │                     └──────────────┘                                  │
   └───────────────────────────────────────────────────────────────────────┘
-        │           │           │           │           │
-   JST-SH 4p   JST-SH 4p   JST-SH 8p   JST-SH 6p   JST-SH 4p
-   I2C bus      I2C bus      SPI3        ADC          LED+Hall
-        │           │           │           │           │
-        ▼           ▼           ▼           ▼           ▼
-  ┌───────────┐ ┌────────┐ ┌─────────┐ ┌────────┐ ┌──────────┐
-  │SATELLITE  │ │SAT.    │ │ GC9A01  │ │POTARDS │ │ WS2812   │
-  │CAPTEURS   │ │CAPTEURS│ │ 1.3"    │ │ROTATIFS│ │ LEDs     │
-  │           │ │(spare) │ │ rond    │ │(×3)    │ │          │
-  │ MTCH2120  │ │        │ │ 240×240 │ │        │ │          │
-  │ LSM6DSOXTR│ │ (pour  │ │         │ │ ADC1   │ │          │
-  │ VEML7700  │ │ faces  │ │ SPI3    │ │ CH0-2  │ │ Chaine   │
-  │ BMP280    │ │ suppl.)│ │ 38-42   │ │        │ │ serie    │
-  │ MLX90614  │ │        │ │         │ │        │ │          │
-  │ TMAG5273  │ │        │ │         │ │        │ │          │
-  └───────────┘ └────────┘ └─────────┘ └────────┘ └──────────┘
+        │           │           │          │           │
+   JST-SH 4p   JST-SH 4p   JST-SH 10p  JST-SH 6p   JST-SH 4p
+   I2C bus      I2C bus      SPI3 yeux   ADC          LED
+        │           │           │          │           │
+        v           v           v          v           v
+  ┌───────────┐ ┌────────┐ ┌──────────┐ ┌────────┐ ┌──────────┐
+  │SATELLITE  │ │SAT.    │ │ 2x       │ │POTARDS │ │ WS2812   │
+  │CAPTEURS   │ │CAPTEURS│ │ GC9A01   │ │ROTATIFS│ │ LEDs     │
+  │           │ │(spare) │ │ 1.3"     │ │(x3)    │ │          │
+  │ MTCH2120  │ │        │ │ ronds    │ │        │ │          │
+  │ LSM6DSOXTR│ │ (pour  │ │ 240x240  │ │ ADC1   │ │ Chaine   │
+  │ VEML7700  │ │ faces  │ │ YEUX     │ │ CH0-2  │ │ serie    │
+  │ BMP280    │ │ suppl.)│ │ SPI3     │ │        │ │          │
+  │ MLX90614  │ │        │ │ 38-42,14 │ │        │ │          │
+  │ TMAG5273  │ │        │ │          │ │        │ │          │
+  └───────────┘ └────────┘ └──────────┘ └────────┘ └──────────┘
+                                │
+                         JST-SH 8p
+                         SPI2 e-ink
+                                │
+                                v
+                         ┌──────────┐
+                         │ SSD1680  │
+                         │ e-ink    │
+                         │ 2.9"    │
+                         │ 296x128 │
+                         │ BOUCHE  │
+                         └──────────┘
 
 
   ┌─────────────────────────────────────────────────────────────────────────┐
@@ -76,47 +87,47 @@
   ┌─────────┐
   │ ESP32-S3│
   │         │
-  │ GPIO21 ─┼─── SDA ──┬──┬──┬──┬──┬──┬──┬── (4.7kΩ pull-up vers 3.3V_D)
+  │ GPIO21 ─┼─── SDA ──┬──┬──┬──┬──┬──┬──┬── (4.7kR pull-up vers 3.3V_D)
   │ GPIO17 ─┼─── SCL ──┤  │  │  │  │  │  │
   │         │          │  │  │  │  │  │  │
-  │         │          ▼  ▼  ▼  ▼  ▼  ▼  ▼
+  │         │          v  v  v  v  v  v  v
   │         │     PCM  PN  MT  LS  VE  BM  ML
   │         │     5122 532 CH  M6  ML  P2  X9
   │         │     0x4C 0x48 2120 DSOTR 7700 80 0614
   │         │               0x28 0x6A 0x10 0x76 0x5C
   │         │
-  │ GPIO4 ──┼─── I2S0_BCLK ───→ PCM5122 pin 16 (BCK)
-  │ GPIO5 ──┼─── I2S0_LRCK ───→ PCM5122 pin 15 (LRCK)
-  │ GPIO6 ──┼─── I2S0_DOUT ───→ PCM5122 pin 17 (DIN)
+  │ GPIO4 ──┼─── I2S0_BCLK ───> PCM5122 pin 16 (BCK)
+  │ GPIO5 ──┼─── I2S0_LRCK ───> PCM5122 pin 15 (LRCK)
+  │ GPIO6 ──┼─── I2S0_DOUT ───> PCM5122 pin 17 (DIN)
   │         │
-  │ GPIO16 ─┼─── I2S1_SCK ────→ ICS-43434 SCK
-  │ GPIO18 ─┼─── I2S1_WS  ────→ ICS-43434 WS
-  │ GPIO7 ──┼─── I2S1_SD  ←──── ICS-43434 SD (data in)
+  │ GPIO16 ─┼─── I2S1_SCK ────> ICS-43434 SCK
+  │ GPIO18 ─┼─── I2S1_WS  ────> ICS-43434 WS
+  │ GPIO7 ──┼─── I2S1_SD  <──── ICS-43434 SD (data in)
   │         │
-  │ GPIO11 ─┼─── SPI2_MOSI ──→ ILI9488 MOSI
-  │ GPIO12 ─┼─── SPI2_SCLK ──→ ILI9488 SCK + XPT2046 CLK
-  │ GPIO13 ─┼─── SPI2_MISO ←── XPT2046 DOUT
-  │ GPIO10 ─┼─── SPI2_CS1  ──→ ILI9488 CS
-  │ GPIO9 ──┼─── DC ──────────→ ILI9488 D/C
-  │ GPIO8 ──┼─── RST ─────────→ ILI9488 RST
-  │ GPIO14 ─┼─── SPI2_CS2  ──→ XPT2046 CS
-  │ GPIO15 ─┼─── IRQ ←──────── XPT2046 PENIRQ (active low)
+  │ GPIO11 ─┼─── SPI2_MOSI ──> SSD1680 DIN (e-ink bouche)
+  │ GPIO12 ─┼─── SPI2_SCLK ──> SSD1680 CLK
+  │ GPIO10 ─┼─── SPI2_CS   ──> SSD1680 CS
+  │ GPIO9 ──┼─── DC ──────────> SSD1680 DC
+  │ GPIO8 ──┼─── RST ─────────> SSD1680 RST
+  │ GPIO13 ─┼─── BUSY <──────── SSD1680 BUSY
   │         │
-  │ GPIO38 ─┼─── SPI3_MOSI ──→ GC9A01 SDA
-  │ GPIO39 ─┼─── SPI3_SCLK ──→ GC9A01 SCL
-  │ GPIO40 ─┼─── SPI3_CS   ──→ GC9A01 CS
-  │ GPIO41 ─┼─── DC ──────────→ GC9A01 D/C
-  │ GPIO42 ─┼─── RST ─────────→ GC9A01 RES
+  │ GPIO38 ─┼─── SPI3_MOSI ──> GC9A01 x2 SDA (partage)
+  │ GPIO39 ─┼─── SPI3_SCLK ──> GC9A01 x2 SCL (partage)
+  │ GPIO40 ─┼─── SPI3_CS_L ──> GC9A01 oeil gauche CS
+  │ GPIO14 ─┼─── SPI3_CS_R ──> GC9A01 oeil droit CS
+  │ GPIO41 ─┼─── DC ──────────> GC9A01 x2 DC (partage)
+  │ GPIO42 ─┼─── RST ─────────> GC9A01 x2 RES (partage)
   │         │
-  │ GPIO1 ──┼─── ADC1_CH0 ←── Potentiometre 1
-  │ GPIO2 ──┼─── ADC1_CH1 ←── Potentiometre 2
-  │ GPIO3 ──┼─── ADC1_CH2 ←── Potentiometre 3
+  │ GPIO1 ──┼─── ADC1_CH0 <── Potentiometre 1
+  │ GPIO2 ──┼─── ADC1_CH1 <── Potentiometre 2
+  │ GPIO3 ──┼─── ADC1_CH2 <── Potentiometre 3
   │         │
-  │ GPIO48 ─┼─── WS2812_DATA ──→ LED chain (RMT)
-  │ GPIO47 ─┼─── (réserve, libre)
+  │ GPIO48 ─┼─── WS2812_DATA ──> LED chain (RMT)
+  │ GPIO15 ─┼─── (reserve, libre)
+  │ GPIO47 ─┼─── (reserve, libre)
   │         │
-  │ GPIO45 ─┼─── BTN1 ←──── Bouton poussoir (pull-up ext)
-  │ GPIO46 ─┼─── BTN2 ←──── Bouton poussoir (input only)
+  │ GPIO45 ─┼─── BTN1 <──── Bouton poussoir (pull-up ext)
+  │ GPIO46 ─┼─── BTN2 <──── Bouton poussoir (input only)
   │         │
   │ GPIO19 ─┼─── USB_D-
   │ GPIO20 ─┼─── USB_D+
@@ -131,12 +142,12 @@
 
   ESP32-S3           PCM5122           Filtre RC         PAM8406
   ┌──────┐          ┌──────┐          ┌───────┐         ┌──────┐
-  │ I2S0 │──BCLK───→│      │          │       │         │      │
-  │      │──LRCK───→│ DAC  │──OUTL──→│100Ω   │──────→──│ INL  │──→ HP L
-  │      │──DOUT───→│      │  OUTR──→│+22nF  │──────→──│ INR  │──→ HP R
-  │ I2C  │──SDA/SCL→│ ctrl │         │fc≈72k │         │      │
+  │ I2S0 │──BCLK───>│      │          │       │         │      │
+  │      │──LRCK───>│ DAC  │──OUTL──>│100R   │──────>──│ INL  │──> HP L
+  │      │──DOUT───>│      │  OUTR──>│+22nF  │──────>──│ INR  │──> HP R
+  │ I2C  │──SDA/SCL>│ ctrl │         │fc~72k │         │      │
   └──────┘          └──────┘          └───────┘         │ 5W+5W│
-                                                         │ SHDN │──→ 3.3V
+                                                         │ SHDN │──> 3.3V
                                                          └──────┘   (always on)
 
 
@@ -146,13 +157,40 @@
 
   ICS-43434          ESP32-S3
   ┌──────┐          ┌──────┐
-  │ MEMS │──SD────→│ I2S1 │   I2S 24-bit, mono
-  │ micro│←──SCK───│      │   Canal gauche (L/R pin → GND)
-  │      │←──WS────│      │   Utilisé pour détection sonore
+  │ MEMS │──SD────>│ I2S1 │   I2S 24-bit, mono
+  │ micro│<──SCK───│      │   Canal gauche (L/R pin -> GND)
+  │      │<──WS────│      │   Utilise pour detection sonore
   │      │          │      │   (niveau, souffle, commande vocale)
   │ VDD ─┼─ 3.3V_D │      │
   │ GND ─┼─ GND    └──────┘
   └──────┘
+
+
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │                 FACE AVANT — VISAGE DU PERSONNAGE                    │
+  └─────────────────────────────────────────────────────────────────────────┘
+
+          <──────────── 150 mm ──────────────>
+     ┌────────────────────────────────────────┐
+     │                                        │
+     │    ┌──────────┐    ┌──────────┐        │
+     │    │  OEIL L  │    │  OEIL R  │        │
+     │    │  GC9A01  │    │  GC9A01  │        │
+     │    │  D33mm   │    │  D33mm   │        │
+     │    │  SPI3    │    │  SPI3    │        │
+     │    │  CS=G40  │    │  CS=G14  │        │
+     │    └──────────┘    └──────────┘        │
+     │                                        │
+     │         ┌────────────────┐             │
+     │         │  E-INK 2.9"   │             │
+     │         │   "BOUCHE"    │             │
+     │         │  67 x 29 mm   │             │
+     │         │   SSD1680     │             │
+     │         │   SPI2        │             │
+     │         └────────────────┘             │
+     │                                        │
+     │    ~~~~ WS2812 halo lumineux ~~~~      │
+     └────────────────────────────────────────┘
 
 
 ══════════════════════════════════════════════════════════════════════════════

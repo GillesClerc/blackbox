@@ -38,22 +38,22 @@
   │  GPIO18 ─── WS    → ICS-43434                            │
   │  GPIO7  ─── SD    ← ICS-43434                            │
   │                                                           │
-  │  ── SPI2 Ecran Principal ───────────                      │
-  │  GPIO11 ─── MOSI  → ILI9488 + XPT2046                    │
-  │  GPIO12 ─── SCLK  → ILI9488 + XPT2046                    │
-  │  GPIO13 ─── MISO  ← XPT2046                              │
-  │  GPIO10 ─── CS    → ILI9488                               │
-  │  GPIO9  ─── DC    → ILI9488                               │
-  │  GPIO8  ─── RST   → ILI9488                               │
-  │  GPIO14 ─── CS    → XPT2046                               │
-  │  GPIO15 ─── IRQ   ← XPT2046 (active low)                 │
+  │  ── SPI2 E-ink Bouche (SSD1680) ─────                      │
+  │  GPIO11 ─── MOSI  → SSD1680 DIN                          │
+  │  GPIO12 ─── SCLK  → SSD1680 CLK                          │
+  │  GPIO10 ─── CS    → SSD1680 CS                            │
+  │  GPIO9  ─── DC    → SSD1680 DC                            │
+  │  GPIO8  ─── RST   → SSD1680 RST                          │
+  │  GPIO13 ─── BUSY  ← SSD1680 BUSY (active low)            │
+  │  GPIO14 ─── CS_R  → GC9A01 oeil droit (bus SPI3)         │
+  │  GPIO15 ─── (réserve, libre)                              │
   │                                                           │
-  │  ── SPI3 Ecran Rond ────────────────                      │
-  │  GPIO38 ─── MOSI  → GC9A01                               │
-  │  GPIO39 ─── SCLK  → GC9A01                               │
-  │  GPIO40 ─── CS    → GC9A01                               │
-  │  GPIO41 ─── DC    → GC9A01                               │
-  │  GPIO42 ─── RST   → GC9A01                               │
+  │  ── SPI3 Yeux (2× GC9A01) ─────────                      │
+  │  GPIO38 ─── MOSI  → GC9A01 ×2 (partagé)                  │
+  │  GPIO39 ─── SCLK  → GC9A01 ×2 (partagé)                  │
+  │  GPIO40 ─── CS_L  → GC9A01 oeil gauche                   │
+  │  GPIO41 ─── DC    → GC9A01 ×2 (partagé)                  │
+  │  GPIO42 ─── RST   → GC9A01 ×2 (partagé)                  │
   │                                                           │
   │  ── ADC (potentiometres) ───────────                      │
   │  GPIO1  ─── ADC1_CH0 ← pot 1 (wiper)                     │

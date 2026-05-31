@@ -162,32 +162,31 @@ Scores et stats remontés à la prochaine synchro
 
 > **Composants retirés du Phase 1** : AS5600 (rotation magnétique), servos SG90, laser. Remplacés par potentiomètres rotatifs mécaniques + interactions software.
 
-**Bus SPI2** (écran principal — IOMUX GPIO11/12 pour perf DMA) :
+**Bus SPI2** (e-ink bouche — IOMUX GPIO11/12 pour perf DMA) :
 
 | GPIO | Signal | Composant |
 |---|---|---|
-| GPIO11 | MOSI | ILI9488 4" TFT + XPT2046 (partagé) |
-| GPIO12 | SCLK | ILI9488 4" TFT + XPT2046 (partagé) |
-| GPIO13 | MISO | XPT2046 (lecture touch) |
-| GPIO10 | CS_TFT | ILI9488 chip select |
-| GPIO9  | DC | ILI9488 data/command |
-| GPIO8  | RST | ILI9488 reset |
-| GPIO14 | CS_XPT | XPT2046 chip select |
-| GPIO15 | IRQ | XPT2046 touch interrupt (active low) |
+| GPIO11 | MOSI | SSD1680 e-ink 2.9" |
+| GPIO12 | SCLK | SSD1680 e-ink 2.9" |
+| GPIO10 | CS | SSD1680 chip select |
+| GPIO9  | DC | SSD1680 data/command |
+| GPIO8  | RST | SSD1680 reset |
+| GPIO13 | BUSY | SSD1680 busy (active low, lecture seule) |
 
-> Écran en mode **landscape** (MADCTL 0x28, 480×320). XPT2046 résistif sur le même bus SPI2 avec CS séparé. Backlight alimenté en 3.3V directement (pas de contrôle PWM). FPC 40 broches vers le PCB main.
+> Écran e-ink 2.9" (296×128, SSD1680) en mode paysage, utilisé comme "bouche" du personnage. Partial refresh 0.3s pour affichage texte mot-à-mot. GPIO14-15 libérés (plus de XPT2046). Driver Espressif officiel : `esp_lcd_ssd1681` (compatible SSD1680).
 
-**Bus SPI3** (écran boussole / révélation) :
+**Bus SPI3** (yeux — 2× GC9A01 ronds) :
 
 | GPIO | Signal | Composant |
 |---|---|---|
-| GPIO38 | MOSI | GC9A01 1.3" rond |
-| GPIO39 | SCLK | GC9A01 1.3" rond |
-| GPIO40 | CS | GC9A01 1.3" rond |
-| GPIO41 | DC | GC9A01 1.3" rond |
-| GPIO42 | RST | GC9A01 1.3" rond |
+| GPIO38 | MOSI | GC9A01 ×2 (partagé) |
+| GPIO39 | SCLK | GC9A01 ×2 (partagé) |
+| GPIO40 | CS_EYE_L | GC9A01 œil gauche |
+| GPIO41 | DC | GC9A01 ×2 (partagé) |
+| GPIO42 | RST | GC9A01 ×2 (partagé) |
+| GPIO14 | CS_EYE_R | GC9A01 œil droit |
 
-> GPIO38-42 tous disponibles sur WROOM-1-N16R8. UART0 (GPIO43/44) préservé pour le debug. Connecté via nappe 6 fils (SPI + 3.3V + GND) vers satellite interaction.
+> Deux écrans ronds 1.3" 240×240 formant les "yeux" du personnage. MOSI/SCLK/DC/RST partagés, seul le CS distingue les deux écrans. GPIO14 récupéré (ex-CS XPT2046) pour le 2ème CS. SPI 80 MHz, animations ~15-25 FPS par œil en alternance.
 
 **Bus I2S0** (audio sortie → PCM5122) :
 
@@ -234,14 +233,16 @@ GPIO 0      — (strapping boot, réservé)
 GPIO 1-3    — ADC potentiomètres (satellites)
 GPIO 4-6    — I2S0 audio out (PCM5122)
 GPIO 7      — I2S1 SD (ICS-43434 micro)
-GPIO 8-15   — SPI2 écran principal (ILI9488 + XPT2046)
+GPIO 8-13   — SPI2 e-ink bouche (SSD1680 : CS/DC/RST/MOSI/SCLK/BUSY)
+GPIO 14     — CS œil droit (GC9A01 #2, bus SPI3)
+GPIO 15     — (réserve, libre — ex-XPT2046 IRQ)
 GPIO 16     — I2S1 SCK (ICS-43434 micro)
 GPIO 17     — I2C SCL
 GPIO 18     — I2S1 WS (ICS-43434 micro)
 GPIO 19-20  — USB-C
 GPIO 21     — I2C SDA
 GPIO 26-37  — ⛔ Flash/PSRAM (non disponible)
-GPIO 38-42  — SPI3 écran rond (GC9A01)
+GPIO 38-42  — SPI3 yeux (2× GC9A01 : MOSI/SCLK/CS_L/DC/RST partagés)
 GPIO 43-44  — UART0 debug
 GPIO 45-46  — Boutons / réserve
 GPIO 47     — (réserve, libre)
@@ -269,31 +270,28 @@ bq24075 (TI) — chargeur 1.5A + power path DPPM
 
 | Face | Rôle principal | Composants |
 |---|---|---|
-| **Dessus** | Écran narratif | ILI9488 4" TFT + XPT2046 touch (FPC vers main) |
-| **Devant** | Interactions principales | MTCH2120 keypad capacitif, potentiomètres, boutons, WS2812 rétro |
-| **Droite** | Capteurs ambiance | VEML7700 lumière, BMP280 souffle, MLX90614 IR temp |
+| **Devant** | Visage du personnage | 2× GC9A01 1.3" ronds (yeux) + e-ink 2.9" SSD1680 (bouche), WS2812 rétro |
+| **Dessus** | Interactions principales | MTCH2120 keypad capacitif, potentiomètres, boutons |
+| **Droite** | Capteurs ambiance | VEML7700 lumière, BMP280 souffle |
 | **Gauche** | NFC + détection | PN532 (antenne derrière bois ≤3mm), TMAG5273 Hall I2C, WS2812 anneau |
-| **Arrière** | Révélation / boussole | GC9A01 1.3" rond, WS2812 celebration border |
-| **Dessous** | Technique | USB-C charge, interrupteur, HP (PAM8406 + haut-parleur), LSM6DSOXTR (orientation) |
+| **Arrière** | Capteurs + réserve | LSM6DSOXTR (orientation), MLX90614 IR temp |
+| **Dessous** | Technique | USB-C charge, interrupteur, HP (PAM8406 + haut-parleur) |
 
 > Assignation indicative. Les capteurs sur satellite I2C peuvent être repositionnés librement tant qu'ils restent sur le bus backbone.
 
-**Flux de révélation complet :**
+**Concept "personnage" :**
 ```
-Joueur résout l'énigme → entre le code sur le keypad capacitif (MTCH2120)
-        ↓
-Face arrière s'active (éclairage WS2812)
-        ↓
-GC9A01 affiche QR → escapebox.ch/obj/{scenario}/{session}
-        ↓
-Téléphone scanne le QR → reçoit l'objet digital (image, fragment, symbole)
-        ↓
-L'objet affiche un CODE → joueur le tape sur le keypad
-        ↓
-Prochaine énigme débloquée
+La face avant est un VISAGE :
+  - 2× GC9A01 ronds = yeux expressifs (clignements, regard, émotions)
+  - 1× e-ink 2.9" = bouche (texte mot-à-mot, style Animal Crossing)
+  - WS2812 = halo lumineux ambiance autour du visage
+
+Le personnage parle : texte e-ink + syllabes audio AC synchronisées.
+Les yeux réagissent en temps réel aux capteurs et aux actions du joueur.
+Les énigmes sont "données" par le personnage (dialogue + feedback visuel).
 ```
 
-> **Note NFC téléphone :** L'interaction téléphone → PN532 (téléphone agit comme tag) est **impossible sur iPhone** (limitation hardware iOS, HCE restreint aux paiements). Le flux QR ci-dessus fonctionne sur tous les appareils.
+> **Note NFC téléphone :** L'interaction téléphone → PN532 (téléphone agit comme tag) est **impossible sur iPhone** (limitation hardware iOS, HCE restreint aux paiements).
 
 #### 2.2.3 Architecture PCB — Main + Satellites
 
@@ -307,10 +305,10 @@ Composants embarqués :
 - ICS-43434 MEMS micro (trou PCB pour son)
 - PN532 NFC (antenne PCB intégrée ou FPC externe)
 - Connecteur USB-C (charge + USB CDC debug)
-- Connecteur FPC 40 pins pour ILI9488 4" TFT
+- Connecteur JST-SH 6 pins pour e-ink 2.9" SSD1680 (SPI2 : MOSI, SCLK, CS, DC, RST, BUSY)
 - Connecteur batterie LiPo JST-PH 2 pins
 - 4× connecteurs JST-SH 4 pins (bus I2C : SDA, SCL, 3.3V, GND)
-- 1× connecteur JST-SH 8 pins (SPI3 + alim pour GC9A01)
+- 1× connecteur JST-SH 10 pins (SPI3 + alim pour 2× GC9A01 : MOSI, SCLK, CS_L, CS_R, DC, RST, 3.3V, GND, +2 rsv)
 - 1× connecteur JST-SH 6 pins (ADC pots + 3.3V + GND)
 - 1× connecteur JST-SH 4 pins (WS2812 data + 5V + GND + signal Hall)
 
@@ -333,16 +331,18 @@ Composants à câbler (pas forcément sur PCB dédié) :
 - Potentiomètres rotatifs (analogique, vers ADC main)
 - Boutons mécaniques (via MTCH2120 ou GPIO direct)
 - WS2812 LEDs (chaîne série depuis GPIO48)
-- GC9A01 1.3" rond (SPI3 depuis main)
+- 2× GC9A01 1.3" ronds (SPI3 depuis main, CS séparés)
+- E-ink 2.9" SSD1680 (SPI2 depuis main)
 - Haut-parleur (câbles depuis PAM8406 sur main)
 
 **Connectique backbone** :
 
 JST-SH (1.0mm pitch, verrouillable) pour tous les connecteurs inter-PCB :
 - 4 pins I2C : VCC(3.3V), GND, SDA, SCL
-- 8 pins SPI3 : VCC(3.3V), GND, MOSI, SCLK, CS, DC, RST, (reserve)
+- 10 pins SPI3 yeux : VCC(3.3V), GND, MOSI, SCLK, CS_L, CS_R, DC, RST, (rsv×2)
+- 6 pins SPI2 e-ink : VCC(3.3V), GND, MOSI, SCLK, CS, DC (RST+BUSY sur main)
 - 6 pins ADC : VCC(3.3V), GND, ADC1, ADC2, ADC3, (reserve)
-- 4 pins LED/Hall : VCC(5V), GND, WS2812_DATA, HALL_IN
+- 4 pins LED/Hall : VCC(5V), GND, WS2812_DATA, (rsv)
 
 **Boîtier** :
 - Phase proto : Imprimé en 3D (PLA/PETG)
@@ -371,7 +371,7 @@ JST-SH (1.0mm pitch, verrouillable) pour tous les connecteurs inter-PCB :
 │  │                                                          │    │
 │  │  scenario_engine (state machine, parse JSON)             │    │
 │  │  sensor_manager  (polling I2C 50ms, event queue)         │    │
-│  │  display_manager (LVGL, TFT 4", GC9A01 1.3")            │    │
+│  │  display_manager (LVGL, 2× GC9A01 yeux, SSD1680 e-ink bouche)            │    │
 │  │  led_manager     (WS2812 via RMT ESP-IDF)               │    │
 │  │  servo_manager   (MCPWM ESP-IDF)                         │    │
 │  └─────────────────────────────────────────────────────────┘    │
@@ -393,7 +393,7 @@ JST-SH (1.0mm pitch, verrouillable) pour tous les connecteurs inter-PCB :
 |---|---|
 | ESP-IDF v6.1 | Framework de base (FreeRTOS, drivers, HAL) |
 | LVGL | Interface graphique écrans (porté ESP-IDF natif) |
-| esp_lcd | Drivers TFT bas niveau (SPI, ILI9488, GC9A01) |
+| esp_lcd | Drivers écrans (SPI : GC9A01 ×2, SSD1680 e-ink) |
 | led_strip via RMT | WS2812 LEDs (driver natif ESP-IDF) |
 | MCPWM | Servos (driver natif ESP-IDF) |
 | cJSON | Parsing config / API (inclus ESP-IDF) |

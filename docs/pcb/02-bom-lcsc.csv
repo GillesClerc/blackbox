@@ -10,14 +10,17 @@ bq24075RGTR,U8,QFN-16,C15464,1,Main,Chargeur LiPo 1.5A + power path DPPM
 DW01A,U9,SOT-23-6,C351410,1,Main,Protection batterie
 FS8205,U10,TSSOP-8,C32254,1,Main,Dual MOSFET protection
 PN5321A3HN/C106,U11,HVQFN-40,C28925,1,Main,NFC reader (equiv. PN532)
+USBLC6-2SC6,U12,SOT-23-6,C7519,1,Main,Protection ESD USB D+/D-
+GC9A01 module 1.3 rond,—,Module,—,2,Face avant,Yeux du personnage 240x240 SPI (modules achetes)
+SSD1680 e-ink module 2.9,—,Module,—,1,Face avant,Bouche du personnage 296x128 SPI (Waveshare 2.9 V2)
 USB-C 16pin SMD,J1,USB-C-16P,—,1,Main,Connecteur USB-C femelle (chercher sur SnapEDA)
-Connecteur FPC 40pin 0.5mm,J2,FPC-40P-0.5,—,1,Main,Vers ILI9488 4 pouces
 Connecteur JST-SH 4pin,J3-J6,JST-SH-4P,—,4,Main,Bus I2C vers satellites
-Connecteur JST-SH 8pin,J7,JST-SH-8P,—,1,Main,SPI3 vers GC9A01
+Connecteur JST-SH 10pin,J7,JST-SH-10P,—,1,Main,SPI3 vers 2x GC9A01 yeux
+Connecteur JST-SH 8pin,J7b,JST-SH-8P,—,1,Main,SPI2 vers SSD1680 e-ink bouche
 Connecteur JST-SH 6pin,J8,JST-SH-6P,—,1,Main,ADC potentiometres
-Connecteur JST-SH 4pin,J9,JST-SH-4P,—,1,Main,WS2812 + Hall
+Connecteur JST-SH 4pin,J9,JST-SH-4P,—,1,Main,WS2812 + reserve
 Connecteur JST-PH 2pin,J10,JST-PH-2P,—,1,Main,Batterie LiPo
-Inductance 4.7µH,L1,1210,—,1,Main,Pour MT3608 boost
+Inductance 22µH,L1,1210,—,1,Main,Pour MT3608 boost (22uH recommande datasheet)
 100nF 16V ceramique,C1-C12,0402,—,12,Main,Decouplage (ESP32/PCM5122/capteurs)
 10µF 10V ceramique,C13-C18,0805,—,6,Main,Bulk decouplage (LDO/PCM5122)
 2.2µF 25V ceramique,C19-C20,0603,—,2,Main,Charge pump PCM5122
@@ -28,7 +31,13 @@ Inductance 4.7µH,L1,1210,—,1,Main,Pour MT3608 boost
 4.7kΩ,R3-R4,0402,—,2,Main,Pull-up I2C SDA/SCL
 10kΩ,R5-R7,0402,—,3,Main,Pull-up XSMT/EN/Hall
 330Ω,R8,0402,—,1,Main,Serie WS2812 data
-1.5kΩ,R_IL,0402,—,1,Main,bq24075 ILIM (1A charge)
+1.5kΩ,R_IL,0402,—,1,Main,bq24075 ILIM pin12 (input current limit mode RILIM)
+890Ω,R_ISET,0402,—,1,Main,bq24075 ISET pin16 (charge current 1A)
+100Ω,R_VCC,0402,—,1,Main,DW01A VCC serie (protection)
+750kΩ,R_FB_H,0402,—,1,Main,MT3608 feedback diviseur haut
+100kΩ,R_FB_L,0402,—,1,Main,MT3608 feedback diviseur bas
+4.7µF 10V ceramique,C_BAT,0603,—,1,Main,bq24075 BAT decouplage
+4.7µF 10V ceramique,C_OUT,0603,—,1,Main,bq24075 OUT decouplage
 10kΩ,R_TS1,0402,—,1,Main,bq24075 TS divider haut
 10kΩ,R_TS2,0402,—,1,Main,bq24075 TS divider bas
 5.1kΩ,R9-R10,0402,—,2,Main,USB-C CC1/CC2
@@ -40,5 +49,4 @@ VEML7700-TT,U22,OPLGA,C1850416,1,Satellite,Capteur lumiere ambiante
 BMP280,U23,LGA-8,C83291,1,Satellite,Pression / souffle
 MLX90614ESF-AAA,U24,TO-39,C3663467,1,Satellite,Temperature IR sans contact
 TMAG5273A2QDBVR,U25,SOT-23-6,C3715882,1,Satellite,Hall lineaire 3D I2C (remplace A3144E)
-USBLC6-2SC6,U12,SOT-23-6,C7519,1,Main,Protection ESD USB D+/D-
 100nF 16V ceramique,C30-C35,0402,—,6,Satellite,Decouplage capteurs
