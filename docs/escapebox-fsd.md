@@ -156,7 +156,8 @@ Scores et stats remontés à la prochaine synchro
 | 0x48 | PN532 | Lecteur NFC (I2C mode) | Main |
 | 0x4C | PCM5122PW | DAC audio stéréo (I2C contrôle) | Main |
 | 0x5C | MLX90614 | Température IR (sans contact) | Satellite capteurs |
-| 0x6A | LSM6DSOTR | Accéléromètre + gyroscope 6 axes | Satellite capteurs |
+| 0x6A | LSM6DSOXTR | Accéléromètre + gyroscope 6 axes + MLC | Satellite capteurs |
+| 0x35 | TMAG5273 | Hall linéaire 3D (distance/angle aimant) | Satellite capteurs |
 | 0x76 | BMP280 | Pression / détection souffle | Satellite capteurs |
 
 > **Composants retirés du Phase 1** : AS5600 (rotation magnétique), servos SG90, laser. Remplacés par potentiomètres rotatifs mécaniques + interactions software.
@@ -221,7 +222,7 @@ Scores et stats remontés à la prochaine synchro
 | GPIO20 | USB D+ | USB-C natif | — |
 | GPIO45 | Bouton / reserve | Strapping pin (attention) | Input avec pull-up ext |
 | GPIO46 | Bouton / reserve | Input only | — |
-| GPIO47 | Hall sensor | A3144E (détection aimant) | Pull-up 10kΩ |
+| GPIO47 | Réserve | (libre — Hall TMAG5273 migré sur I2C) | — |
 | GPIO48 | WS2812 DATA | Chaîne LEDs RGB | RMT driver |
 
 > Les boutons mécaniques peuvent être gérés via les 12 canaux du MTCH2120 (capacitif, fonctionne aussi avec boutons conducteurs) ou directement via GPIO45/46 pour des boutons poussoirs simples.
@@ -243,7 +244,7 @@ GPIO 26-37  — ⛔ Flash/PSRAM (non disponible)
 GPIO 38-42  — SPI3 écran rond (GC9A01)
 GPIO 43-44  — UART0 debug
 GPIO 45-46  — Boutons / réserve
-GPIO 47     — A3144E Hall sensor
+GPIO 47     — (réserve, libre)
 GPIO 48     — WS2812 LEDs
 ```
 
@@ -271,9 +272,9 @@ bq24075 (TI) — chargeur 1.5A + power path DPPM
 | **Dessus** | Écran narratif | ILI9488 4" TFT + XPT2046 touch (FPC vers main) |
 | **Devant** | Interactions principales | MTCH2120 keypad capacitif, potentiomètres, boutons, WS2812 rétro |
 | **Droite** | Capteurs ambiance | VEML7700 lumière, BMP280 souffle, MLX90614 IR temp |
-| **Gauche** | NFC + détection | PN532 (antenne derrière bois ≤3mm), A3144E Hall, WS2812 anneau |
+| **Gauche** | NFC + détection | PN532 (antenne derrière bois ≤3mm), TMAG5273 Hall I2C, WS2812 anneau |
 | **Arrière** | Révélation / boussole | GC9A01 1.3" rond, WS2812 celebration border |
-| **Dessous** | Technique | USB-C charge, interrupteur, HP (PAM8406 + haut-parleur), LSM6DSOTR (orientation) |
+| **Dessous** | Technique | USB-C charge, interrupteur, HP (PAM8406 + haut-parleur), LSM6DSOXTR (orientation) |
 
 > Assignation indicative. Les capteurs sur satellite I2C peuvent être repositionnés librement tant qu'ils restent sur le bus backbone.
 
@@ -317,11 +318,11 @@ Composants embarqués :
 
 Composants embarqués :
 - MTCH2120 capacitif 12 canaux (pads vers faces via FPC souple)
-- LSM6DSOTR accéléromètre/gyro
+- LSM6DSOXTR accéléromètre/gyro + MLC
 - VEML7700 capteur lumière (avec ouverture)
 - BMP280 pression/souffle (avec ouverture)
 - MLX90614 IR température (avec fenêtre IR)
-- A3144E Hall sensor
+- TMAG5273 Hall linéaire 3D I2C
 - Connecteur JST-SH 4 pins vers bus I2C main
 
 > Tous les capteurs partagent le même bus I2C. Adresses uniques confirmées (aucun conflit).
@@ -398,7 +399,7 @@ JST-SH (1.0mm pitch, verrouillable) pour tous les connecteurs inter-PCB :
 | cJSON | Parsing config / API (inclus ESP-IDF) |
 | minimp3 | Décodeur MP3 single-header — musique de fond en boucle, tâche FreeRTOS bg (stack 24 KB). ESP-ADF évalué en Phase 2+ uniquement si un vrai pipeline multi-format/streaming devient nécessaire. |
 | i2c_master (PCM5122) | Config DAC : PLL, volume, filtre, mute via registres I2C (addr 0x4C) |
-| i2c_master | MTCH2120 keypad, PN532 NFC, LSM6DSOTR, AS5600 |
+| i2c_master | MTCH2120 keypad, PN532 NFC, LSM6DSOXTR, TMAG5273 |
 | NimBLE (ESP-IDF) | Provisioning WiFi via BLE |
 | esp_https_ota | OTA HTTPS |
 | esp_http_client | Download scénarios HTTPS |
@@ -728,7 +729,7 @@ M2 → M3   : intégration complète + playtests
 - [ ] Câbler PN532 breakout → valider NFC
 - [ ] Câbler MTCH2120 → valider keypad capacitif (Phase 2 PCB)
 - [ ] Câbler servo SG90 → valider compartiment (Phase 2)
-- [ ] Câbler LSM6DSOTR, BMP280, VEML7700, AS5600 → valider I2C bus complet
+- [ ] Câbler LSM6DSOXTR, BMP280, VEML7700, TMAG5273 → valider I2C bus complet
 - [ ] Câbler microphone MEMS I2S → valider micro
 - [ ] Tester le moteur de scénario YAML sur le hardware assemblé complet
 
@@ -740,7 +741,7 @@ M2 → M3   : intégration complète + playtests
 - [x] Driver ILI9488 4" SPI DMA 20MHz — font 5x7, mutex thread-safe, validé DevKitC-1
 - [x] MPR121 tactile capacitif 12 canaux — validé DevKitC-1 (I2C 0x5A, 100kHz, SDA=21/SCL=17)
 - [x] Driver LEDs WS2812B (RMT, GRB, show) — validé
-- [x] Drivers I2C (LSM6DSOTR, AS5600, VEML7700, MTCH2120, MPR121) — écrits
+- [x] Drivers I2C (LSM6DSOXTR, TMAG5273, VEML7700, MTCH2120, MPR121) — écrits
 - [x] Outil YAML→JSON (tools/yaml2json.py avec validation)
 - [x] Driver NFC PN532 (écrit — validation hardware en attente)
 - [x] Driver servos SG90 MCPWM (écrit — Phase 2)
@@ -1307,7 +1308,7 @@ blackbox/
 │   ├── components/
 │   │   ├── scenario/            # Moteur JSON + state machine
 │   │   ├── nfc/                 # Driver PN532
-│   │   ├── sensors/             # Drivers I2C : LSM6DSOTR, AS5600, VEML7700, MPR121
+│   │   ├── sensors/             # Drivers I2C : LSM6DSOXTR, TMAG5273, VEML7700, MTCH2120
 │   │   ├── display/             # ILI9488 4" + GC9A01 1.3" (SPI, LVGL)
 │   │   ├── audio/               # I2S DMA + PCM5122PW (DAC) + PAM8406 (amp)
 │   │   ├── leds/                # WS2812 via RMT
@@ -1553,7 +1554,7 @@ Ces 3 réponses sont liées à la session (`hints_used`, `duration_sec`, `score`
 [ ] PN532 lit un tag NTAG213 en < 500ms
 [ ] MTCH2120 keypad détecte les 12 touches avec < 1% faux positifs
 [ ] AS5600 mesure la rotation avec précision ≤ 2° sur 360°
-[ ] LSM6DSOTR détecte une inclinaison de 15° minimum
+[ ] LSM6DSOXTR détecte une inclinaison de 15° minimum
 [ ] BMP280 détecte un souffle buccal à 5 cm
 [ ] VEML7700 distingue pièce éclairée / pièce sombre
 [ ] MLX90614 mesure la température d'une main à 2 cm
@@ -1667,7 +1668,7 @@ Ces 3 réponses sont liées à la session (`hints_used`, `duration_sec`, `score`
 | AS5600 | LCSC C79815 | https://ams.com/documents/20143/36005/AS5600_DS000365_5-00.pdf |
 | VEML7700 | LCSC C1850416 | https://www.vishay.com/docs/84286/veml7700.pdf |
 | BMP280 | LCSC C83291 | https://www.bosch-sensortec.com/media/boschsensortec/downloads/datasheets/bst-bmp280-ds001.pdf |
-| LSM6DSOTR | LCSC C2678328 | https://www.st.com/resource/en/datasheet/lsm6dso.pdf |
+| LSM6DSOXTR | LCSC C481766 | https://www.st.com/resource/en/datasheet/lsm6dsox.pdf |
 | MLX90614 | LCSC C58661 | https://www.melexis.com/en/documents/documentation/datasheets/datasheet-mlx90614 |
 | PCM5122PW | LCSC C14969 | https://www.ti.com/lit/ds/symlink/pcm5122.pdf |
 | PAM8406 | LCSC C89689 | https://www.diodes.com/assets/Datasheets/PAM8406.pdf |

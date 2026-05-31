@@ -61,7 +61,7 @@
   │                        ▼  ▼  ▼  ▼  ▼  ▼                           │
   │                                                                    │
   │  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐             │
-  │  │MTCH2120 │  │LSM6DSOTR│  │VEML7700 │  │ BMP280  │             │
+  │  │MTCH2120 │  │LSM6DSOXTR│  │VEML7700 │  │ BMP280  │             │
   │  │ 0x28    │  │ 0x6A    │  │ 0x10    │  │ 0x76    │             │
   │  │         │  │         │  │         │  │         │             │
   │  │ 12ch    │  │ accel   │  │ lumiere │  │ press.  │             │
@@ -71,20 +71,21 @@
   │  └─────────┘  └─────────┘  └─────────┘  └─────────┘             │
   │                                                                    │
   │  ┌─────────┐  ┌─────────┐                                        │
-  │  │MLX90614 │  │ A3144E  │                                        │
-  │  │ 0x5C    │  │ Hall    │                                        │
+  │  │MLX90614 │  │TMAG5273 │                                        │
+  │  │ 0x5C    │  │ 0x35    │                                        │
   │  │         │  │         │                                        │
-  │  │ temp IR │  │ digital │                                        │
-  │  │ (TO-39) │  │ (SOT-23)│                                        │
-  │  │         │  │         │                                        │
-  │  │ 100nF   │  │ 10kΩ↑   │ ←── pull-up vers 3.3V                  │
-  │  └─────────┘  └─────────┘     signal digital vers GPIO47 (main) │
-  │                               via fil supplementaire JST          │
+  │  │ temp IR │  │ Hall 3D │                                        │
+  │  │ (TO-39) │  │ lineaire│                                        │
+  │  │         │  │(SOT-23) │                                        │
+  │  │ 100nF   │  │ 100nF   │                                        │
+  │  └─────────┘  └─────────┘                                        │
+  │                                                                    │
   └────────────────────────────────────────────────────────────────────┘
 
-  Note : le A3144E est un capteur digital (pas I2C). Son signal va
-  vers GPIO47 du main via un fil supplementaire dans le JST ou un
-  connecteur dedie JST-SH 4 pins (5V, GND, DATA, HALL_IN).
+  Note : le TMAG5273 est un capteur Hall lineaire I2C (remplace le
+  A3144E digital). Il mesure le champ magnetique sur 3 axes (X,Y,Z),
+  permettant la detection de distance, d'angle et de rotation d'aimant.
+  Adresse I2C configurable (defaut 0x35). Pas besoin de GPIO dedie.
 
 
   ┌─────────────────────────────────────────────────────────────────────────┐
@@ -130,7 +131,7 @@
 
 
   ┌─────────────────────────────────────────────────────────────────────────┐
-  │               LSM6DSOTR — Accelerometre + Gyroscope                  │
+  │               LSM6DSOXTR — Accelerometre + Gyroscope                  │
   └─────────────────────────────────────────────────────────────────────────┘
 
                           3.3V
@@ -141,7 +142,7 @@
                 │       └──┬──┘
                 │          │
   ┌─────────────┴──────────┴───────────────────────────┐
-  │                   LSM6DSOTR                         │
+  │                   LSM6DSOXTR                         │
   │                                                     │
   │  VDD   ── 3.3V + 100nF                             │
   │  VDDIO ── 3.3V                                     │
@@ -285,35 +286,44 @@
 
 
   ┌─────────────────────────────────────────────────────────────────────────┐
-  │               A3144E — Capteur a effet Hall                          │
+  │               TMAG5273 — Capteur Hall lineaire 3D I2C                │
   └─────────────────────────────────────────────────────────────────────────┘
 
-                     3.3V
-                      │
-                   ┌──┴──┐
-                   │10kΩ │ (pull-up)
-                   └──┬──┘
-                      │
-                      ├──────── GPIO47 (ESP32-S3)
-                      │
-  ┌───────────────────┴───────────────────────────┐
-  │                   A3144E                       │
-  │                  (SOT-23)                      │
-  │                                                │
-  │  VDD  ── 3.3V (range 4.5-24V, mais 3.3V OK   │
-  │          avec version A3144E-LH ou equiv.)     │
-  │  GND  ── GND                                   │
-  │  OUT  ── open drain → pull-up 10kΩ → GPIO47   │
-  │                                                │
-  └────────────────────────────────────────────────┘
+                          3.3V
+                           │
+                        ┌──┴──┐
+                        │100nF│
+                        └──┬──┘
+                           │
+  ┌────────────────────────┴────────────────────────────┐
+  │                   TMAG5273A2                         │
+  │                   (SOT-23-6)                         │
+  │                                                     │
+  │  VCC  ── 3.3V + 100nF                              │
+  │  GND  ── GND                                        │
+  │  SDA  ── I2C SDA (bus partage)                     │
+  │  SCL  ── I2C SCL (bus partage)                     │
+  │  INT  ── (non connecte, ou GPIO47 si interrupt)    │
+  │  A0   ── GND (adresse 0x35)                        │
+  │                                                     │
+  └─────────────────────────────────────────────────────┘
 
-  Sortie open-drain : LOW quand aimant detecte, HIGH sinon.
-  Seuil detection : ~10-20 mT (depend du modele exact).
-  Aimant neodyme N52 ~5mm a < 10mm de distance.
+  Capteur Hall lineaire 3 axes (X, Y, Z) avec sortie I2C.
+  Remplace le A3144E (digital ON/OFF) par une mesure proportionnelle.
 
-  Note : verifier tension min VDD du modele exact. Certains A3144
-  demandent 4.5V min — dans ce cas, alimenter en 5V et ajouter
-  un diviseur de tension ou level shifter vers GPIO47 (3.3V).
+  Specifications :
+  - Range : ±40 mT (A1) ou ±80 mT (A2) selon variante
+  - Resolution : 12-bit par axe
+  - Calcul angle integre (CORDIC) : angle X/Y ou X/Z
+  - Consommation : ~3 µA en mode veille, ~2.5 mA actif
+  - Frequence lecture : jusqu'a 20 kHz
+  - VDD : 1.7V - 3.6V (compatible 3.3V directement)
+
+  Usages escape box :
+  - Detection distance aimant (chaud/froid, 0-40mm)
+  - Detection angle rotation aimant (plateau, cadran)
+  - Detection position aimant (X/Y sur une surface)
+  - Seuil configurable pour emulation ON/OFF si besoin
 
 
 ══════════════════════════════════════════════════════════════════════════════

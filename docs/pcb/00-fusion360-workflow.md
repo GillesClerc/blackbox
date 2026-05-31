@@ -40,12 +40,13 @@ télécharger en format "Eagle", et importer le .lbr dans Fusion 360 :
 | Protection batterie | DW01A | "DW01A" |
 | Dual MOSFET | FS8205 | "FS8205" |
 | Touch capacitif | MTCH2120-I/MX | "MTCH2120" |
-| IMU 6 axes | LSM6DSOTR | "LSM6DSOTR" |
+| IMU 6 axes | LSM6DSOXTR | "LSM6DSOX" |
 | Lumière ambiante | VEML7700 | "VEML7700" |
 | Pression | BMP280 | "BMP280" |
 | NFC reader | PN532 | "PN532" |
 | Température IR | MLX90614ESF-BAA | "MLX90614" |
-| Hall sensor | A3144E | "A3144" |
+| Hall linéaire 3D | TMAG5273A2QDBVR | "TMAG5273" |
+| ESD USB | USBLC6-2SC6 | "USBLC6-2" |
 | USB-C connector | — | "USB Type-C 16 pin" |
 
 ## Etape 2 — Créer le schéma dans Fusion

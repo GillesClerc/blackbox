@@ -62,7 +62,7 @@
   │                                                           │
   │  ── GPIO divers ────────────────────                      │
   │  GPIO48 ─── WS2812 DATA (RMT)                            │
-  │  GPIO47 ─── A3144E Hall sensor (in, pull-up 10kΩ)        │
+  │  GPIO47 ─── (réserve, libre)                             │
   │  GPIO45 ─── Bouton 1 (in, pull-up ext)                   │
   │  GPIO46 ─── Bouton 2 (in only)                           │
   │                                                           │

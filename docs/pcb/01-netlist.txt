@@ -184,10 +184,8 @@ NET WS2812_DATA:
   R8.1 (330Ω serie)
   R8.2 → J9.DATA (premiere LED WS2812)
 
-NET HALL_IN:
-  U1.GPIO47
-  R7.2 (pull-up 10kΩ, autre borne 3V3_D)
-  J9.HALL (vers A3144E sur satellite)
+NET GPIO47_RSV:
+  U1.GPIO47 (reserve, libre — TMAG5273 Hall migre sur bus I2C)
 
 NET BTN1:
   U1.GPIO45
@@ -198,14 +196,19 @@ NET BTN2:
   (pull-up externe vers 3V3_D, input only)
 
 NET USB_DM:
-  U1.GPIO19
-  R11.2 (22Ω serie)
-  R11.1 → J1.D-
+  J1.D-
+  R11.1 (22Ω serie)
+  R11.2 → U12.IO1 (USBLC6-2SC6 protection ESD)
+  U12.IO1 → U1.GPIO19
 
 NET USB_DP:
-  U1.GPIO20
-  R12.2 (22Ω serie)
-  R12.1 → J1.D+
+  J1.D+
+  R12.1 (22Ω serie)
+  R12.2 → U12.IO2 (USBLC6-2SC6 protection ESD)
+  U12.IO2 → U1.GPIO20
+
+NET USB_ESD_VCC:
+  U12.VBUS → 5V_USB (reference clamping USBLC6-2SC6)
 
 NET USB_CC1:
   J1.CC1
@@ -323,23 +326,25 @@ Sur le PCB satellite, les nets sont internes :
 NET SAT_I2C_SDA:
   J_SAT.SDA (JST-SH pin 3)
   U20.SDA (MTCH2120)
-  U21.SDA (LSM6DSOTR)
+  U21.SDA (LSM6DSOXTR)
   U22.SDA (VEML7700)
   U23.SDA (BMP280)
   U24.SDA (MLX90614)
+  U25.SDA (TMAG5273)
 
 NET SAT_I2C_SCL:
   J_SAT.SCL (JST-SH pin 4)
   U20.SCL (MTCH2120)
-  U21.SCL (LSM6DSOTR)
+  U21.SCL (LSM6DSOXTR)
   U22.SCL (VEML7700)
   U23.SCL (BMP280)
   U24.SCL (MLX90614)
+  U25.SCL (TMAG5273)
 
 NET SAT_3V3:
   J_SAT.VCC (JST-SH pin 1)
   U20.VDD, U21.VDD, U21.VDDIO, U22.VDD, U23.VDD, U23.VDDIO,
-  U24.VDD, U25.VDD (A3144E)
+  U24.VDD, U25.VDD (TMAG5273)
   C30-C35.+ (decouplage 100nF chaque)
 
 

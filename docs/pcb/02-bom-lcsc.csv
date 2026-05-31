@@ -35,9 +35,10 @@ Inductance 4.7µH,L1,1210,—,1,Main,Pour MT3608 boost
 22Ω,R11-R12,0402,—,2,Main,Serie USB D+/D-
 Diode Schottky SS14,D1,SMA,—,1,Main,Protection MT3608
 MTCH2120-I/MX,U20,QFN-20,—,1,Satellite,Touch capacitif 12ch (pas sur LCSC - DigiKey/Mouser)
-LSM6DSOTR,U21,LGA-14,C2655100,1,Satellite,Accelerometre+gyro 6 axes
+LSM6DSOXTR,U21,LGA-14,C481766,1,Satellite,Accelerometre+gyro 6 axes + MLC
 VEML7700-TT,U22,OPLGA,C1850416,1,Satellite,Capteur lumiere ambiante
 BMP280,U23,LGA-8,C83291,1,Satellite,Pression / souffle
 MLX90614ESF-AAA,U24,TO-39,C3663467,1,Satellite,Temperature IR sans contact
-A3144E,U25,TO-92S,—,1,Satellite,Hall effect sensor (chercher equiv. LCSC)
+TMAG5273A2QDBVR,U25,SOT-23-6,C3715882,1,Satellite,Hall lineaire 3D I2C (remplace A3144E)
+USBLC6-2SC6,U12,SOT-23-6,C7519,1,Main,Protection ESD USB D+/D-
 100nF 16V ceramique,C30-C35,0402,—,6,Satellite,Decouplage capteurs
