@@ -131,7 +131,7 @@
                      ┌──────────────────────┐
                      │     USB-C Female     │
                      │                      │
-                     │  VBUS ───┬───────────┼──→ 5V_USB (vers TP4056)
+                     │  VBUS ───┬───────────┼──→ 5V_USB (vers bq24075)
                      │         │           │
                      │      ┌──┴──┐        │
                      │      │5.1kΩ│ CC1    │
@@ -154,7 +154,7 @@
   - 5.1kΩ sur CC1/CC2 : detection USB device (5V, max 3A)
   - 22Ω serie sur D+/D- : impedance matching USB 2.0
   - L'ESP32-S3 a un PHY USB interne, pas besoin de transceiver
-  - VBUS alimente le TP4056 (charge batterie), pas directement l'ESP32
+  - VBUS alimente le bq24075 (charge + power path), pas directement l'ESP32
 
 
 ══════════════════════════════════════════════════════════════════════════════

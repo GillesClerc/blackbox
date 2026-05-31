@@ -8,14 +8,17 @@
 ═══ ALIMENTATIONS ════════════════════════════════════════════════════════════
 
 NET 5V_USB:
-  J1.VBUS, U8.VIN, D1.A
+  J1.VBUS, U8.IN, D1.A
+
+NET VSYS:
+  U8.OUT (bq24075 power path output)
+  U5.VIN (LDO digital), C23.+
+  U6.VIN (LDO audio), C24.+
+  U7.VIN (MT3608 boost)
+  (USB branche: ~4.4V / batterie: 3.0-4.2V)
 
 NET VBAT:
-  U8.BAT, U9.VDD, J10.+, C_BAT.+
-  (via switch ON/OFF vers les regulateurs)
-
-NET VBAT_SW:
-  U5.VIN, U6.VIN, U7.VIN, C23.+, C24.+
+  U8.BAT (bq24075), U9.VDD (DW01A), J10.+, C_BAT.+
 
 NET 3V3_D (digital):
   U5.VOUT, C13.+, C_A2.+
@@ -273,19 +276,33 @@ NET PAM_SHDN:
   U3.SHDN → 3V3_D via 10kΩ (toujours actif)
 
 
-═══ CHARGE BATTERIE ═════════════════════════════════════════════════════════
+═══ CHARGE BATTERIE (bq24075 + DW01A/FS8205) ════════════════════════════════
 
-NET TP_PROG:
-  U8.PROG → R_PROG (1.2kΩ vers GND → courant charge 1A)
+NET BQ_ILIM:
+  U8.ILIM → R_ILIM (1.5kΩ vers GND → courant charge max 1A)
 
-NET TP_STDBY:
-  U8.STDBY (LED charge terminee, optionnel)
+NET BQ_TS:
+  U8.TS → R_TS1 (10kΩ vers VSYS) + R_TS2 (10kΩ vers GND)
+  (diviseur tension pour desactiver monitoring temperature)
 
-NET TP_CHRG:
-  U8.CHRG (LED en charge, optionnel)
+NET BQ_CE:
+  U8.CE → VSYS via 10kΩ (charge toujours active)
+
+NET BQ_EN1:
+  U8.EN1 → VSYS (high)
+
+NET BQ_EN2:
+  U8.EN2 → VSYS (high)
+  (EN1=H, EN2=H → limite courant USB 500mA)
+
+NET BQ_PGOOD:
+  U8.PGOOD (open drain, optionnel → LED ou GPIO ESP32)
+
+NET BQ_CHG:
+  U8.CHG (open drain, optionnel → LED charge en cours)
 
 NET BAT_PROT:
-  U9.VCC → U8.BAT
+  U9.VCC → U8.BAT (bq24075)
   U9.GND-1 → U10.S1
   U9.GND-2 → U10.S2
   U10.D1, U10.D2 → GND (vers connecteur batterie J10.-)

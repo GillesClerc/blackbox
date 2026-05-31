@@ -130,12 +130,12 @@
   Bouton ON/OFF (interrupteur general) :
   ────────────────────────────────────────
 
-       LiPo+ ──┤ ○ ├── VBAT (vers TP4056 et LDOs)
+       LiPo+ ──┤ ○ ├── VBAT (vers bq24075 BAT)
                 switch
                 SPST
 
   Un interrupteur simple coupe l'alimentation batterie.
-  Le TP4056 peut toujours charger meme switch OFF (USB direct).
+  Le bq24075 peut toujours charger meme switch OFF (USB direct vers IN).
 
 
 ══════════════════════════════════════════════════════════════════════════════

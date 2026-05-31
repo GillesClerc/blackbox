@@ -252,16 +252,15 @@ GPIO 48     — WS2812 LEDs
 ```
 USB-C (5V, 2A max)
     ↓
-TP4056 + DW01A + FS8205 (charge LiPo + protection)
-    ↓
-LiPo 3.7V 3000mAh
-    ↓
-    ├── AP2112K-3.3 #1 → 3.3V_D (digital : ESP32, écrans, capteurs I2C, micro)
-    ├── AP2112K-3.3 #2 → 3.3V_A (audio : PCM5122, zone isolée)
-    └── MT3608 boost → 5V (WS2812 LEDs)
+bq24075 (TI) — chargeur 1.5A + power path DPPM
+    ├── BAT → DW01A + FS8205 → LiPo 3.7V 3000mAh
+    └── OUT (VSYS : ~4.4V sur USB, ~VBAT sur batterie)
+         ├── AP2112K-3.3 #1 → 3.3V_D (digital : ESP32, écrans, capteurs I2C, micro)
+         ├── AP2112K-3.3 #2 → 3.3V_A (audio : PCM5122, zone isolée)
+         └── MT3608 boost → 5V (WS2812 LEDs)
 ```
 
-> **Deux LDOs séparés** pour isoler le bruit digital du chemin audio. GND unique continu (PAS de split). Voir `docs/schematics/power-audio.txt` pour le schéma détaillé avec découplage PCM5122 et filtre RC sortie.
+> **Power path (DPPM)** : le système est alimenté en priorité par l'USB, le surplus charge la batterie. La box peut rester branchée sans user la batterie. **Deux LDOs séparés** pour isoler le bruit digital du chemin audio. GND unique continu (PAS de split). Voir `docs/schematics/06-power-audio.txt` pour le schéma détaillé.
 
 #### 2.2.2c Assignation des faces — Cube 150×150×150mm
 
@@ -301,7 +300,7 @@ Prochaine énigme débloquée
 
 Composants embarqués :
 - ESP32-S3-WROOM-1-N16R8 (soudé)
-- Alimentation complète : TP4056 + DW01A + FS8205, 2× AP2112K-3.3 (digital + audio), MT3608 boost
+- Alimentation complète : bq24075 (power path) + DW01A + FS8205, 2× AP2112K-3.3 (digital + audio), MT3608 boost
 - PCM5122PW DAC + découplage (zone audio isolée)
 - PAM8406 Class D ampli + filtre RC sortie
 - ICS-43434 MEMS micro (trou PCB pour son)
@@ -1673,7 +1672,7 @@ Ces 3 réponses sont liées à la session (`hints_used`, `duration_sec`, `score`
 | PCM5122PW | LCSC C14969 | https://www.ti.com/lit/ds/symlink/pcm5122.pdf |
 | PAM8406 | LCSC C89689 | https://www.diodes.com/assets/Datasheets/PAM8406.pdf |
 | ICS-43434 | LCSC (chercher) | https://invensense.tdk.com/wp-content/uploads/2016/02/DS-000069-ICS-43434-v1.2.pdf |
-| TP4056 | LCSC C382139 | https://datasheet.lcsc.com/lcsc/TOPPOWER-Nanjing-Top-Power-ATEC-TP4056_C382139.pdf |
+| bq24075 | LCSC C15464 | https://www.ti.com/lit/ds/symlink/bq24075.pdf |
 | MT3608 | LCSC C84817 | https://datasheet.lcsc.com/lcsc/XI-AN-Aerosemi-Tech-MT3608_C84817.pdf |
 | AP2112K-3.3 | LCSC C51353 | https://datasheet.lcsc.com/lcsc/DIODES-AP2112K-3.3TRG1_C51353.pdf |
 | WS2812B | LCSC C114586 | https://datasheet.lcsc.com/lcsc/Worldsemi-WS2812B_C114586.pdf |

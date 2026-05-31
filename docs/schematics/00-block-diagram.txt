@@ -16,7 +16,7 @@
   │  ┌──────────────┐   ┌──────────────┐   ┌──────────────────────────┐  │
   │  │ ALIMENTATION │   │   ESP32-S3   │   │    AUDIO (zone isolee)   │  │
   │  │              │   │   WROOM-1    │   │                          │  │
-  │  │ TP4056+prot. │   │   N16R8      │   │  PCM5122 DAC (I2C+I2S)  │  │
+  │  │ bq24075 PP   │   │   N16R8      │   │  PCM5122 DAC (I2C+I2S)  │  │
   │  │ LiPo 3000mAh│   │              │   │       ↓                  │  │
   │  │ AP2112K ×2   │   │  16MB flash  │   │  100Ω+22nF filtre RC    │  │
   │  │ MT3608 boost │   │  8MB PSRAM   │   │       ↓                  │  │

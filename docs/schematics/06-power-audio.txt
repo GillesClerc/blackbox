@@ -1,6 +1,6 @@
 ══════════════════════════════════════════════════════════════════════════════
   ESCAPEBOX — SCHEMA ALIMENTATION + AUDIO PCM5122
-  Reference: TI PCM5122 EVM (SLAU444) + ESP32 Audio Design Guidelines
+  Reference: TI bq24075 datasheet + PCM5122 EVM (SLAU444)
 ══════════════════════════════════════════════════════════════════════════════
 
 
@@ -8,27 +8,49 @@
   │                        ALIMENTATION GENERALE                          │
   └─────────────────────────────────────────────────────────────────────────┘
 
+  Le bq24075 gere le power path : le systeme est alimente par USB
+  quand disponible, sinon par la batterie. La batterie charge en
+  parallele sans impacter l'alimentation systeme (DPPM).
+
                           USB-C (5V, 2A max)
                                │
                                ▼
-                    ┌─────────────────────┐
-                    │  TP4056 + DW01A     │
-                    │  + FS8205           │
-                    │  (charge LiPo +     │
-                    │   protection)       │
-                    └────────┬────────────┘
-                             │
-                             ▼
-                    ┌─────────────────┐
-                    │  LiPo 3.7V      │
-                    │  3000 mAh       │
-                    └───┬─────┬───┬───┘
-                        │     │   │
-           ┌────────────┘     │   └──────────────┐
-           ▼                  ▼                  ▼
+                    ┌─────────────────────────┐
+                    │       bq24075           │
+                    │  (charge + power path)  │
+                    │                         │
+                    │  IN ←── 5V USB          │
+                    │  OUT ──→ VSYS           │──→ vers regulateurs
+                    │  BAT ──→ LiPo           │
+                    │                         │
+                    │  ILIM: R=1.5kΩ (1A chg) │
+                    │  EN1=H, EN2=H (500mA USB)│
+                    │  CE=H (charge enable)   │
+                    │  TS: 10kΩ+10kΩ divider  │
+                    │  PGOOD: open drain      │
+                    └───────┬─────┬───────────┘
+                            │     │
+                    BAT     │     │  OUT (VSYS)
+                            ▼     │
+                    ┌────────────┐ │
+                    │  DW01A     │ │
+                    │  + FS8205  │ │
+                    │  (protect.)│ │
+                    └─────┬──────┘ │
+                          ▼        │
+                    ┌──────────┐   │
+                    │ LiPo 3.7V│   │
+                    │ 3000 mAh │   │
+                    └──────────┘   │
+                                   │
+                            VSYS ──┘
+                    (USB: ~4.4V / batterie: 3.0-4.2V)
+                               │
+              ┌────────────────┼────────────────┐
+              ▼                ▼                ▼
   ┌─────────────────┐ ┌─────────────────┐ ┌──────────────────┐
   │  AP2112K-3.3    │ │  AP2112K-3.3    │ │  MT3608 Boost    │
-  │  #1 DIGITAL     │ │  #2 AUDIO       │ │  3.7V → 5V       │
+  │  #1 DIGITAL     │ │  #2 AUDIO       │ │  VSYS → 5V       │
   │  600mA max      │ │  600mA max      │ │  2A max          │
   │                 │ │                 │ │                  │
   │  Cin: 1µF cer.  │ │  Cin: 1µF cer.  │ │  L: 4.7µH        │
@@ -37,12 +59,12 @@
            │                   │                   │
            ▼                   ▼                   ▼
        3.3V_D              3.3V_A                5V
-    (digital)            (audio)            (LEDs/servos)
+    (digital)            (audio)              (LEDs)
            │                   │                   │
-    ┌──────┼──────┐     ┌──────┘            ┌──────┼──────┐
-    │      │      │     │                   │      │      │
-    ▼      ▼      ▼     ▼                   ▼      ▼      ▼
-  ESP32  ILI9488  I2C  PCM5122           WS2812  Servos  Laser
+    ┌──────┼──────┐     ┌──────┘            ┌──────┘
+    │      │      │     │                   │
+    ▼      ▼      ▼     ▼                   ▼
+  ESP32  ILI9488  I2C  PCM5122           WS2812
   S3     + XPT   bus   DAC               LEDs
          2046    capt.
 
@@ -202,7 +224,11 @@
 
   │ Ref  │ Composant       │ Valeur       │ Package │ LCSC    │ Qte │
   │──────│─────────────────│──────────────│─────────│─────────│─────│
-  │ U_A  │ AP2112K-3.3     │ 3.3V LDO     │ SOT-23-5│ C51353  │  1  │
+  │ U_CH │ bq24075RGTR     │ chargeur+PP  │ QFN-16  │ C15464  │  1  │
+  │ R_IL │ Resistance      │ 1.5kΩ        │ 0402    │         │  1  │ ILIM (1A charge)
+  │ R_TS1│ Resistance      │ 10kΩ         │ 0402    │         │  1  │ TS divider haut
+  │ R_TS2│ Resistance      │ 10kΩ         │ 0402    │         │  1  │ TS divider bas
+  │ U_A  │ AP2112K-3.3     │ 3.3V LDO     │ SOT-23-5│ C51118  │  1  │
   │ C_A1 │ Capa ceramique  │ 1µF/10V      │ 0402    │         │  1  │ entree LDO
   │ C_A2 │ Capa ceramique  │ 10µF/10V     │ 0805    │         │  1  │ sortie LDO
   │ C1   │ Capa ceramique  │ 10µF/16V     │ 0805    │         │  3  │ AVDD,DVDD,CPVDD
@@ -214,6 +240,6 @@
   │──────│─────────────────│──────────────│─────────│─────────│─────│
   │      │                 │              │         │ TOTAL   │ 17  │
 
-  Cout total composants : < 0.50 EUR
+  Cout total composants audio : < 1.50 EUR (bq24075 inclus)
 
 ══════════════════════════════════════════════════════════════════════════════

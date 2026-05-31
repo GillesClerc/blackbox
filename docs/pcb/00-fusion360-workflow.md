@@ -36,7 +36,7 @@ télécharger en format "Eagle", et importer le .lbr dans Fusion 360 :
 | Micro MEMS | ICS-43434 | "ICS-43434" |
 | LDO 3.3V | AP2112K-3.3TRG1 | "AP2112K" |
 | Boost converter | MT3608 | "MT3608" |
-| Chargeur LiPo | TP4056 | "TP4056" |
+| Chargeur LiPo + PP | bq24075RGTR | "bq24075" |
 | Protection batterie | DW01A | "DW01A" |
 | Dual MOSFET | FS8205 | "FS8205" |
 | Touch capacitif | MTCH2120-I/MX | "MTCH2120" |
@@ -62,7 +62,7 @@ Créer plusieurs feuilles dans le schéma pour la lisibilité :
 
 | Sheet | Contenu |
 |---|---|
-| 1 - Power | Alimentation : USB-C, TP4056, LiPo, LDOs, boost |
+| 1 - Power | Alimentation : USB-C, bq24075, LiPo, LDOs, boost |
 | 2 - ESP32 | Module ESP32-S3 + découplage + reset + USB |
 | 3 - Audio | PCM5122 + filtre RC + PAM8406 + ICS-43434 |
 | 4 - Display | ILI9488 FPC + XPT2046 + GC9A01 connecteur |

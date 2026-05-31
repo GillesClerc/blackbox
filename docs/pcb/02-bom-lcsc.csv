@@ -6,7 +6,7 @@ ICS-43434,U4,BGA-6 bottom-port,C5656610,1,Main,Micro MEMS I2S 24-bit
 AP2112K-3.3TRG1,U5,SOT-23-5,C51118,1,Main,LDO 3.3V digital 600mA
 AP2112K-3.3TRG1,U6,SOT-23-5,C51118,1,Main,LDO 3.3V audio 600mA
 MT3608,U7,SOT-23-6,C84817,1,Main,Boost 3.7V→5V 2A
-TP4056,U8,SOP-8,C382139,1,Main,Chargeur LiPo 1A
+bq24075RGTR,U8,QFN-16,C15464,1,Main,Chargeur LiPo 1.5A + power path DPPM
 DW01A,U9,SOT-23-6,C351410,1,Main,Protection batterie
 FS8205,U10,TSSOP-8,C32254,1,Main,Dual MOSFET protection
 PN5321A3HN/C106,U11,HVQFN-40,C28925,1,Main,NFC reader (equiv. PN532)
@@ -28,6 +28,9 @@ Inductance 4.7µH,L1,1210,—,1,Main,Pour MT3608 boost
 4.7kΩ,R3-R4,0402,—,2,Main,Pull-up I2C SDA/SCL
 10kΩ,R5-R7,0402,—,3,Main,Pull-up XSMT/EN/Hall
 330Ω,R8,0402,—,1,Main,Serie WS2812 data
+1.5kΩ,R_IL,0402,—,1,Main,bq24075 ILIM (1A charge)
+10kΩ,R_TS1,0402,—,1,Main,bq24075 TS divider haut
+10kΩ,R_TS2,0402,—,1,Main,bq24075 TS divider bas
 5.1kΩ,R9-R10,0402,—,2,Main,USB-C CC1/CC2
 22Ω,R11-R12,0402,—,2,Main,Serie USB D+/D-
 Diode Schottky SS14,D1,SMA,—,1,Main,Protection MT3608
