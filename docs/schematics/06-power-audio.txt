@@ -1,0 +1,219 @@
+══════════════════════════════════════════════════════════════════════════════
+  ESCAPEBOX — SCHEMA ALIMENTATION + AUDIO PCM5122
+  Reference: TI PCM5122 EVM (SLAU444) + ESP32 Audio Design Guidelines
+══════════════════════════════════════════════════════════════════════════════
+
+
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │                        ALIMENTATION GENERALE                          │
+  └─────────────────────────────────────────────────────────────────────────┘
+
+                          USB-C (5V, 2A max)
+                               │
+                               ▼
+                    ┌─────────────────────┐
+                    │  TP4056 + DW01A     │
+                    │  + FS8205           │
+                    │  (charge LiPo +     │
+                    │   protection)       │
+                    └────────┬────────────┘
+                             │
+                             ▼
+                    ┌─────────────────┐
+                    │  LiPo 3.7V      │
+                    │  3000 mAh       │
+                    └───┬─────┬───┬───┘
+                        │     │   │
+           ┌────────────┘     │   └──────────────┐
+           ▼                  ▼                  ▼
+  ┌─────────────────┐ ┌─────────────────┐ ┌──────────────────┐
+  │  AP2112K-3.3    │ │  AP2112K-3.3    │ │  MT3608 Boost    │
+  │  #1 DIGITAL     │ │  #2 AUDIO       │ │  3.7V → 5V       │
+  │  600mA max      │ │  600mA max      │ │  2A max          │
+  │                 │ │                 │ │                  │
+  │  Cin: 1µF cer.  │ │  Cin: 1µF cer.  │ │  L: 4.7µH        │
+  │  Cout: 10µF cer.│ │  Cout: 10µF cer.│ │  Cout: 22µF      │
+  └────────┬────────┘ └────────┬────────┘ └────────┬─────────┘
+           │                   │                   │
+           ▼                   ▼                   ▼
+       3.3V_D              3.3V_A                5V
+    (digital)            (audio)            (LEDs/servos)
+           │                   │                   │
+    ┌──────┼──────┐     ┌──────┘            ┌──────┼──────┐
+    │      │      │     │                   │      │      │
+    ▼      ▼      ▼     ▼                   ▼      ▼      ▼
+  ESP32  ILI9488  I2C  PCM5122           WS2812  Servos  Laser
+  S3     + XPT   bus   DAC               LEDs
+         2046    capt.
+
+
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │                     PCM5122 — ALIMENTATION DETAILLEE                  │
+  └─────────────────────────────────────────────────────────────────────────┘
+
+                              3.3V_A (depuis AP2112K #2)
+                                │
+              ┌─────────────────┼─────────────────┐
+              │                 │                 │
+              ▼                 ▼                 ▼
+         ┌─────────┐      ┌─────────┐      ┌─────────┐
+         │ 10µF    │      │ 10µF    │      │ 10µF    │
+         │ cer.16V │      │ cer.16V │      │ cer.16V │
+         │ 0805    │      │ 0805    │      │ 0805    │
+         └────┬────┘      └────┬────┘      └────┬────┘
+              │                │                │
+         ┌────┴────┐     ┌────┴────┐     ┌────┴────┐
+         │ 100nF   │     │ 100nF   │     │ 100nF   │
+         │ cer.    │     │ cer.    │     │ cer.    │
+         │ 0402    │     │ 0402    │     │ 0402    │
+         └────┬────┘     └────┬────┘     └────┬────┘
+              │                │                │
+              ▼                ▼                ▼
+  ┌───────────────────────────────────────────────────────────┐
+  │                        PCM5122                            │
+  │                                                           │
+  │  Pin 1  AVDD  ←── 3.3V_A + decouplage (ci-dessus)        │
+  │  Pin 19 DVDD  ←── 3.3V_A + decouplage (ci-dessus)        │
+  │  Pin 5  CPVDD ←── 3.3V_A + decouplage (ci-dessus)        │
+  │                                                           │
+  │  Pin 20 LDOO  ──→ 100nF vers GND (sortie LDO interne)    │
+  │                                                           │
+  │  Pin 3  VNEG ───→ 2.2µF/25V vers GND ──┐ charge pump     │
+  │  Pin 4  CAPP ───→──────────────────────┤ externe          │
+  │  Pin 2  CAPM ───→ 2.2µF/25V entre     ─┘                 │
+  │                   CAPP et CAPM                             │
+  │                                                           │
+  │  Pin 6  OUTL ──→ sortie gauche                            │
+  │  Pin 7  OUTR ──→ sortie droite                            │
+  │                                                           │
+  │  Pin 13 SCL  ←── I2C SCL (via 3.3V_D, ok si pull-up)     │
+  │  Pin 14 SDA  ←── I2C SDA                                  │
+  │  Pin 16 BCK  ←── I2S BCLK (GPIO4)                        │
+  │  Pin 15 LRCK ←── I2S LRCK (GPIO5)                        │
+  │  Pin 17 DIN  ←── I2S DOUT (GPIO6)                        │
+  │                                                           │
+  │  Pin 12 XSMT ──→ 3.3V_A via 10kΩ (unmute)                │
+  │                                                           │
+  │  GND pins ────→ GND (plan continu, PAS de split)          │
+  │                                                           │
+  └───────────────────────────────────────────────────────────┘
+
+
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │               SORTIE AUDIO — FILTRE RC + CONNECTEUR                   │
+  └─────────────────────────────────────────────────────────────────────────┘
+
+  La sortie du PCM5122 est differentiee mais en mode "line out" classique :
+
+               PCM5122                Filtre RC               Ampli / Jack
+            ┌──────────┐          (passe-bas ~72kHz)
+            │          │
+   OUTL ────┤ Pin 6    ├───┤ 100Ω ├───┬──────────────→ OUTL vers ampli
+            │          │              │                 (PAM8406 ou jack)
+            │          │           ┌──┴──┐
+            │          │           │22nF │
+            │          │           │cer. │
+            │          │           └──┬──┘
+            │          │              │
+            │          │             GND
+            │          │
+   OUTR ────┤ Pin 7    ├───┤ 100Ω ├───┬──────────────→ OUTR vers ampli
+            │          │              │
+            │          │           ┌──┴──┐
+            │          │           │22nF │
+            │          │           │cer. │
+            │          │           └──┬──┘
+            │          │              │
+            │          │             GND
+            └──────────┘
+
+  Calcul filtre : fc = 1 / (2π × 100Ω × 22nF) ≈ 72 kHz
+  Attenuation du bruit delta-sigma HF sans affecter la bande audio (20-20kHz)
+
+
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │               CHARGE PUMP (alimentation negative VNEG)                │
+  └─────────────────────────────────────────────────────────────────────────┘
+
+  Le PCM5122 genere une tension negative interne pour sa sortie analogique.
+  Composants externes requis :
+
+         CPVDD (3.3V_A)
+            │
+            ▼
+  ┌──────────────────┐
+  │    PCM5122       │
+  │                  │
+  │  CAPP (pin 4) ───┼───┐
+  │                  │   │
+  │  CAPM (pin 2) ───┼───┤ 2.2µF/25V ceramique
+  │                  │   │ (flying cap)
+  │                  │   │
+  │  VNEG (pin 3) ───┼───┤
+  │                  │   │
+  └──────────────────┘   │
+                         │
+                      2.2µF/25V ceramique
+                      (reservoir cap)
+                         │
+                        GND
+
+
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │                    PLAN DE MASSE — REGLES LAYOUT                      │
+  └─────────────────────────────────────────────────────────────────────────┘
+
+  ┌──────────────────────────────────── PCB ──────────────────────────────┐
+  │                                                                       │
+  │  ╔═══════════════════════╗     ╔══════════════════════════════════╗   │
+  │  ║   ZONE DIGITALE       ║     ║   ZONE AUDIO (coin isole)       ║   │
+  │  ║                       ║     ║                                  ║   │
+  │  ║  ESP32-S3             ║     ║  AP2112K #2  ┌──────┐           ║   │
+  │  ║  ┌──────┐             ║     ║  (LDO audio) │PCM5122│          ║   │
+  │  ║  │      │ ILI9488     ║     ║     ↓        │      │          ║   │
+  │  ║  │      │ ┌──────┐    ║     ║  10µF+100nF  │ capas │          ║   │
+  │  ║  │      │ │      │    ║     ║  x3 paires   │decouplage       ║   │
+  │  ║  └──────┘ └──────┘    ║     ║              └──────┘           ║   │
+  │  ║                       ║     ║                                  ║   │
+  │  ║  Capteurs I2C         ║     ║  100Ω + 22nF    ┌──────┐       ║   │
+  │  ║  MPR121, VEML7700..   ║     ║  filtre sortie → │ Jack │       ║   │
+  │  ║                       ║     ║                  │ audio│       ║   │
+  │  ╚═══════════════════════╝     ║                  └──────┘       ║   │
+  │                                ╚══════════════════════════════════╝   │
+  │                                                                       │
+  │  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ │
+  │  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓  PLAN GND CONTINU (layer 2)  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ │
+  │  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓  PAS DE SPLIT — PAS DE COUPURE ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ │
+  │  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ │
+  │                                                                       │
+  │  Regles :                                                             │
+  │  - GND continu sous tout le PCB, JAMAIS de fente                      │
+  │  - Pas de traces digitales (SPI, I2C) sous la zone audio              │
+  │  - I2S (BCK, LRCK, DIN) : traces courtes, groupees, blindees par GND │
+  │  - Via GND a cote de chaque capa de decouplage                        │
+  │  - Connecteur audio au bord du PCB, cote zone audio                   │
+  │                                                                       │
+  └───────────────────────────────────────────────────────────────────────┘
+
+
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │                         BOM ALIMENTATION AUDIO                        │
+  └─────────────────────────────────────────────────────────────────────────┘
+
+  │ Ref  │ Composant       │ Valeur       │ Package │ LCSC    │ Qte │
+  │──────│─────────────────│──────────────│─────────│─────────│─────│
+  │ U_A  │ AP2112K-3.3     │ 3.3V LDO     │ SOT-23-5│ C51353  │  1  │
+  │ C_A1 │ Capa ceramique  │ 1µF/10V      │ 0402    │         │  1  │ entree LDO
+  │ C_A2 │ Capa ceramique  │ 10µF/10V     │ 0805    │         │  1  │ sortie LDO
+  │ C1   │ Capa ceramique  │ 10µF/16V     │ 0805    │         │  3  │ AVDD,DVDD,CPVDD
+  │ C2   │ Capa ceramique  │ 100nF/16V    │ 0402    │         │  4  │ AVDD,DVDD,CPVDD,LDOO
+  │ C3   │ Capa ceramique  │ 2.2µF/25V    │ 0603    │         │  2  │ charge pump
+  │ R1   │ Resistance      │ 100Ω         │ 0603    │         │  2  │ filtre sortie
+  │ C4   │ Capa ceramique  │ 22nF/50V     │ 0603    │         │  2  │ filtre sortie
+  │ R2   │ Resistance      │ 10kΩ         │ 0402    │         │  1  │ pull-up XSMT
+  │──────│─────────────────│──────────────│─────────│─────────│─────│
+  │      │                 │              │         │ TOTAL   │ 17  │
+
+  Cout total composants : < 0.50 EUR
+
+══════════════════════════════════════════════════════════════════════════════

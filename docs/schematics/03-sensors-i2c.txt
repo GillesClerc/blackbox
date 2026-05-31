@@ -1,0 +1,319 @@
+══════════════════════════════════════════════════════════════════════════════
+  ESCAPEBOX — SCHEMA DETAILLE : CAPTEURS I2C + NFC
+  Bus I2C partage — PCB Satellite Capteurs + PN532 sur Main
+══════════════════════════════════════════════════════════════════════════════
+
+
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │                  BUS I2C — TOPOLOGIE                                  │
+  └─────────────────────────────────────────────────────────────────────────┘
+
+                           3.3V_D
+                            │  │
+                         ┌──┘  └──┐
+                         │4.7kΩ   │4.7kΩ
+                         │        │
+  ESP32-S3 GPIO21 ───────┤ SDA    │
+  ESP32-S3 GPIO17 ───────┼────────┤ SCL
+                         │        │
+              ┌──────────┼────────┼──────────────────┐
+              │          │        │                   │
+     JST-SH 4p #1       │        │          JST-SH 4p #2
+     (vers sat.capt.)    │        │          (vers sat.capt. spare)
+              │          │        │                   │
+         ┌────┴────┐     │        │              ┌────┴────┐
+         │ Pin 1:  │     │        │              │ Spare   │
+         │ 3.3V    │     │        │              │ pour    │
+         │ Pin 2:  │     │        │              │ futur   │
+         │ GND     │     │        │              │ capteur │
+         │ Pin 3:  │     │        │              └─────────┘
+         │ SDA     │     │        │
+         │ Pin 4:  │     │        │
+         │ SCL     │     │        │
+         └─────────┘     │        │
+                         │        │
+                    ┌────┴────────┴────┐
+                    │   Sur PCB Main   │
+                    │                  │
+                    │  PCM5122 (0x4C)  │
+                    │  PN532   (0x48)  │
+                    └──────────────────┘
+
+  Vitesse : 100 kHz (stable sur cables JST jusqu'a ~30cm)
+  Capacite bus max : < 400 pF (7 devices + cable = ~200 pF, OK)
+
+
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │               PCB SATELLITE CAPTEURS (~30×50mm)                       │
+  └─────────────────────────────────────────────────────────────────────────┘
+
+  Tous les capteurs suivants sont sur un seul petit PCB, connecte au
+  bus I2C via JST-SH 4 pins. Chaque capteur a son propre decouplage.
+
+  ┌─────────────────────────────────────────────────────────────────────┐
+  │                  SATELLITE CAPTEURS PCB                            │
+  │                                                                    │
+  │  JST-SH 4p ─── 3.3V ──┬──┬──┬──┬──┬──┬──                        │
+  │              ─── GND ──┤  │  │  │  │  │                           │
+  │              ─── SDA ──┤  │  │  │  │  │                           │
+  │              ─── SCL ──┤  │  │  │  │  │                           │
+  │                        │  │  │  │  │  │                           │
+  │                        ▼  ▼  ▼  ▼  ▼  ▼                           │
+  │                                                                    │
+  │  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐             │
+  │  │MTCH2120 │  │LSM6DSOTR│  │VEML7700 │  │ BMP280  │             │
+  │  │ 0x28    │  │ 0x6A    │  │ 0x10    │  │ 0x76    │             │
+  │  │         │  │         │  │         │  │         │             │
+  │  │ 12ch    │  │ accel   │  │ lumiere │  │ press.  │             │
+  │  │ capac.  │  │ + gyro  │  │ ambient │  │ souffle │             │
+  │  │         │  │         │  │         │  │         │             │
+  │  │ 100nF   │  │ 100nF   │  │ 100nF   │  │ 100nF   │             │
+  │  └─────────┘  └─────────┘  └─────────┘  └─────────┘             │
+  │                                                                    │
+  │  ┌─────────┐  ┌─────────┐                                        │
+  │  │MLX90614 │  │ A3144E  │                                        │
+  │  │ 0x5C    │  │ Hall    │                                        │
+  │  │         │  │         │                                        │
+  │  │ temp IR │  │ digital │                                        │
+  │  │ (TO-39) │  │ (SOT-23)│                                        │
+  │  │         │  │         │                                        │
+  │  │ 100nF   │  │ 10kΩ↑   │ ←── pull-up vers 3.3V                  │
+  │  └─────────┘  └─────────┘     signal digital vers GPIO47 (main) │
+  │                               via fil supplementaire JST          │
+  └────────────────────────────────────────────────────────────────────┘
+
+  Note : le A3144E est un capteur digital (pas I2C). Son signal va
+  vers GPIO47 du main via un fil supplementaire dans le JST ou un
+  connecteur dedie JST-SH 4 pins (5V, GND, DATA, HALL_IN).
+
+
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │               MTCH2120 — Capacitif 12 canaux (detail)                │
+  └─────────────────────────────────────────────────────────────────────────┘
+
+                          3.3V
+                           │
+                        ┌──┴──┐
+                        │100nF│
+                        └──┬──┘
+                           │
+  ┌────────────────────────┴────────────────────────────────┐
+  │                      MTCH2120                           │
+  │                                                         │
+  │  VDD ──── 3.3V + 100nF                                 │
+  │  VSS ──── GND                                           │
+  │  SDA ──── I2C SDA (bus partage)                        │
+  │  SCL ──── I2C SCL (bus partage)                        │
+  │  ADDR ─── GND (adresse 0x28)                           │
+  │                                                         │
+  │  RX0  ───→ pad capacitif 0 ──→ (keypad touche 0)      │
+  │  RX1  ───→ pad capacitif 1 ──→ (keypad touche 1)      │
+  │  RX2  ───→ pad capacitif 2 ──→ (keypad touche 2)      │
+  │  RX3  ───→ pad capacitif 3 ──→ (keypad touche 3)      │
+  │  RX4  ───→ pad capacitif 4 ──→ (keypad touche 4)      │
+  │  RX5  ───→ pad capacitif 5 ──→ (keypad touche 5)      │
+  │  RX6  ───→ pad capacitif 6 ──→ (keypad touche 6)      │
+  │  RX7  ───→ pad capacitif 7 ──→ (keypad touche 7)      │
+  │  RX8  ───→ pad capacitif 8 ──→ (keypad touche 8)      │
+  │  RX9  ───→ pad capacitif 9 ──→ (keypad touche 9)      │
+  │  RX10 ───→ pad capacitif 10 ─→ (zone touch libre)     │
+  │  RX11 ───→ pad capacitif 11 ─→ (zone touch libre)     │
+  │                                                         │
+  └─────────────────────────────────────────────────────────┘
+
+  Les pads capacitifs sont connectes via FPC souple vers les faces
+  du cube. Chaque trace doit etre < 20cm et eviter les pistes
+  paralleles aux signaux digitaux.
+
+  Sensibilite configurable via I2C (registres threshold).
+  Detection touche : lecture registre status (polling ou interrupt).
+
+
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │               LSM6DSOTR — Accelerometre + Gyroscope                  │
+  └─────────────────────────────────────────────────────────────────────────┘
+
+                          3.3V
+                           │
+                ┌──────────┤
+                │       ┌──┴──┐
+                │       │100nF│
+                │       └──┬──┘
+                │          │
+  ┌─────────────┴──────────┴───────────────────────────┐
+  │                   LSM6DSOTR                         │
+  │                                                     │
+  │  VDD   ── 3.3V + 100nF                             │
+  │  VDDIO ── 3.3V                                     │
+  │  GND   ── GND                                      │
+  │  SDA   ── I2C SDA                                  │
+  │  SCL   ── I2C SCL                                  │
+  │  SDO   ── GND (adresse 0x6A)                       │
+  │  CS    ── 3.3V (I2C mode, pas SPI)                 │
+  │  INT1  ── (non connecte, polling)                   │
+  │  INT2  ── (non connecte)                            │
+  │                                                     │
+  └─────────────────────────────────────────────────────┘
+
+  Package LGA-14 (2.5×3mm). Monter sur satellite capteurs,
+  idealement au centre du cube pour mesurer les mouvements.
+  Utilisé pour : secousse, inclinaison, rotation.
+
+
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │               VEML7700 — Capteur lumiere ambiante                    │
+  └─────────────────────────────────────────────────────────────────────────┘
+
+                          3.3V
+                           │
+                        ┌──┴──┐
+                        │100nF│
+                        └──┬──┘
+                           │
+  ┌────────────────────────┴────────────────────────────┐
+  │                    VEML7700                          │
+  │                                                     │
+  │  VDD ── 3.3V + 100nF                               │
+  │  GND ── GND                                         │
+  │  SDA ── I2C SDA                                     │
+  │  SCL ── I2C SCL                                     │
+  │                                                     │
+  └─────────────────────────────────────────────────────┘
+
+  Package OPLGA (2×2mm). Ouverture dans le boitier necessaire
+  pour laisser passer la lumiere ambiante.
+  Resolution : 0.0036 lx, range : 0-120000 lx.
+  Adresse fixe 0x10 (pas configurable).
+
+
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │               BMP280 — Pression / Detection souffle                  │
+  └─────────────────────────────────────────────────────────────────────────┘
+
+                          3.3V
+                           │
+                        ┌──┴──┐
+                        │100nF│
+                        └──┬──┘
+                           │
+  ┌────────────────────────┴────────────────────────────┐
+  │                     BMP280                           │
+  │                                                     │
+  │  VDD  ── 3.3V + 100nF                              │
+  │  VDDIO── 3.3V                                      │
+  │  GND  ── GND                                        │
+  │  SDA  ── I2C SDA                                    │
+  │  SCL  ── I2C SCL                                    │
+  │  SDO  ── GND (adresse 0x76)                         │
+  │  CSB  ── 3.3V (I2C mode)                            │
+  │                                                     │
+  └─────────────────────────────────────────────────────┘
+
+  Package LGA-8 (2×2.5mm). Ouverture pour air necessaire.
+  Detection souffle : variation rapide de pression (~0.1-0.5 hPa).
+  Taux echantillonnage : oversampling ×16 pour detection fine.
+
+
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │               MLX90614 — Temperature IR sans contact                 │
+  └─────────────────────────────────────────────────────────────────────────┘
+
+                          3.3V
+                           │
+                        ┌──┴──┐
+                        │100nF│
+                        └──┬──┘
+                           │
+  ┌────────────────────────┴────────────────────────────┐
+  │                   MLX90614ESF                        │
+  │                    (TO-39)                            │
+  │                                                     │
+  │  VDD ── 3.3V + 100nF                               │
+  │  VSS ── GND                                         │
+  │  SDA ── I2C SDA (SMBus compatible)                  │
+  │  SCL ── I2C SCL                                     │
+  │                                                     │
+  │  Fenetre IR orientee vers la face du cube            │
+  │  FOV : 90° (version BAA) ou 35° (version BCA)      │
+  │                                                     │
+  └─────────────────────────────────────────────────────┘
+
+  Adresse par defaut : 0x5C. Modifiable via EEPROM interne.
+  Precision : ±0.5°C dans range 0-50°C.
+  Fenetre : trou dans le boitier avec film PE transparent IR.
+
+
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │               PN532 — Lecteur NFC (sur PCB Main)                     │
+  └─────────────────────────────────────────────────────────────────────────┘
+
+                          3.3V
+                           │
+                  ┌────────┤
+                  │     ┌──┴──┐
+                  │     │10µF │ (bulk)
+                  │     └──┬──┘
+                  │     ┌──┴──┐
+                  │     │100nF│
+                  │     └──┬──┘
+                  │        │
+  ┌───────────────┴────────┴──────────────────────────────┐
+  │                       PN532                            │
+  │                                                        │
+  │  VDD  ── 3.3V + decouplage                            │
+  │  GND  ── GND                                           │
+  │  SDA  ── I2C SDA                                       │
+  │  SCL  ── I2C SCL                                       │
+  │  I0   ── GND  ┐                                        │
+  │  I1   ── 3.3V ┘ → I2C mode (I0=0, I1=1)              │
+  │  RSTPD── 3.3V via 10kΩ (ou GPIO libre pour reset)    │
+  │  IRQ  ── (non connecte ou GPIO libre)                  │
+  │                                                        │
+  │  ANT1 ── antenne PCB ──┐ antenne boucle integree      │
+  │  ANT2 ── antenne PCB ──┘ sur le PCB main ou FPC ext.  │
+  │                                                        │
+  └────────────────────────────────────────────────────────┘
+
+  Note : le PN532 est sur le PCB main (pas sur satellite) car
+  l'antenne NFC doit etre pres de la face du cube et peut etre
+  realisee directement en cuivre sur le PCB (antenne boucle ~40mm).
+
+  Alternative : module PN532 breakout avec antenne FPC externe.
+
+  Adresse I2C : 0x48 (fixe en I2C mode, pas configurable).
+  Protocole : NXP PN532 I2C frame format (pas raw I2C registers).
+
+
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │               A3144E — Capteur a effet Hall                          │
+  └─────────────────────────────────────────────────────────────────────────┘
+
+                     3.3V
+                      │
+                   ┌──┴──┐
+                   │10kΩ │ (pull-up)
+                   └──┬──┘
+                      │
+                      ├──────── GPIO47 (ESP32-S3)
+                      │
+  ┌───────────────────┴───────────────────────────┐
+  │                   A3144E                       │
+  │                  (SOT-23)                      │
+  │                                                │
+  │  VDD  ── 3.3V (range 4.5-24V, mais 3.3V OK   │
+  │          avec version A3144E-LH ou equiv.)     │
+  │  GND  ── GND                                   │
+  │  OUT  ── open drain → pull-up 10kΩ → GPIO47   │
+  │                                                │
+  └────────────────────────────────────────────────┘
+
+  Sortie open-drain : LOW quand aimant detecte, HIGH sinon.
+  Seuil detection : ~10-20 mT (depend du modele exact).
+  Aimant neodyme N52 ~5mm a < 10mm de distance.
+
+  Note : verifier tension min VDD du modele exact. Certains A3144
+  demandent 4.5V min — dans ce cas, alimenter en 5V et ajouter
+  un diviseur de tension ou level shifter vers GPIO47 (3.3V).
+
+
+══════════════════════════════════════════════════════════════════════════════

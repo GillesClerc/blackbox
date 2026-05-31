@@ -1,0 +1,129 @@
+══════════════════════════════════════════════════════════════════════════════
+  ESCAPEBOX — SCHEMA DETAILLE : ECRANS + TOUCH
+  ILI9488 4" TFT + XPT2046 (SPI2) / GC9A01 1.3" rond (SPI3)
+══════════════════════════════════════════════════════════════════════════════
+
+
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │         ECRAN PRINCIPAL — ILI9488 4" TFT 480×320 (SPI2)              │
+  └─────────────────────────────────────────────────────────────────────────┘
+
+  L'ILI9488 et le XPT2046 partagent le meme bus SPI2 avec des CS separes.
+  MOSI/SCLK sur GPIO11/12 = IOMUX natif SPI2 pour DMA optimale.
+
+          ESP32-S3                     ILI9488 module (FPC 40p)
+       ┌──────────┐                  ┌──────────────────────┐
+       │          │                  │                      │
+       │ GPIO11 ──┼── MOSI ────────→│ SDI (MOSI)           │
+       │          │                  │                      │
+       │ GPIO12 ──┼── SCLK ────────→│ SCK                  │
+       │          │                  │                      │
+       │ GPIO10 ──┼── CS_TFT ──────→│ CS (active low)      │
+       │          │                  │                      │
+       │ GPIO9 ───┼── DC ──────────→│ D/CX (data/command)  │
+       │          │                  │                      │
+       │ GPIO8 ───┼── RST ─────────→│ RESX (active low)    │
+       │          │                  │                      │
+       │          │                  │ LED+ ── 3.3V_D       │
+       │          │                  │ LED- ── GND           │
+       │          │                  │                      │
+       │          │                  │ VCC ─── 3.3V_D       │
+       │          │                  │ GND ─── GND           │
+       └──────────┘                  └──────────────────────┘
+
+  Mode : landscape (MADCTL = 0x28), SPI mode 0, max 40 MHz
+
+
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │         TOUCH RESISTIF — XPT2046 (SPI2 partage)                      │
+  └─────────────────────────────────────────────────────────────────────────┘
+
+  Le XPT2046 est monte sur le meme PCB que l'ILI9488 (module integre).
+  Il partage MOSI/SCLK avec l'ILI9488 mais a son propre CS et MISO.
+
+          ESP32-S3                     XPT2046 (sur module TFT)
+       ┌──────────┐                  ┌──────────────────────┐
+       │          │                  │                      │
+       │ GPIO11 ──┼── MOSI ────────→│ DIN                  │
+       │          │                  │                      │
+       │ GPIO12 ──┼── SCLK ────────→│ DCLK                 │
+       │          │                  │                      │
+       │ GPIO13 ──┼── MISO ←────────│ DOUT                 │
+       │          │                  │                      │
+       │ GPIO14 ──┼── CS_XPT ──────→│ CS (active low)      │
+       │          │                  │                      │
+       │ GPIO15 ──┼── IRQ ←─────────│ PENIRQ (active low)  │
+       │          │                  │  + 100kΩ pull-up int │
+       │          │                  │                      │
+       │          │                  │ VCC ─── 3.3V_D       │
+       │          │                  │ GND ─── GND           │
+       └──────────┘                  └──────────────────────┘
+
+  SPI mode 0, max 2.5 MHz (plus lent que le TFT).
+  Lecture : envoi commande 8-bit, reception 12-bit ADC.
+  IRQ declenche la lecture (polling a 20 Hz via timer LVGL).
+
+  Calibration touch (firmware xpt2046.c) :
+  - ADC X raw : 200..3900 → pixel 0..479
+  - ADC Y raw : 200..3900 → pixel 0..319
+  - Pression : Z1/Z2 pour filtrage touches invalides
+
+
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │              TIMING SPI2 — Partage ILI9488 / XPT2046                 │
+  └─────────────────────────────────────────────────────────────────────────┘
+
+  Le driver ESP-IDF SPI gere l'arbitrage via les CS :
+
+  CS_TFT (GPIO10) ──┐
+                     ├── Jamais actifs en meme temps
+  CS_XPT (GPIO14) ──┘
+
+  - Rafraichissement ecran : CS_TFT low, SPI @ 40 MHz, burst DMA
+  - Lecture touch : CS_XPT low, SPI @ 2.5 MHz, 3 bytes
+  - L'ecran est inactif pendant la lecture touch (quelques µs)
+
+
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │         ECRAN BOUSSOLE — GC9A01 1.3" rond 240×240 (SPI3)            │
+  └─────────────────────────────────────────────────────────────────────────┘
+
+  Ecran rond IPS utilise pour afficher la boussole, QR codes de revelation,
+  animations de victoire. Connecte via nappe JST-SH 8 pins au PCB main.
+
+          ESP32-S3                     GC9A01 module
+       ┌──────────┐                  ┌──────────────────────┐
+       │          │                  │                      │
+       │ GPIO38 ──┼── MOSI ────────→│ SDA (data in)        │
+       │          │                  │                      │
+       │ GPIO39 ──┼── SCLK ────────→│ SCL (clock)          │
+       │          │                  │                      │
+       │ GPIO40 ──┼── CS ──────────→│ CS (active low)      │
+       │          │                  │                      │
+       │ GPIO41 ──┼── DC ──────────→│ DC (data/command)    │
+       │          │                  │                      │
+       │ GPIO42 ──┼── RST ─────────→│ RES (active low)     │
+       │          │                  │                      │
+       │          │                  │ BLK ── 3.3V (always) │
+       │          │                  │ VCC ── 3.3V_D        │
+       │          │                  │ GND ── GND            │
+       └──────────┘                  └──────────────────────┘
+
+  SPI mode 0, max 80 MHz (GC9A01 supporte haute vitesse).
+  Pas de MISO (ecriture seulement, pas de lecture registre).
+
+  Connecteur JST-SH 8 pins (PCB main → satellite) :
+  ┌─────────────────────────────┐
+  │ Pin │ Signal │ Couleur     │
+  │  1  │ 3.3V   │ Rouge       │
+  │  2  │ GND    │ Noir        │
+  │  3  │ MOSI   │ Jaune       │
+  │  4  │ SCLK   │ Orange      │
+  │  5  │ CS     │ Bleu        │
+  │  6  │ DC     │ Vert        │
+  │  7  │ RST    │ Blanc       │
+  │  8  │ (rsv)  │ —           │
+  └─────────────────────────────┘
+
+
+══════════════════════════════════════════════════════════════════════════════

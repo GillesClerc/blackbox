@@ -1,0 +1,141 @@
+══════════════════════════════════════════════════════════════════════════════
+  ESCAPEBOX — SCHEMA DETAILLE : LEDs WS2812 + POTENTIOMETRES + BOUTONS
+══════════════════════════════════════════════════════════════════════════════
+
+
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │               WS2812B — Chaine LEDs RGB addressables                 │
+  └─────────────────────────────────────────────────────────────────────────┘
+
+  Toutes les LEDs WS2812 forment une seule chaine serie pilotee
+  par le peripherique RMT de l'ESP32-S3 (GPIO48).
+
+              5V (depuis MT3608 boost)
+               │
+               ├──────────────────────────────────────────────
+               │           │           │           │
+            ┌──┴──┐     ┌──┴──┐     ┌──┴──┐     ┌──┴──┐
+            │VDD  │     │VDD  │     │VDD  │     │VDD  │
+            │     │     │     │     │     │     │     │
+  GPIO48 ──→│DIN  │  ┌─→│DIN  │  ┌─→│DIN  │  ┌─→│DIN  │──→ ...
+   (ESP32)  │     │  │  │     │  │  │     │  │  │     │
+            │DOUT ├──┘  │DOUT ├──┘  │DOUT ├──┘  │DOUT ├──→
+            │     │     │     │     │     │     │     │
+            │VSS  │     │VSS  │     │VSS  │     │VSS  │
+            └──┬──┘     └──┬──┘     └──┬──┘     └──┬──┘
+               │           │           │           │
+               └───────────┴───────────┴───────────┴──── GND
+
+  LED #0       LED #1       LED #2       LED #3      ... LED #N
+
+  Important :
+  - Resistance serie 330Ω entre GPIO48 et DIN de la premiere LED
+    (protection signal + adaptation impedance cable long)
+  - Capa 100nF entre VDD et GND de chaque LED (ou 1 par groupe de 3)
+  - Capa electrolytique 470µF/10V en tete de chaine (reservoir courant)
+  - Courant max : 60mA par LED (blanc max) × N LEDs
+  - Budget typique : ~20-30 LEDs × 20mA moyen = 400-600 mA sur 5V
+
+  Repartition indicative des LEDs :
+  - Aretes du cube (diffusion) : ~16 LEDs
+  - Anneau NFC : ~8 LEDs
+  - Retro-eclairage keypad : ~4 LEDs
+  - Border celebration (face arriere) : ~4 LEDs
+  - Total : ~32 LEDs
+
+  Le level shifting 3.3V → 5V n'est generalement pas necessaire
+  avec les WS2812B (VIH = 0.7 × VDD = 3.5V, mais GPIO48 en
+  push-pull a 3.3V fonctionne en pratique). Si instable :
+  ajouter un transistor 2N7002 ou 74HCT125 en buffer.
+
+
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │               POTENTIOMETRES ROTATIFS — ADC                          │
+  └─────────────────────────────────────────────────────────────────────────┘
+
+  3 potentiometres rotatifs (10kΩ lineaire) connectes aux entrees
+  ADC de l'ESP32-S3. Cable via JST-SH 6 pins.
+
+  Connecteur JST-SH 6 pins (PCB main → satellite interaction) :
+  ┌─────────────────────────────────┐
+  │ Pin │ Signal    │ GPIO         │
+  │  1  │ 3.3V      │ —            │
+  │  2  │ GND       │ —            │
+  │  3  │ POT1      │ GPIO1 (ADC1) │
+  │  4  │ POT2      │ GPIO2 (ADC1) │
+  │  5  │ POT3      │ GPIO3 (ADC1) │
+  │  6  │ (reserve) │ —            │
+  └─────────────────────────────────┘
+
+  Schema par potentiometre :
+
+       3.3V_D
+         │
+      ┌──┴──┐
+      │     │ Terminal A (haut)
+      │     │
+      │ 10kΩ│ potentiometre
+      │ lin.│
+      │     ├──── Wiper → GPIO (ADC1_CHx)
+      │     │              │
+      │     │           ┌──┴──┐
+      │     │           │100nF│ (filtre anti-bruit)
+      │     │           └──┬──┘
+      │     │              │
+      │     │ Terminal B   │
+      └──┬──┘              │
+         │                 │
+        GND               GND
+
+  ADC ESP32-S3 : 12 bits (0-4095), reference interne.
+  Attenuation : 12 dB (range 0-2.5V environ) ou 0 dB (0-0.95V).
+  Calibration : utiliser esp_adc_cal pour correction lineaire.
+
+  Filtre 100nF sur le wiper : lisse le bruit du curseur.
+  Lecture : echantillonnage a 20 Hz, moyenne glissante 4 echantillons.
+
+
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │               BOUTONS MECANIQUES                                     │
+  └─────────────────────────────────────────────────────────────────────────┘
+
+  Option A : via MTCH2120 (12 canaux capacitifs)
+  ────────────────────────────────────────────────
+  Les 12 canaux du MTCH2120 peuvent etre utilises aussi bien pour
+  des pads capacitifs (PCB trace) que pour des boutons conducteurs.
+  Aucun GPIO supplementaire necessaire.
+
+  Option B : via GPIO direct (boutons supplementaires)
+  ────────────────────────────────────────────────────
+
+       3.3V_D
+         │
+      ┌──┴──┐
+      │10kΩ │ (pull-up externe)
+      └──┬──┘
+         │
+         ├──── GPIO45 ou GPIO46 (ESP32-S3)
+         │
+       ┌─┴─┐
+       │ ○ │ Bouton poussoir (NO, normalement ouvert)
+       └─┬─┘
+         │
+        GND
+
+  Anti-rebond : software (debounce 50ms dans le firmware).
+  GPIO46 est input-only (pas de pull-up interne) → pull-up externe obligatoire.
+  GPIO45 est un strapping pin : pull-up externe maintient le niveau
+  correct au boot (high = 3.3V VDD_SPI).
+
+  Bouton ON/OFF (interrupteur general) :
+  ────────────────────────────────────────
+
+       LiPo+ ──┤ ○ ├── VBAT (vers TP4056 et LDOs)
+                switch
+                SPST
+
+  Un interrupteur simple coupe l'alimentation batterie.
+  Le TP4056 peut toujours charger meme switch OFF (USB direct).
+
+
+══════════════════════════════════════════════════════════════════════════════

@@ -1,0 +1,94 @@
+══════════════════════════════════════════════════════════════════════════════
+  ESCAPEBOX — SCHEMA DETAILLE : ICS-43434 MICRO MEMS (I2S entree)
+  Reference: InvenSense ICS-43434 datasheet
+══════════════════════════════════════════════════════════════════════════════
+
+
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │               ICS-43434 — MICRO MEMS NUMERIQUE I2S                   │
+  └─────────────────────────────────────────────────────────────────────────┘
+
+                          3.3V_D
+                            │
+                  ┌─────────┤
+                  │      ┌──┴──┐
+                  │      │100nF│ (decouplage, au plus pres du VDD)
+                  │      └──┬──┘
+                  │         │
+  ┌───────────────┴─────────┴──────────────────────────────────┐
+  │                      ICS-43434                              │
+  │                     (BGA bottom-port)                       │
+  │                                                             │
+  │  VDD  ── 3.3V + 100nF                                     │
+  │  GND  ── GND                                               │
+  │                                                             │
+  │  SCK  ←── GPIO16 (ESP32-S3, I2S1_SCK)                     │
+  │          Clock I2S : ~2.82 MHz (44100 × 64)                │
+  │                                                             │
+  │  WS   ←── GPIO18 (ESP32-S3, I2S1_WS)                      │
+  │          Word Select : 44100 Hz                             │
+  │                                                             │
+  │  SD   ──→ GPIO7  (ESP32-S3, I2S1_SD_IN)                   │
+  │          Data output : 24-bit, MSB first                    │
+  │                                                             │
+  │  L/R  ── GND (canal gauche)                                │
+  │          GND = left channel, VDD = right channel            │
+  │                                                             │
+  └─────────────────────────────────────────────────────────────┘
+
+
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │               PLACEMENT PCB                                          │
+  └─────────────────────────────────────────────────────────────────────────┘
+
+                    ┌─────────────────────────────────┐
+                    │          PCB MAIN                │
+                    │                                  │
+                    │   ┌───────────┐                  │
+                    │   │ ICS-43434 │ ← bottom-port    │
+                    │   │  (dessous)│   micro           │
+                    │   └───────────┘                   │
+                    │        ↓                          │
+                    │   ┌─────────┐                     │
+                    │   │ TROU Ø1 │ ← trou acoustique  │
+                    │   │  mm PCB │   dans le PCB       │
+                    │   └─────────┘                     │
+                    │                                   │
+                    └───────────────────────────────────┘
+                              ↓
+                    ┌─────────────────┐
+                    │  TROU BOITIER   │ ← ouverture dans
+                    │  Ø 2-3mm        │   le boitier bois
+                    └─────────────────┘
+
+  Le ICS-43434 est un micro bottom-port : le son entre par
+  le dessous du composant. Il faut :
+  1. Un trou Ø1mm dans le PCB sous le micro
+  2. Un trou Ø2-3mm dans le boitier aligne avec le trou PCB
+  3. Pas de piste de cuivre sous le trou acoustique
+  4. Zone de silence (pas de bruit digital) autour du micro
+
+  Distance micro → ESP32 : garder les traces I2S courtes (< 5cm).
+  Le micro est sur le PCB main, pas sur un satellite.
+
+
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │               SPECIFICATIONS AUDIO                                   │
+  └─────────────────────────────────────────────────────────────────────────┘
+
+  - Sensibilite : -26 dBFS (typ.)
+  - SNR : 65 dBA
+  - Bande passante : 50 Hz - 20 kHz (avec filtre HP interne)
+  - Resolution : 24-bit I2S
+  - Consommation : ~1.4 mA actif, ~6 µA sleep
+  - Frequence clock : 1.024 - 4.096 MHz (typ. 2.822 MHz @ 44.1 kHz)
+
+  Utilisation firmware :
+  - Detection niveau sonore (peak level) pour interactions
+  - Detection souffle (basse frequence, < 500 Hz)
+  - Reconnaissance commande vocale (future, optionnel)
+  - Le micro ne tourne PAS en permanence — active a la demande
+    par le scenario pour economiser energie
+
+
+══════════════════════════════════════════════════════════════════════════════

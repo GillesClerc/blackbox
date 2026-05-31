@@ -138,151 +138,216 @@ Scores et stats remontés à la prochaine synchro
 
 #### 2.2.1 SoC principal
 
- **ESP32-S3-DevKitC-1** (proto) **ESP32-S3-WROOM-1-N16R8** (série)
+**Proto** : ESP32-S3-DevKitC-1 (headers femelles, breadboard)
+**PCB custom** : ESP32-S3-WROOM-1-N16R8 soudé directement
 
-#### 2.2.2 Capteurs et actionneurs
+> **Contrainte GPIO WROOM-1-N16R8** : GPIO26-37 sont monopolisés par le flash/PSRAM octal SPI et ne sont **pas disponibles**. GPIO19-20 = USB. GPIO43-44 = UART0 debug. GPIO disponibles : 0-18, 21, 38-42, 45-48.
 
-**Bus backbone interne** (JST, court le long de la structure de la box) :
+#### 2.2.2 Capteurs et actionneurs — liste confirmée
 
-Chaque PCB satellite ou composant se plug/déplugg via connecteur JST sur ce bus backbone. Il transporte : alimentation 3.3V + 5V, I2C, et signaux GPIO nécessaires. Permet un assemblage/démontage propre sans soudure volante.
+**Bus I2C** (partagé via backbone JST) :
 
-**Bus I2C** — distribué via backbone JST :
+> Proto DevKitC-1 : SDA=GPIO21, SCL=GPIO17 | PCB cible : même assignation (GPIO21/17 libres sur WROOM-1-N16R8). Pull-up 4.7kΩ sur chaque ligne. Défini dans `i2c_bus.h`.
 
-> **Dev board ESP32-S3-DevKitC-1 :** SDA=GPIO21, SCL=GPIO17 (GPIO17=libre — GPIO38=LED RMT onboard, GPIO42=JTAG, GPIO16=WS2812 default à éviter) | **Cible ESP32-S3-WROOM-1-N16R8 :** SDA=GPIO8, SCL=GPIO9 (pull-up 4.7kΩ). Le firmware sélectionne les bons GPIO via `#define I2C_BUS_SDA / I2C_BUS_SCL` dans `i2c_bus.h`.
+| Adresse | Composant | Fonction | PCB |
+|---|---|---|---|
+| 0x10 | VEML7700 | Lumière ambiante | Satellite capteurs |
+| 0x28 | MTCH2120 | Capacitif 12 canaux (keypad + zones touch) | Satellite capteurs |
+| 0x48 | PN532 | Lecteur NFC (I2C mode) | Main |
+| 0x4C | PCM5122PW | DAC audio stéréo (I2C contrôle) | Main |
+| 0x5C | MLX90614 | Température IR (sans contact) | Satellite capteurs |
+| 0x6A | LSM6DSOTR | Accéléromètre + gyroscope 6 axes | Satellite capteurs |
+| 0x76 | BMP280 | Pression / détection souffle | Satellite capteurs |
 
+> **Composants retirés du Phase 1** : AS5600 (rotation magnétique), servos SG90, laser. Remplacés par potentiomètres rotatifs mécaniques + interactions software.
 
-| Adresse | Composant | Fonction |
-|---|---|---|
-| 0x10 | VEML7700 | Lumière ambiante |
-| 0x48 | PN532 | Lecteur NFC |
-| 0x36 | AS5600 | Rotation magnétique (plateau) |
-| 0x5A | MPR121 (Phase 1 proto) | Capacitif 12 canaux — breakout AliExpress |
-| 0x28 | MTCH2120 (Phase 2 PCB) | Capacitif 12 canaux — directement sur PCB custom |
-| 0x5C | MLX90614 | Température IR |
-| 0x6A | LSM6DSOTR | Accéléromètre + gyroscope 6 axes (STMicroelectronics) |
-| 0x76 | BMP280 | Pression / détection souffle |
-
-**Bus SPI2** (écran principal, GPIO35-40) :
-
-| GPIO | Signal | Composant |
-|---|---|---|
-| GPIO35 | MOSI | TFT 4" ILI9488 |
-| GPIO36 | CLK | TFT 4" ILI9488 |
-| GPIO37 | CS | TFT 4" ILI9488 |
-| GPIO38 | DC | TFT 4" ILI9488 |
-| GPIO39 | RST | TFT 4" ILI9488 |
-| GPIO40 | BL | TFT 4" backlight |
-
-**Bus SPI3** (écran boussole) :
+**Bus SPI2** (écran principal — IOMUX GPIO11/12 pour perf DMA) :
 
 | GPIO | Signal | Composant |
 |---|---|---|
-| GPIO41 | MOSI | GC9A01 1.3" rond |
-| GPIO42 | CLK | GC9A01 1.3" rond |
-| GPIO47 | CS | GC9A01 1.3" rond |
-| GPIO46 | DC | GC9A01 1.3" rond |
-| GPIO45 | RST | GC9A01 1.3" rond |
+| GPIO11 | MOSI | ILI9488 4" TFT + XPT2046 (partagé) |
+| GPIO12 | SCLK | ILI9488 4" TFT + XPT2046 (partagé) |
+| GPIO13 | MISO | XPT2046 (lecture touch) |
+| GPIO10 | CS_TFT | ILI9488 chip select |
+| GPIO9  | DC | ILI9488 data/command |
+| GPIO8  | RST | ILI9488 reset |
+| GPIO14 | CS_XPT | XPT2046 chip select |
+| GPIO15 | IRQ | XPT2046 touch interrupt (active low) |
 
-> **⚠ GPIO43=UART0_TX / GPIO44=UART0_RX** sur l'ESP32-S3-WROOM-1 — les utiliser pour SPI3 rend la console de debug inutilisable. CS et DC remappés sur GPIO47/GPIO46 (libres sur le module nu). À confirmer sur le schéma PCB final.
+> Écran en mode **landscape** (MADCTL 0x28, 480×320). XPT2046 résistif sur le même bus SPI2 avec CS séparé. Backlight alimenté en 3.3V directement (pas de contrôle PWM). FPC 40 broches vers le PCB main.
 
-**Bus I2S0** (audio sortie, GPIO4-6) :
+**Bus SPI3** (écran boussole / révélation) :
 
 | GPIO | Signal | Composant |
 |---|---|---|
-| GPIO4 | BCLK | PCM5122PW (I2S DAC stéréo) |
+| GPIO38 | MOSI | GC9A01 1.3" rond |
+| GPIO39 | SCLK | GC9A01 1.3" rond |
+| GPIO40 | CS | GC9A01 1.3" rond |
+| GPIO41 | DC | GC9A01 1.3" rond |
+| GPIO42 | RST | GC9A01 1.3" rond |
+
+> GPIO38-42 tous disponibles sur WROOM-1-N16R8. UART0 (GPIO43/44) préservé pour le debug. Connecté via nappe 6 fils (SPI + 3.3V + GND) vers satellite interaction.
+
+**Bus I2S0** (audio sortie → PCM5122) :
+
+| GPIO | Signal | Composant |
+|---|---|---|
+| GPIO4 | BCLK | PCM5122PW |
 | GPIO5 | LRCLK | PCM5122PW |
-| GPIO6 | DIN | PCM5122PW |
+| GPIO6 | DOUT | PCM5122PW |
 
-> PCM5122PW avec MODE pins à GND → mode I2C obligatoire. PLL configuré depuis BCK (×16 = 45.16 MHz). Filtre ringing-less low latency FIR (reg 0x2B=7), auto-mute off. Contrôlé via I2C à l'adresse **0x4C** (volume -6dB hardware, PLL, mute). I2S : 44100 Hz, 16-bit data, 32-bit slots (BCLK = 2.82 MHz), Philips standard. Sa sortie analogique LOUT/ROUT alimente le PAM8406 via condensateurs de couplage 100nF. Le **PAM8406** (Class D 5W+5W stéréo) ne nécessite aucun driver logiciel — purement analogique, piloté par SHDN pin. Amplitudes numériques réduites côté firmware pour éviter l'écrêtage (24dB gain PAM8406).
+> PCM5122PW en mode I2C (MODE pins à GND). PLL depuis BCK. I2S : 44100 Hz, 16-bit, 32-bit slots (BCLK = 2.82 MHz), Philips standard. Volume digital 0 dB par défaut (reg 0x3D/0x3E = 0x30). Sortie analogique OUTL/OUTR → filtre RC (100Ω + 22nF, fc≈72 kHz) → PAM8406. Voir `docs/datasheets/pcm5122-registers.md` pour la référence registres complète.
+>
+> Le **PAM8406** (Class D 5W+5W stéréo) est purement analogique, pas de driver. SHDN tiré haut (toujours actif). Le mute se fait via le registre PCM5122 (0x03). Gain fixe 24 dB — les amplitudes sont contrôlées numériquement côté firmware (MP3_BG_VOLUME, registre volume digital).
 
-**Bus I2S1** (audio entrée, GPIO15-17) :
+**Bus I2S1** (audio entrée — micro MEMS) :
 
 | GPIO | Signal | Composant |
 |---|---|---|
-| GPIO15 | SCK | ICS-43434 micro MEMS |
-| GPIO16 | WS | ICS-43434 |
-| GPIO17 | SD | ICS-43434 |
+| GPIO16 | SCK | ICS-43434 micro MEMS |
+| GPIO18 | WS | ICS-43434 |
+| GPIO7  | SD | ICS-43434 |
+
+> L'ICS-43434 est un micro MEMS numérique I2S (24-bit, 43 kHz BW). Monté sur le PCB main, trou dans le boîtier. Pin L/R à GND → canal gauche. GPIO16/18/7 choisis pour éviter les conflits avec I2C (GPIO17/21) et XPT2046 (GPIO15).
 
 **GPIO individuels** :
 
-| GPIO | Fonction | Composant |
-|---|---|---|
-| GPIO1 | PWM Servo 1 | SG90 — compartiment principal |
-| GPIO2 | PWM Servo 2 | SG90 — compartiment secondaire |
-| GPIO3 | Laser ON/OFF | 2N7002 MOSFET |
-| GPIO4 | WS2812 DATA | Chaîne LEDs RGB (arêtes + anneau NFC) |
-| GPIO10 | Hall sensor | A3144E (détection aimant) |
-| GPIO11-13 | Touch natif ESP32-S3 | Réservé — à confirmer selon besoins MTCH2120 |
-| GPIO14 | Encoder A | Rotary encoder EC11 |
-| GPIO18 | Encoder B | Rotary encoder EC11 |
-| GPIO21 | Encoder BTN | Bouton rotary encoder |
-| GPIO19 | USB D- | USB-C natif |
-| GPIO20 | USB D+ | USB-C natif |
-| GPIO48 | LED status | WS2812 onboard DevKit |
+| GPIO | Fonction | Composant | Notes |
+|---|---|---|---|
+| GPIO1 | ADC (pot 1) | Potentiomètre rotatif | ADC1_CH0 |
+| GPIO2 | ADC (pot 2) | Potentiomètre rotatif | ADC1_CH1 |
+| GPIO3 | ADC (pot 3) | Potentiomètre rotatif | ADC1_CH2, ou bouton |
+| GPIO19 | USB D- | USB-C natif | — |
+| GPIO20 | USB D+ | USB-C natif | — |
+| GPIO45 | Bouton / reserve | Strapping pin (attention) | Input avec pull-up ext |
+| GPIO46 | Bouton / reserve | Input only | — |
+| GPIO47 | Hall sensor | A3144E (détection aimant) | Pull-up 10kΩ |
+| GPIO48 | WS2812 DATA | Chaîne LEDs RGB | RMT driver |
 
-**Alimentation** :
+> Les boutons mécaniques peuvent être gérés via les 12 canaux du MTCH2120 (capacitif, fonctionne aussi avec boutons conducteurs) ou directement via GPIO45/46 pour des boutons poussoirs simples.
+
+**Récapitulatif GPIO complet (WROOM-1-N16R8)** :
 
 ```
-USB-C (5V in)
+GPIO 0      — (strapping boot, réservé)
+GPIO 1-3    — ADC potentiomètres (satellites)
+GPIO 4-6    — I2S0 audio out (PCM5122)
+GPIO 7      — I2S1 SD (ICS-43434 micro)
+GPIO 8-15   — SPI2 écran principal (ILI9488 + XPT2046)
+GPIO 16     — I2S1 SCK (ICS-43434 micro)
+GPIO 17     — I2C SCL
+GPIO 18     — I2S1 WS (ICS-43434 micro)
+GPIO 19-20  — USB-C
+GPIO 21     — I2C SDA
+GPIO 26-37  — ⛔ Flash/PSRAM (non disponible)
+GPIO 38-42  — SPI3 écran rond (GC9A01)
+GPIO 43-44  — UART0 debug
+GPIO 45-46  — Boutons / réserve
+GPIO 47     — A3144E Hall sensor
+GPIO 48     — WS2812 LEDs
+```
+
+#### 2.2.2b Alimentation
+
+```
+USB-C (5V, 2A max)
     ↓
 TP4056 + DW01A + FS8205 (charge LiPo + protection)
     ↓
 LiPo 3.7V 3000mAh
     ↓
-    ├── AP2112K-3.3 → 3.3V (ESP32 + capteurs I2C + écrans + micro)
-    └── MT3608 boost → 5V (WS2812 + servos + laser)
+    ├── AP2112K-3.3 #1 → 3.3V_D (digital : ESP32, écrans, capteurs I2C, micro)
+    ├── AP2112K-3.3 #2 → 3.3V_A (audio : PCM5122, zone isolée)
+    └── MT3608 boost → 5V (WS2812 LEDs)
 ```
 
-#### 2.2.2b Assignation des faces — Cube Phase 1 (150×150×150mm)
+> **Deux LDOs séparés** pour isoler le bruit digital du chemin audio. GND unique continu (PAS de split). Voir `docs/schematics/power-audio.txt` pour le schéma détaillé avec découplage PCM5122 et filtre RC sortie.
 
-| Face | Rôle | Composants |
+#### 2.2.2c Assignation des faces — Cube 150×150×150mm
+
+> Les capteurs et interactions ne sont pas forcément 1:1 avec les faces. Plusieurs capteurs peuvent cohabiter sur une même face, et un même type d'interaction peut traverser plusieurs faces.
+
+| Face | Rôle principal | Composants |
 |---|---|---|
-| **A definir** | Écran narratif principal | ILI9488 4" SPI (GPIO35-40), WS2812 border |
-| **A definir** | Keypad capacitif | MPR121 0x5A (proto) / MTCH2120 0x28 (série), WS2812 rétro |
-| **A definir** | Zone NFC | PN532 0x48 (antenne derrière bois ≤3mm), WS2812 anneau |
-| **A definir** | Capteurs ambiance | VEML7700 0x10, BMP280 0x76 (souffle), LSM6DSOTR 0x6A, Hall A3144E |
-| **A definir** | Face révélation victoire | GC9A01 1.3" round (GPIO41-45), WS2812 celebration border |
-| **A definir** | Technique | USB-C, micro SD, interrupteur, AS5600 plateau rotatif (Phase 2 Pro) |
-| **A definir** | Melange de plusieurs capteurs! Pas forcément un capteur par faces ou un capteur sur une seul face. |
+| **Dessus** | Écran narratif | ILI9488 4" TFT + XPT2046 touch (FPC vers main) |
+| **Devant** | Interactions principales | MTCH2120 keypad capacitif, potentiomètres, boutons, WS2812 rétro |
+| **Droite** | Capteurs ambiance | VEML7700 lumière, BMP280 souffle, MLX90614 IR temp |
+| **Gauche** | NFC + détection | PN532 (antenne derrière bois ≤3mm), A3144E Hall, WS2812 anneau |
+| **Arrière** | Révélation / boussole | GC9A01 1.3" rond, WS2812 celebration border |
+| **Dessous** | Technique | USB-C charge, interrupteur, HP (PAM8406 + haut-parleur), LSM6DSOTR (orientation) |
 
-**Flux de révélation complet (tous appareils) :**
+> Assignation indicative. Les capteurs sur satellite I2C peuvent être repositionnés librement tant qu'ils restent sur le bus backbone.
+
+**Flux de révélation complet :**
 ```
-Joueur résout l'énigme → entre le code sur le keypad
+Joueur résout l'énigme → entre le code sur le keypad capacitif (MTCH2120)
         ↓
-Servo (peut etre Phase 2) OU face dos s'active (Phase 1)
+Face arrière s'active (éclairage WS2812)
         ↓
 GC9A01 affiche QR → escapebox.ch/obj/{scenario}/{session}
         ↓
-Téléphone reçoit l'objet digital (image, fragment, symbole)
+Téléphone scanne le QR → reçoit l'objet digital (image, fragment, symbole)
         ↓
 L'objet affiche un CODE → joueur le tape sur le keypad
         ↓
 Prochaine énigme débloquée
 ```
 
-> **Note NFC téléphone :** L'interaction téléphone → PN532 (téléphone agit comme tag) est **impossible sur iPhone** (limitation hardware iOS 18.1 inclus, HCE restreint aux paiements). Le flux ci-dessus (QR → objet → code clavier) fonctionne sur tous les appareils. Une variante Android-only (HCE → tap PN532) pourrait être explorée en Phase 3 (COULD).
+> **Note NFC téléphone :** L'interaction téléphone → PN532 (téléphone agit comme tag) est **impossible sur iPhone** (limitation hardware iOS, HCE restreint aux paiements). Le flux QR ci-dessus fonctionne sur tous les appareils.
 
-#### 2.2.3 PCB
+#### 2.2.3 Architecture PCB — Main + Satellites
 
-**Proto Phase 1** : ESP32-S3-DevKitC-1 sur headers femelles + PCB capteurs.
+**PCB Main** (~100×100mm, 4 couches) :
 
-**Proto Phase 2** : Module WROOM-1-N16R8 sur breadboard avec cable enterconnecté avec les devices pour débug.
+Composants embarqués :
+- ESP32-S3-WROOM-1-N16R8 (soudé)
+- Alimentation complète : TP4056 + DW01A + FS8205, 2× AP2112K-3.3 (digital + audio), MT3608 boost
+- PCM5122PW DAC + découplage (zone audio isolée)
+- PAM8406 Class D ampli + filtre RC sortie
+- ICS-43434 MEMS micro (trou PCB pour son)
+- PN532 NFC (antenne PCB intégrée ou FPC externe)
+- Connecteur USB-C (charge + USB CDC debug)
+- Connecteur FPC 40 pins pour ILI9488 4" TFT
+- Connecteur batterie LiPo JST-PH 2 pins
+- 4× connecteurs JST-SH 4 pins (bus I2C : SDA, SCL, 3.3V, GND)
+- 1× connecteur JST-SH 8 pins (SPI3 + alim pour GC9A01)
+- 1× connecteur JST-SH 6 pins (ADC pots + 3.3V + GND)
+- 1× connecteur JST-SH 4 pins (WS2812 data + 5V + GND + signal Hall)
 
-**Proto Phase 3** : Module WROOM-1-N16R8 soudé directement sur PCB custom tout-en-un, PCBA par JLCPCB.
+**PCB Satellite Capteurs** (~30×50mm, 2 couches) :
 
-**Architecture PCB interne** :
+Composants embarqués :
+- MTCH2120 capacitif 12 canaux (pads vers faces via FPC souple)
+- LSM6DSOTR accéléromètre/gyro
+- VEML7700 capteur lumière (avec ouverture)
+- BMP280 pression/souffle (avec ouverture)
+- MLX90614 IR température (avec fenêtre IR)
+- A3144E Hall sensor
+- Connecteur JST-SH 4 pins vers bus I2C main
 
-Un bus backbone JST court le long de la structure interne de la box. Chaque PCB satellite (face keypad, face NFC, face boussole, etc.) et chaque composant se plug/déplugg proprement sur ce bus via connecteur JST. Le backbone distribue :
-- Alimentation 3.3V et 5V
-- Bus I2C partagé
-- Signaux GPIO nécessaires par face
+> Tous les capteurs partagent le même bus I2C. Adresses uniques confirmées (aucun conflit).
 
-Avantages : assemblage sans soudure volante, remplacement/upgrade d'une face sans toucher au reste, câblage propre et maintenable en production.
+**PCB Satellite Interaction** (taille selon la face, 2 couches) :
+
+Composants à câbler (pas forcément sur PCB dédié) :
+- Potentiomètres rotatifs (analogique, vers ADC main)
+- Boutons mécaniques (via MTCH2120 ou GPIO direct)
+- WS2812 LEDs (chaîne série depuis GPIO48)
+- GC9A01 1.3" rond (SPI3 depuis main)
+- Haut-parleur (câbles depuis PAM8406 sur main)
+
+**Connectique backbone** :
+
+JST-SH (1.0mm pitch, verrouillable) pour tous les connecteurs inter-PCB :
+- 4 pins I2C : VCC(3.3V), GND, SDA, SCL
+- 8 pins SPI3 : VCC(3.3V), GND, MOSI, SCLK, CS, DC, RST, (reserve)
+- 6 pins ADC : VCC(3.3V), GND, ADC1, ADC2, ADC3, (reserve)
+- 4 pins LED/Hall : VCC(5V), GND, WS2812_DATA, HALL_IN
 
 **Boîtier** :
-- Phase proto : Imprimé en 3D
-- Phase 1 : MDF découpé laser + peinture noire + détails laiton minimal (Lite)
-- Phase 2 : Bois massif (noyer/chêne) + ardoise composite + laiton brossé + plateau rotatif avec roulement à billes 100-150mm + AS5600 + aimant néodyme diamétral(Pro)
+- Phase proto : Imprimé en 3D (PLA/PETG)
+- Phase 1 Lite : MDF découpé laser + peinture noire mate
+- Phase 2 Pro : Bois massif (noyer/chêne) + laiton brossé
 
 ### 2.3 Software Architecture
 

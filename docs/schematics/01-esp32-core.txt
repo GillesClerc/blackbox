@@ -1,0 +1,160 @@
+══════════════════════════════════════════════════════════════════════════════
+  ESCAPEBOX — SCHEMA DETAILLE : ESP32-S3-WROOM-1-N16R8
+  Reference: Espressif ESP32-S3-WROOM-1 Datasheet + DevKitC-1 schematic
+══════════════════════════════════════════════════════════════════════════════
+
+
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │                 ESP32-S3-WROOM-1-N16R8 — BROCHAGE UTILISE             │
+  └─────────────────────────────────────────────────────────────────────────┘
+
+                    3.3V_D
+                      │
+                   ┌──┴──┐
+                   │10µF │ (decouplage module, ceramique)
+                   │     │
+                   └──┬──┘
+                      │
+                      ▼
+  ┌───────────────────────────────────────────────────────────┐
+  │                ESP32-S3-WROOM-1-N16R8                     │
+  │                (16MB Flash, 8MB PSRAM octal)              │
+  │                                                           │
+  │  3V3 ────── VDD (3.3V_D)                                 │
+  │  GND ────── GND (×4 pads + central pad)                  │
+  │  EN  ────── Enable (pull-up 10kΩ + 100nF RC reset)       │
+  │                                                           │
+  │  ── I2C Bus ────────────────────────                      │
+  │  GPIO21 ─── SDA (4.7kΩ pull-up vers 3.3V_D)              │
+  │  GPIO17 ─── SCL (4.7kΩ pull-up vers 3.3V_D)              │
+  │                                                           │
+  │  ── I2S0 Audio Out ─────────────────                      │
+  │  GPIO4  ─── BCLK  → PCM5122                              │
+  │  GPIO5  ─── LRCLK → PCM5122                              │
+  │  GPIO6  ─── DOUT  → PCM5122                              │
+  │                                                           │
+  │  ── I2S1 Audio In ──────────────────                      │
+  │  GPIO16 ─── SCK   → ICS-43434                            │
+  │  GPIO18 ─── WS    → ICS-43434                            │
+  │  GPIO7  ─── SD    ← ICS-43434                            │
+  │                                                           │
+  │  ── SPI2 Ecran Principal ───────────                      │
+  │  GPIO11 ─── MOSI  → ILI9488 + XPT2046                    │
+  │  GPIO12 ─── SCLK  → ILI9488 + XPT2046                    │
+  │  GPIO13 ─── MISO  ← XPT2046                              │
+  │  GPIO10 ─── CS    → ILI9488                               │
+  │  GPIO9  ─── DC    → ILI9488                               │
+  │  GPIO8  ─── RST   → ILI9488                               │
+  │  GPIO14 ─── CS    → XPT2046                               │
+  │  GPIO15 ─── IRQ   ← XPT2046 (active low)                 │
+  │                                                           │
+  │  ── SPI3 Ecran Rond ────────────────                      │
+  │  GPIO38 ─── MOSI  → GC9A01                               │
+  │  GPIO39 ─── SCLK  → GC9A01                               │
+  │  GPIO40 ─── CS    → GC9A01                               │
+  │  GPIO41 ─── DC    → GC9A01                               │
+  │  GPIO42 ─── RST   → GC9A01                               │
+  │                                                           │
+  │  ── ADC (potentiometres) ───────────                      │
+  │  GPIO1  ─── ADC1_CH0 ← pot 1 (wiper)                     │
+  │  GPIO2  ─── ADC1_CH1 ← pot 2 (wiper)                     │
+  │  GPIO3  ─── ADC1_CH2 ← pot 3 (wiper)                     │
+  │                                                           │
+  │  ── GPIO divers ────────────────────                      │
+  │  GPIO48 ─── WS2812 DATA (RMT)                            │
+  │  GPIO47 ─── A3144E Hall sensor (in, pull-up 10kΩ)        │
+  │  GPIO45 ─── Bouton 1 (in, pull-up ext)                   │
+  │  GPIO46 ─── Bouton 2 (in only)                           │
+  │                                                           │
+  │  ── USB ────────────────────────────                      │
+  │  GPIO19 ─── USB_D-                                        │
+  │  GPIO20 ─── USB_D+                                        │
+  │                                                           │
+  │  ── Debug ──────────────────────────                      │
+  │  GPIO43 ─── UART0_TX                                      │
+  │  GPIO44 ─── UART0_RX                                      │
+  │                                                           │
+  │  ── Non disponibles ────────────────                      │
+  │  GPIO26-37 — Flash/PSRAM octal SPI (interne module)       │
+  │  GPIO22-25 — Non routés sur WROOM-1                       │
+  │                                                           │
+  │  ── Strapping ──────────────────────                      │
+  │  GPIO0  ─── Boot mode (pull-up 10kΩ interne)             │
+  │  GPIO45 ─── VDD_SPI (0=1.8V, 1=3.3V, pull-down def.)    │
+  │  GPIO46 ─── Boot log (input only, pull-down def.)        │
+  │                                                           │
+  └───────────────────────────────────────────────────────────┘
+
+
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │               CIRCUIT RESET + BOOT (EN pin)                           │
+  └─────────────────────────────────────────────────────────────────────────┘
+
+       3.3V_D
+         │
+      ┌──┴──┐
+      │10kΩ │ R_EN (pull-up)
+      └──┬──┘
+         │
+         ├─────── EN (pin ESP32-S3)
+         │
+      ┌──┴──┐
+      │100nF│ C_EN (filtre bruit)
+      └──┬──┘
+         │
+        GND
+
+  Note : le bouton RESET n'est pas nécessaire en production (USB CDC
+  gère le reset via DTR/RTS). Pour le debug, un bouton entre EN et
+  GND peut être ajouté sur le PCB.
+
+
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │               DECOUPLAGE MODULE                                       │
+  └─────────────────────────────────────────────────────────────────────────┘
+
+  Placer au plus pres des pins VDD du module :
+
+  - 1× 10µF ceramique (bulk)
+  - 2× 100nF ceramique (HF, pres de chaque pin 3V3)
+  - Via GND direct sous chaque capa
+
+  Le module WROOM-1 contient deja son propre decouplage interne,
+  mais les capas externes sont necessaires pour les transitoires
+  SPI/I2S hautes frequences.
+
+
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │               USB-C MINIMAL (charge + CDC debug)                      │
+  └─────────────────────────────────────────────────────────────────────────┘
+
+                     ┌──────────────────────┐
+                     │     USB-C Female     │
+                     │                      │
+                     │  VBUS ───┬───────────┼──→ 5V_USB (vers TP4056)
+                     │         │           │
+                     │      ┌──┴──┐        │
+                     │      │5.1kΩ│ CC1    │
+                     │      └──┬──┘        │
+                     │         │           │
+                     │      ┌──┴──┐        │
+                     │      │5.1kΩ│ CC2    │
+                     │      └──┬──┘        │
+                     │         │           │
+                     │  D- ────┼───────────┼──→ GPIO19 (via 22Ω serie)
+                     │  D+ ────┼───────────┼──→ GPIO20 (via 22Ω serie)
+                     │         │           │
+                     │  GND ───┼───────────┼──→ GND
+                     │  SHLD ──┼───────────┼──→ GND (via 1MΩ)
+                     └─────────┼───────────┘
+                               │
+                              GND
+
+  Notes :
+  - 5.1kΩ sur CC1/CC2 : detection USB device (5V, max 3A)
+  - 22Ω serie sur D+/D- : impedance matching USB 2.0
+  - L'ESP32-S3 a un PHY USB interne, pas besoin de transceiver
+  - VBUS alimente le TP4056 (charge batterie), pas directement l'ESP32
+
+
+══════════════════════════════════════════════════════════════════════════════
