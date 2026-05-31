@@ -19,6 +19,8 @@ void audio_play_tone(uint16_t freq_hz, uint16_t duration_ms);
 void audio_play_sequence(const uint16_t *freqs, const uint16_t *durs, int count, uint16_t gap_ms);
 
 void audio_set_volume(uint8_t vol_percent);
+void audio_set_dsp_filter(uint8_t program);
+void audio_set_analog_gain(uint8_t minus6db);
 void audio_stop(void);
 
 // ── Musique de fond ───────────────────────────────────────────────────────────
@@ -39,3 +41,11 @@ void audio_bg_mp3_start(const uint8_t *mp3_data, size_t mp3_size);
 
 // Arrête la musique de fond (tons ou MP3).
 void audio_bg_stop(void);
+
+// Retourne le niveau de crête audio 0-100 (mis à jour par le décodeur MP3 bg).
+uint8_t audio_get_peak_level(void);
+
+// Joue un fichier MP3 depuis SPIFFS/LittleFS en boucle de fond.
+// path : chemin absolu, ex. "/spiffs/ambient.mp3".
+// Retourne ESP_ERR_NOT_FOUND si le fichier est absent, ESP_FAIL si trop grand.
+esp_err_t audio_play_bg(const char *path);

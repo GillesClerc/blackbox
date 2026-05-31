@@ -10,6 +10,7 @@
 #include <math.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #define TAG "audio"
 
@@ -35,6 +36,7 @@ static i2c_master_dev_handle_t  s_dac      = NULL;
 static SemaphoreHandle_t        s_mutex    = NULL;
 static volatile bool            s_fg_play  = false;
 static volatile bool            s_bg_run   = false;
+static volatile uint8_t         s_peak_level = 0;
 static TaskHandle_t             s_bg_task  = NULL;
 static const audio_bg_note_t   *s_bg_notes = NULL;
 static int                      s_bg_count = 0;
@@ -240,27 +242,25 @@ esp_err_t audio_init(i2c_master_bus_handle_t bus)
     pcm_write(0x1C, 0x04);   // DAC divider = 4 → 11.29 MHz = 256×fs
     pcm_write(0x1D, 0x04);   // NCP divider = 4 → 11.29 MHz
     pcm_write(0x1E, 0x00);   // OSR = auto
-    // Filtre anti-artefact : ringing-less low latency FIR
-    pcm_write(0x2B, 0x07);   // DSP program 7 : pas de pre-ringing, transitions douces
-    pcm_write(0x3B, 0x00);   // Désactiver auto-mute (évite pops silence→audio)
-    pcm_write(0x3F, 0x70);   // Volume ramp : montée rapide, descente progressive
-    // Format I2S standard
+    pcm_write(0x2B, 0x07);   // DSP program 7 : ringing-less low latency FIR
+    // Analog gain (page 1 reg 0x02) laissé à défaut 0 dB
+    pcm_write(0x41, 0x00);   // Auto-mute time = 0
+    pcm_write(0x42, 0x00);   // Auto-mute control = disable
+    pcm_write(0x3F, 0x74);   // Volume ramp : montée rapide (7), descente moyenne (4)
     pcm_write(0x28, 0x00);   // I2S format
-    // Volume hardware : -6 dB
-    pcm_write(0x3D, 0x3C);   // Vol L (0x30=0dB, +1 = -0.5dB)
-    pcm_write(0x3E, 0x3C);   // Vol R
+    // Volume digital : 0x00=+24dB, 0x30=0dB, 0xFF=mute, step=0.5dB
+    pcm_write(0x3D, 0x30);   // Vol L = 0 dB
+    pcm_write(0x3E, 0x30);   // Vol R = 0 dB
     pcm_write(0x03, 0x00);   // Unmute
     pcm_write(0x02, 0x00);   // Exit standby → PLL lock sur BCK
     vTaskDelay(pdMS_TO_TICKS(100));
 
-    // Vérification I2C : lire le registre volume pour confirmer que les écritures passent
-    uint8_t reg = PCM5122_REG_VOL_L;
-    uint8_t readback = 0;
-    esp_err_t err = i2c_master_transmit_receive(s_dac, &reg, 1, &readback, 1, 100);
+    uint8_t reg = 0x05;
+    uint8_t status = 0;
+    esp_err_t err = i2c_master_transmit_receive(s_dac, &reg, 1, &status, 1, 50);
     if (err == ESP_OK) {
-        ESP_LOGI(TAG, "PCM5122 readback VOL_L=0x%02X (attendu 0x3C)", readback);
-    } else {
-        ESP_LOGW(TAG, "PCM5122 I2C readback FAILED: %s", esp_err_to_name(err));
+        ESP_LOGI(TAG, "PCM5122 status=0x%02X PLL %s", status,
+                 (status & 0x10) ? "locked" : "NOT locked");
     }
 
     s_mutex = xSemaphoreCreateMutex();
@@ -324,9 +324,31 @@ esp_err_t audio_play_raw(const int16_t *samples, size_t num_samples, uint32_t sr
 void audio_set_volume(uint8_t vol_pct)
 {
     if (!s_dac) return;
-    uint8_t v = (uint8_t)((uint32_t)(vol_pct > 100 ? 100 : vol_pct) * 0xCF / 100);
+    // PCM5122 VOL: 0x00=+24dB, 0x30=0dB, 0xFE=-103dB, 0xFF=mute
+    // raw = (dB - 24) * -2.  On mappe 100%→0dB(0x30), 0%→mute(0xFF)
+    uint8_t v;
+    if (vol_pct == 0)        v = 0xFF;
+    else if (vol_pct >= 100) v = 0x30;
+    else                     v = (uint8_t)(0x30 + (uint32_t)(100 - vol_pct) * (0xFF - 0x30) / 100);
     pcm_write(PCM5122_REG_VOL_L, v);
     pcm_write(PCM5122_REG_VOL_R, v);
+}
+
+void audio_set_dsp_filter(uint8_t program)
+{
+    if (!s_dac || program < 1 || program > 7) return;
+    pcm_write(0x02, 0x10);   // standby (requis pour changer le filtre)
+    pcm_write(0x2B, program);
+    pcm_write(0x02, 0x00);   // exit standby
+}
+
+void audio_set_analog_gain(uint8_t step)
+{
+    if (!s_dac) return;
+    // Analog gain sur Page 1, registre 0x02 : 0x00=0dB, 0x11=-6dB
+    pcm_write(0x00, 0x01);   // select page 1
+    pcm_write(0x02, step ? 0x11 : 0x00);
+    pcm_write(0x00, 0x00);   // retour page 0
 }
 
 void audio_stop(void)
@@ -340,7 +362,7 @@ void audio_stop(void)
 
 // ── Musique de fond MP3 ───────────────────────────────────────────────────────
 
-#define MP3_BG_VOLUME   0.08f   // ~8 % amplitude : -6dB vs avant, évite écrêtage ampli
+#define MP3_BG_VOLUME   0.50f   // 50% amplitude : fond sonore sous les bips foreground
 
 static const uint8_t *s_mp3_data = NULL;
 static size_t         s_mp3_size = 0;
@@ -396,6 +418,13 @@ static void bg_mp3_task_fn(void *arg)
                 s_mp3_stereo[i] = (int16_t)(s_mp3_pcm[i] * MP3_BG_VOLUME);
         }
 
+        int16_t peak = 0;
+        for (int i = 0; i < out_s; i++) {
+            int16_t abs_v = s_mp3_stereo[i] < 0 ? -s_mp3_stereo[i] : s_mp3_stereo[i];
+            if (abs_v > peak) peak = abs_v;
+        }
+        s_peak_level = (uint8_t)((uint32_t)peak * 100 / 32768);
+
         if (s_fg_play) continue;
 
         if (xSemaphoreTake(s_mutex, pdMS_TO_TICKS(100)) == pdTRUE) {
@@ -407,6 +436,7 @@ static void bg_mp3_task_fn(void *arg)
             xSemaphoreGive(s_mutex);
         }
     }
+    s_peak_level = 0;
     s_bg_task = NULL;
     vTaskDelete(NULL);
 }
@@ -442,4 +472,70 @@ void audio_bg_stop(void)
         vTaskDelay(pdMS_TO_TICKS(120));
         s_bg_task = NULL;
     }
+}
+
+// ── SPIFFS-based background MP3 playback ─────────────────────────────────────
+
+// Buffer holding the file contents between calls; freed on next call or stop.
+static uint8_t *s_file_mp3_buf  = NULL;
+static size_t   s_file_mp3_cap  = 0;
+
+// Maximum file size accepted (4 MB in PSRAM).
+#define AUDIO_PLAY_BG_MAX_SIZE (4 * 1024 * 1024)
+
+uint8_t audio_get_peak_level(void)
+{
+    return s_peak_level;
+}
+
+esp_err_t audio_play_bg(const char *path)
+{
+    if (!path) return ESP_ERR_INVALID_ARG;
+
+    FILE *f = fopen(path, "rb");
+    if (!f) {
+        ESP_LOGW(TAG, "audio_play_bg: cannot open %s", path);
+        return ESP_ERR_NOT_FOUND;
+    }
+
+    fseek(f, 0, SEEK_END);
+    long fsize = ftell(f);
+    fseek(f, 0, SEEK_SET);
+
+    if (fsize <= 0 || (size_t)fsize > AUDIO_PLAY_BG_MAX_SIZE) {
+        fclose(f);
+        ESP_LOGW(TAG, "audio_play_bg: file too large or empty (%ld bytes)", fsize);
+        return ESP_FAIL;
+    }
+
+    // Stop current background playback before touching the buffer.
+    audio_bg_stop();
+
+    // Reuse or reallocate PSRAM buffer.
+    if (s_file_mp3_buf && s_file_mp3_cap < (size_t)fsize) {
+        heap_caps_free(s_file_mp3_buf);
+        s_file_mp3_buf = NULL;
+        s_file_mp3_cap = 0;
+    }
+    if (!s_file_mp3_buf) {
+        s_file_mp3_buf = heap_caps_malloc((size_t)fsize, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+        if (!s_file_mp3_buf) {
+            fclose(f);
+            ESP_LOGE(TAG, "audio_play_bg: PSRAM alloc failed (%ld bytes)", fsize);
+            return ESP_ERR_NO_MEM;
+        }
+        s_file_mp3_cap = (size_t)fsize;
+    }
+
+    size_t nread = fread(s_file_mp3_buf, 1, (size_t)fsize, f);
+    fclose(f);
+
+    if (nread != (size_t)fsize) {
+        ESP_LOGW(TAG, "audio_play_bg: short read %u/%ld", (unsigned)nread, fsize);
+        return ESP_FAIL;
+    }
+
+    ESP_LOGI(TAG, "audio_play_bg: %s (%u kB)", path, (unsigned)(nread / 1024));
+    audio_bg_mp3_start(s_file_mp3_buf, nread);
+    return ESP_OK;
 }

@@ -496,7 +496,7 @@ steps:
 
 | Composant | Technologie |
 |---|---|
-| Frontend | Next.js 14+ (App Router), Tailwind CSS, shadcn/ui |
+| Frontend | Next.js 16 (App Router), Tailwind CSS, shadcn/ui |
 | Auth | Supabase Auth (email, OAuth Google/Apple) |
 | Database | Supabase PostgreSQL |
 | Storage | Supabase Storage (assets légers) + Cloudflare R2 (audio, images scénarios) |

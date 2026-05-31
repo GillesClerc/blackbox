@@ -168,8 +168,8 @@ static void ili9488_init_seq(void)
     send_cmd(0xC1); send_byte(0x41);                   // Power Control 2
     send_cmd(0xC5); send_byte(0x00); send_byte(0x12); send_byte(0x80); // VCOM
 
-    // MADCTL : portrait 320x480, ordre BGR (panel standard)
-    send_cmd(0x36); send_byte(0x48);
+    // MADCTL : landscape 480x320, MV=1 + BGR
+    send_cmd(0x36); send_byte(0x28);
 
     // Pixel format : 18-bit (RGB666) — seul format fiable en SPI 4 fils
     send_cmd(0x3A); send_byte(0x66);
@@ -205,7 +205,7 @@ esp_err_t ili9488_init(void)
 
     spi_bus_config_t bus = {
         .mosi_io_num     = ILI9488_PIN_MOSI,
-        .miso_io_num     = -1,
+        .miso_io_num     = ILI9488_PIN_MISO,
         .sclk_io_num     = ILI9488_PIN_SCK,
         .quadwp_io_num   = -1,
         .quadhd_io_num   = -1,

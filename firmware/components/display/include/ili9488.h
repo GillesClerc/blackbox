@@ -3,8 +3,8 @@
 #include <stdbool.h>
 #include "esp_err.h"
 
-#define ILI9488_WIDTH   320
-#define ILI9488_HEIGHT  480
+#define ILI9488_WIDTH   480
+#define ILI9488_HEIGHT  320
 
 // Pins ESP32-S3 — MOSI/SCK sur SPI2 IOMUX (GPIO11/12) pour perf maximale
 #define ILI9488_PIN_MOSI  11
@@ -12,6 +12,7 @@
 #define ILI9488_PIN_CS    10
 #define ILI9488_PIN_DC     9
 #define ILI9488_PIN_RST    8
+#define ILI9488_PIN_MISO  13
 
 // Couleurs RGB565 (converties en RGB666 3 bytes/pixel à l'envoi)
 #define COLOR_BLACK   0x0000
