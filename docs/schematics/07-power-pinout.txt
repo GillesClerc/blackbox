@@ -75,7 +75,7 @@
                     5V_USB
                       │
                    ┌──┴──┐
-                   │ 1uF │ C_IN (ceramique X5R, au plus pres pin 13)
+                   │4.7uF│ C_IN (ceramique X5R, au plus pres pin 13)
                    └──┬──┘
                       │
               ┌───────┴────────────────────────────────────────────────┐
@@ -144,7 +144,7 @@
               │                                                        │
    5V_USB ────┤ Pin 13 : IN (entree USB)                               │
               │          Plage : 4.35 - 6.6V                           │
-              │          C_IN = 1uF ceramique IN-GND                   │
+              │          C_IN = 4.7uF ceramique IN-GND                  │
               │                                                        │
    GND ───────┤ Pin 14 : TMR (Safety Timer)                            │
               │          GND = tous les timers desactives             │
@@ -263,15 +263,14 @@
                     │    └────────────────────────────────┘
 
   Flux de courant (mode normal, les 2 FETs ON) :
-  LiPo B+ → J10.+ → bq24075 BAT / DW01A VCC
-  LiPo B- → J10.- → FS8205 D12 (pin1,8) → FET2 → S2 (pin6,7)
-         → MIDPOINT → S1 (pin2,3) → FET1 → ... → GND systeme
+  LiPo B+ → J10.+ → R_VCC 100R → DW01A VCC / bq24075 BAT
+  LiPo B- → J10.- → FS8205 D12 (pin1,8)
+         → FET interne → S2 (pin6,7) → MIDPOINT → S1 (pin2,3)
+         → FET interne → GND systeme (pack P-)
 
-  Correction : en fait dans la topologie standard DW01A+FS8205 :
-  - D12 (drain commun) va vers B- du LiPo
-  - S2 → midpoint → S1
-  - S1 connecte au GND systeme (pack P-)
-  - DW01A GND + CS sont au midpoint (entre S1 et S2)
+  DW01A GND (pin6) + CS (pin2) sont au MIDPOINT (entre S1 et S2).
+  Cela permet au DW01A de mesurer le courant via la chute de
+  tension aux bornes des RDS(on) des MOSFETs.
 
 
   ┌─────────────────────────────────────────────────────────────────────────┐
@@ -455,7 +454,7 @@
   │     8. RESUME CABLAGE — VUE GLOBALE PIN-A-PIN                       │
   └─────────────────────────────────────────────────────────────────────────┘
 
-  USB-C VBUS ──── 5V_USB ──── bq24075 pin 13 (IN) + C_IN 1uF
+  USB-C VBUS ──── 5V_USB ──── bq24075 pin 13 (IN) + C_IN 4.7uF
                               USBLC6 pin 5 (VBUS ref)
 
   bq24075 pin 10,11 (OUT) ── VSYS ──┬── AP2112K U5 pin 1 (VIN) + pin 3 (EN)
@@ -500,7 +499,7 @@
 
   │ Ref    │ Valeur     │ Package │ Position                    │
   │────────│────────────│─────────│─────────────────────────────│
-  │ C_IN   │ 1uF/10V   │ 0402    │ bq24075 IN (pin13) → GND   │
+  │ C_IN   │ 4.7uF/10V │ 0603    │ bq24075 IN (pin13) → GND   │
   │ C_BAT  │ 4.7uF/10V │ 0603    │ bq24075 BAT (pin2,3) → GND │
   │ C_OUT  │ 4.7uF/10V │ 0603    │ bq24075 OUT (pin10,11)→GND │
   │ C_D1   │ 1uF/10V   │ 0402    │ AP2112K U5 VIN (pin1)→GND  │
@@ -508,7 +507,7 @@
   │ C_A1   │ 1uF/10V   │ 0402    │ AP2112K U6 VIN (pin1)→GND  │
   │ C_A2   │ 10uF/10V  │ 0805    │ AP2112K U6 VOUT (pin5)→GND │
   │ C_B1   │ 10uF/10V  │ 0805    │ MT3608 IN (pin5) → GND     │
-  │ C_B2   │ 22uF/10V  │ 0805    │ MT3608 VOUT → GND          │
+  │ C_B2   │ 22uF/16V  │ 0805    │ MT3608 VOUT → GND          │
   │ C_EN   │ 100nF/16V │ 0402    │ ESP32 EN → GND              │
 
   Total condensateurs alimentation : 10 pieces

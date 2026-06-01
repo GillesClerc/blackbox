@@ -24,7 +24,7 @@
                     │  BAT ──→ LiPo           │
                     │                         │
                     │  ILIM: R=1.5kΩ (1A chg) │
-                    │  EN1=H, EN2=H (500mA USB)│
+                    │  EN2=L, EN1=H (500mA USB)│
                     │  CE=H (charge enable)   │
                     │  TS: 10kΩ+10kΩ divider  │
                     │  PGOOD: open drain      │
@@ -53,7 +53,7 @@
   │  #1 DIGITAL     │ │  #2 AUDIO       │ │  VSYS → 5V       │
   │  600mA max      │ │  600mA max      │ │  2A max          │
   │                 │ │                 │ │                  │
-  │  Cin: 1µF cer.  │ │  Cin: 1µF cer.  │ │  L: 4.7µH        │
+  │  Cin: 1µF cer.  │ │  Cin: 1µF cer.  │ │  L: 22µH         │
   │  Cout: 10µF cer.│ │  Cout: 10µF cer.│ │  Cout: 22µF      │
   └────────┬────────┘ └────────┬────────┘ └────────┬─────────┘
            │                   │                   │
