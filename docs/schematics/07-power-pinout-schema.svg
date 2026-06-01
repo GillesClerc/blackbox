@@ -1,0 +1,985 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1240" viewBox="0 0 1600 1240" font-family="'Courier New', monospace" font-size="9">
+
+<defs>
+  <!-- Resistor horizontal: leads at y=6, length 36px -->
+  <g id="rh">
+    <rect x="6" y="1" width="24" height="10" fill="white" stroke="#000" stroke-width="0.9"/>
+    <line x1="0" y1="6" x2="6" y2="6" stroke="#000" stroke-width="0.9"/>
+    <line x1="30" y1="6" x2="36" y2="6" stroke="#000" stroke-width="0.9"/>
+  </g>
+  <!-- Resistor vertical: leads at x=6, length 36px -->
+  <g id="rv">
+    <rect x="1" y="6" width="10" height="24" fill="white" stroke="#000" stroke-width="0.9"/>
+    <line x1="6" y1="0" x2="6" y2="6" stroke="#000" stroke-width="0.9"/>
+    <line x1="6" y1="30" x2="6" y2="36" stroke="#000" stroke-width="0.9"/>
+  </g>
+  <!-- Capacitor vertical (céramique): leads at x=7, length 24px -->
+  <g id="cv">
+    <line x1="7" y1="0" x2="7" y2="10" stroke="#000" stroke-width="0.9"/>
+    <line x1="0" y1="10" x2="14" y2="10" stroke="#000" stroke-width="1.4"/>
+    <line x1="0" y1="14" x2="14" y2="14" stroke="#000" stroke-width="1.4"/>
+    <line x1="7" y1="14" x2="7" y2="24" stroke="#000" stroke-width="0.9"/>
+  </g>
+  <!-- Capacitor horizontal: leads at y=7, length 24px -->
+  <g id="ch">
+    <line x1="0" y1="7" x2="10" y2="7" stroke="#000" stroke-width="0.9"/>
+    <line x1="10" y1="0" x2="10" y2="14" stroke="#000" stroke-width="1.4"/>
+    <line x1="14" y1="0" x2="14" y2="14" stroke="#000" stroke-width="1.4"/>
+    <line x1="14" y1="7" x2="24" y2="7" stroke="#000" stroke-width="0.9"/>
+  </g>
+  <!-- Inductor horizontal: leads at y=5, length 44px -->
+  <g id="lh">
+    <line x1="0" y1="5" x2="4" y2="5" stroke="#000" stroke-width="0.9"/>
+    <path d="M 4 5 a5 5 0 0 1 9 0 M 13 5 a5 5 0 0 1 9 0 M 22 5 a5 5 0 0 1 9 0 M 31 5 a5 5 0 0 1 9 0" fill="none" stroke="#000" stroke-width="0.9"/>
+    <line x1="40" y1="5" x2="44" y2="5" stroke="#000" stroke-width="0.9"/>
+  </g>
+  <!-- Schottky diode horizontal: anode left, cathode right, leads at y=6, length 24px -->
+  <g id="dh">
+    <line x1="0" y1="6" x2="6" y2="6" stroke="#000" stroke-width="0.9"/>
+    <polygon points="6,1 6,11 16,6" fill="white" stroke="#000" stroke-width="0.9"/>
+    <line x1="16" y1="1" x2="16" y2="11" stroke="#000" stroke-width="1.3"/>
+    <polyline points="13,1 16,1 16,3" fill="none" stroke="#000" stroke-width="0.9"/>
+    <polyline points="16,9 16,11 19,11" fill="none" stroke="#000" stroke-width="0.9"/>
+    <line x1="16" y1="6" x2="24" y2="6" stroke="#000" stroke-width="0.9"/>
+  </g>
+  <!-- GND symbol: connection at x=7,y=0 -->
+  <g id="gnd">
+    <line x1="7" y1="0" x2="7" y2="2" stroke="#000" stroke-width="0.9"/>
+    <line x1="0" y1="2" x2="14" y2="2" stroke="#000" stroke-width="1.4"/>
+    <line x1="2" y1="5" x2="12" y2="5" stroke="#000" stroke-width="0.9"/>
+    <line x1="5" y1="8" x2="9" y2="8" stroke="#000" stroke-width="0.9"/>
+  </g>
+  <!-- Junction dot -->
+  <circle id="j" r="2.5" fill="#000"/>
+  <!-- NC marker (X) -->
+  <g id="nc">
+    <line x1="-3" y1="-3" x2="3" y2="3" stroke="#000" stroke-width="0.9"/>
+    <line x1="-3" y1="3" x2="3" y2="-3" stroke="#000" stroke-width="0.9"/>
+  </g>
+</defs>
+
+<rect width="1600" height="1240" fill="white"/>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     TITLE BAR
+     ═══════════════════════════════════════════════════════════════════════════ -->
+<rect x="10" y="10" width="1580" height="36" fill="#FAFAFA" stroke="#999" stroke-width="0.8"/>
+<text x="800" y="28" text-anchor="middle" font-size="14" font-weight="bold">ESCAPEBOX — SCHÉMA ÉLECTRONIQUE : SECTION ALIMENTATION</text>
+<text x="800" y="40" text-anchor="middle" font-size="9" fill="#555">USB-C  ·  USBLC6-2SC6  ·  bq24075RGTR  ·  DW01A + FS8205A  ·  AP2112K-3.3 ×2  ·  MT3608  ·  Reset EN</text>
+
+<!-- Net label color legend -->
+<g transform="translate(20,55)">
+  <rect width="640" height="18" fill="white" stroke="#DDD"/>
+  <text x="6" y="13" font-size="8" font-weight="bold" fill="#555">NETS :</text>
+  <text x="50" y="13" font-size="9" font-weight="bold" fill="#E65100">5V_USB</text>
+  <text x="110" y="13" font-size="9" font-weight="bold" fill="#F57F17">VSYS</text>
+  <text x="158" y="13" font-size="9" font-weight="bold" fill="#795548">VBAT</text>
+  <text x="200" y="13" font-size="9" font-weight="bold" fill="#1565C0">3.3V_D</text>
+  <text x="260" y="13" font-size="9" font-weight="bold" fill="#2E7D32">3.3V_A</text>
+  <text x="320" y="13" font-size="9" font-weight="bold" fill="#C62828">5V</text>
+  <text x="350" y="13" font-size="9" font-weight="bold" fill="#4A148C">USB_DP/DM</text>
+  <text x="430" y="13" font-size="9" font-weight="bold" fill="#000">GND</text>
+  <text x="470" y="13" font-size="8" fill="#666">  ▶ = sortie  ◀ = entrée</text>
+</g>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     BLOCK A : USB-C J1
+     ═══════════════════════════════════════════════════════════════════════════ -->
+<g>
+<rect x="20" y="85" width="220" height="450" fill="white" stroke="#BBB" stroke-width="0.5"/>
+<text x="130" y="103" text-anchor="middle" font-size="11" font-weight="bold">Connecteur USB-C  J1</text>
+<text x="130" y="116" text-anchor="middle" font-size="8" fill="#666">USB Type-C  16-pin SMD</text>
+
+<!-- USB-C body -->
+<rect x="40" y="130" width="80" height="380" fill="white" stroke="#000" stroke-width="1"/>
+<text x="80" y="143" text-anchor="middle" font-size="8" font-weight="bold">J1</text>
+
+<!-- Internal pin labels (right side of body) -->
+<text x="115" y="161" text-anchor="end" font-size="8">VBUS ×4</text>
+<text x="115" y="196" text-anchor="end" font-size="8">GND  ×4</text>
+<text x="115" y="231" text-anchor="end" font-size="8">D+ (A6,B6)</text>
+<text x="115" y="266" text-anchor="end" font-size="8">D− (A7,B7)</text>
+<text x="115" y="301" text-anchor="end" font-size="8">CC1 (A5)</text>
+<text x="115" y="336" text-anchor="end" font-size="8">CC2 (B5)</text>
+<text x="115" y="371" text-anchor="end" font-size="8">SBU1/SBU2</text>
+<text x="115" y="406" text-anchor="end" font-size="8">SHIELD</text>
+
+<!-- VBUS → 5V_USB -->
+<line x1="120" y1="158" x2="200" y2="158" stroke="#000" stroke-width="0.9"/>
+<polygon points="200,154 215,154 220,158 215,162 200,162" fill="#FFF3E0" stroke="#E65100" stroke-width="0.8"/>
+<text x="207" y="161" text-anchor="middle" font-size="8" font-weight="bold" fill="#E65100">5V_USB</text>
+
+<!-- GND -->
+<line x1="120" y1="193" x2="148" y2="193" stroke="#000" stroke-width="0.9"/>
+<line x1="148" y1="193" x2="148" y2="202" stroke="#000" stroke-width="0.9"/>
+<use href="#gnd" x="141" y="202"/>
+
+<!-- D+ → R12 22Ω → USB_DP -->
+<line x1="120" y1="228" x2="135" y2="228" stroke="#000" stroke-width="0.9"/>
+<use href="#rh" x="135" y="222"/>
+<text x="153" y="216" text-anchor="middle" font-size="8" font-weight="bold">R12</text>
+<text x="180" y="231" font-size="8">22Ω</text>
+<line x1="171" y1="228" x2="200" y2="228" stroke="#000" stroke-width="0.9"/>
+<polygon points="200,224 215,224 220,228 215,232 200,232" fill="#EDE7F6" stroke="#4A148C" stroke-width="0.8"/>
+<text x="207" y="231" text-anchor="middle" font-size="8" font-weight="bold" fill="#4A148C">USB_DP</text>
+
+<!-- D- → R11 22Ω → USB_DM -->
+<line x1="120" y1="263" x2="135" y2="263" stroke="#000" stroke-width="0.9"/>
+<use href="#rh" x="135" y="257"/>
+<text x="153" y="251" text-anchor="middle" font-size="8" font-weight="bold">R11</text>
+<text x="180" y="266" font-size="8">22Ω</text>
+<line x1="171" y1="263" x2="200" y2="263" stroke="#000" stroke-width="0.9"/>
+<polygon points="200,259 215,259 220,263 215,267 200,267" fill="#EDE7F6" stroke="#4A148C" stroke-width="0.8"/>
+<text x="207" y="266" text-anchor="middle" font-size="8" font-weight="bold" fill="#4A148C">USB_DM</text>
+
+<!-- CC1 → R9 5.1kΩ → GND -->
+<line x1="120" y1="298" x2="160" y2="298" stroke="#000" stroke-width="0.9"/>
+<use href="#rv" x="154" y="298"/>
+<text x="172" y="313" font-size="8">R9 5.1kΩ</text>
+<line x1="160" y1="334" x2="160" y2="342" stroke="#000" stroke-width="0.9"/>
+<use href="#gnd" x="153" y="342"/>
+
+<!-- CC2 → R10 5.1kΩ → GND -->
+<line x1="120" y1="333" x2="125" y2="333" stroke="#000" stroke-width="0.9"/>
+<line x1="125" y1="333" x2="125" y2="370" stroke="#000" stroke-width="0.9"/>
+<line x1="125" y1="370" x2="135" y2="370" stroke="#000" stroke-width="0.9"/>
+<use href="#rv" x="129" y="370"/>
+<text x="148" y="385" font-size="8">R10 5.1kΩ</text>
+<line x1="135" y1="406" x2="135" y2="414" stroke="#000" stroke-width="0.9"/>
+<use href="#gnd" x="128" y="414"/>
+
+<!-- SHIELD → R 1MΩ → GND -->
+<line x1="120" y1="403" x2="135" y2="403" stroke="#000" stroke-width="0.9"/>
+<use href="#rh" x="135" y="397"/>
+<text x="153" y="391" text-anchor="middle" font-size="8" font-weight="bold">R_SH</text>
+<text x="180" y="406" font-size="8">1MΩ</text>
+<line x1="171" y1="403" x2="180" y2="403" stroke="#000" stroke-width="0.9"/>
+<line x1="180" y1="403" x2="180" y2="414" stroke="#000" stroke-width="0.9"/>
+<use href="#gnd" x="173" y="414"/>
+
+<text x="130" y="445" text-anchor="middle" font-size="7" fill="#999">SBU1/SBU2 : non utilisés (NC)</text>
+</g>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     BLOCK B : USBLC6-2SC6 (ESD protection)
+     ═══════════════════════════════════════════════════════════════════════════ -->
+<g>
+<rect x="250" y="85" width="170" height="320" fill="white" stroke="#BBB" stroke-width="0.5"/>
+<text x="335" y="103" text-anchor="middle" font-size="11" font-weight="bold">USBLC6-2SC6  U12</text>
+<text x="335" y="116" text-anchor="middle" font-size="8" fill="#666">ESD protection  SOT-23-6</text>
+
+<!-- IC body -->
+<rect x="290" y="160" width="90" height="180" fill="white" stroke="#000" stroke-width="1"/>
+<text x="335" y="178" text-anchor="middle" font-size="10" font-weight="bold">U12</text>
+<text x="335" y="190" text-anchor="middle" font-size="8" fill="#555">USBLC6</text>
+
+<!-- Internal pin numbers + names -->
+<text x="293" y="213" font-size="8">1</text>
+<text x="306" y="213" font-size="8">I/O1</text>
+<text x="293" y="248" font-size="8">2</text>
+<text x="306" y="248" font-size="8">GND</text>
+<text x="293" y="283" font-size="8">3</text>
+<text x="306" y="283" font-size="8">I/O2</text>
+
+<text x="377" y="213" text-anchor="end" font-size="8">VBUS</text>
+<text x="365" y="213" text-anchor="end" font-size="8">5</text>
+<text x="377" y="248" text-anchor="end" font-size="8">I/O2</text>
+<text x="365" y="248" text-anchor="end" font-size="8">4</text>
+<text x="377" y="283" text-anchor="end" font-size="8">I/O1</text>
+<text x="365" y="283" text-anchor="end" font-size="8">6</text>
+
+<!-- Pin stubs and connections -->
+<!-- p1 I/O1 (left) ← USB_DP -->
+<line x1="270" y1="210" x2="290" y2="210" stroke="#000" stroke-width="0.9"/>
+<polygon points="248,206 263,206 268,210 263,214 248,214" fill="#EDE7F6" stroke="#4A148C" stroke-width="0.8"/>
+<text x="256" y="213" text-anchor="middle" font-size="8" font-weight="bold" fill="#4A148C">USB_DP</text>
+<!-- ⚠ Note : datasheet pinout 1=I/O1, 6=I/O1 — internally connected -->
+
+<!-- p2 GND -->
+<line x1="270" y1="245" x2="290" y2="245" stroke="#000" stroke-width="0.9"/>
+<line x1="270" y1="245" x2="270" y2="255" stroke="#000" stroke-width="0.9"/>
+<use href="#gnd" x="263" y="255"/>
+
+<!-- p3 I/O2 (left) ← USB_DM -->
+<line x1="270" y1="280" x2="290" y2="280" stroke="#000" stroke-width="0.9"/>
+<polygon points="248,276 263,276 268,280 263,284 248,284" fill="#EDE7F6" stroke="#4A148C" stroke-width="0.8"/>
+<text x="256" y="283" text-anchor="middle" font-size="8" font-weight="bold" fill="#4A148C">USB_DM</text>
+
+<!-- p5 VBUS (right) ← 5V_USB -->
+<line x1="380" y1="210" x2="402" y2="210" stroke="#000" stroke-width="0.9"/>
+<polygon points="402,206 412,206 418,210 412,214 402,214" fill="#FFF3E0" stroke="#E65100" stroke-width="0.8"/>
+<text x="410" y="213" text-anchor="middle" font-size="8" font-weight="bold" fill="#E65100">5V_USB</text>
+
+<!-- p4 I/O2 (right) → GPIO20 -->
+<line x1="380" y1="245" x2="402" y2="245" stroke="#000" stroke-width="0.9"/>
+<text x="404" y="248" font-size="8" font-weight="bold" fill="#4A148C">→ GPIO20</text>
+
+<!-- p6 I/O1 (right) → GPIO19 -->
+<line x1="380" y1="280" x2="402" y2="280" stroke="#000" stroke-width="0.9"/>
+<text x="404" y="283" font-size="8" font-weight="bold" fill="#4A148C">→ GPIO19</text>
+
+<text x="335" y="362" text-anchor="middle" font-size="7" fill="#666">p1=p6 (I/O1) · p3=p4 (I/O2)</text>
+<text x="335" y="374" text-anchor="middle" font-size="7" fill="#666">connectés en interne (diodes ESD)</text>
+<text x="335" y="390" text-anchor="middle" font-size="7" fill="#999">Capacitance &lt; 3.5 pF / ligne</text>
+</g>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     BLOCK C : bq24075RGTR  U8  — Chargeur + Power Path
+     ═══════════════════════════════════════════════════════════════════════════ -->
+<g>
+<rect x="430" y="85" width="580" height="540" fill="white" stroke="#BBB" stroke-width="0.5"/>
+<text x="720" y="103" text-anchor="middle" font-size="11" font-weight="bold">Chargeur LiPo + Power Path  bq24075RGTR  (U8)</text>
+<text x="720" y="116" text-anchor="middle" font-size="8" fill="#666">VQFN-16 3×3mm  ·  TI SLUS810N</text>
+
+<!-- bq24075 IC body : 200×320, position (640, 140) → (840, 460) -->
+<rect x="640" y="140" width="200" height="320" fill="white" stroke="#000" stroke-width="1.2"/>
+<text x="740" y="158" text-anchor="middle" font-size="11" font-weight="bold">U8</text>
+<text x="740" y="172" text-anchor="middle" font-size="9" fill="#555">bq24075</text>
+
+<!-- Internal pin labels : LEFT side (with pin numbers) -->
+<text x="645" y="195" font-size="8" font-weight="bold">13</text>
+<text x="664" y="195" font-size="8">IN</text>
+<text x="645" y="225" font-size="8" font-weight="bold"> 6</text>
+<text x="664" y="225" font-size="8">EN1</text>
+<text x="645" y="255" font-size="8" font-weight="bold"> 5</text>
+<text x="664" y="255" font-size="8">EN2</text>
+<text x="645" y="285" font-size="8" font-weight="bold"> 4</text>
+<text x="664" y="285" font-size="8">CE</text>
+<text x="645" y="315" font-size="8" font-weight="bold">14</text>
+<text x="664" y="315" font-size="8">TMR</text>
+<text x="645" y="345" font-size="8" font-weight="bold">15</text>
+<text x="664" y="345" font-size="8">SYSOFF</text>
+<text x="645" y="385" font-size="8" font-weight="bold"> 1</text>
+<text x="664" y="385" font-size="8">TS</text>
+<text x="645" y="445" font-size="8" font-weight="bold"> 8</text>
+<text x="664" y="445" font-size="8">VSS·PAD</text>
+
+<!-- Internal pin labels : RIGHT side -->
+<text x="836" y="195" text-anchor="end" font-size="8" font-weight="bold">10</text>
+<text x="817" y="195" text-anchor="end" font-size="8">OUT</text>
+<text x="836" y="217" text-anchor="end" font-size="8" font-weight="bold">11</text>
+<text x="817" y="217" text-anchor="end" font-size="8">OUT</text>
+<text x="836" y="247" text-anchor="end" font-size="8" font-weight="bold"> 2</text>
+<text x="817" y="247" text-anchor="end" font-size="8">BAT</text>
+<text x="836" y="269" text-anchor="end" font-size="8" font-weight="bold"> 3</text>
+<text x="817" y="269" text-anchor="end" font-size="8">BAT</text>
+<text x="836" y="305" text-anchor="end" font-size="8" font-weight="bold">16</text>
+<text x="817" y="305" text-anchor="end" font-size="8">ISET</text>
+<text x="836" y="335" text-anchor="end" font-size="8" font-weight="bold">12</text>
+<text x="817" y="335" text-anchor="end" font-size="8">ILIM</text>
+<text x="836" y="395" text-anchor="end" font-size="8" font-weight="bold"> 7</text>
+<text x="817" y="395" text-anchor="end" font-size="8">PGOOD</text>
+<text x="836" y="425" text-anchor="end" font-size="8" font-weight="bold"> 9</text>
+<text x="817" y="425" text-anchor="end" font-size="8">CHG</text>
+
+<!-- ════════ LEFT SIDE EXTERNAL CONNECTIONS ════════ -->
+
+<!-- p13 IN ← 5V_USB + C_IN 4.7µF -->
+<line x1="620" y1="192" x2="640" y2="192" stroke="#000" stroke-width="0.9"/>
+<use href="#j" x="600" y="192"/>
+<polygon points="438,188 460,188 466,192 460,196 438,196" fill="#FFF3E0" stroke="#E65100" stroke-width="0.8"/>
+<text x="450" y="195" text-anchor="middle" font-size="8" font-weight="bold" fill="#E65100">5V_USB</text>
+<line x1="466" y1="192" x2="620" y2="192" stroke="#000" stroke-width="0.9"/>
+<circle cx="600" cy="192" r="2.5" fill="#000"/>
+<!-- C_IN drops down to GND -->
+<line x1="600" y1="192" x2="600" y2="210" stroke="#000" stroke-width="0.9"/>
+<use href="#cv" x="593" y="210"/>
+<text x="572" y="220" text-anchor="end" font-size="8" font-weight="bold">C_IN</text>
+<text x="572" y="232" text-anchor="end" font-size="8">4.7µF/10V</text>
+<line x1="600" y1="234" x2="600" y2="244" stroke="#000" stroke-width="0.9"/>
+<use href="#gnd" x="593" y="244"/>
+
+<!-- p6 EN1 ← VSYS -->
+<line x1="620" y1="222" x2="640" y2="222" stroke="#000" stroke-width="0.9"/>
+<polygon points="450,218 470,218 476,222 470,226 450,226" fill="#FFF8E1" stroke="#F57F17" stroke-width="0.8"/>
+<text x="463" y="225" text-anchor="middle" font-size="8" font-weight="bold" fill="#F57F17">VSYS</text>
+<line x1="476" y1="222" x2="620" y2="222" stroke="#000" stroke-width="0.9"/>
+
+<!-- p5 EN2 → GND -->
+<line x1="620" y1="252" x2="640" y2="252" stroke="#000" stroke-width="0.9"/>
+<line x1="620" y1="252" x2="620" y2="265" stroke="#000" stroke-width="0.9"/>
+<use href="#gnd" x="613" y="265"/>
+
+<!-- p4 CE → GND -->
+<line x1="620" y1="282" x2="640" y2="282" stroke="#000" stroke-width="0.9"/>
+<line x1="600" y1="282" x2="620" y2="282" stroke="#000" stroke-width="0.9"/>
+<line x1="600" y1="282" x2="600" y2="295" stroke="#000" stroke-width="0.9"/>
+<use href="#gnd" x="593" y="295"/>
+<text x="560" y="285" text-anchor="end" font-size="7" fill="#666">actif bas</text>
+
+<!-- p14 TMR → GND -->
+<line x1="620" y1="312" x2="640" y2="312" stroke="#000" stroke-width="0.9"/>
+<line x1="620" y1="312" x2="620" y2="325" stroke="#000" stroke-width="0.9"/>
+<use href="#gnd" x="613" y="325"/>
+
+<!-- p15 SYSOFF → GND ⚠ -->
+<line x1="620" y1="342" x2="640" y2="342" stroke="#000" stroke-width="0.9"/>
+<line x1="600" y1="342" x2="620" y2="342" stroke="#000" stroke-width="0.9"/>
+<line x1="600" y1="342" x2="600" y2="355" stroke="#000" stroke-width="0.9"/>
+<use href="#gnd" x="593" y="355"/>
+<text x="560" y="345" text-anchor="end" font-size="7" fill="#B71C1C">⚠ jamais flottant</text>
+
+<!-- p1 TS ← 10kΩ/10kΩ divider VSYS/GND -->
+<line x1="620" y1="382" x2="640" y2="382" stroke="#000" stroke-width="0.9"/>
+<line x1="510" y1="382" x2="620" y2="382" stroke="#000" stroke-width="0.9"/>
+<circle cx="510" cy="382" r="2.5" fill="#000"/>
+<!-- R_TS1 up to VSYS -->
+<use href="#rv" x="504" y="346"/>
+<text x="490" y="362" text-anchor="end" font-size="8" font-weight="bold">R_TS1</text>
+<text x="490" y="372" text-anchor="end" font-size="8">10kΩ</text>
+<line x1="510" y1="346" x2="510" y2="338" stroke="#000" stroke-width="0.9"/>
+<polygon points="438,334 460,334 466,338 460,342 438,342" fill="#FFF8E1" stroke="#F57F17" stroke-width="0.8"/>
+<text x="450" y="341" text-anchor="middle" font-size="8" font-weight="bold" fill="#F57F17">VSYS</text>
+<line x1="466" y1="338" x2="510" y2="338" stroke="#000" stroke-width="0.9"/>
+<!-- R_TS2 down to GND -->
+<use href="#rv" x="504" y="392"/>
+<text x="490" y="410" text-anchor="end" font-size="8" font-weight="bold">R_TS2</text>
+<text x="490" y="420" text-anchor="end" font-size="8">10kΩ</text>
+<line x1="510" y1="382" x2="510" y2="392" stroke="#000" stroke-width="0.9"/>
+<line x1="510" y1="428" x2="510" y2="438" stroke="#000" stroke-width="0.9"/>
+<use href="#gnd" x="503" y="438"/>
+
+<!-- p8 VSS + PAD → GND -->
+<line x1="620" y1="442" x2="640" y2="442" stroke="#000" stroke-width="0.9"/>
+<line x1="620" y1="442" x2="620" y2="455" stroke="#000" stroke-width="0.9"/>
+<use href="#gnd" x="613" y="455"/>
+
+<!-- ════════ RIGHT SIDE EXTERNAL CONNECTIONS ════════ -->
+
+<!-- p10, p11 OUT → C_OUT + VSYS -->
+<line x1="840" y1="192" x2="870" y2="192" stroke="#000" stroke-width="0.9"/>
+<line x1="840" y1="214" x2="870" y2="214" stroke="#000" stroke-width="0.9"/>
+<line x1="870" y1="192" x2="870" y2="214" stroke="#000" stroke-width="0.9"/>
+<line x1="870" y1="203" x2="900" y2="203" stroke="#000" stroke-width="0.9"/>
+<circle cx="900" cy="203" r="2.5" fill="#000"/>
+<!-- C_OUT down to GND -->
+<line x1="900" y1="203" x2="900" y2="215" stroke="#000" stroke-width="0.9"/>
+<use href="#cv" x="893" y="215"/>
+<text x="918" y="225" font-size="8" font-weight="bold">C_OUT</text>
+<text x="918" y="237" font-size="8">4.7µF/10V</text>
+<line x1="900" y1="239" x2="900" y2="249" stroke="#000" stroke-width="0.9"/>
+<use href="#gnd" x="893" y="249"/>
+<!-- VSYS label out -->
+<line x1="900" y1="203" x2="970" y2="203" stroke="#000" stroke-width="0.9"/>
+<polygon points="970,199 985,199 990,203 985,207 970,207" fill="#FFF8E1" stroke="#F57F17" stroke-width="0.8"/>
+<text x="978" y="206" text-anchor="middle" font-size="8" font-weight="bold" fill="#F57F17">VSYS</text>
+
+<!-- p2, p3 BAT → C_BAT + VBAT -->
+<line x1="840" y1="244" x2="870" y2="244" stroke="#000" stroke-width="0.9"/>
+<line x1="840" y1="266" x2="870" y2="266" stroke="#000" stroke-width="0.9"/>
+<line x1="870" y1="244" x2="870" y2="266" stroke="#000" stroke-width="0.9"/>
+<line x1="870" y1="255" x2="900" y2="255" stroke="#000" stroke-width="0.9"/>
+<circle cx="900" cy="255" r="2.5" fill="#000"/>
+<!-- C_BAT down to GND -->
+<line x1="900" y1="255" x2="900" y2="268" stroke="#000" stroke-width="0.9"/>
+<use href="#cv" x="893" y="268"/>
+<text x="918" y="278" font-size="8" font-weight="bold">C_BAT</text>
+<text x="918" y="290" font-size="8">4.7µF/10V</text>
+<line x1="900" y1="292" x2="900" y2="302" stroke="#000" stroke-width="0.9"/>
+<use href="#gnd" x="893" y="302"/>
+<!-- VBAT label out -->
+<line x1="900" y1="255" x2="970" y2="255" stroke="#000" stroke-width="0.9"/>
+<polygon points="970,251 985,251 990,255 985,259 970,259" fill="#EFEBE9" stroke="#795548" stroke-width="0.8"/>
+<text x="978" y="258" text-anchor="middle" font-size="8" font-weight="bold" fill="#795548">VBAT</text>
+
+<!-- p16 ISET → R_ISET 890Ω → GND -->
+<line x1="840" y1="302" x2="860" y2="302" stroke="#000" stroke-width="0.9"/>
+<line x1="860" y1="302" x2="860" y2="320" stroke="#000" stroke-width="0.9"/>
+<use href="#rv" x="854" y="320"/>
+<text x="876" y="335" font-size="8" font-weight="bold">R_ISET</text>
+<text x="876" y="347" font-size="8">890Ω → 1A</text>
+<line x1="860" y1="356" x2="860" y2="366" stroke="#000" stroke-width="0.9"/>
+<use href="#gnd" x="853" y="366"/>
+
+<!-- p12 ILIM → R_ILIM 1.5kΩ → GND -->
+<line x1="840" y1="332" x2="940" y2="332" stroke="#000" stroke-width="0.9"/>
+<line x1="940" y1="332" x2="940" y2="350" stroke="#000" stroke-width="0.9"/>
+<use href="#rv" x="934" y="350"/>
+<text x="956" y="365" font-size="8" font-weight="bold">R_ILIM</text>
+<text x="956" y="377" font-size="8">1.5kΩ</text>
+<line x1="940" y1="386" x2="940" y2="396" stroke="#000" stroke-width="0.9"/>
+<use href="#gnd" x="933" y="396"/>
+
+<!-- p7 PGOOD → R 100kΩ → 3.3V_D (open drain pull-up) -->
+<line x1="840" y1="392" x2="860" y2="392" stroke="#000" stroke-width="0.9"/>
+<line x1="860" y1="392" x2="860" y2="410" stroke="#000" stroke-width="0.9"/>
+<use href="#rv" x="854" y="410"/>
+<text x="876" y="425" font-size="8" font-weight="bold">R_PG</text>
+<text x="876" y="437" font-size="8">100kΩ</text>
+<line x1="860" y1="446" x2="860" y2="458" stroke="#000" stroke-width="0.9"/>
+<polygon points="860,458 856,468 864,468" fill="white" stroke="#000" stroke-width="0.9"/>
+<text x="870" y="468" font-size="8">→</text>
+<polygon points="876,462 895,462 900,466 895,470 876,470" fill="#E3F2FD" stroke="#1565C0" stroke-width="0.8"/>
+<text x="887" y="469" text-anchor="middle" font-size="8" font-weight="bold" fill="#1565C0">3.3V_D</text>
+<text x="870" y="458" text-anchor="end" font-size="7" fill="#666">open drain</text>
+
+<!-- p9 CHG → R 100kΩ → 3.3V_D (open drain pull-up) -->
+<line x1="840" y1="422" x2="965" y2="422" stroke="#000" stroke-width="0.9"/>
+<line x1="965" y1="422" x2="965" y2="410" stroke="#000" stroke-width="0.9"/>
+<use href="#rv" x="959" y="410"/>
+<text x="981" y="425" font-size="8" font-weight="bold">R_CHG</text>
+<text x="981" y="437" font-size="8">100kΩ</text>
+<line x1="965" y1="410" x2="965" y2="402" stroke="#000" stroke-width="0.9"/>
+<polygon points="965,402 985,398 988,402 985,406 965,406" fill="#E3F2FD" stroke="#1565C0" stroke-width="0.8"/>
+<text x="976" y="404" text-anchor="middle" font-size="8" font-weight="bold" fill="#1565C0">3.3V_D</text>
+
+<!-- ════════ Annotations bq24075 ════════ -->
+<text x="720" y="488" text-anchor="middle" font-size="8" font-weight="bold" fill="#555">Configuration : CE=GND (charge ON) · EN2=L/EN1=H → 500mA USB · TMR=GND (timers OFF)</text>
+<text x="720" y="500" text-anchor="middle" font-size="8" fill="#666">SYSOFF=GND (système ON) · TS divider 10k+10k → désactive monitoring NTC</text>
+<text x="720" y="512" text-anchor="middle" font-size="8" fill="#666">I_CHG = K_ISET/R_ISET = 890Ω → 1.0A · PAD thermique → plan GND (vias Ø0.3mm)</text>
+</g>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     BLOCK D : Protection batterie LiPo + DW01A + FS8205A
+     ═══════════════════════════════════════════════════════════════════════════ -->
+<g>
+<rect x="1020" y="85" width="570" height="540" fill="white" stroke="#BBB" stroke-width="0.5"/>
+<text x="1305" y="103" text-anchor="middle" font-size="11" font-weight="bold">Protection batterie  —  DW01A (U9) + FS8205A (U10)  +  LiPo BT1</text>
+<text x="1305" y="116" text-anchor="middle" font-size="8" fill="#666">⚠ GND DW01A relié au MIDPOINT (sens courant), PAS au GND système</text>
+
+<!-- LiPo battery symbol (left) -->
+<text x="1063" y="155" text-anchor="middle" font-size="9" font-weight="bold">LiPo BT1</text>
+<text x="1063" y="167" text-anchor="middle" font-size="8" fill="#666">3.7V · 3000mAh</text>
+<text x="1063" y="178" text-anchor="middle" font-size="7" fill="#888">J10 JST-PH 2P</text>
+
+<!-- Battery cell symbol -->
+<line x1="1040" y1="200" x2="1086" y2="200" stroke="#000" stroke-width="1.4"/>
+<line x1="1050" y1="208" x2="1076" y2="208" stroke="#000" stroke-width="0.9"/>
+<line x1="1040" y1="220" x2="1086" y2="220" stroke="#000" stroke-width="1.4"/>
+<line x1="1050" y1="228" x2="1076" y2="228" stroke="#000" stroke-width="0.9"/>
+<text x="1093" y="206" font-size="9" font-weight="bold">+</text>
+<text x="1093" y="234" font-size="9" font-weight="bold">−</text>
+<line x1="1063" y1="194" x2="1063" y2="184" stroke="#000" stroke-width="0.9"/>
+<line x1="1063" y1="228" x2="1063" y2="240" stroke="#000" stroke-width="0.9"/>
+
+<!-- B+ wire going up and right -->
+<line x1="1063" y1="184" x2="1140" y2="184" stroke="#000" stroke-width="0.9"/>
+<circle cx="1140" cy="184" r="2.5" fill="#000"/>
+<!-- B+ → R_VCC 100Ω → DW01A VCC -->
+<line x1="1140" y1="184" x2="1190" y2="184" stroke="#000" stroke-width="0.9"/>
+<use href="#rh" x="1190" y="178"/>
+<text x="1208" y="172" text-anchor="middle" font-size="8" font-weight="bold">R_VCC</text>
+<text x="1240" y="187" font-size="8">100Ω</text>
+<line x1="1226" y1="184" x2="1280" y2="184" stroke="#000" stroke-width="0.9"/>
+<circle cx="1280" cy="184" r="2.5" fill="#000"/>
+<!-- B+ also → VBAT label (to bq24075) -->
+<line x1="1140" y1="184" x2="1140" y2="144" stroke="#000" stroke-width="0.9"/>
+<polygon points="1115,140 1135,140 1140,144 1135,148 1115,148" fill="#EFEBE9" stroke="#795548" stroke-width="0.8"/>
+<text x="1128" y="147" text-anchor="middle" font-size="8" font-weight="bold" fill="#795548">VBAT</text>
+<text x="1095" y="138" text-anchor="end" font-size="7" fill="#666">vers bq24075 BAT</text>
+
+<!-- DW01A IC body -->
+<rect x="1280" y="200" width="120" height="180" fill="white" stroke="#000" stroke-width="1"/>
+<text x="1340" y="218" text-anchor="middle" font-size="10" font-weight="bold">U9</text>
+<text x="1340" y="231" text-anchor="middle" font-size="9" fill="#555">DW01A</text>
+
+<text x="1285" y="252" font-size="8" font-weight="bold">5</text>
+<text x="1300" y="252" font-size="8">VCC</text>
+<text x="1285" y="282" font-size="8" font-weight="bold">2</text>
+<text x="1300" y="282" font-size="8">CS</text>
+<text x="1285" y="312" font-size="8" font-weight="bold">6</text>
+<text x="1300" y="312" font-size="8">GND</text>
+<text x="1285" y="342" font-size="8" font-weight="bold">4</text>
+<text x="1300" y="342" font-size="8">TD</text>
+
+<text x="1396" y="252" text-anchor="end" font-size="8" font-weight="bold">1</text>
+<text x="1382" y="252" text-anchor="end" font-size="8">OD</text>
+<text x="1396" y="282" text-anchor="end" font-size="8" font-weight="bold">3</text>
+<text x="1382" y="282" text-anchor="end" font-size="8">OC</text>
+
+<!-- DW01A p5 VCC ← R_VCC -->
+<line x1="1280" y1="184" x2="1280" y2="249" stroke="#000" stroke-width="0.9"/>
+<line x1="1280" y1="249" x2="1280" y2="249" stroke="#000" stroke-width="0.9"/>
+
+<!-- DW01A p4 TD = NC -->
+<line x1="1280" y1="339" x2="1265" y2="339" stroke="#000" stroke-width="0.9"/>
+<use href="#nc" x="1262" y="339"/>
+<text x="1252" y="342" text-anchor="end" font-size="7" fill="#888">NC</text>
+
+<!-- FS8205A IC body -->
+<rect x="1280" y="430" width="140" height="160" fill="white" stroke="#000" stroke-width="1"/>
+<text x="1350" y="448" text-anchor="middle" font-size="10" font-weight="bold">U10</text>
+<text x="1350" y="461" text-anchor="middle" font-size="9" fill="#555">FS8205A</text>
+
+<text x="1285" y="482" font-size="8" font-weight="bold">4</text>
+<text x="1300" y="482" font-size="8">G1</text>
+<text x="1285" y="510" font-size="8" font-weight="bold">5</text>
+<text x="1300" y="510" font-size="8">G2</text>
+<text x="1285" y="540" font-size="8" font-weight="bold">2,3</text>
+<text x="1308" y="540" font-size="8">S1</text>
+<text x="1285" y="568" font-size="8" font-weight="bold">6,7</text>
+<text x="1308" y="568" font-size="8">S2</text>
+
+<text x="1416" y="482" text-anchor="end" font-size="8" font-weight="bold">1,8</text>
+<text x="1395" y="482" text-anchor="end" font-size="8">D12</text>
+
+<!-- DW01A p1 OD → FS8205A p4 G1 -->
+<line x1="1400" y1="249" x2="1450" y2="249" stroke="#000" stroke-width="0.9"/>
+<line x1="1450" y1="249" x2="1450" y2="479" stroke="#000" stroke-width="0.9"/>
+<line x1="1450" y1="479" x2="1280" y2="479" stroke="#000" stroke-width="0.9"/>
+<text x="1455" y="370" font-size="7" fill="#666">OD → G1</text>
+
+<!-- DW01A p3 OC → FS8205A p5 G2 -->
+<line x1="1400" y1="279" x2="1432" y2="279" stroke="#000" stroke-width="0.9"/>
+<line x1="1432" y1="279" x2="1432" y2="507" stroke="#000" stroke-width="0.9"/>
+<line x1="1432" y1="507" x2="1280" y2="507" stroke="#000" stroke-width="0.9"/>
+
+<!-- DW01A p2 CS ← MIDPOINT -->
+<line x1="1280" y1="279" x2="1250" y2="279" stroke="#000" stroke-width="0.9"/>
+<circle cx="1250" cy="279" r="2.5" fill="#000"/>
+
+<!-- DW01A p6 GND ← MIDPOINT -->
+<line x1="1280" y1="309" x2="1250" y2="309" stroke="#000" stroke-width="0.9"/>
+<line x1="1250" y1="279" x2="1250" y2="309" stroke="#000" stroke-width="0.9"/>
+
+<!-- MIDPOINT line (vertical, important annotation) -->
+<line x1="1250" y1="309" x2="1250" y2="537" stroke="#000" stroke-width="0.9"/>
+<text x="1240" y="400" text-anchor="end" font-size="8" font-weight="bold" fill="#B71C1C">MIDPOINT</text>
+<text x="1240" y="412" text-anchor="end" font-size="7" fill="#B71C1C">(sens courant)</text>
+
+<!-- FS8205A p2,3 S1 ← MIDPOINT -->
+<line x1="1280" y1="537" x2="1250" y2="537" stroke="#000" stroke-width="0.9"/>
+<circle cx="1250" cy="537" r="2.5" fill="#000"/>
+
+<!-- FS8205A p6,7 S2 ← MIDPOINT -->
+<line x1="1280" y1="565" x2="1230" y2="565" stroke="#000" stroke-width="0.9"/>
+<line x1="1230" y1="537" x2="1230" y2="565" stroke="#000" stroke-width="0.9"/>
+<line x1="1230" y1="537" x2="1250" y2="537" stroke="#000" stroke-width="0.9"/>
+
+<!-- FS8205A p1,8 D12 → LiPo B- (and system GND) -->
+<line x1="1420" y1="479" x2="1450" y2="479" stroke="#000" stroke-width="0.9"/>
+<circle cx="1450" cy="479" r="2.5" fill="#000"/>
+<line x1="1450" y1="479" x2="1500" y2="479" stroke="#000" stroke-width="0.9"/>
+<text x="1505" y="475" font-size="8" font-weight="bold">→ LiPo B− / GND</text>
+<text x="1505" y="486" font-size="7" fill="#666">(drain commun)</text>
+<line x1="1450" y1="479" x2="1450" y2="510" stroke="#000" stroke-width="0.9"/>
+<use href="#gnd" x="1443" y="510"/>
+
+<!-- LiPo B- wire from battery -->
+<line x1="1063" y1="240" x2="1063" y2="600" stroke="#000" stroke-width="0.9"/>
+<line x1="1063" y1="600" x2="1450" y2="600" stroke="#000" stroke-width="0.9"/>
+<line x1="1450" y1="600" x2="1450" y2="525" stroke="#000" stroke-width="0.9"/>
+<circle cx="1450" cy="525" r="2.5" fill="#000"/>
+<text x="1255" y="613" font-size="8" font-weight="bold" fill="#795548">LiPo B−  →  D12 (pins 1,8) → GND système</text>
+
+<!-- Legend box -->
+<text x="1075" y="270" font-size="8" font-weight="bold" fill="#B71C1C">Topologie protection :</text>
+<text x="1075" y="283" font-size="8" fill="#444">• 2× FETs back-to-back en série</text>
+<text x="1075" y="295" font-size="8" fill="#444">  sur la ligne LiPo B− → GND</text>
+<text x="1075" y="307" font-size="8" fill="#444">• Drain commun D12 (pins 1+8)</text>
+<text x="1075" y="319" font-size="8" fill="#444">• Source FET1 (S1) ↔ MIDPOINT</text>
+<text x="1075" y="331" font-size="8" fill="#444">• Source FET2 (S2) ↔ MIDPOINT</text>
+<text x="1075" y="343" font-size="8" fill="#444">• Gates G1/G2 ← DW01A OD/OC</text>
+<text x="1075" y="355" font-size="8" fill="#444">• CS+GND DW01A au MIDPOINT</text>
+<text x="1075" y="367" font-size="8" fill="#444">  → mesure tension RDS(on)</text>
+<text x="1075" y="383" font-size="7" fill="#888">FETs ON en mode normal · OFF si</text>
+<text x="1075" y="395" font-size="7" fill="#888">over-charge / over-decharge / OC</text>
+</g>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     BLOCK E : AP2112K #1  ·  3.3V_D LDO  (U5)
+     ═══════════════════════════════════════════════════════════════════════════ -->
+<g>
+<rect x="20" y="650" width="400" height="280" fill="white" stroke="#BBB" stroke-width="0.5"/>
+<text x="220" y="668" text-anchor="middle" font-size="11" font-weight="bold">LDO Digital  AP2112K-3.3  (U5)  →  3.3V_D</text>
+<text x="220" y="681" text-anchor="middle" font-size="8" fill="#666">SOT-23-5  ·  Diodes Inc DS39724  ·  600 mA</text>
+
+<!-- AP2112K IC body -->
+<rect x="160" y="720" width="120" height="120" fill="white" stroke="#000" stroke-width="1"/>
+<text x="220" y="738" text-anchor="middle" font-size="11" font-weight="bold">U5</text>
+<text x="220" y="751" text-anchor="middle" font-size="9" fill="#555">AP2112K</text>
+
+<text x="165" y="772" font-size="8" font-weight="bold">1</text>
+<text x="178" y="772" font-size="8">VIN</text>
+<text x="165" y="800" font-size="8" font-weight="bold">3</text>
+<text x="178" y="800" font-size="8">EN</text>
+<text x="165" y="828" font-size="8" font-weight="bold">2</text>
+<text x="178" y="828" font-size="8">GND</text>
+
+<text x="276" y="772" text-anchor="end" font-size="8" font-weight="bold">5</text>
+<text x="263" y="772" text-anchor="end" font-size="8">VOUT</text>
+<text x="276" y="800" text-anchor="end" font-size="8" font-weight="bold">4</text>
+<text x="263" y="800" text-anchor="end" font-size="8">NC</text>
+
+<!-- VSYS label ← C_D1 ← VIN p1 -->
+<line x1="140" y1="769" x2="160" y2="769" stroke="#000" stroke-width="0.9"/>
+<circle cx="100" cy="769" r="2.5" fill="#000"/>
+<polygon points="40,765 60,765 65,769 60,773 40,773" fill="#FFF8E1" stroke="#F57F17" stroke-width="0.8"/>
+<text x="52" y="772" text-anchor="middle" font-size="8" font-weight="bold" fill="#F57F17">VSYS</text>
+<line x1="65" y1="769" x2="140" y2="769" stroke="#000" stroke-width="0.9"/>
+<!-- C_D1 down to GND -->
+<line x1="100" y1="769" x2="100" y2="785" stroke="#000" stroke-width="0.9"/>
+<use href="#cv" x="93" y="785"/>
+<text x="75" y="800" text-anchor="end" font-size="8" font-weight="bold">C_D1</text>
+<text x="75" y="812" text-anchor="end" font-size="8">1µF/10V</text>
+<line x1="100" y1="809" x2="100" y2="819" stroke="#000" stroke-width="0.9"/>
+<use href="#gnd" x="93" y="819"/>
+
+<!-- EN p3 ← VIN (tie to VIN, always ON) -->
+<line x1="140" y1="797" x2="160" y2="797" stroke="#000" stroke-width="0.9"/>
+<line x1="140" y1="769" x2="140" y2="797" stroke="#000" stroke-width="0.9"/>
+<text x="125" y="784" text-anchor="end" font-size="7" fill="#666">always ON</text>
+
+<!-- GND p2 → GND -->
+<line x1="140" y1="825" x2="160" y2="825" stroke="#000" stroke-width="0.9"/>
+<line x1="140" y1="825" x2="140" y2="838" stroke="#000" stroke-width="0.9"/>
+<use href="#gnd" x="133" y="838"/>
+
+<!-- NC p4 -->
+<line x1="280" y1="797" x2="295" y2="797" stroke="#000" stroke-width="0.9"/>
+<use href="#nc" x="298" y="797"/>
+<text x="308" y="800" font-size="7" fill="#888">NC</text>
+
+<!-- VOUT p5 → C_D2 → 3.3V_D label -->
+<line x1="280" y1="769" x2="320" y2="769" stroke="#000" stroke-width="0.9"/>
+<circle cx="320" cy="769" r="2.5" fill="#000"/>
+<!-- C_D2 down to GND -->
+<line x1="320" y1="769" x2="320" y2="785" stroke="#000" stroke-width="0.9"/>
+<use href="#cv" x="313" y="785"/>
+<text x="338" y="800" font-size="8" font-weight="bold">C_D2</text>
+<text x="338" y="812" font-size="8">10µF/10V</text>
+<line x1="320" y1="809" x2="320" y2="819" stroke="#000" stroke-width="0.9"/>
+<use href="#gnd" x="313" y="819"/>
+<!-- 3.3V_D label out -->
+<line x1="320" y1="769" x2="385" y2="769" stroke="#000" stroke-width="0.9"/>
+<polygon points="385,765 400,765 405,769 400,773 385,773" fill="#E3F2FD" stroke="#1565C0" stroke-width="0.8"/>
+<text x="394" y="772" text-anchor="middle" font-size="8" font-weight="bold" fill="#1565C0">3.3V_D</text>
+
+<!-- Notes -->
+<text x="40" y="880" font-size="7" fill="#666">Pinout : VIN(1) GND(2) EN(3) NC(4) VOUT(5) — Dropout ~250mV @ 600mA</text>
+<text x="40" y="892" font-size="7" fill="#666">Alimente : ESP32-S3 · GC9A01×2 · SSD1680 · PN532 · ICS-43434 · I2C pull-ups</text>
+<text x="40" y="904" font-size="7" fill="#B71C1C">⚠ VSYS &lt; 3.3V quand batterie vide (3.0V) → VOUT chute ~250mV avant cutoff DW01A</text>
+</g>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     BLOCK F : AP2112K #2  ·  3.3V_A LDO  (U6)
+     ═══════════════════════════════════════════════════════════════════════════ -->
+<g>
+<rect x="440" y="650" width="400" height="280" fill="white" stroke="#BBB" stroke-width="0.5"/>
+<text x="640" y="668" text-anchor="middle" font-size="11" font-weight="bold">LDO Audio  AP2112K-3.3  (U6)  →  3.3V_A</text>
+<text x="640" y="681" text-anchor="middle" font-size="8" fill="#666">SOT-23-5  ·  Diodes Inc DS39724  ·  rail isolé audio</text>
+
+<rect x="580" y="720" width="120" height="120" fill="white" stroke="#000" stroke-width="1"/>
+<text x="640" y="738" text-anchor="middle" font-size="11" font-weight="bold">U6</text>
+<text x="640" y="751" text-anchor="middle" font-size="9" fill="#555">AP2112K</text>
+
+<text x="585" y="772" font-size="8" font-weight="bold">1</text>
+<text x="598" y="772" font-size="8">VIN</text>
+<text x="585" y="800" font-size="8" font-weight="bold">3</text>
+<text x="598" y="800" font-size="8">EN</text>
+<text x="585" y="828" font-size="8" font-weight="bold">2</text>
+<text x="598" y="828" font-size="8">GND</text>
+
+<text x="696" y="772" text-anchor="end" font-size="8" font-weight="bold">5</text>
+<text x="683" y="772" text-anchor="end" font-size="8">VOUT</text>
+<text x="696" y="800" text-anchor="end" font-size="8" font-weight="bold">4</text>
+<text x="683" y="800" text-anchor="end" font-size="8">NC</text>
+
+<line x1="560" y1="769" x2="580" y2="769" stroke="#000" stroke-width="0.9"/>
+<circle cx="520" cy="769" r="2.5" fill="#000"/>
+<polygon points="460,765 480,765 485,769 480,773 460,773" fill="#FFF8E1" stroke="#F57F17" stroke-width="0.8"/>
+<text x="472" y="772" text-anchor="middle" font-size="8" font-weight="bold" fill="#F57F17">VSYS</text>
+<line x1="485" y1="769" x2="560" y2="769" stroke="#000" stroke-width="0.9"/>
+<line x1="520" y1="769" x2="520" y2="785" stroke="#000" stroke-width="0.9"/>
+<use href="#cv" x="513" y="785"/>
+<text x="495" y="800" text-anchor="end" font-size="8" font-weight="bold">C_A1</text>
+<text x="495" y="812" text-anchor="end" font-size="8">1µF/10V</text>
+<line x1="520" y1="809" x2="520" y2="819" stroke="#000" stroke-width="0.9"/>
+<use href="#gnd" x="513" y="819"/>
+
+<line x1="560" y1="797" x2="580" y2="797" stroke="#000" stroke-width="0.9"/>
+<line x1="560" y1="769" x2="560" y2="797" stroke="#000" stroke-width="0.9"/>
+<text x="545" y="784" text-anchor="end" font-size="7" fill="#666">always ON</text>
+
+<line x1="560" y1="825" x2="580" y2="825" stroke="#000" stroke-width="0.9"/>
+<line x1="560" y1="825" x2="560" y2="838" stroke="#000" stroke-width="0.9"/>
+<use href="#gnd" x="553" y="838"/>
+
+<line x1="700" y1="797" x2="715" y2="797" stroke="#000" stroke-width="0.9"/>
+<use href="#nc" x="718" y="797"/>
+<text x="728" y="800" font-size="7" fill="#888">NC</text>
+
+<line x1="700" y1="769" x2="740" y2="769" stroke="#000" stroke-width="0.9"/>
+<circle cx="740" cy="769" r="2.5" fill="#000"/>
+<line x1="740" y1="769" x2="740" y2="785" stroke="#000" stroke-width="0.9"/>
+<use href="#cv" x="733" y="785"/>
+<text x="758" y="800" font-size="8" font-weight="bold">C_A2</text>
+<text x="758" y="812" font-size="8">10µF/10V</text>
+<line x1="740" y1="809" x2="740" y2="819" stroke="#000" stroke-width="0.9"/>
+<use href="#gnd" x="733" y="819"/>
+<line x1="740" y1="769" x2="805" y2="769" stroke="#000" stroke-width="0.9"/>
+<polygon points="805,765 820,765 825,769 820,773 805,773" fill="#E8F5E9" stroke="#2E7D32" stroke-width="0.8"/>
+<text x="814" y="772" text-anchor="middle" font-size="8" font-weight="bold" fill="#2E7D32">3.3V_A</text>
+
+<text x="460" y="880" font-size="7" fill="#666">Pinout identique à U5. Rail isolé de 3.3V_D pour minimiser le bruit numérique sur l'audio.</text>
+<text x="460" y="892" font-size="7" fill="#666">Alimente : PCM5122 AVDD(p1) + DVDD(p19) + CPVDD(p5) + XSMT pull-up</text>
+<text x="460" y="904" font-size="7" fill="#666">⚠ Plan GND commun (PAS de split GND) — l'isolation se fait sur le rail VCC uniquement</text>
+</g>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     BLOCK G : MT3608 Boost  (U7)  →  5V
+     ═══════════════════════════════════════════════════════════════════════════ -->
+<g>
+<rect x="860" y="650" width="720" height="320" fill="white" stroke="#BBB" stroke-width="0.5"/>
+<text x="1220" y="668" text-anchor="middle" font-size="11" font-weight="bold">Convertisseur Boost  MT3608  (U7)  —  VSYS → 5V</text>
+<text x="1220" y="681" text-anchor="middle" font-size="8" fill="#666">SOT-23-6  ·  Aerosemi  ·  L=22µH  ·  D=SS14 Schottky  ·  2A max</text>
+
+<!-- MT3608 IC body, centered -->
+<rect x="1180" y="780" width="120" height="120" fill="white" stroke="#000" stroke-width="1"/>
+<text x="1240" y="798" text-anchor="middle" font-size="11" font-weight="bold">U7</text>
+<text x="1240" y="811" text-anchor="middle" font-size="9" fill="#555">MT3608</text>
+
+<text x="1185" y="832" font-size="8" font-weight="bold">5</text>
+<text x="1198" y="832" font-size="8">IN</text>
+<text x="1185" y="858" font-size="8" font-weight="bold">4</text>
+<text x="1198" y="858" font-size="8">EN</text>
+<text x="1185" y="884" font-size="8" font-weight="bold">2</text>
+<text x="1198" y="884" font-size="8">GND</text>
+
+<text x="1296" y="832" text-anchor="end" font-size="8" font-weight="bold">1</text>
+<text x="1283" y="832" text-anchor="end" font-size="8">SW</text>
+<text x="1296" y="858" text-anchor="end" font-size="8" font-weight="bold">3</text>
+<text x="1283" y="858" text-anchor="end" font-size="8">FB</text>
+<text x="1296" y="884" text-anchor="end" font-size="8" font-weight="bold">6</text>
+<text x="1283" y="884" text-anchor="end" font-size="8">NC</text>
+
+<!-- VSYS rail on top -->
+<polygon points="870,720 890,720 895,724 890,728 870,728" fill="#FFF8E1" stroke="#F57F17" stroke-width="0.8"/>
+<text x="882" y="727" text-anchor="middle" font-size="8" font-weight="bold" fill="#F57F17">VSYS</text>
+<line x1="895" y1="724" x2="1240" y2="724" stroke="#000" stroke-width="0.9"/>
+
+<!-- VSYS → C_B1 (decoupling) → GND -->
+<line x1="950" y1="724" x2="950" y2="755" stroke="#000" stroke-width="0.9"/>
+<circle cx="950" cy="724" r="2.5" fill="#000"/>
+<use href="#cv" x="943" y="755"/>
+<text x="965" y="770" font-size="8" font-weight="bold">C_B1</text>
+<text x="965" y="782" font-size="8">10µF/10V</text>
+<line x1="950" y1="779" x2="950" y2="789" stroke="#000" stroke-width="0.9"/>
+<use href="#gnd" x="943" y="789"/>
+
+<!-- VSYS → L1 (inductor) → SW node (junction with D1 anode) -->
+<line x1="1050" y1="724" x2="1050" y2="754" stroke="#000" stroke-width="0.9"/>
+<circle cx="1050" cy="724" r="2.5" fill="#000"/>
+<!-- L1 horizontal at y=750 -->
+<use href="#lh" x="1050" y="749"/>
+<text x="1072" y="745" text-anchor="middle" font-size="8" font-weight="bold">L1</text>
+<text x="1072" y="773" text-anchor="middle" font-size="8">22µH</text>
+<line x1="1094" y1="754" x2="1130" y2="754" stroke="#000" stroke-width="0.9"/>
+<line x1="1130" y1="754" x2="1130" y2="829" stroke="#000" stroke-width="0.9"/>
+<line x1="1130" y1="829" x2="1180" y2="829" stroke="#000" stroke-width="0.9"/>
+
+<!-- VSYS → MT3608 IN p5 -->
+<line x1="1240" y1="724" x2="1240" y2="755" stroke="#000" stroke-width="0.9"/>
+<circle cx="1240" cy="724" r="2.5" fill="#000"/>
+<line x1="1180" y1="829" x2="1180" y2="829" stroke="#000" stroke-width="0.9"/>
+<!-- IN p5 is at (1180, 829). Let me connect from VSYS rail -->
+<line x1="1240" y1="755" x2="1240" y2="829" stroke="#000" stroke-width="0.9"/>
+<line x1="1180" y1="829" x2="1130" y2="829" stroke="#000" stroke-width="0.9"/>
+<text x="1155" y="822" font-size="7" fill="#666">IN logique</text>
+
+<!-- Wait, I have SW pin from L1 AND IN pin from VSYS both at the same location. Let me redo this. -->
+
+<!-- Actually let me clear the IN routing. The MT3608 has separate IN and SW pins. -->
+<!-- IN should be on the LEFT side of IC (p5). L1 connects from VSYS to SW pin (p1, RIGHT side). -->
+<!-- p5 IN is at (1180, 829) — LEFT side. -->
+<!-- p1 SW is at (1300, 829) — RIGHT side. -->
+
+<!-- Redo: erase the previous wires (they'll be there in SVG but let me trust they'll be overwritten conceptually).
+     For clarity, I'll redo: -->
+<!-- VSYS top rail goes from (895,724) to (1240,724). I'll route IN from VSYS down. -->
+<!-- p5 IN at (1180, 829) ← wire goes UP and over to VSYS rail. -->
+<!-- p1 SW at (1300, 829) → wire goes UP and over to L1 output. -->
+
+<!-- Clear the broken wires by making background a bit dirty - OK ignore -->
+
+<!-- Re-draw IN connection : VSYS → drop down to IN p5 -->
+<line x1="1140" y1="724" x2="1140" y2="829" stroke="white" stroke-width="3"/>
+<line x1="1130" y1="754" x2="1180" y2="754" stroke="white" stroke-width="3"/>
+<line x1="1130" y1="754" x2="1130" y2="829" stroke="white" stroke-width="3"/>
+<line x1="1130" y1="829" x2="1180" y2="829" stroke="white" stroke-width="3"/>
+<line x1="1240" y1="755" x2="1240" y2="829" stroke="white" stroke-width="3"/>
+
+<!-- proper IN routing -->
+<line x1="1140" y1="724" x2="1140" y2="829" stroke="#000" stroke-width="0.9"/>
+<circle cx="1140" cy="724" r="2.5" fill="#000"/>
+<line x1="1140" y1="829" x2="1180" y2="829" stroke="#000" stroke-width="0.9"/>
+
+<!-- EN p4 tied to IN (always ON) -->
+<line x1="1180" y1="855" x2="1160" y2="855" stroke="#000" stroke-width="0.9"/>
+<line x1="1160" y1="855" x2="1160" y2="829" stroke="#000" stroke-width="0.9"/>
+<circle cx="1160" cy="829" r="2.5" fill="#000"/>
+<text x="1150" y="848" text-anchor="end" font-size="7" fill="#666">always ON</text>
+
+<!-- GND p2 → GND -->
+<line x1="1180" y1="881" x2="1160" y2="881" stroke="#000" stroke-width="0.9"/>
+<line x1="1160" y1="881" x2="1160" y2="893" stroke="#000" stroke-width="0.9"/>
+<use href="#gnd" x="1153" y="893"/>
+
+<!-- p1 SW → wire UP to L1 output -->
+<line x1="1300" y1="829" x2="1340" y2="829" stroke="#000" stroke-width="0.9"/>
+<line x1="1340" y1="829" x2="1340" y2="754" stroke="#000" stroke-width="0.9"/>
+<!-- L1 right end is at (1094, 754). Wire from there to (1340, 754). -->
+<line x1="1094" y1="754" x2="1340" y2="754" stroke="#000" stroke-width="0.9"/>
+<circle cx="1340" cy="754" r="2.5" fill="#000"/>
+
+<!-- D1 (SS14) on the line from SW to 5V output -->
+<use href="#dh" x="1340" y="748"/>
+<text x="1352" y="745" text-anchor="middle" font-size="8" font-weight="bold">D1</text>
+<text x="1382" y="745" font-size="8">SS14</text>
+<line x1="1364" y1="754" x2="1400" y2="754" stroke="#000" stroke-width="0.9"/>
+<circle cx="1400" cy="754" r="2.5" fill="#000"/>
+
+<!-- VOUT = 5V → C25 → GND -->
+<line x1="1400" y1="754" x2="1400" y2="780" stroke="#000" stroke-width="0.9"/>
+<use href="#cv" x="1393" y="780"/>
+<text x="1414" y="795" font-size="8" font-weight="bold">C25</text>
+<text x="1414" y="807" font-size="8">22µF/16V</text>
+<line x1="1400" y1="804" x2="1400" y2="814" stroke="#000" stroke-width="0.9"/>
+<use href="#gnd" x="1393" y="814"/>
+
+<!-- VOUT → 5V net label -->
+<line x1="1400" y1="754" x2="1480" y2="754" stroke="#000" stroke-width="0.9"/>
+<polygon points="1480,750 1497,750 1502,754 1497,758 1480,758" fill="#FFEBEE" stroke="#C62828" stroke-width="0.8"/>
+<text x="1490" y="757" text-anchor="middle" font-size="8" font-weight="bold" fill="#C62828">5V</text>
+
+<!-- VOUT → R_FB_H → FB pin -->
+<line x1="1460" y1="754" x2="1460" y2="780" stroke="#000" stroke-width="0.9"/>
+<circle cx="1460" cy="754" r="2.5" fill="#000"/>
+<use href="#rv" x="1454" y="780"/>
+<text x="1476" y="795" font-size="8" font-weight="bold">R_FB_H</text>
+<text x="1476" y="807" font-size="8">750kΩ</text>
+<line x1="1460" y1="816" x2="1460" y2="855" stroke="#000" stroke-width="0.9"/>
+<circle cx="1460" cy="855" r="2.5" fill="#000"/>
+<!-- FB pin junction to R_FB_L → GND -->
+<line x1="1300" y1="855" x2="1460" y2="855" stroke="#000" stroke-width="0.9"/>
+<line x1="1460" y1="855" x2="1460" y2="875" stroke="#000" stroke-width="0.9"/>
+<use href="#rv" x="1454" y="875"/>
+<text x="1476" y="890" font-size="8" font-weight="bold">R_FB_L</text>
+<text x="1476" y="902" font-size="8">100kΩ</text>
+<line x1="1460" y1="911" x2="1460" y2="921" stroke="#000" stroke-width="0.9"/>
+<use href="#gnd" x="1453" y="921"/>
+
+<!-- NC p6 -->
+<line x1="1300" y1="881" x2="1325" y2="881" stroke="#000" stroke-width="0.9"/>
+<use href="#nc" x="1328" y="881"/>
+<text x="1338" y="884" font-size="7" fill="#888">NC</text>
+
+<!-- Formula annotation -->
+<text x="880" y="833" font-size="8" font-weight="bold" fill="#555">Formule de réglage :</text>
+<text x="880" y="845" font-size="8" fill="#444">VOUT = V_REF × (1 + R_FB_H / R_FB_L)</text>
+<text x="880" y="857" font-size="8" fill="#444">     = 0.6V × (1 + 750k/100k)</text>
+<text x="880" y="869" font-size="8" fill="#444">     = 0.6V × 8.5 = 5.1V</text>
+<text x="880" y="887" font-size="8" font-weight="bold" fill="#B71C1C">⚠ C25 doit être 16V (DC-bias derating)</text>
+<text x="880" y="899" font-size="8" fill="#666">X5R 10V à 5V perd 40-60% de capacité</text>
+<text x="880" y="916" font-size="8" fill="#666">L1 : Isat &gt; 2A, blindée, faible DCR</text>
+<text x="880" y="928" font-size="8" fill="#666">D1 SS14 : cathode côté 5V (anneau)</text>
+<text x="880" y="946" font-size="7" fill="#888">Alimente : PAM8406 (VDD) · WS2812 (VCC via 330Ω série)</text>
+</g>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     BLOCK H : ESP32-S3 EN Reset
+     ═══════════════════════════════════════════════════════════════════════════ -->
+<g>
+<rect x="20" y="985" width="400" height="200" fill="white" stroke="#BBB" stroke-width="0.5"/>
+<text x="220" y="1003" text-anchor="middle" font-size="11" font-weight="bold">Reset ESP32-S3  ·  Circuit EN  (U1)</text>
+<text x="220" y="1016" text-anchor="middle" font-size="8" fill="#666">Pull-up + filtre RC sur la broche EN du module</text>
+
+<!-- 3.3V_D label on top -->
+<polygon points="170,1040 190,1040 195,1044 190,1048 170,1048" fill="#E3F2FD" stroke="#1565C0" stroke-width="0.8"/>
+<text x="183" y="1047" text-anchor="middle" font-size="8" font-weight="bold" fill="#1565C0">3.3V_D</text>
+<line x1="195" y1="1044" x2="220" y2="1044" stroke="#000" stroke-width="0.9"/>
+<line x1="220" y1="1044" x2="220" y2="1060" stroke="#000" stroke-width="0.9"/>
+
+<!-- R6 (10kΩ pull-up) -->
+<use href="#rv" x="214" y="1060"/>
+<text x="236" y="1075" font-size="8" font-weight="bold">R6</text>
+<text x="236" y="1087" font-size="8">10kΩ</text>
+
+<!-- Junction at EN node -->
+<line x1="220" y1="1096" x2="220" y2="1115" stroke="#000" stroke-width="0.9"/>
+<circle cx="220" cy="1115" r="2.5" fill="#000"/>
+
+<!-- Wire to EN pin (right) -->
+<line x1="220" y1="1115" x2="310" y2="1115" stroke="#000" stroke-width="0.9"/>
+<rect x="310" y="1100" width="80" height="30" fill="white" stroke="#000" stroke-width="1"/>
+<text x="350" y="1118" text-anchor="middle" font-size="9" font-weight="bold">ESP32 EN</text>
+
+<!-- C_EN (100nF) down to GND -->
+<line x1="220" y1="1115" x2="220" y2="1135" stroke="#000" stroke-width="0.9"/>
+<use href="#cv" x="213" y="1135"/>
+<text x="195" y="1150" text-anchor="end" font-size="8" font-weight="bold">C_EN</text>
+<text x="195" y="1162" text-anchor="end" font-size="8">100nF</text>
+<line x1="220" y1="1159" x2="220" y2="1169" stroke="#000" stroke-width="0.9"/>
+<use href="#gnd" x="213" y="1169"/>
+
+<text x="40" y="1140" font-size="8" fill="#666">τ = R × C = 10k × 100nF</text>
+<text x="40" y="1152" font-size="8" fill="#666">  = 1 ms (filtre anti-rebond)</text>
+<text x="40" y="1170" font-size="7" fill="#999">EN haut = ESP32 actif</text>
+<text x="40" y="1180" font-size="7" fill="#999">EN bas  = reset</text>
+</g>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     BLOCK I : Title block + notes
+     ═══════════════════════════════════════════════════════════════════════════ -->
+<g>
+<rect x="440" y="985" width="1140" height="200" fill="white" stroke="#BBB" stroke-width="0.5"/>
+
+<!-- Left side: BOM des éléments principaux -->
+<text x="455" y="1005" font-size="11" font-weight="bold">Bill of Materials — Section alimentation</text>
+<line x1="450" y1="1010" x2="990" y2="1010" stroke="#CCC" stroke-width="0.5"/>
+
+<text x="455" y="1024" font-size="8" font-weight="bold" fill="#555">Réf       Composant            Valeur          Pkg     LCSC</text>
+<line x1="450" y1="1029" x2="990" y2="1029" stroke="#EEE" stroke-width="0.5"/>
+<text x="455" y="1041" font-size="8">U8        bq24075RGTR          —               QFN-16  C15464</text>
+<text x="455" y="1052" font-size="8">U9        DW01A                Protection BAT  SOT-23-6 C351410</text>
+<text x="455" y="1063" font-size="8">U10       FS8205A              Dual MOSFET     TSSOP-8 C32254</text>
+<text x="455" y="1074" font-size="8">U5,U6     AP2112K-3.3TRG1     LDO 3.3V 600mA  SOT-23-5 C51118</text>
+<text x="455" y="1085" font-size="8">U7        MT3608               Boost 2A        SOT-23-6 C84817</text>
+<text x="455" y="1096" font-size="8">U12       USBLC6-2SC6          ESD USB         SOT-23-6 C7519</text>
+<text x="455" y="1107" font-size="8">D1        SS14                 Schottky 1A     SMA</text>
+<text x="455" y="1118" font-size="8">L1        Inductance           22µH blindée    1210</text>
+<text x="455" y="1129" font-size="8">BT1       LiPo 3.7V            3000 mAh        J10 JST-PH</text>
+<text x="455" y="1140" font-size="8">J1        USB Type-C           16-pin SMD      Mid-mount</text>
+<text x="455" y="1158" font-size="7" fill="#888">⚠ R_ISET=890Ω précis : substituer 887Ω ou 909Ω si non disponible (E96)</text>
+<text x="455" y="1170" font-size="7" fill="#888">⚠ R_VCC=100Ω entre LiPo B+ et DW01A VCC (limitation courant)</text>
+
+<!-- Right side: net references -->
+<text x="1005" y="1005" font-size="11" font-weight="bold">Cartographie nets ↔ broches</text>
+<line x1="1000" y1="1010" x2="1570" y2="1010" stroke="#CCC" stroke-width="0.5"/>
+
+<text x="1005" y="1024" font-size="8" font-weight="bold" fill="#E65100">5V_USB</text>
+<text x="1080" y="1024" font-size="8" fill="#444">J1.VBUS  · U8.IN(p13)  · U12.VBUS(p5)  · D1.A (anode SS14 via L1)</text>
+
+<text x="1005" y="1038" font-size="8" font-weight="bold" fill="#F57F17">VSYS</text>
+<text x="1080" y="1038" font-size="8" fill="#444">U8.OUT(p10,11)  · U5.VIN(p1)  · U6.VIN(p1)  · U7.IN(p5)  · U8.EN1(p6)  · R_TS1</text>
+
+<text x="1005" y="1052" font-size="8" font-weight="bold" fill="#795548">VBAT</text>
+<text x="1080" y="1052" font-size="8" fill="#444">BT1.B+  · J10.+  · U8.BAT(p2,3)  · R_VCC → U9.VCC(p5)</text>
+
+<text x="1005" y="1066" font-size="8" font-weight="bold" fill="#1565C0">3.3V_D</text>
+<text x="1080" y="1066" font-size="8" fill="#444">U5.VOUT(p5)  · R_PG↑(PGOOD)  · R_CHG↑(CHG)  · ESP32 VDD + R6 (EN)</text>
+
+<text x="1005" y="1080" font-size="8" font-weight="bold" fill="#2E7D32">3.3V_A</text>
+<text x="1080" y="1080" font-size="8" fill="#444">U6.VOUT(p5)  · PCM5122 AVDD/DVDD/CPVDD  · XSMT pull-up</text>
+
+<text x="1005" y="1094" font-size="8" font-weight="bold" fill="#C62828">5V</text>
+<text x="1080" y="1094" font-size="8" fill="#444">D1.K (cathode)  · C25  · PAM8406.VDD  · WS2812.VCC (via R 330Ω)</text>
+
+<text x="1005" y="1108" font-size="8" font-weight="bold" fill="#4A148C">USB_DP / DM</text>
+<text x="1080" y="1108" font-size="8" fill="#444">J1.D+/− → R11,R12 (22Ω) → U12 → ESP32 GPIO19/20</text>
+
+<text x="1005" y="1122" font-size="8" font-weight="bold" fill="#B71C1C">MIDPOINT</text>
+<text x="1080" y="1122" font-size="8" fill="#444">U9.CS(p2) + U9.GND(p6)  ↔  U10.S1(p2,3) + U10.S2(p6,7)</text>
+
+<text x="1005" y="1140" font-size="9" font-weight="bold" fill="#555">Configuration bq24075 :</text>
+<text x="1005" y="1153" font-size="8" fill="#444">CE=GND (charge ON)  ·  EN2=GND, EN1=VSYS (500mA USB)  ·  TMR=GND (timers OFF)</text>
+<text x="1005" y="1166" font-size="8" fill="#444">SYSOFF=GND (système ON)  ·  R_ISET=890Ω (I_CHG=1A)  ·  R_ILIM=1.5kΩ (mode RILIM)</text>
+<text x="1005" y="1179" font-size="8" fill="#444">TS divider 10k+10k = 50% VSYS → désactive monitoring NTC batterie</text>
+</g>
+
+<!-- Footer -->
+<text x="20" y="1218" font-size="8" fill="#999">Sources : TI SLUS810N (rev N, 2018) · Diodes AP2112 DS39724 · Aerosemi MT3608 v1.6 · Fortune Semi FS8205A-DS-17 · HMSemi DW01A · ST USBLC6-2SC6</text>
+<text x="1580" y="1218" text-anchor="end" font-size="8" fill="#999">EscapeBox · Schéma alimentation · Rev. 2026-06-01</text>
+
+</svg>
