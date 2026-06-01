@@ -1,0 +1,371 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="900" viewBox="0 0 1100 900" font-family="'Courier New', monospace">
+
+  <!-- Background -->
+  <rect width="1100" height="900" fill="#FAFAFA"/>
+
+  <!-- Title -->
+  <text x="550" y="19" text-anchor="middle" font-size="13" font-weight="bold" fill="#1A1A1A">ESCAPEBOX — ALIMENTATION + AUDIO</text>
+  <line x1="10" y1="25" x2="1090" y2="25" stroke="#BDBDBD" stroke-width="0.5"/>
+
+  <!-- Legend bar -->
+  <rect x="10" y="30" width="730" height="18" rx="3" fill="white" stroke="#DDD" stroke-width="1"/>
+  <text x="18" y="42" font-size="8" font-weight="bold" fill="#666">RAILS :</text>
+  <line x1="58" y1="39" x2="80" y2="39" stroke="#E65100" stroke-width="2.5"/>
+  <text x="83" y="43" font-size="8" fill="#333">5V_USB</text>
+  <line x1="130" y1="39" x2="152" y2="39" stroke="#F9A825" stroke-width="2.5"/>
+  <text x="155" y="43" font-size="8" fill="#333">VSYS</text>
+  <line x1="192" y1="39" x2="214" y2="39" stroke="#1565C0" stroke-width="2.5"/>
+  <text x="217" y="43" font-size="8" fill="#333">3.3V_D</text>
+  <line x1="264" y1="39" x2="286" y2="39" stroke="#2E7D32" stroke-width="2.5"/>
+  <text x="289" y="43" font-size="8" fill="#333">3.3V_A</text>
+  <line x1="330" y1="39" x2="352" y2="39" stroke="#C62828" stroke-width="2.5"/>
+  <text x="355" y="43" font-size="8" fill="#333">5V (boost)</text>
+  <line x1="410" y1="39" x2="432" y2="39" stroke="#795548" stroke-width="1.5" stroke-dasharray="4,2"/>
+  <text x="435" y="43" font-size="8" fill="#333">VBAT</text>
+  <line x1="465" y1="39" x2="487" y2="39" stroke="#6A1B9A" stroke-width="1.5"/>
+  <text x="490" y="43" font-size="8" fill="#333">I2S / I2C</text>
+  <line x1="537" y1="39" x2="559" y2="39" stroke="#FF8F00" stroke-width="1.5"/>
+  <text x="562" y="43" font-size="8" fill="#333">Signal audio</text>
+
+  <!-- =====================================================================
+       SECTION 1 : ALIMENTATION
+       ===================================================================== -->
+  <text x="12" y="60" font-size="9" font-weight="bold" fill="#9E9E9E">▌ ALIMENTATION</text>
+
+  <!-- === USB-C === -->
+  <rect x="15" y="65" width="110" height="52" rx="4" fill="white" stroke="#444" stroke-width="1.5"/>
+  <text x="70" y="83" text-anchor="middle" font-size="10" font-weight="bold" fill="#333">USB-C</text>
+  <text x="70" y="96" text-anchor="middle" font-size="8" fill="#666">5V / 2A max</text>
+  <text x="70" y="109" text-anchor="middle" font-size="8" fill="#999">J1 · 16 pin SMD</text>
+
+  <!-- USB-C CC resistors annotation -->
+  <text x="130" y="80" font-size="7" fill="#AAA">CC1/CC2</text>
+  <text x="130" y="90" font-size="7" fill="#AAA">5.1kΩ→GND</text>
+
+  <!-- === USBLC6-2SC6 === -->
+  <rect x="15" y="130" width="110" height="58" rx="4" fill="white" stroke="#4A148C" stroke-width="1.5"/>
+  <text x="70" y="148" text-anchor="middle" font-size="9" font-weight="bold" fill="#4A148C">USBLC6-2SC6</text>
+  <text x="70" y="162" text-anchor="middle" font-size="8" fill="#555">ESD D+/D−</text>
+  <text x="70" y="175" text-anchor="middle" font-size="8" fill="#555">22Ω série · U12</text>
+
+  <!-- USB-C → USBLC6 (D+/D-) -->
+  <line x1="70" y1="117" x2="70" y2="130" stroke="#4A148C" stroke-width="1.5"/>
+
+  <!-- USBLC6 → ESP32 annotation -->
+  <text x="130" y="156" font-size="7" fill="#AAA">→GPIO19 D−</text>
+  <text x="130" y="167" font-size="7" fill="#AAA">→GPIO20 D+</text>
+
+  <!-- === LiPo Battery === -->
+  <rect x="855" y="65" width="130" height="52" rx="4" fill="white" stroke="#444" stroke-width="1.5"/>
+  <text x="920" y="83" text-anchor="middle" font-size="10" font-weight="bold" fill="#333">LiPo 3.7V</text>
+  <text x="920" y="96" text-anchor="middle" font-size="9" fill="#666">3000 mAh</text>
+  <text x="920" y="109" text-anchor="middle" font-size="8" fill="#999">J10 · JST-PH 2P</text>
+
+  <!-- === DW01A + FS8205A === -->
+  <rect x="650" y="120" width="175" height="88" rx="4" fill="white" stroke="#4A148C" stroke-width="1.5"/>
+  <rect x="650" y="120" width="175" height="22" rx="4" fill="#EDE7F6" stroke="#4A148C" stroke-width="1.5"/>
+  <text x="737" y="136" text-anchor="middle" font-size="9" font-weight="bold" fill="#4A148C">DW01A + FS8205A</text>
+  <text x="737" y="154" text-anchor="middle" font-size="8" fill="#444">Protection batterie</text>
+  <text x="737" y="167" text-anchor="middle" font-size="8" fill="#666">Surcharge · Surdécharge</text>
+  <text x="737" y="180" text-anchor="middle" font-size="8" fill="#666">Surintensité</text>
+  <text x="737" y="199" text-anchor="middle" font-size="8" fill="#999">U9 SOT-23-6  +  U10 TSSOP-8</text>
+
+  <!-- LiPo B+ → DW01A (dashed VBAT) -->
+  <line x1="920" y1="117" x2="920" y2="153" stroke="#795548" stroke-width="1.5" stroke-dasharray="4,2"/>
+  <line x1="920" y1="153" x2="825" y2="153" stroke="#795548" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#a-br)"/>
+  <text x="873" y="148" text-anchor="middle" font-size="7" fill="#795548">VBAT B+</text>
+
+  <!-- DW01A left → bq24075 BAT -->
+  <line x1="650" y1="164" x2="490" y2="164" stroke="#795548" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#a-br)"/>
+  <text x="570" y="159" text-anchor="middle" font-size="7" fill="#795548">VBAT</text>
+
+  <!-- === bq24075 (central box) === -->
+  <rect x="245" y="85" width="245" height="220" rx="6" fill="white" stroke="#F57F17" stroke-width="2"/>
+  <rect x="245" y="85" width="245" height="26" rx="6" fill="#FFF8E1" stroke="#F57F17" stroke-width="2"/>
+  <text x="367" y="103" text-anchor="middle" font-size="11" font-weight="bold" fill="#E65100">bq24075RGTR</text>
+  <line x1="245" y1="111" x2="490" y2="111" stroke="#FFE082" stroke-width="1"/>
+  <text x="258" y="124" font-size="8" fill="#546E7A">Chargeur LiPo + Power Path DPPM</text>
+  <line x1="245" y1="130" x2="490" y2="130" stroke="#EEEEEE" stroke-width="0.5"/>
+  <text x="258" y="143" font-size="8" fill="#444">IN   p13 ← 5V_USB  +  C_IN 4.7µF</text>
+  <text x="258" y="156" font-size="8" fill="#444">BAT  p2,3 ← VBAT  +  C_BAT 4.7µF</text>
+  <text x="258" y="169" font-size="8" font-weight="bold" fill="#F57F17">OUT  p10,11 → VSYS  +  C_OUT 4.7µF</text>
+  <line x1="245" y1="176" x2="490" y2="176" stroke="#EEEEEE" stroke-width="0.5"/>
+  <text x="258" y="189" font-size="8" fill="#444">CE     = GND  (charge ON, active L)</text>
+  <text x="258" y="202" font-size="8" fill="#444">EN2=L, EN1=VSYS  →  500 mA USB</text>
+  <text x="258" y="215" font-size="8" fill="#444">ISET: 890Ω  →  I_CHG = 1A</text>
+  <text x="258" y="228" font-size="8" fill="#444">ILIM: 1.5kΩ  (mode RILIM)</text>
+  <text x="258" y="241" font-size="8" fill="#444">TMR    = GND  (timers off)</text>
+  <text x="258" y="254" font-size="8" fill="#444">SYSOFF = GND  (système ON) ⚠</text>
+  <text x="258" y="267" font-size="8" fill="#444">TS: 10kΩ+10kΩ  diviseur VSYS/GND</text>
+  <text x="258" y="282" font-size="8" fill="#999">VQFN-16 3×3mm · thermal pad → GND — U8</text>
+
+  <!-- 5V_USB wire: USB-C right → bq24075 top -->
+  <line x1="125" y1="74" x2="367" y2="74" stroke="#E65100" stroke-width="2"/>
+  <line x1="367" y1="74" x2="367" y2="85" stroke="#E65100" stroke-width="2" marker-end="url(#a-or)"/>
+  <text x="246" y="70" text-anchor="middle" font-size="9" font-weight="bold" fill="#E65100">5V_USB</text>
+
+  <!-- bq24075 VSYS output → VSYS bus -->
+  <line x1="367" y1="305" x2="367" y2="335" stroke="#F9A825" stroke-width="3" marker-end="url(#a-am)"/>
+
+  <!-- VSYS horizontal bus -->
+  <line x1="80" y1="335" x2="875" y2="335" stroke="#F9A825" stroke-width="3"/>
+  <text x="38" y="339" font-size="10" font-weight="bold" fill="#F9A825">VSYS</text>
+  <text x="28" y="351" font-size="7" fill="#888">3.0–4.4V</text>
+
+  <!-- =====================================================================
+       REGULATEURS
+       ===================================================================== -->
+
+  <!-- AP2112K #1 — 3.3V_D -->
+  <rect x="80" y="358" width="155" height="90" rx="4" fill="white" stroke="#1565C0" stroke-width="2"/>
+  <rect x="80" y="358" width="155" height="22" rx="4" fill="#E3F2FD" stroke="#1565C0" stroke-width="2"/>
+  <text x="157" y="374" text-anchor="middle" font-size="9" font-weight="bold" fill="#1565C0">AP2112K-3.3  #1</text>
+  <text x="157" y="393" text-anchor="middle" font-size="8" fill="#333">LDO DIGITAL — 600 mA</text>
+  <text x="157" y="406" text-anchor="middle" font-size="8" fill="#555">VIN = VSYS · VOUT = 3.3V</text>
+  <text x="157" y="419" text-anchor="middle" font-size="8" fill="#666">Cin:1µF · Cout:10µF céram.</text>
+  <text x="157" y="439" text-anchor="middle" font-size="8" fill="#999">SOT-23-5 — U5</text>
+
+  <!-- AP2112K #2 — 3.3V_A -->
+  <rect x="295" y="358" width="155" height="90" rx="4" fill="white" stroke="#2E7D32" stroke-width="2"/>
+  <rect x="295" y="358" width="155" height="22" rx="4" fill="#E8F5E9" stroke="#2E7D32" stroke-width="2"/>
+  <text x="372" y="374" text-anchor="middle" font-size="9" font-weight="bold" fill="#2E7D32">AP2112K-3.3  #2</text>
+  <text x="372" y="393" text-anchor="middle" font-size="8" fill="#333">LDO AUDIO — 600 mA</text>
+  <text x="372" y="406" text-anchor="middle" font-size="8" fill="#555">Rail isolé du digital</text>
+  <text x="372" y="419" text-anchor="middle" font-size="8" fill="#666">Cin:1µF · Cout:10µF céram.</text>
+  <text x="372" y="439" text-anchor="middle" font-size="8" fill="#999">SOT-23-5 — U6</text>
+
+  <!-- MT3608 -->
+  <rect x="510" y="358" width="155" height="90" rx="4" fill="white" stroke="#C62828" stroke-width="2"/>
+  <rect x="510" y="358" width="155" height="22" rx="4" fill="#FFEBEE" stroke="#C62828" stroke-width="2"/>
+  <text x="587" y="374" text-anchor="middle" font-size="9" font-weight="bold" fill="#C62828">MT3608  Boost</text>
+  <text x="587" y="393" text-anchor="middle" font-size="8" fill="#333">VSYS → 5V  (2A max)</text>
+  <text x="587" y="406" text-anchor="middle" font-size="8" fill="#555">L:22µH · Cout:22µF/16V</text>
+  <text x="587" y="419" text-anchor="middle" font-size="8" fill="#666">750kΩ/100kΩ → 5.1V</text>
+  <text x="587" y="439" text-anchor="middle" font-size="8" fill="#999">SOT-23-6 + SS14 — U7</text>
+
+  <!-- VSYS → regulators -->
+  <line x1="157" y1="335" x2="157" y2="358" stroke="#1565C0" stroke-width="2" marker-end="url(#a-bl)"/>
+  <line x1="372" y1="335" x2="372" y2="358" stroke="#2E7D32" stroke-width="2" marker-end="url(#a-gr)"/>
+  <line x1="587" y1="335" x2="587" y2="358" stroke="#C62828" stroke-width="2" marker-end="url(#a-rd)"/>
+
+  <!-- Regulator outputs → rails -->
+  <line x1="157" y1="448" x2="157" y2="465" stroke="#1565C0" stroke-width="2.5"/>
+  <line x1="372" y1="448" x2="372" y2="465" stroke="#2E7D32" stroke-width="2.5"/>
+  <line x1="587" y1="448" x2="587" y2="465" stroke="#C62828" stroke-width="2.5"/>
+
+  <!-- Rail horizontal lines -->
+  <line x1="30"  y1="465" x2="285" y2="465" stroke="#1565C0" stroke-width="2.5"/>
+  <line x1="305" y1="465" x2="475" y2="465" stroke="#2E7D32" stroke-width="2.5"/>
+  <line x1="495" y1="465" x2="730" y2="465" stroke="#C62828" stroke-width="2.5"/>
+
+  <!-- Rail labels -->
+  <text x="157" y="462" text-anchor="middle" font-size="9" font-weight="bold" fill="#1565C0">3.3V_D</text>
+  <text x="372" y="462" text-anchor="middle" font-size="9" font-weight="bold" fill="#2E7D32">3.3V_A</text>
+  <text x="587" y="462" text-anchor="middle" font-size="9" font-weight="bold" fill="#C62828">5V</text>
+
+  <!-- =====================================================================
+       CONSOMMATEURS
+       ===================================================================== -->
+
+  <!-- 3.3V_D consumers -->
+  <line x1="157" y1="465" x2="157" y2="480" stroke="#1565C0" stroke-width="1.5"/>
+  <rect x="20" y="480" width="285" height="68" rx="4" fill="#E3F2FD" stroke="#1565C0" stroke-width="1"/>
+  <text x="162" y="497" text-anchor="middle" font-size="9" font-weight="bold" fill="#1565C0">Consommateurs 3.3V_D</text>
+  <text x="162" y="511" text-anchor="middle" font-size="8" fill="#333">ESP32-S3 · GC9A01×2 · SSD1680</text>
+  <text x="162" y="524" text-anchor="middle" font-size="8" fill="#333">PN532 · ICS-43434 · I2C pull-ups</text>
+  <text x="162" y="538" text-anchor="middle" font-size="7" fill="#888">EN: 10kΩ↑ + 100nF · GPIO pull-ups</text>
+
+  <!-- 3.3V_A consumer -->
+  <line x1="372" y1="465" x2="372" y2="480" stroke="#2E7D32" stroke-width="1.5"/>
+  <rect x="310" y="480" width="190" height="68" rx="4" fill="#E8F5E9" stroke="#2E7D32" stroke-width="1"/>
+  <text x="405" y="497" text-anchor="middle" font-size="9" font-weight="bold" fill="#2E7D32">PCM5122  (audio)</text>
+  <text x="405" y="511" text-anchor="middle" font-size="8" fill="#333">AVDD · DVDD · CPVDD</text>
+  <text x="405" y="524" text-anchor="middle" font-size="8" fill="#555">3×(10µF + 100nF) + LDOO 100nF</text>
+  <text x="405" y="538" text-anchor="middle" font-size="7" fill="#888">XSMT: 10kΩ pull-up → 3.3V_A</text>
+
+  <!-- 5V consumers -->
+  <line x1="587" y1="465" x2="587" y2="480" stroke="#C62828" stroke-width="1.5"/>
+  <rect x="510" y="480" width="230" height="68" rx="4" fill="#FFEBEE" stroke="#C62828" stroke-width="1"/>
+  <text x="625" y="497" text-anchor="middle" font-size="9" font-weight="bold" fill="#C62828">Consommateurs 5V</text>
+  <text x="625" y="511" text-anchor="middle" font-size="8" fill="#333">PAM8406  Ampli Class D</text>
+  <text x="625" y="524" text-anchor="middle" font-size="8" fill="#333">WS2812 LEDs (330Ω série)</text>
+  <text x="625" y="538" text-anchor="middle" font-size="7" fill="#888">PAM8406 SHDN → 10kΩ → 3.3V_D</text>
+
+  <!-- =====================================================================
+       SEPARATOR
+       ===================================================================== -->
+  <line x1="10" y1="562" x2="1090" y2="562" stroke="#BDBDBD" stroke-width="1" stroke-dasharray="6,3"/>
+
+  <!-- =====================================================================
+       SECTION 2 : CHAINE AUDIO PCM5122
+       ===================================================================== -->
+  <text x="12" y="578" font-size="9" font-weight="bold" fill="#9E9E9E">▌ CHAINE AUDIO — PCM5122</text>
+
+  <!-- 3.3V_A feed into audio section -->
+  <text x="50" y="591" font-size="8" font-weight="bold" fill="#2E7D32">3.3V_A</text>
+  <line x1="90" y1="588" x2="110" y2="588" stroke="#2E7D32" stroke-width="1.5"/>
+  <line x1="110" y1="588" x2="110" y2="600" stroke="#2E7D32" stroke-width="1.5"/>
+
+  <!-- === PCM5122 BOX === -->
+  <rect x="15" y="598" width="265" height="250" rx="6" fill="white" stroke="#37474F" stroke-width="2"/>
+  <rect x="15" y="598" width="265" height="26" rx="6" fill="#ECEFF1" stroke="#37474F" stroke-width="2"/>
+  <text x="147" y="616" text-anchor="middle" font-size="11" font-weight="bold" fill="#263238">PCM5122PW</text>
+  <line x1="15" y1="624" x2="280" y2="624" stroke="#CFD8DC" stroke-width="0.5"/>
+  <text x="147" y="636" text-anchor="middle" font-size="8" fill="#546E7A">DAC stéréo 32-bit I2S · TSSOP-28 · U2</text>
+  <line x1="15" y1="642" x2="280" y2="642" stroke="#EEEEEE" stroke-width="0.5"/>
+
+  <!-- Alimentation pins -->
+  <text x="28" y="654" font-size="8" font-weight="bold" fill="#2E7D32">Alimentation 3.3V_A</text>
+  <text x="28" y="667" font-size="8" fill="#444">AVDD  p1  ← 3.3V_A + 10µF // 100nF</text>
+  <text x="28" y="680" font-size="8" fill="#444">DVDD  p19 ← 3.3V_A + 10µF // 100nF</text>
+  <text x="28" y="693" font-size="8" fill="#444">CPVDD p5  ← 3.3V_A + 10µF // 100nF</text>
+  <text x="28" y="706" font-size="8" fill="#888">LDOO  p20 → 100nF → GND</text>
+  <line x1="15" y1="712" x2="280" y2="712" stroke="#EEEEEE" stroke-width="0.5"/>
+
+  <!-- Charge pump -->
+  <text x="28" y="724" font-size="8" font-weight="bold" fill="#546E7A">Charge pump (VNEG)</text>
+  <text x="28" y="737" font-size="8" fill="#444">CAPP p4 ──┐ 2.2µF/25V (flying cap)</text>
+  <text x="28" y="750" font-size="8" fill="#444">CAPM p2 ──┤ entre CAPP et CAPM</text>
+  <text x="28" y="763" font-size="8" fill="#444">VNEG p3 ──┘ 2.2µF/25V (reservoir)</text>
+  <line x1="15" y1="769" x2="280" y2="769" stroke="#EEEEEE" stroke-width="0.5"/>
+
+  <!-- I2S + controle -->
+  <text x="28" y="781" font-size="8" font-weight="bold" fill="#6A1B9A">I2S + Contrôle</text>
+  <text x="28" y="794" font-size="8" fill="#6A1B9A">BCK  p16 ← GPIO4  (I2S0 BCLK)</text>
+  <text x="28" y="807" font-size="8" fill="#6A1B9A">LRCK p15 ← GPIO5  (I2S0 LRCK)</text>
+  <text x="28" y="820" font-size="8" fill="#6A1B9A">DIN  p17 ← GPIO6  (I2S0 DOUT)</text>
+  <text x="28" y="833" font-size="8" fill="#444">XSMT p12 → 10kΩ → 3.3V_A (unmute)</text>
+  <text x="28" y="838" font-size="8" fill="#888">  </text>
+  <text x="28" y="840" font-size="8" fill="#888">SDA p14 · SCL p13  (I2C 0x4C/0x4D)</text>
+
+  <!-- PCM5122 OUTL/OUTR → RC Filter -->
+  <line x1="280" y1="738" x2="310" y2="738" stroke="#FF8F00" stroke-width="2" marker-end="url(#a-or)"/>
+  <text x="282" y="733" font-size="7" fill="#555">OUTL p6</text>
+  <line x1="280" y1="758" x2="310" y2="758" stroke="#FF8F00" stroke-width="2" marker-end="url(#a-or)"/>
+  <text x="282" y="753" font-size="7" fill="#555">OUTR p7</text>
+
+  <!-- === RC FILTER === -->
+  <rect x="310" y="718" width="150" height="100" rx="4" fill="white" stroke="#FF8F00" stroke-width="1.5"/>
+  <rect x="310" y="718" width="150" height="22" rx="4" fill="#FFF3E0" stroke="#FF8F00" stroke-width="1.5"/>
+  <text x="385" y="734" text-anchor="middle" font-size="9" font-weight="bold" fill="#E65100">Filtre RC</text>
+  <text x="385" y="752" text-anchor="middle" font-size="8" fill="#333">100Ω série (R1, R2)</text>
+  <text x="385" y="765" text-anchor="middle" font-size="8" fill="#333">22nF/50V → GND (C21, C22)</text>
+  <text x="385" y="778" text-anchor="middle" font-size="8" fill="#555">fc = 1/(2π·100·22n)</text>
+  <text x="385" y="791" text-anchor="middle" font-size="8" fill="#555">≈ 72 kHz</text>
+  <text x="385" y="809" text-anchor="middle" font-size="7" fill="#888">Atténue bruit HF delta-sigma</text>
+
+  <!-- RC Filter → PAM8406 -->
+  <line x1="460" y1="738" x2="490" y2="738" stroke="#FF8F00" stroke-width="2" marker-end="url(#a-or)"/>
+  <line x1="460" y1="758" x2="490" y2="758" stroke="#FF8F00" stroke-width="2" marker-end="url(#a-or)"/>
+  <text x="474" y="733" text-anchor="middle" font-size="7" fill="#888">AUDIO_L</text>
+  <text x="474" y="753" text-anchor="middle" font-size="7" fill="#888">AUDIO_R</text>
+
+  <!-- === ICS-43434 (microphone, en haut à droite) === -->
+  <rect x="310" y="598" width="175" height="96" rx="4" fill="white" stroke="#37474F" stroke-width="1.5"/>
+  <rect x="310" y="598" width="175" height="22" rx="4" fill="#ECEFF1" stroke="#37474F" stroke-width="1.5"/>
+  <text x="397" y="614" text-anchor="middle" font-size="9" font-weight="bold" fill="#263238">ICS-43434</text>
+  <text x="397" y="632" text-anchor="middle" font-size="8" fill="#333">Microphone MEMS I2S</text>
+  <text x="397" y="645" text-anchor="middle" font-size="8" fill="#555">24-bit · VDD = 3.3V_D</text>
+  <text x="397" y="658" text-anchor="middle" font-size="8" fill="#6A1B9A">SCK→GPIO16  WS→GPIO18</text>
+  <text x="397" y="671" text-anchor="middle" font-size="8" fill="#6A1B9A">SD→GPIO7   (I2S1)</text>
+  <text x="397" y="686" text-anchor="middle" font-size="8" fill="#999">BGA-6 bottom-port — U4</text>
+
+  <!-- === PAM8406 === -->
+  <rect x="490" y="710" width="170" height="120" rx="4" fill="white" stroke="#C62828" stroke-width="2"/>
+  <rect x="490" y="710" width="170" height="24" rx="4" fill="#FFEBEE" stroke="#C62828" stroke-width="2"/>
+  <text x="575" y="727" text-anchor="middle" font-size="10" font-weight="bold" fill="#C62828">PAM8406DR</text>
+  <text x="575" y="747" text-anchor="middle" font-size="8" fill="#333">Ampli Class D stéréo</text>
+  <text x="575" y="760" text-anchor="middle" font-size="8" fill="#555">5W+5W · VDD = 5V · η≈90%</text>
+  <text x="575" y="773" text-anchor="middle" font-size="8" fill="#666">SHDN → 10kΩ → 3.3V_D</text>
+  <text x="575" y="786" text-anchor="middle" font-size="8" fill="#666">Pas de radiateur requis</text>
+  <text x="575" y="799" text-anchor="middle" font-size="8" fill="#666">Pas de condensateurs de sortie</text>
+  <text x="575" y="822" text-anchor="middle" font-size="8" fill="#999">SOP-16 — U3</text>
+
+  <!-- 5V → PAM8406 -->
+  <line x1="575" y1="710" x2="575" y2="690" stroke="#C62828" stroke-width="1.5" stroke-dasharray="4,2"/>
+  <text x="586" y="703" font-size="8" fill="#C62828">5V</text>
+
+  <!-- PAM8406 → Speakers -->
+  <line x1="660" y1="738" x2="700" y2="738" stroke="#37474F" stroke-width="2" marker-end="url(#a-gy)"/>
+  <line x1="660" y1="758" x2="700" y2="758" stroke="#37474F" stroke-width="2" marker-end="url(#a-gy)"/>
+  <text x="679" y="733" text-anchor="middle" font-size="7" fill="#555">OUT L+/L−</text>
+  <text x="679" y="753" text-anchor="middle" font-size="7" fill="#555">OUT R+/R−</text>
+
+  <!-- === Speakers === -->
+  <rect x="700" y="720" width="100" height="36" rx="3" fill="#F5F5F5" stroke="#757575" stroke-width="1"/>
+  <text x="750" y="735" text-anchor="middle" font-size="8" fill="#333">HP Gauche</text>
+  <text x="750" y="748" text-anchor="middle" font-size="7" fill="#666">4Ω  ~3W</text>
+
+  <rect x="700" y="762" width="100" height="36" rx="3" fill="#F5F5F5" stroke="#757575" stroke-width="1"/>
+  <text x="750" y="777" text-anchor="middle" font-size="8" fill="#333">HP Droite</text>
+  <text x="750" y="790" text-anchor="middle" font-size="7" fill="#666">4Ω  ~3W</text>
+
+  <!-- === Layout / PCB Notes === -->
+  <rect x="820" y="598" width="265" height="248" rx="4" fill="white" stroke="#B0BEC5" stroke-width="1"/>
+  <rect x="820" y="598" width="265" height="22" rx="4" fill="#ECEFF1" stroke="#B0BEC5" stroke-width="1"/>
+  <text x="952" y="614" text-anchor="middle" font-size="9" font-weight="bold" fill="#546E7A">RÈGLES LAYOUT PCB</text>
+  <line x1="820" y1="620" x2="1085" y2="620" stroke="#ECEFF1" stroke-width="1"/>
+  <text x="833" y="634" font-size="8" fill="#333">✓  Zone audio isolée (coin PCB)</text>
+  <text x="833" y="648" font-size="8" fill="#333">✓  GND plan continu layer 2</text>
+  <text x="833" y="662" font-size="8" fill="#333">✓  Pas de split GND (jamais)</text>
+  <text x="833" y="676" font-size="8" fill="#333">✓  Pas de traces digitales sous audio</text>
+  <text x="833" y="690" font-size="8" fill="#333">✓  I2S traces &lt;3cm, groupées, GND blindage</text>
+  <text x="833" y="704" font-size="8" fill="#333">✓  Découplage : via GND adjacent</text>
+  <text x="833" y="718" font-size="8" fill="#333">✓  Trou acoustique Ø1mm pour ICS-43434</text>
+  <text x="833" y="732" font-size="8" fill="#333">✓  Thermal pad bq24075 → GND (4-6 vias)</text>
+  <text x="833" y="746" font-size="8" fill="#333">✓  Keepout zone antenne PN532</text>
+  <line x1="820" y1="753" x2="1085" y2="753" stroke="#ECEFF1" stroke-width="1"/>
+  <text x="952" y="766" text-anchor="middle" font-size="8" font-weight="bold" fill="#546E7A">JLCPCB — 4 couches</text>
+  <text x="833" y="780" font-size="8" fill="#555">Layer 1 : Signaux Top</text>
+  <text x="833" y="793" font-size="8" fill="#555">Layer 2 : GND (continu)</text>
+  <text x="833" y="806" font-size="8" fill="#555">Layer 3 : Power</text>
+  <text x="833" y="819" font-size="8" fill="#555">Layer 4 : Signaux Bottom</text>
+  <line x1="820" y1="825" x2="1085" y2="825" stroke="#ECEFF1" stroke-width="1"/>
+  <text x="833" y="838" font-size="8" fill="#888">Track min 0.2mm · Signal 0.3mm</text>
+  <text x="833" y="851" font-size="8" fill="#888">Power 0.5mm · Via Ø0.3/0.6mm</text>
+  <text x="833" y="864" font-size="8" fill="#888">Clearance 0.2mm (JLCPCB standard)</text>
+
+  <!-- =====================================================================
+       BOTTOM LABELS
+       ===================================================================== -->
+  <rect x="10" y="862" width="330" height="32" rx="3" fill="#EDE7F6" stroke="#6A1B9A" stroke-width="1"/>
+  <text x="175" y="875" text-anchor="middle" font-size="8" font-weight="bold" fill="#6A1B9A">I2S0 → PCM5122 : GPIO4=BCK · GPIO5=LRCK · GPIO6=DOUT</text>
+  <text x="175" y="887" text-anchor="middle" font-size="8" fill="#4A148C">I2S1 → ICS-43434 : GPIO16=SCK · GPIO18=WS · GPIO7=SD</text>
+
+  <rect x="350" y="862" width="320" height="32" rx="3" fill="#FFF8E1" stroke="#F57F17" stroke-width="1"/>
+  <text x="510" y="875" text-anchor="middle" font-size="8" font-weight="bold" fill="#E65100">I2C : GPIO21=SDA · GPIO17=SCL · pull-up 4.7kΩ→3.3V_D</text>
+  <text x="510" y="887" text-anchor="middle" font-size="8" fill="#E65100">PCM5122 (0x4C) · PN532 · 4× satellites JST-SH</text>
+
+  <rect x="680" y="862" width="130" height="32" rx="3" fill="#F5F5F5" stroke="#B0BEC5" stroke-width="1"/>
+  <text x="745" y="875" text-anchor="middle" font-size="8" font-weight="bold" fill="#546E7A">GND plan continu</text>
+  <text x="745" y="887" text-anchor="middle" font-size="8" fill="#78909C">layer 2 — pas de fente</text>
+
+  <!-- =====================================================================
+       ARROW MARKER DEFS
+       ===================================================================== -->
+  <defs>
+    <marker id="a-or" markerWidth="7" markerHeight="5" refX="6" refY="2.5" orient="auto">
+      <polygon points="0 0,7 2.5,0 5" fill="#E65100"/>
+    </marker>
+    <marker id="a-am" markerWidth="7" markerHeight="5" refX="6" refY="2.5" orient="auto">
+      <polygon points="0 0,7 2.5,0 5" fill="#F9A825"/>
+    </marker>
+    <marker id="a-bl" markerWidth="7" markerHeight="5" refX="6" refY="2.5" orient="auto">
+      <polygon points="0 0,7 2.5,0 5" fill="#1565C0"/>
+    </marker>
+    <marker id="a-gr" markerWidth="7" markerHeight="5" refX="6" refY="2.5" orient="auto">
+      <polygon points="0 0,7 2.5,0 5" fill="#2E7D32"/>
+    </marker>
+    <marker id="a-rd" markerWidth="7" markerHeight="5" refX="6" refY="2.5" orient="auto">
+      <polygon points="0 0,7 2.5,0 5" fill="#C62828"/>
+    </marker>
+    <marker id="a-gy" markerWidth="7" markerHeight="5" refX="6" refY="2.5" orient="auto">
+      <polygon points="0 0,7 2.5,0 5" fill="#757575"/>
+    </marker>
+    <marker id="a-br" markerWidth="7" markerHeight="5" refX="6" refY="2.5" orient="auto">
+      <polygon points="0 0,7 2.5,0 5" fill="#795548"/>
+    </marker>
+  </defs>
+
+</svg>
