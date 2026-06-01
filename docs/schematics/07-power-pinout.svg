@@ -1,0 +1,340 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="960" viewBox="0 0 1200 960" font-family="'Courier New', monospace">
+<defs>
+  <marker id="aor" markerWidth="6" markerHeight="4" refX="5" refY="2" orient="auto"><polygon points="0 0,6 2,0 4" fill="#E65100"/></marker>
+  <marker id="aam" markerWidth="6" markerHeight="4" refX="5" refY="2" orient="auto"><polygon points="0 0,6 2,0 4" fill="#F9A825"/></marker>
+  <marker id="abl" markerWidth="6" markerHeight="4" refX="5" refY="2" orient="auto"><polygon points="0 0,6 2,0 4" fill="#1565C0"/></marker>
+  <marker id="agr" markerWidth="6" markerHeight="4" refX="5" refY="2" orient="auto"><polygon points="0 0,6 2,0 4" fill="#2E7D32"/></marker>
+  <marker id="ard" markerWidth="6" markerHeight="4" refX="5" refY="2" orient="auto"><polygon points="0 0,6 2,0 4" fill="#C62828"/></marker>
+  <marker id="agy" markerWidth="6" markerHeight="4" refX="5" refY="2" orient="auto"><polygon points="0 0,6 2,0 4" fill="#757575"/></marker>
+  <marker id="abr" markerWidth="6" markerHeight="4" refX="5" refY="2" orient="auto"><polygon points="0 0,6 2,0 4" fill="#795548"/></marker>
+</defs>
+
+<!-- Background -->
+<rect width="1200" height="960" fill="#FAFAFA"/>
+
+<!-- Title -->
+<text x="600" y="19" text-anchor="middle" font-size="13" font-weight="bold" fill="#1A1A1A">ESCAPEBOX — SCHÉMA PIN-À-PIN : ALIMENTATION COMPLÈTE</text>
+<text x="600" y="31" text-anchor="middle" font-size="8" fill="#888">Réf : TI bq24075 (SLUS810N·N) · Diodes AP2112 (DS39724) · Aerosemi MT3608 · HMSemi DW01A · Fortune Semi FS8205A</text>
+<line x1="10" y1="36" x2="1190" y2="36" stroke="#BDBDBD" stroke-width="0.5"/>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 1 : USB-C + USBLC6-2SC6
+     ════════════════════════════════════════════════════════════ -->
+<rect x="10" y="42" width="260" height="295" rx="5" fill="white" stroke="#4A148C" stroke-width="1.5"/>
+<rect x="10" y="42" width="260" height="22" rx="5" fill="#EDE7F6" stroke="#4A148C" stroke-width="1.5"/>
+<text x="140" y="57" text-anchor="middle" font-size="10" font-weight="bold" fill="#4A148C">USB-C J1 + USBLC6-2SC6 U12</text>
+
+<!-- USB-C pins -->
+<text x="22" y="76" font-size="8" font-weight="bold" fill="#555">USB-C 16 broches SMD (J1)</text>
+<text x="22" y="90" font-size="8" fill="#E65100">VBUS (×4) → 5V_USB → bq24075 IN</text>
+<text x="22" y="104" font-size="8" fill="#424242">GND  (×4) → plan GND</text>
+<text x="22" y="118" font-size="8" fill="#424242">CC1  → R9=5.1kΩ → GND</text>
+<text x="22" y="132" font-size="8" fill="#424242">CC2  → R10=5.1kΩ → GND</text>
+<text x="22" y="146" font-size="8" fill="#424242">SHIELD → 1MΩ → GND</text>
+<text x="22" y="160" font-size="8" fill="#4A148C">D−  → R11=22Ω → USBLC6 I/O1</text>
+<text x="22" y="174" font-size="8" fill="#4A148C">D+  → R12=22Ω → USBLC6 I/O2</text>
+<line x1="10" y1="182" x2="270" y2="182" stroke="#EEEEEE" stroke-width="1"/>
+
+<!-- USBLC6 pins -->
+<text x="22" y="196" font-size="8" font-weight="bold" fill="#4A148C">USBLC6-2SC6 (U12, SOT-23-6)</text>
+<text x="22" y="210" font-size="8" fill="#4A148C">p1   I/O1 ← D−  →  GPIO19 (ESP32)</text>
+<text x="22" y="224" font-size="8" fill="#424242">p2   GND</text>
+<text x="22" y="238" font-size="8" fill="#4A148C">p3,4 I/O2 ← D+  →  GPIO20 (ESP32)</text>
+<text x="22" y="252" font-size="8" fill="#E65100">p5   VBUS → 5V_USB (réf clamping)</text>
+<text x="22" y="266" font-size="8" fill="#4A148C">p6   I/O1 = p1 (relié)</text>
+<line x1="10" y1="273" x2="270" y2="273" stroke="#EEEEEE" stroke-width="1"/>
+<text x="22" y="285" font-size="8" fill="#888">Capa : 3.5 pF/ligne · placer près</text>
+<text x="22" y="298" font-size="8" fill="#888">connecteur · traces courtes → GND</text>
+<text x="22" y="311" font-size="8" fill="#888">22Ω protège EMI + différentiel USB</text>
+<text x="22" y="326" font-size="8" fill="#888">SHIELD : 1MΩ évite boucle de masse</text>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 2 : bq24075
+     ════════════════════════════════════════════════════════════ -->
+<rect x="282" y="42" width="560" height="295" rx="5" fill="white" stroke="#F57F17" stroke-width="2"/>
+<rect x="282" y="42" width="560" height="22" rx="5" fill="#FFF8E1" stroke="#F57F17" stroke-width="2"/>
+<text x="562" y="57" text-anchor="middle" font-size="10" font-weight="bold" fill="#E65100">bq24075RGTR — VQFN-16 3×3mm — U8  (TI SLUS810N·N)</text>
+
+<!-- Left column header -->
+<text x="294" y="75" font-size="8" font-weight="bold" fill="#555">Broches 1–8 (côté gauche QFN)</text>
+<!-- Right column header -->
+<text x="572" y="75" font-size="8" font-weight="bold" fill="#555">Broches 9–16 (côté droit QFN)</text>
+<line x1="562" y1="64" x2="562" y2="337" stroke="#FFE082" stroke-width="1"/>
+<line x1="282" y1="82" x2="842" y2="82" stroke="#EEEEEE" stroke-width="0.5"/>
+
+<!-- bq24075 Left pins -->
+<text x="294" y="96" font-size="8" fill="#F9A825">p01  TS    → 10kΩ↑VSYS + 10kΩ↓GND (div. 50%)</text>
+<text x="294" y="111" font-size="8" fill="#795548">p02  BAT   → VBAT + C_BAT 4.7µF/10V · DW01A VCC</text>
+<text x="294" y="126" font-size="8" fill="#795548">p03  BAT   → idem p02 (2 broches parallèles)</text>
+<text x="294" y="141" font-size="8" fill="#424242">p04  CE    → GND  (actif bas — charge ON)</text>
+<text x="294" y="156" font-size="8" fill="#424242">p05  EN2   → GND  (LOW)</text>
+<text x="294" y="171" font-size="8" fill="#F9A825">p06  EN1   → VSYS (HIGH)  ⇒ EN2=L/EN1=H = 500mA</text>
+<text x="294" y="186" font-size="8" fill="#1565C0">p07  PGOOD → 100kΩ↑ 3.3V_D (open drain, actif bas)</text>
+<text x="294" y="201" font-size="8" fill="#424242">p08  VSS   → GND + PAD thermique (vias Ø0.3mm)</text>
+<line x1="282" y1="210" x2="562" y2="210" stroke="#EEEEEE" stroke-width="0.5"/>
+<text x="294" y="223" font-size="8" fill="#F9A825">PAD  Exposed thermal pad → GND obligatoire</text>
+<text x="294" y="237" font-size="8" fill="#888">     Relié à VSS interne · souder sur plan GND</text>
+<text x="294" y="251" font-size="8" fill="#888">     4–6 vias thermiques Ø0.3mm/0.6mm pad</text>
+<line x1="282" y1="259" x2="562" y2="259" stroke="#FFE082" stroke-width="1"/>
+<text x="294" y="272" font-size="8" font-weight="bold" fill="#B71C1C">⚠ ISET (p16) ≠ ILIM (p12)</text>
+<text x="294" y="285" font-size="8" fill="#888">  ISET = courant charge batterie</text>
+<text x="294" y="298" font-size="8" fill="#888">  ILIM = courant max entrée USB</text>
+<text x="294" y="311" font-size="8" font-weight="bold" fill="#B71C1C">⚠ SYSOFF : pull-up interne VBAT</text>
+<text x="294" y="324" font-size="8" fill="#888">  Jamais laisser flottant → lier à GND</text>
+
+<!-- bq24075 Right pins -->
+<text x="572" y="96" font-size="8" fill="#1565C0">p09  CHG   → 100kΩ↑ 3.3V_D (open drain, LED charge)</text>
+<text x="572" y="111" font-size="8" fill="#F9A825">p10  OUT   → VSYS + C_OUT 4.7µF/10V</text>
+<text x="572" y="126" font-size="8" fill="#F9A825">p11  OUT   → idem p10 (2 broches parallèles)</text>
+<text x="572" y="141" font-size="8" fill="#424242">p12  ILIM  → R_ILIM=1.5kΩ → GND</text>
+<text x="572" y="156" font-size="8" fill="#E65100">p13  IN    → 5V_USB + C_IN 4.7µF/10V (X5R)</text>
+<text x="572" y="171" font-size="8" fill="#424242">p14  TMR   → GND  (timers de sécurité off)</text>
+<text x="572" y="186" font-size="8" fill="#424242">p15  SYSOFF→ GND  ⚠ pull-up interne VBAT</text>
+<text x="572" y="201" font-size="8" fill="#424242">p16  ISET  → R_ISET=890Ω → GND (I_CHG=1A)</text>
+<line x1="562" y1="210" x2="842" y2="210" stroke="#EEEEEE" stroke-width="0.5"/>
+<text x="572" y="225" font-size="8" font-weight="bold" fill="#555">Formules (SLUS810N) :</text>
+<text x="572" y="239" font-size="8" fill="#444">I_CHG  = K_ISET / R_ISET = 890 / 890 = 1.0A</text>
+<text x="572" y="253" font-size="8" fill="#444">  (R_ISET valide : 590Ω–5.9kΩ)</text>
+<text x="572" y="267" font-size="8" fill="#444">I_ILIM = K_ILIM / R_ILIM  (mode EN2=H,EN1=L)</text>
+<text x="572" y="281" font-size="8" fill="#444">Table EN2/EN1 :</text>
+<text x="572" y="295" font-size="8" fill="#424242">  L/L → 100mA  L/H → 500mA ← notre config</text>
+<text x="572" y="309" font-size="8" fill="#424242">  H/L → R_ILIM  H/H → Standby (suspend)</text>
+<text x="572" y="323" font-size="8" fill="#888">TS 50% = (10k+10k)/(10k+10k) → désactive</text>
+<text x="572" y="337" font-size="8" fill="#888">monitoring NTC (datasheet p.15)</text>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 3 : DW01A + FS8205A
+     ════════════════════════════════════════════════════════════ -->
+<rect x="854" y="42" width="336" height="295" rx="5" fill="white" stroke="#4A148C" stroke-width="1.5"/>
+<rect x="854" y="42" width="336" height="22" rx="5" fill="#EDE7F6" stroke="#4A148C" stroke-width="1.5"/>
+<text x="1022" y="57" text-anchor="middle" font-size="10" font-weight="bold" fill="#4A148C">DW01A U9  +  FS8205A U10</text>
+
+<!-- DW01A pins -->
+<text x="866" y="76" font-size="8" font-weight="bold" fill="#4A148C">DW01A  (U9, SOT-23-6)  — HMSemi</text>
+<text x="866" y="90" font-size="8" fill="#424242">p1  OD  → FS8205A p4 (G1, gate décharge)</text>
+<text x="866" y="104" font-size="8" fill="#888">p2  CS  → MIDPOINT (sens courant via RDS)</text>
+<text x="866" y="118" font-size="8" fill="#424242">p3  OC  → FS8205A p5 (G2, gate charge)</text>
+<text x="866" y="132" font-size="8" fill="#888">p4  TD  → NC (flottant, test delay)</text>
+<text x="866" y="146" font-size="8" fill="#795548">p5  VCC → R_VCC=100Ω → VBAT (LiPo B+)</text>
+<text x="866" y="160" font-size="8" fill="#888">p6  GND → MIDPOINT  ⚠ PAS GND système</text>
+<line x1="854" y1="167" x2="1190" y2="167" stroke="#EEEEEE" stroke-width="1"/>
+
+<!-- FS8205A pins -->
+<text x="866" y="181" font-size="8" font-weight="bold" fill="#4A148C">FS8205A  (U10, TSSOP-8)  — Fortune Semi</text>
+<text x="866" y="195" font-size="8" fill="#795548">p1,8  D12 → LiPo B− · GND système (drain commun)</text>
+<text x="866" y="209" font-size="8" fill="#888">p2,3  S1  → MIDPOINT (source FET1)</text>
+<text x="866" y="223" font-size="8" fill="#424242">p4    G1  ← DW01A OD p1 (gate FET1)</text>
+<text x="866" y="237" font-size="8" fill="#424242">p5    G2  ← DW01A OC p3 (gate FET2)</text>
+<text x="866" y="251" font-size="8" fill="#888">p6,7  S2  → MIDPOINT (source FET2)</text>
+<line x1="854" y1="259" x2="1190" y2="259" stroke="#EEEEEE" stroke-width="1"/>
+
+<!-- Current flow diagram -->
+<text x="866" y="273" font-size="8" font-weight="bold" fill="#555">Flux courant (FETs ON, mode normal) :</text>
+<text x="866" y="286" font-size="8" fill="#795548">LiPo B+ → R_VCC 100Ω → DW01A VCC / bq24075 BAT</text>
+<text x="866" y="299" font-size="8" fill="#424242">LiPo B− → D12(p1,8) → FET → S2(p6,7) → MIDPOINT</text>
+<text x="866" y="312" font-size="8" fill="#424242">         → S1(p2,3) → FET → GND système</text>
+<text x="866" y="326" font-size="8" fill="#888">DW01A GND+CS au MIDPOINT → mesure RDS(on)</text>
+<text x="866" y="336" font-size="8" fill="#B71C1C">⚠ Drain p1+p8 (coins TSSOP) ≠ p7+p8 (erreur courante)</text>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 4 : AP2112K #1 — 3.3V_D
+     ════════════════════════════════════════════════════════════ -->
+<rect x="10" y="350" width="388" height="200" rx="5" fill="white" stroke="#1565C0" stroke-width="2"/>
+<rect x="10" y="350" width="388" height="22" rx="5" fill="#E3F2FD" stroke="#1565C0" stroke-width="2"/>
+<text x="204" y="365" text-anchor="middle" font-size="10" font-weight="bold" fill="#1565C0">AP2112K-3.3  #1 — LDO DIGITAL — U5  (SOT-23-5)</text>
+
+<text x="22" y="385" font-size="8" font-weight="bold" fill="#555">Pinout vérifié DS39724 (Diodes Inc.) :</text>
+<text x="22" y="399" font-size="8" fill="#F9A825">p1  VIN  → VSYS + C_D1=1µF/10V céram. 0402</text>
+<text x="22" y="413" font-size="8" fill="#424242">p2  GND  → plan GND</text>
+<text x="22" y="427" font-size="8" fill="#F9A825">p3  EN   → VIN  (lier à VIN = toujours actif)</text>
+<text x="22" y="441" font-size="8" fill="#888">p4  NC   → non connecté</text>
+<text x="22" y="455" font-size="8" fill="#1565C0">p5  VOUT → 3.3V_D + C_D2=10µF/10V céram. 0805</text>
+<line x1="10" y1="463" x2="398" y2="463" stroke="#EEEEEE" stroke-width="1"/>
+<text x="22" y="476" font-size="8" fill="#888">Dropout : ~250mV @ 600mA · Plage VIN : 2.5–6.0V</text>
+<text x="22" y="489" font-size="8" fill="#888">⚠ VSYS mini 3.0V (LiPo vide) → VOUT peut &lt;3.3V</text>
+<text x="22" y="503" font-size="8" fill="#888">   DW01A coupe à 2.4V · durée &lt;5min en pratique</text>
+<text x="22" y="517" font-size="8" fill="#424242">Alimente : ESP32-S3 · GC9A01×2 · SSD1680 · PN532</text>
+<text x="22" y="531" font-size="8" fill="#424242">          ICS-43434 · pull-ups I2C · GPIO</text>
+<text x="22" y="542" font-size="8" fill="#888">Vin cap 0402 au plus près p1 · Vout cap 0805 près p5</text>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 5 : AP2112K #2 — 3.3V_A
+     ════════════════════════════════════════════════════════════ -->
+<rect x="410" y="350" width="388" height="200" rx="5" fill="white" stroke="#2E7D32" stroke-width="2"/>
+<rect x="410" y="350" width="388" height="22" rx="5" fill="#E8F5E9" stroke="#2E7D32" stroke-width="2"/>
+<text x="604" y="365" text-anchor="middle" font-size="10" font-weight="bold" fill="#2E7D32">AP2112K-3.3  #2 — LDO AUDIO — U6  (SOT-23-5)</text>
+
+<text x="422" y="385" font-size="8" font-weight="bold" fill="#555">Pinout identique à U5 (même IC) :</text>
+<text x="422" y="399" font-size="8" fill="#F9A825">p1  VIN  → VSYS + C_A1=1µF/10V céram. 0402</text>
+<text x="422" y="413" font-size="8" fill="#424242">p2  GND  → plan GND (commun, PAS de split GND)</text>
+<text x="422" y="427" font-size="8" fill="#F9A825">p3  EN   → VIN  (toujours actif)</text>
+<text x="422" y="441" font-size="8" fill="#888">p4  NC   → non connecté</text>
+<text x="422" y="455" font-size="8" fill="#2E7D32">p5  VOUT → 3.3V_A + C_A2=10µF/10V céram. 0805</text>
+<line x1="410" y1="463" x2="798" y2="463" stroke="#EEEEEE" stroke-width="1"/>
+<text x="422" y="476" font-size="8" fill="#888">Rail isolé de 3.3V_D pour isolation analogique</text>
+<text x="422" y="489" font-size="8" fill="#888">GND commun — isolation sur VCC uniquement</text>
+<text x="422" y="503" font-size="8" fill="#2E7D32">Alimente : PCM5122 AVDD(p1) · DVDD(p19)</text>
+<text x="422" y="517" font-size="8" fill="#2E7D32">          CPVDD(p5) · XSMT 10kΩ pull-up</text>
+<text x="422" y="531" font-size="8" fill="#888">PCM5122 charge pump (VNEG) : 2.2µF CAPP-CAPM,</text>
+<text x="422" y="542" font-size="8" fill="#888">2.2µF VNEG-GND (flying + reservoir 25V céram.)</text>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 6 : MT3608 Boost
+     ════════════════════════════════════════════════════════════ -->
+<rect x="810" y="350" width="380" height="200" rx="5" fill="white" stroke="#C62828" stroke-width="2"/>
+<rect x="810" y="350" width="380" height="22" rx="5" fill="#FFEBEE" stroke="#C62828" stroke-width="2"/>
+<text x="1000" y="365" text-anchor="middle" font-size="10" font-weight="bold" fill="#C62828">MT3608  Boost VSYS→5V — U7  (SOT-23-6)</text>
+
+<text x="822" y="385" font-size="8" font-weight="bold" fill="#555">Pinout SOT-23-6 (Aerosemi) :</text>
+<text x="822" y="399" font-size="8" fill="#424242">p1  SW  → Inductance 22µH (L1, blindée, Isat&gt;2A)</text>
+<text x="822" y="413" font-size="8" fill="#424242">p2  GND → plan GND</text>
+<text x="822" y="427" font-size="8" fill="#C62828">p3  FB  → nœud R_FB_H/R_FB_L (ref 0.6V)</text>
+<text x="822" y="441" font-size="8" fill="#F9A825">p4  EN  → IN  (lier à IN = toujours actif)</text>
+<text x="822" y="455" font-size="8" fill="#F9A825">p5  IN  → VSYS + C_B1=10µF/10V céram. 0805</text>
+<text x="822" y="469" font-size="8" fill="#888">p6  NC  → non connecté</text>
+<line x1="810" y1="477" x2="1190" y2="477" stroke="#EEEEEE" stroke-width="1"/>
+<text x="822" y="491" font-size="8" fill="#555">Circuit L1 → SW → SS14(Schottky) → 5V</text>
+<text x="822" y="505" font-size="8" fill="#C62828">VOUT = 0.6×(1+750k/100k) = 0.6×8.5 = 5.1V</text>
+<text x="822" y="519" font-size="8" fill="#424242">R_FB_H=750kΩ (0402) · R_FB_L=100kΩ (0402)</text>
+<text x="822" y="533" font-size="8" fill="#C62828">Cout : C25=22µF/16V (0805)  ⚠ 16V min (derating)</text>
+<text x="822" y="547" font-size="8" fill="#888">22µH recommandé pour 3.7V→5V (vs 4.7µH plus ripple)</text>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 7 : Circuit EN ESP32 + Checklist capacités
+     ════════════════════════════════════════════════════════════ -->
+<!-- EN Reset -->
+<rect x="10" y="563" width="270" height="155" rx="5" fill="white" stroke="#37474F" stroke-width="1.5"/>
+<rect x="10" y="563" width="270" height="22" rx="5" fill="#ECEFF1" stroke="#37474F" stroke-width="1.5"/>
+<text x="145" y="578" text-anchor="middle" font-size="10" font-weight="bold" fill="#263238">ESP32-S3  Circuit EN</text>
+
+<text x="22" y="598" font-size="8" fill="#1565C0">3.3V_D ──┤ R6=10kΩ ├──┬── U1.EN</text>
+<text x="22" y="612" font-size="8" fill="#424242">                    │</text>
+<text x="22" y="626" font-size="8" fill="#424242">                  ┌─┴──┐</text>
+<text x="22" y="640" font-size="8" fill="#424242">                  │100nF│ C_EN (filtre bruit)</text>
+<text x="22" y="654" font-size="8" fill="#424242">                  └──┬──┘ τ = 10k×100n = 1ms</text>
+<text x="22" y="668" font-size="8" fill="#424242">                    GND</text>
+<line x1="10" y1="675" x2="280" y2="675" stroke="#EEEEEE" stroke-width="1"/>
+<text x="22" y="688" font-size="8" fill="#888">EN HIGH = module actif</text>
+<text x="22" y="701" font-size="8" fill="#888">EN LOW  = reset (pull vers GND 100ms)</text>
+<text x="22" y="714" font-size="8" fill="#888">BTN reset: switch EN–GND (débounce C_EN)</text>
+
+<!-- Capacitor checklist -->
+<rect x="292" y="563" width="560" height="155" rx="5" fill="white" stroke="#546E7A" stroke-width="1.5"/>
+<rect x="292" y="563" width="560" height="22" rx="5" fill="#ECEFF1" stroke="#546E7A" stroke-width="1.5"/>
+<text x="572" y="578" text-anchor="middle" font-size="10" font-weight="bold" fill="#37474F">Checklist condensateurs alimentation (10 pièces)</text>
+
+<text x="304" y="597" font-size="8" font-weight="bold" fill="#546E7A">Réf      Valeur       Pckg  Position</text>
+<line x1="292" y1="602" x2="852" y2="602" stroke="#ECEFF1" stroke-width="1"/>
+<text x="304" y="614" font-size="8" fill="#E65100">C_IN    4.7µF/10V   0603  bq24075 IN   p13 → GND</text>
+<text x="304" y="627" font-size="8" fill="#795548">C_BAT   4.7µF/10V   0603  bq24075 BAT  p2,3 → GND</text>
+<text x="304" y="640" font-size="8" fill="#F9A825">C_OUT   4.7µF/10V   0603  bq24075 OUT  p10,11 → GND</text>
+<text x="304" y="653" font-size="8" fill="#F9A825">C_D1    1µF/10V     0402  AP2112K U5 VIN  p1 → GND</text>
+<text x="304" y="666" font-size="8" fill="#1565C0">C_D2    10µF/10V    0805  AP2112K U5 VOUT p5 → GND</text>
+<text x="304" y="679" font-size="8" fill="#F9A825">C_A1    1µF/10V     0402  AP2112K U6 VIN  p1 → GND</text>
+<text x="304" y="692" font-size="8" fill="#2E7D32">C_A2    10µF/10V    0805  AP2112K U6 VOUT p5 → GND</text>
+<text x="304" y="705" font-size="8" fill="#F9A825">C_B1    10µF/10V    0805  MT3608 IN  p5 → GND</text>
+<text x="304" y="718" font-size="8" fill="#C62828">C25     22µF/16V    0805  MT3608 VOUT → GND  ⚠ 16V</text>
+<text x="304" y="704" font-size="8" fill="#888"> </text>
+<text x="304" y="731" font-size="8" fill="#37474F">C_EN    100nF/16V   0402  ESP32 EN → GND</text>
+
+<!-- Notes / layout tips -->
+<rect x="864" y="563" width="326" height="155" rx="5" fill="white" stroke="#546E7A" stroke-width="1.5"/>
+<rect x="864" y="563" width="326" height="22" rx="5" fill="#ECEFF1" stroke="#546E7A" stroke-width="1.5"/>
+<text x="1027" y="578" text-anchor="middle" font-size="10" font-weight="bold" fill="#37474F">Règles placement &amp; routage</text>
+
+<text x="876" y="598" font-size="8" fill="#333">✓  Caps découplage au plus près des VDD</text>
+<text x="876" y="612" font-size="8" fill="#333">✓  Via GND adjacent à chaque capa</text>
+<text x="876" y="626" font-size="8" fill="#333">✓  PAD bq24075 : souder sur copper fill GND</text>
+<text x="876" y="640" font-size="8" fill="#333">✓  L1 MT3608 : inductance blindée Isat &gt;2A</text>
+<text x="876" y="654" font-size="8" fill="#333">✓  D1 SS14 (SMA) : cathode côté condensateur</text>
+<text x="876" y="668" font-size="8" fill="#333">✓  TS R_TS1/R_TS2 : résistances proches p01</text>
+<text x="876" y="682" font-size="8" fill="#333">✓  Piste VSYS : 0.5mm min (courant 1.5A)</text>
+<text x="876" y="696" font-size="8" fill="#333">✓  Piste 5V_USB : 0.5mm min (courant 2A)</text>
+<text x="876" y="710" font-size="8" fill="#B71C1C">✓  C25 16V obligatoire : derating DC-bias</text>
+<text x="876" y="724" font-size="8" fill="#B71C1C">   X5R 10V @ 5V perd 40–60% capacité</text>
+
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 8 : Résumé câblage global
+     ════════════════════════════════════════════════════════════ -->
+<rect x="10" y="732" width="1180" height="218" rx="5" fill="white" stroke="#90A4AE" stroke-width="1"/>
+<rect x="10" y="732" width="1180" height="22" rx="5" fill="#ECEFF1" stroke="#90A4AE" stroke-width="1"/>
+<text x="600" y="747" text-anchor="middle" font-size="10" font-weight="bold" fill="#37474F">RÉSUMÉ CÂBLAGE GLOBAL PIN-À-PIN</text>
+<line x1="10" y1="754" x2="1190" y2="754" stroke="#CFD8DC" stroke-width="0.5"/>
+
+<!-- Column 1 -->
+<text x="22" y="768" font-size="8" font-weight="bold" fill="#E65100">5V_USB</text>
+<text x="22" y="780" font-size="8" fill="#444">USB-C VBUS → USBLC6 p5 (réf)</text>
+<text x="22" y="792" font-size="8" fill="#444">USB-C VBUS → bq24075 p13 (IN)</text>
+<text x="22" y="804" font-size="8" fill="#444">+ C_IN=4.7µF céram. IN–GND</text>
+<line x1="22" y1="810" x2="295" y2="810" stroke="#EEEEEE" stroke-width="0.5"/>
+<text x="22" y="822" font-size="8" font-weight="bold" fill="#F9A825">VSYS  (bq24075 p10,11)</text>
+<text x="22" y="834" font-size="8" fill="#444">→ AP2112K U5 p1 (VIN) + p3 (EN)</text>
+<text x="22" y="846" font-size="8" fill="#444">→ AP2112K U6 p1 (VIN) + p3 (EN)</text>
+<text x="22" y="858" font-size="8" fill="#444">→ MT3608 U7 p5 (IN) + p4 (EN)</text>
+<text x="22" y="870" font-size="8" fill="#444">→ R_TS1 10kΩ (TS divider haut)</text>
+<text x="22" y="882" font-size="8" fill="#444">→ bq24075 p6 (EN1 HIGH = 500mA)</text>
+<text x="22" y="894" font-size="8" fill="#444">+ C_OUT=4.7µF céram. OUT–GND</text>
+<text x="22" y="906" font-size="8" fill="#444">+ C_D1/C_A1/C_B1 en entrée LDO/boost</text>
+<text x="22" y="918" font-size="8" fill="#444">+ R_TS2 10kΩ vers GND</text>
+<text x="22" y="930" font-size="8" fill="#444">bq24075 p4(CE) p5(EN2) p14(TMR) p15(SYSOFF) → GND</text>
+<text x="22" y="942" font-size="8" fill="#444">bq24075 p16(ISET)→890Ω·GND  p12(ILIM)→1.5kΩ·GND</text>
+
+<!-- Column 2 -->
+<text x="310" y="768" font-size="8" font-weight="bold" fill="#795548">VBAT (LiPo B+)</text>
+<text x="310" y="780" font-size="8" fill="#444">LiPo B+ → J10.+ → R_VCC=100Ω</text>
+<text x="310" y="792" font-size="8" fill="#444">R_VCC → DW01A p5 (VCC)</text>
+<text x="310" y="804" font-size="8" fill="#444">R_VCC → bq24075 p2,3 (BAT)</text>
+<text x="310" y="816" font-size="8" fill="#444">+ C_BAT=4.7µF céram. BAT–GND</text>
+<line x1="310" y1="822" x2="585" y2="822" stroke="#EEEEEE" stroke-width="0.5"/>
+<text x="310" y="834" font-size="8" font-weight="bold" fill="#888">MIDPOINT DW01A+FS8205</text>
+<text x="310" y="846" font-size="8" fill="#444">DW01A p2 (CS) → MIDPOINT</text>
+<text x="310" y="858" font-size="8" fill="#444">DW01A p6 (GND) → MIDPOINT</text>
+<text x="310" y="870" font-size="8" fill="#444">DW01A p1 (OD) → FS8205 p4 (G1)</text>
+<text x="310" y="882" font-size="8" fill="#444">DW01A p3 (OC) → FS8205 p5 (G2)</text>
+<text x="310" y="894" font-size="8" fill="#444">FS8205 p2,3 (S1) → MIDPOINT</text>
+<text x="310" y="906" font-size="8" fill="#444">FS8205 p6,7 (S2) → MIDPOINT</text>
+<text x="310" y="918" font-size="8" fill="#444">FS8205 p1,8 (D12) → LiPo B− → GND</text>
+<text x="310" y="930" font-size="8" fill="#888">DW01A p4 (TD) → NC</text>
+
+<!-- Column 3 -->
+<text x="598" y="768" font-size="8" font-weight="bold" fill="#1565C0">3.3V_D  (AP2112K U5 p5)</text>
+<text x="598" y="780" font-size="8" fill="#444">→ ESP32-S3 VDD · GC9A01×2 · SSD1680</text>
+<text x="598" y="792" font-size="8" fill="#444">→ PN532 · ICS-43434 · Bus I2C</text>
+<text x="598" y="804" font-size="8" fill="#444">→ R3,R4 4.7kΩ pull-up I2C SDA/SCL</text>
+<text x="598" y="816" font-size="8" fill="#444">→ R5 10kΩ pull-up XSMT PCM5122</text>
+<text x="598" y="828" font-size="8" fill="#444">→ R6 10kΩ pull-up ESP32 EN</text>
+<text x="598" y="840" font-size="8" fill="#444">→ PAM8406 SHDN (10kΩ pull-up)</text>
+<text x="598" y="852" font-size="8" fill="#444">+ C_D2=10µF céram. VOUT–GND</text>
+<line x1="598" y1="858" x2="875" y2="858" stroke="#EEEEEE" stroke-width="0.5"/>
+<text x="598" y="870" font-size="8" font-weight="bold" fill="#2E7D32">3.3V_A  (AP2112K U6 p5)</text>
+<text x="598" y="882" font-size="8" fill="#444">→ PCM5122 AVDD(p1)+DVDD(p19)+CPVDD(p5)</text>
+<text x="598" y="894" font-size="8" fill="#444">→ PCM5122 XSMT(p12) via 10kΩ</text>
+<text x="598" y="906" font-size="8" fill="#444">3×(10µF+100nF) par paire VDD</text>
+<text x="598" y="918" font-size="8" fill="#444">+ 100nF LDOO(p20)–GND</text>
+<text x="598" y="930" font-size="8" fill="#444">+ C_A2=10µF céram. VOUT–GND</text>
+
+<!-- Column 4 -->
+<text x="888" y="768" font-size="8" font-weight="bold" fill="#C62828">5V  (MT3608 VOUT)</text>
+<text x="888" y="780" font-size="8" fill="#444">MT3608 p1(SW) → L1=22µH → anode D1(SS14)</text>
+<text x="888" y="792" font-size="8" fill="#444">D1 cathode → NET 5V + C25=22µF/16V</text>
+<text x="888" y="804" font-size="8" fill="#444">NET 5V → PAM8406 VDD</text>
+<text x="888" y="816" font-size="8" fill="#444">NET 5V → WS2812 VCC</text>
+<text x="888" y="828" font-size="8" fill="#444">Feedback: 5V → R_FB_H=750kΩ → p3(FB)</text>
+<text x="888" y="840" font-size="8" fill="#444">          p3(FB) → R_FB_L=100kΩ → GND</text>
+<line x1="888" y1="847" x2="1185" y2="847" stroke="#EEEEEE" stroke-width="0.5"/>
+<text x="888" y="859" font-size="8" font-weight="bold" fill="#424242">GND plan continu</text>
+<text x="888" y="871" font-size="8" fill="#444">Tous composants → plan GND layer 2</text>
+<text x="888" y="883" font-size="8" fill="#888">PAS de fente · PAS de coupure</text>
+<text x="888" y="895" font-size="8" fill="#888">Isolation uniquement sur rails VCC</text>
+<text x="888" y="907" font-size="8" fill="#888">Piste min alim. : 0.5mm (1.5-2A)</text>
+<text x="888" y="919" font-size="8" fill="#888">Piste signal : 0.3mm · Piste 3.3V : 0.4mm</text>
+<text x="888" y="931" font-size="8" fill="#888">Clearance JLCPCB min : 0.2mm</text>
+<text x="888" y="943" font-size="8" fill="#888">Via standard Ø0.3mm drill / 0.6mm pad</text>
+
+<!-- Vertical dividers in summary row -->
+<line x1="298" y1="754" x2="298" y2="950" stroke="#ECEFF1" stroke-width="1"/>
+<line x1="590" y1="754" x2="590" y2="950" stroke="#ECEFF1" stroke-width="1"/>
+<line x1="882" y1="754" x2="882" y2="950" stroke="#ECEFF1" stroke-width="1"/>
+
+</svg>
