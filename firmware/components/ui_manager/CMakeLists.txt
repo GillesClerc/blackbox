@@ -1,3 +1,4 @@
-idf_component_register(SRCS "ui_manager.c"
+idf_component_register(SRCS "ui_face.c" "eyes_anim.c"
                     INCLUDE_DIRS "include"
-                    REQUIRES display config_manager audio leds sensors freertos log esp_timer lvgl__lvgl)
+                    PRIV_INCLUDE_DIRS "." "data"
+                    REQUIRES display esp_lcd freertos log esp_timer esp_hw_support)

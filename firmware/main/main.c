@@ -1,14 +1,14 @@
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#include "ili9488.h"
+#include "eyes.h"
+#include "ui_face.h"
 #include "i2c_bus.h"
 #include "audio.h"
 #include "mpr121.h"
 #include "leds.h"
 #include "scenario_engine.h"
 #include "config_manager.h"
-#include "ui_manager.h"
 #include "cJSON.h"
 #include <stdio.h>
 #include <string.h>
@@ -102,57 +102,20 @@ static void play_audio(const char *name)
     audio_play_tone(440, 120);
 }
 
-// ─── Progression ─────────────────────────────────────────────────────────────
-
-static void step_progress(const char *id, int *num, int *total)
-{
-    *total = 3;
-    if (!id)                               { *num = 0; return; }
-    if (strstr(id, "medallion") ||
-        strstr(id, "boussole")  ||
-        strstr(id, "compass"))             { *num = 1; return; }
-    if (strstr(id, "code"))                { *num = 2; return; }
-    if (strstr(id, "inclinais"))           { *num = 3; return; }
-    if (strstr(id, "epilogue") ||
-        strstr(id, "end"))                 { *num = 3; return; }
-    *num = 0;
-}
-
-static uint32_t accent_for_step(int num)
-{
-    switch (num) {
-        case 1:  return 0x00FF88;
-        case 2:  return 0x4488FF;
-        case 3:  return 0xFFD700;
-        default: return 0x00E5FF;
-    }
-}
-
-// ─── Callbacks actions scénario ──────────────────────────────────────────────
+// ─── Callbacks scénario (texte → log en attendant le nouveau UI) ─────────────
 
 static void action_screen_main(const char *name, const cJSON *params)
 {
     (void)name;
     const cJSON *text = cJSON_GetObjectItem(params, "text");
-    const char *step = scenario_engine_current_step();
-    int num, total;
-    step_progress(step, &num, &total);
-
-    ui_lock();
-    ui_game_update_dots(num, total);
-    ui_game_set_accent_color(accent_for_step(num));
-    ui_game_set_main_text(text ? text->valuestring : "", true);
-    ui_unlock();
+    ESP_LOGI("scenario", "[MAIN] %s", text && text->valuestring ? text->valuestring : "");
 }
 
 static void action_screen_secondary(const char *name, const cJSON *params)
 {
     (void)name;
     const cJSON *text = cJSON_GetObjectItem(params, "text");
-
-    ui_lock();
-    ui_game_set_hint(text ? text->valuestring : "");
-    ui_unlock();
+    ESP_LOGI("scenario", "[HINT] %s", text && text->valuestring ? text->valuestring : "");
 }
 
 static void action_led(const char *name, const cJSON *params)
@@ -183,15 +146,46 @@ static void action_flash(const char *name, const cJSON *params)
     const char  *hex   = (color && color->valuestring) ? color->valuestring : "#FFD700";
     int          n     = (count && cJSON_IsNumber(count)) ? count->valueint : 4;
 
-    uint32_t c = 0xFFD700;
-    if (hex[0] == '#' && strlen(hex) >= 7)
-        c = (uint32_t)strtol(hex + 1, NULL, 16);
+    for (int i = 0; i < n; i++) {
+        leds_fill_hex(hex, 255); leds_show();
+        vTaskDelay(pdMS_TO_TICKS(100));
+        leds_clear();            leds_show();
+        vTaskDelay(pdMS_TO_TICKS(80));
+    }
+}
 
-    leds_fill_hex(hex, 255); leds_show();
-    ui_lock();
-    ui_game_flash(c, n);
-    ui_unlock();
-    leds_clear(); leds_show();
+// ─── Actions scénario : visage animé ─────────────────────────────────────────
+
+static void action_eye_blink(const char *name, const cJSON *params)
+{
+    (void)name; (void)params;
+    ui_face_blink();
+}
+
+static void action_eye_emotion(const char *name, const cJSON *params)
+{
+    (void)name;
+    const cJSON *type = cJSON_GetObjectItem(params, "type");
+    if (!type || !type->valuestring) return;
+    if      (strcmp(type->valuestring, "happy")     == 0) ui_face_set_emotion(UI_FACE_HAPPY);
+    else if (strcmp(type->valuestring, "sad")       == 0) ui_face_set_emotion(UI_FACE_SAD);
+    else if (strcmp(type->valuestring, "surprised") == 0) ui_face_set_emotion(UI_FACE_SURPRISED);
+    else if (strcmp(type->valuestring, "sleepy")    == 0) ui_face_set_emotion(UI_FACE_SLEEPY);
+    else if (strcmp(type->valuestring, "angry")     == 0) ui_face_set_emotion(UI_FACE_ANGRY);
+    else if (strcmp(type->valuestring, "closed")    == 0) ui_face_set_emotion(UI_FACE_CLOSED);
+    else                                                   ui_face_set_emotion(UI_FACE_IDLE);
+}
+
+static void action_eye_look(const char *name, const cJSON *params)
+{
+    (void)name;
+    const cJSON *dir = cJSON_GetObjectItem(params, "direction");
+    if (!dir || !dir->valuestring) return;
+    if      (strcmp(dir->valuestring, "left")  == 0) ui_face_look(UI_FACE_LOOK_LEFT);
+    else if (strcmp(dir->valuestring, "right") == 0) ui_face_look(UI_FACE_LOOK_RIGHT);
+    else if (strcmp(dir->valuestring, "up")    == 0) ui_face_look(UI_FACE_LOOK_UP);
+    else if (strcmp(dir->valuestring, "down")  == 0) ui_face_look(UI_FACE_LOOK_DOWN);
+    else                                              ui_face_look(UI_FACE_LOOK_CENTER);
 }
 
 // ─── Tâche clavier MPR121 ────────────────────────────────────────────────────
@@ -218,20 +212,6 @@ static void touch_task(void *arg)
     while (1) {
         if (mpr121_read(&curr) != ESP_OK) { vTaskDelay(pdMS_TO_TICKS(50)); continue; }
 
-        // Feed test screen
-        if (ui_current_screen() == UI_SCREEN_TEST) {
-            ui_lock();
-            ui_test_update_touch(curr.touched);
-            ui_unlock();
-        }
-
-        // In menu/settings mode, touch only feeds UI (no scenario events)
-        if (ui_current_screen() != UI_SCREEN_GAME) {
-            prev = curr;
-            vTaskDelay(pdMS_TO_TICKS(20));
-            continue;
-        }
-
         TickType_t now = xTaskGetTickCount();
 
         for (int i = 0; i < MPR121_NUM_CH; i++) {
@@ -257,17 +237,13 @@ static void touch_task(void *arg)
                     if (s_code_len < (int)(sizeof(s_code) - 1)) {
                         s_code[s_code_len++] = '0' + i;
                         s_code[s_code_len]   = '\0';
-                        ui_lock();
-                        ui_game_update_input(s_code, s_code_len);
-                        ui_unlock();
+                        ESP_LOGI(TAG, "code=%s", s_code);
                         audio_play_tone(880 + i * 40, 40);
                     }
                 } else if (i == 10) {
                     if (s_code_len > 0) {
                         s_code[--s_code_len] = '\0';
-                        ui_lock();
-                        ui_game_update_input(s_code, s_code_len);
-                        ui_unlock();
+                        ESP_LOGI(TAG, "code=%s", s_code);
                         audio_play_tone(440, 50);
                     }
                 } else if (i == 11) {
@@ -276,9 +252,6 @@ static void touch_task(void *arg)
                         strncpy(evt.str, s_code, sizeof(evt.str) - 1);
                         scenario_engine_post_event(&evt);
                         s_code_len = 0; s_code[0] = '\0';
-                        ui_lock();
-                        ui_game_update_input(NULL, 0);
-                        ui_unlock();
                     }
                 }
                 hold_start[i] = 0;
@@ -290,89 +263,57 @@ static void touch_task(void *arg)
     }
 }
 
-// ─── Launch scenario callback ────────────────────────────────────────────────
-
-static void on_scenario_launch(int index)
-{
-    (void)index;
-    ESP_LOGI(TAG, "Launching scenario %d", index);
-
-    esp_err_t ret = scenario_engine_init(capitaine_verdier_json_start);
-    if (ret != ESP_OK) {
-        ESP_LOGE(TAG, "scenario_engine_init: %s", esp_err_to_name(ret));
-        return;
-    }
-
-    scenario_engine_register_action("screen_main",      action_screen_main);
-    scenario_engine_register_action("screen_secondary", action_screen_secondary);
-    scenario_engine_register_action("led",              action_led);
-    scenario_engine_register_action("audio",            action_audio);
-    scenario_engine_register_action("servo",            action_servo);
-    scenario_engine_register_action("flash",            action_flash);
-
-    ui_lock();
-    ui_show_screen(UI_SCREEN_GAME);
-    ui_game_set_title("CAPITAINE VERDIER");
-    ui_unlock();
-
-    ret = scenario_engine_start();
-    if (ret != ESP_OK) {
-        ESP_LOGE(TAG, "scenario_engine_start: %s", esp_err_to_name(ret));
-        ui_lock();
-        ui_game_set_main_text("ERREUR : demarrage scenario", false);
-        ui_unlock();
-        return;
-    }
-
-#ifdef HAS_AMBIENT_MP3
-    audio_bg_mp3_start(_binary_ambient_mp3_start,
-                       _binary_ambient_mp3_end - _binary_ambient_mp3_start);
-#else
-    audio_bg_start(s_ambient, sizeof(s_ambient) / sizeof(s_ambient[0]));
-#endif
-}
-
 // ─── app_main ────────────────────────────────────────────────────────────────
 
 void app_main(void)
 {
     // Hardware init
-    leds_init(38, 1);
+    leds_init(48, 1);
     leds_clear();
     leds_show();
-    ESP_ERROR_CHECK(ili9488_init());
+
+    ESP_ERROR_CHECK(eyes_init());
+    eyes_fill_all(EYE_BLACK);
     ESP_ERROR_CHECK(config_manager_init());
 
-    // UI init + boot screen
-    ESP_ERROR_CHECK(ui_manager_init());
-    ui_lock();
-    ui_show_screen(UI_SCREEN_BOOT);
-    ui_unlock();
-
-    vTaskDelay(pdMS_TO_TICKS(1200));
+    ESP_ERROR_CHECK(ui_face_init());
+    ESP_ERROR_CHECK(ui_face_start());
 
     // I2C + audio
     ESP_ERROR_CHECK(i2c_bus_init());
     ESP_ERROR_CHECK(audio_init(i2c_bus_handle()));
     audio_set_volume(config_get_volume());
 
-    // Register scenarios (just one for now)
-    static const ui_scenario_card_t cards[] = {
-        { .title = "Le Mystere du\nCapitaine Verdier",
-          .duration = "45 min",
-          .difficulty = "Moyen",
-          .index = 0 },
-    };
-    ui_menu_set_scenarios(cards, 1);
-    ui_menu_set_on_launch(on_scenario_launch);
+    // Scenario engine — sans UI : les actions screen_* loggent les textes.
+    esp_err_t ret = scenario_engine_init(capitaine_verdier_json_start);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "scenario_engine_init: %s", esp_err_to_name(ret));
+    } else {
+        scenario_engine_register_action("screen_main",      action_screen_main);
+        scenario_engine_register_action("screen_secondary", action_screen_secondary);
+        scenario_engine_register_action("led",              action_led);
+        scenario_engine_register_action("audio",            action_audio);
+        scenario_engine_register_action("servo",            action_servo);
+        scenario_engine_register_action("flash",            action_flash);
+        scenario_engine_register_action("eye_blink",        action_eye_blink);
+        scenario_engine_register_action("eye_emotion",      action_eye_emotion);
+        scenario_engine_register_action("eye_look",         action_eye_look);
 
-    // Show menu
-    ui_lock();
-    ui_show_screen(UI_SCREEN_MENU);
-    ui_unlock();
+        ret = scenario_engine_start();
+        if (ret != ESP_OK) {
+            ESP_LOGE(TAG, "scenario_engine_start: %s", esp_err_to_name(ret));
+        } else {
+#ifdef HAS_AMBIENT_MP3
+            audio_bg_mp3_start(_binary_ambient_mp3_start,
+                               _binary_ambient_mp3_end - _binary_ambient_mp3_start);
+#else
+            audio_bg_start(s_ambient, sizeof(s_ambient) / sizeof(s_ambient[0]));
+#endif
+        }
+    }
 
     // Touch input task
     xTaskCreate(touch_task, "touch", 4096, NULL, 5, NULL);
 
-    ESP_LOGI(TAG, "EscapeBox ready — menu on-device");
+    ESP_LOGI(TAG, "EscapeBox ready — yeux GC9A01 animés, scenario engine actif");
 }

@@ -722,7 +722,9 @@ M2 → M3   : intégration complète + playtests
 **Objectif :** Valider que le hardware fonctionne et que les gens veulent jouer
 
 **Hardware :**
-- [x] ESP32-S3-WROOM-1-N16R8 + ILI9488 4" → affichage validé (SPI2, 20MHz DMA)
+- [x] ESP32-S3-WROOM-1-N16R8 → DevKitC-1 validé sur breadboard
+- [ ] 2× GC9A01 1.3" ronds (yeux, SPI3 partagé) → driver Espressif `esp_lcd_gc9a01` intégré, validation hardware en attente
+- [ ] SSD1680 e-ink 2.9" (bouche, SPI2) → driver à intégrer (`esp_lcd_ssd1681`)
 - [x] Câbler PCM5122PW (I2S + I2C 0x4C) + PAM8406 + speakers 8Ω/5W → audio validé (PLL, filtre, MP3 bg)
 - [x] Câbler MPR121 breakout → keypad capacitif 12 canaux validé (I2C 0x5A)
 - [x] Câbler WS2812 → LEDs validées (RMT, GPIO38)
@@ -738,7 +740,8 @@ M2 → M3   : intégration complète + playtests
 - [x] Scénario "Capitaine Verdier" — YAML + JSON, 12 steps, 3 énigmes (boussole, code, inclinaison)
 - [x] Driver audio PCM5122PW — I2S 32-bit slots + I2C PLL config, filtre ringing-less FIR, volume -6dB hw
 - [x] Musique de fond MP3 — minimp3 décodage tâche bg (24 KB stack), MP3 embarqué en flash
-- [x] Driver ILI9488 4" SPI DMA 20MHz — font 5x7, mutex thread-safe, validé DevKitC-1
+- [x] Driver yeux 2× GC9A01 SPI3 partagé (CS_L=40, CS_R=14, MOSI=38, SCLK=39, DC=41, RST=42) — wrapper `components/display/eyes.[ch]` autour de `esp_lcd_gc9a01` v2.0.4, 240×240 RGB565 @ 40 MHz
+- [ ] Driver bouche e-ink SSD1680 (`esp_lcd_ssd1681`) — à intégrer
 - [x] MPR121 tactile capacitif 12 canaux — validé DevKitC-1 (I2C 0x5A, 100kHz, SDA=21/SCL=17)
 - [x] Driver LEDs WS2812B (RMT, GRB, show) — validé
 - [x] Drivers I2C (LSM6DSOXTR, TMAG5273, VEML7700, MTCH2120, MPR121) — écrits
@@ -746,10 +749,11 @@ M2 → M3   : intégration complète + playtests
 - [x] Driver NFC PN532 (écrit — validation hardware en attente)
 - [x] Driver servos SG90 MCPWM (écrit — Phase 2)
 - [x] Système de fichiers SD SPI+FAT (écrit — validation hardware en attente)
-- [x] App scénario principale (main.c) — JSON embarqué, callbacks display/audio/led, keypad MPR121, hold 2s pour simuler rfid/rotary/tilt
-- [x] Harness de test hardware (test.c) — LED RGB cycle, barres couleur, scan I2C, gamme audio, grille tactile interactive
+- [x] App scénario principale (main.c) — JSON embarqué, callbacks audio/led/eye_*, keypad MPR121, hold 2s pour simuler rfid/rotary/tilt
 - [x] Flash 8 MB config avec partition custom (7.9 MB app, supporte MP3 4+ MB)
-- [ ] Intégration LVGL pour interface graphique écrans
+- [x] `ui_manager` v2 — animation yeux (Uncanny Eyes Adafruit MIT porté ESP-IDF) : 2× GC9A01, rendu 128×128 centré, mouvement autonome + clignements aléatoires, émotions HAPPY/SAD/SURPRISED/SLEEPY/ANGRY/CLOSED, regard L/R/U/D pilotable depuis le scénario JSON (`eye_blink`, `eye_emotion`, `eye_look`)
+- [ ] Driver bouche e-ink SSD1680 (`esp_lcd_ssd1681`) — à intégrer
+- [ ] `ui_manager` bouche : affichage texte mot-à-mot synchro audio
 
 **Web Platform :**
 - [ ] Projet Next.js + Supabase initialisé (Route Groups : `(marketing)`, `(app)`, `(studio)` + `middleware.ts` Supabase)
@@ -773,7 +777,7 @@ M2 → M3   : intégration complète + playtests
 
 **Étape 2 — Univers & direction artistique**
 - [ ] Thème principal, époque, lieux — assez précis pour guider les assets
-- [ ] Palette visuelle : couleurs dominantes pour les écrans (ILI9488 + GC9A01), typographie narrative
+- [ ] Palette visuelle : couleurs dominantes pour les yeux GC9A01 (iris, sclérotique) + niveaux de gris pour la bouche e-ink, typographie narrative
 - [ ] Charte LED par état : couleur repos, tension, danger, victoire, indice
 - [ ] Ambiance sonore générale : style musical, effets attendus, voix narratrice (oui/non)
 - [ ] Moodboard ou références visuelles transmis au scénariste et à l'illustrateur
@@ -797,8 +801,8 @@ M2 → M3   : intégration complète + playtests
 - [ ] Tester le flow sur le simulateur web (Phase 2) ou à la main sur la box
 
 **Étape 6 — Production des assets**
-- [ ] Illustrations écran principal (ILI9488 4") : cartes, objets, textes clés — format PNG 480×320 ou adapté
-- [ ] Écran secondaire (GC9A01 1.3") : boussole animée, QR final, icônes par énigme
+- [ ] Animations yeux (2× GC9A01 1.3" ronds, 240×240) : émotions, regards, clignements — sprites RGB565 ou rendu procédural
+- [ ] Texte bouche (SSD1680 e-ink 2.9", 296×128) : font lisible, animation mot-à-mot synchro audio
 - [ ] Audio : narration intro/transitions/victoire (voix ou synthèse), musique d'ambiance, effets sonores
 - [ ] Programmation LED : séquences par état (repos, tension, indice, victoire) — testées sur la box
 - [ ] QR code de révélation : URL `escapebox.ch/v/{scenario}/{session}` + page web correspondante
@@ -1203,9 +1207,14 @@ app/
 middleware.ts                       → Supabase updateSession (protège (app) et (studio))
 ```
 
-### 6.4 Interface Utilisateur — Box (Menu on-device)
+### 6.4 Interface Utilisateur — Box
 
-**Navigation : tactile (LVGL) sur l'écran ILI9488 4".** Le rotary encoder reste optionnel (raccourci Phase 2 Pro), non requis en Phase 1.
+**Face avant = personnage animé.** Pas de menu tactile on-device (l'ancien ILI9488 + XPT2046 a été retiré). La box affiche un visage piloté par le scénario :
+
+- **Yeux (2× GC9A01)** — `components/ui_manager/eyes_anim.c`, port C ESP-IDF du pipeline « Uncanny Eyes » Adafruit (MIT, Phil Burgess) via le fork GC9A01 de thelastoutpostworkshop. Rendu 128×128 centré dans 240×240, mouvement autonome (drift aléatoire + clignements) en mode IDLE. Actions JSON disponibles dans les scénarios : `eye_blink`, `eye_emotion {type: happy|sad|surprised|sleepy|angry|closed}`, `eye_look {direction: left|right|up|down|center}`. Asset embarqué : `defaultEye.h` (~156 KB flash).
+- **Bouche (SSD1680 e-ink)** — à implémenter. Affichage texte mot-à-mot synchro audio.
+
+**Menu / configuration : déportés sur l'app mobile / web** (provisioning BLE puis Wi-Fi sync). Le rotary encoder physique reste optionnel (raccourci Phase 2 Pro).
 
 **États de l'écran :**
 
@@ -1309,7 +1318,9 @@ blackbox/
 │   │   ├── scenario/            # Moteur JSON + state machine
 │   │   ├── nfc/                 # Driver PN532
 │   │   ├── sensors/             # Drivers I2C : LSM6DSOXTR, TMAG5273, VEML7700, MTCH2120
-│   │   ├── display/             # ILI9488 4" + GC9A01 1.3" (SPI, LVGL)
+│   │   ├── display/             # eyes.c — 2× GC9A01 1.3" (SPI3 partagé, esp_lcd_gc9a01)
+│   │   ├── ui_manager/           # ui_face + eyes_anim (port Uncanny Eyes, data/defaultEye.h)
+│   │   ├── mouth/                # SSD1680 e-ink 2.9" — bouche (SPI2, esp_lcd_ssd1681) [TODO]
 │   │   ├── audio/               # I2S DMA + PCM5122PW (DAC) + PAM8406 (amp)
 │   │   ├── leds/                # WS2812 via RMT
 │   │   ├── servo/               # SG90 via MCPWM
@@ -1545,8 +1556,9 @@ Ces 3 réponses sont liées à la session (`hints_used`, `duration_sec`, `score`
 #### 8.1.1 Tests hardware (checklist)
 
 ```
-[ ] TFT s'affiche correctement (couleurs, orientation, pas d'artefact)
-[ ] Écran rond GC9A01 s'affiche (animation boussole)
+[ ] Œil gauche GC9A01 (CS=40) s'affiche : mire couleur, pas d'artefact
+[ ] Œil droit GC9A01 (CS=14) s'affiche : mire couleur, pas d'artefact
+[ ] Bouche e-ink SSD1680 affiche une chaîne de texte en partial refresh < 0.5s
 [ ] Speaker gauche + droite produisent du son stéréo (MP3 lisible, pas de bruit parasite)
 [ ] Contrôle volume I2C fonctionnel (fade-in/fade-out propre)
 [ ] EQ DSP PCM5122 testée sur un scénario (pas de distorsion)

@@ -27,7 +27,7 @@ Box physique d'escape game. Specs completes dans :
 - Pusher apres chaque feature stable
 
 ## Conventions code
-- C pur ESP-IDF natif. Libs externes : minimp3 (decodeur MP3), LVGL (prevu, pas encore integre)
+- C pur ESP-IDF natif. Libs externes : minimp3 (decodeur MP3), esp_lcd_gc9a01 (driver yeux), assets Uncanny Eyes Adafruit MIT (components/ui_manager/data/defaultEye.h). LVGL non utilise actuellement (dependance conservee pour usage futur).
 - Un composant = une responsabilite, un dossier dans components/
 - Logs via ESP_LOGI/LOGW/LOGE avec TAG propre par composant
 - Pas de malloc() direct → utiliser les heap ESP-IDF si necessaire
