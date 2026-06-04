@@ -148,10 +148,19 @@ esp_err_t eyes_wait_done(eye_id_t eye)
 {
     if (!s_initialized || eye >= EYE_COUNT) return ESP_ERR_INVALID_STATE;
     if (!s_trans_done[eye]) return ESP_ERR_INVALID_STATE;
-    return xSemaphoreTake(s_trans_done[eye], portMAX_DELAY) == pdTRUE
-           ? ESP_OK : ESP_FAIL;
+    // m3 : timeout 500 ms — un transfert DMA 128×128×2 B à 40 MHz prend ~0.5 ms.
+    // En cas de blocage SPI inattendu, on remonte ESP_ERR_TIMEOUT plutôt que de
+    // bloquer la tâche eye indéfiniment.
+    if (xSemaphoreTake(s_trans_done[eye], pdMS_TO_TICKS(500)) != pdTRUE) {
+        ESP_LOGE(TAG, "eyes_wait_done[%d]: timeout SPI — transfert DMA perdu ?", (int)eye);
+        return ESP_ERR_TIMEOUT;
+    }
+    return ESP_OK;
 }
 
+// M6 : NOT thread-safe — utilise s_line_buf partagé sans mutex.
+// Appelée uniquement depuis app_main() au boot, avant le démarrage de ui_face_start().
+// Ne pas appeler depuis plusieurs tâches simultanément.
 esp_err_t eyes_fill(eye_id_t eye, uint16_t color)
 {
     if (!s_initialized || eye >= EYE_COUNT) return ESP_ERR_INVALID_STATE;
@@ -160,12 +169,20 @@ esp_err_t eyes_fill(eye_id_t eye, uint16_t color)
     uint16_t be = (uint16_t)(((color & 0xFF) << 8) | ((color >> 8) & 0xFF));
     for (int i = 0; i < EYE_WIDTH; i++) s_line_buf[i] = be;
 
+    // s_line_buf ne change pas pendant la boucle (même couleur sur toutes les
+    // scanlines) → pas besoin d'attendre chaque transaction, on enfile les 240
+    // scanlines en parallèle. Le driver bloque sur la queue (trans_queue_depth)
+    // quand elle est pleine. À la fin, on DRAIN tous les signaux ISR cumulés
+    // pour laisser le sémaphore en état "vide" — sinon les give multiples
+    // restent comptés comme 1 (sémaphore binaire) et la prochaine wait_done
+    // passerait sans attendre, créant une race sur le buffer DMA suivant.
     esp_lcd_panel_handle_t p = s_panel[eye];
     for (int y = 0; y < EYE_HEIGHT; y++) {
         esp_err_t ret = esp_lcd_panel_draw_bitmap(p, 0, y, EYE_WIDTH, y + 1, s_line_buf);
         if (ret != ESP_OK) return ret;
-        eyes_wait_done(eye);
     }
+    // Drain : consomme tous les give jusqu'à timeout court → queue vide.
+    while (xSemaphoreTake(s_trans_done[eye], pdMS_TO_TICKS(50)) == pdTRUE) { }
     return ESP_OK;
 }
 

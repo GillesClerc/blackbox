@@ -104,7 +104,13 @@ esp_err_t leds_show(void) {
     esp_err_t ret = rmt_transmit(s_chan, s_encoder, s_buf, s_count * 3, &tx_cfg);
     if (ret != ESP_OK) return ret;
 
-    rmt_tx_wait_all_done(s_chan, portMAX_DELAY);
+    // Timeout 200 ms — 1 LED WS2812B = 30 µs, 300 LEDs ~9 ms en transmission,
+    // mais le driver RMT v6.1 a un délai interne de flush variable. 50 ms est
+    // trop juste en pratique. portMAX_DELAY bloquerait indéfiniment si panne.
+    esp_err_t wait_ret = rmt_tx_wait_all_done(s_chan, pdMS_TO_TICKS(200));
+    if (wait_ret != ESP_OK) {
+        ESP_LOGW(TAG, "leds_show: rmt_tx_wait_all_done timeout");
+    }
     vTaskDelay(1);  // reset pulse WS2812 (>50µs)
     return ESP_OK;
 }

@@ -11,9 +11,14 @@
 
 #define TAG "ui_face"
 
+// M1 : timeout court sur le mutex — l'eye_task tient le mutex <1 µs (lecture snapshot).
+// 200 ms couvre tout burst CPU légitime sans bloquer indéfiniment.
+#define MUTEX_TIMEOUT_MS 200
+
 static eyes_anim_state_t s_state;
 static SemaphoreHandle_t s_mutex = NULL;
 static bool              s_started = false;
+static uint32_t          s_mutex_timeout_count = 0;
 
 static void apply_emotion(ui_face_emotion_t e, eyes_anim_state_t *out)
 {
@@ -62,7 +67,13 @@ static void eye_task(void *arg)
     ESP_LOGI(TAG, "eye task running");
     while (1) {
         eyes_anim_state_t snapshot;
-        xSemaphoreTake(s_mutex, portMAX_DELAY);
+        // M1 : timeout 200 ms — la section critique est <1 µs (copie struct).
+        if (xSemaphoreTake(s_mutex, pdMS_TO_TICKS(MUTEX_TIMEOUT_MS)) != pdTRUE) {
+            s_mutex_timeout_count++;
+            ESP_LOGW(TAG, "eye_task: mutex timeout #%lu", (unsigned long)s_mutex_timeout_count);
+            taskYIELD();
+            continue;
+        }
         snapshot = s_state;
         // forced_blink est one-shot, on le reset après consommation
         s_state.forced_blink = false;
@@ -89,8 +100,9 @@ esp_err_t ui_face_init(void)
 esp_err_t ui_face_start(void)
 {
     if (s_started) return ESP_OK;
+    // M2 : stack 8192 — draw_eye + split() récursif + overhead FreeRTOS dépassaient 6144.
     BaseType_t ok = xTaskCreatePinnedToCore(eye_task, "eye_task",
-                                            6144, NULL, 4, NULL, 1);
+                                            8192, NULL, 4, NULL, 1);
     if (ok != pdPASS) return ESP_FAIL;
     s_started = true;
     return ESP_OK;
@@ -98,7 +110,11 @@ esp_err_t ui_face_start(void)
 
 void ui_face_set_emotion(ui_face_emotion_t e)
 {
-    xSemaphoreTake(s_mutex, portMAX_DELAY);
+    if (xSemaphoreTake(s_mutex, pdMS_TO_TICKS(MUTEX_TIMEOUT_MS)) != pdTRUE) {
+        s_mutex_timeout_count++;
+        ESP_LOGW(TAG, "set_emotion: mutex timeout #%lu", (unsigned long)s_mutex_timeout_count);
+        return;
+    }
     apply_emotion(e, &s_state);
     xSemaphoreGive(s_mutex);
     ESP_LOGI(TAG, "emotion = %d", e);
@@ -106,7 +122,11 @@ void ui_face_set_emotion(ui_face_emotion_t e)
 
 void ui_face_look(ui_face_direction_t dir)
 {
-    xSemaphoreTake(s_mutex, portMAX_DELAY);
+    if (xSemaphoreTake(s_mutex, pdMS_TO_TICKS(MUTEX_TIMEOUT_MS)) != pdTRUE) {
+        s_mutex_timeout_count++;
+        ESP_LOGW(TAG, "look: mutex timeout #%lu", (unsigned long)s_mutex_timeout_count);
+        return;
+    }
     switch (dir) {
     case UI_FACE_LOOK_CENTER:
         s_state.look_forced = false;  // reprend mouvement autonome
@@ -139,7 +159,11 @@ void ui_face_look(ui_face_direction_t dir)
 
 void ui_face_blink(void)
 {
-    xSemaphoreTake(s_mutex, portMAX_DELAY);
+    if (xSemaphoreTake(s_mutex, pdMS_TO_TICKS(MUTEX_TIMEOUT_MS)) != pdTRUE) {
+        s_mutex_timeout_count++;
+        ESP_LOGW(TAG, "blink: mutex timeout #%lu", (unsigned long)s_mutex_timeout_count);
+        return;
+    }
     s_state.forced_blink = true;
     xSemaphoreGive(s_mutex);
 }

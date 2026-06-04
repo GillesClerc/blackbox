@@ -240,8 +240,9 @@ static void enter_step(const char *id) {
     s_step_entered = xTaskGetTickCount();
     s_hint_idx     = 0;
 
-    // Purger les events du step précédent pour éviter les faux positifs
-    xQueueReset(s_queue);
+    // M5 : xQueueReset supprimé — les events en attente restent valides (un RFID
+    // scanné pendant la transition doit être traité dans le nouveau step).
+    // L'engine filtre déjà à la réception via event_type_matches / event_value_matches.
 
     const char *type = cJSON_GetStringValue(cJSON_GetObjectItem(step, "type"));
     ESP_LOGI(TAG, "→ [%s] (%s)", id, type ? type : "?");
@@ -314,6 +315,8 @@ static void engine_task(void *arg) {
         const cJSON *timeout_obj = cJSON_GetObjectItem(s_current, "timeout_sec");
         int timeout_sec = timeout_obj ? timeout_obj->valueint : 0;
         if (timeout_sec > 0) {
+            // m7 : la soustraction (TickType_t - TickType_t) est overflow-safe en unsigned
+            // (arithmétique modulo 2^32) — valide même après débordement du compteur de ticks.
             int elapsed = (int)((xTaskGetTickCount() - s_step_entered) / configTICK_RATE_HZ);
             if (elapsed >= timeout_sec) {
                 const char *id = cJSON_GetStringValue(cJSON_GetObjectItem(s_current, "id"));

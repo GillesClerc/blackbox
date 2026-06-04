@@ -11,6 +11,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdatomic.h>
 
 #define TAG "audio"
 
@@ -34,7 +35,7 @@
 static i2s_chan_handle_t        s_tx       = NULL;
 static i2c_master_dev_handle_t  s_dac      = NULL;
 static SemaphoreHandle_t        s_mutex    = NULL;
-static volatile bool            s_fg_play  = false;
+static atomic_bool              s_fg_play;   // M3 : accès concurrent bg/fg — atomic_bool C11
 static volatile bool            s_bg_run   = false;
 static volatile uint8_t         s_peak_level = 0;
 static TaskHandle_t             s_bg_task  = NULL;
@@ -43,6 +44,10 @@ static int                      s_bg_count = 0;
 
 // Buffer silence statique (BSS, déjà zéro)
 static int16_t s_silence[CHUNK_SAMPLES * 2];
+
+// C1 : buffer tone alloué une seule fois dans audio_init(), protégé par s_mutex.
+// Évite un malloc/free à chaque bip (fragmentation heap, latence non déterministe).
+static int16_t *s_tone_buf = NULL;
 
 // ── I2C helpers ───────────────────────────────────────────────────────────────
 
@@ -61,7 +66,8 @@ static void write_tone_internal(uint16_t freq, uint16_t dur_ms,
     const size_t fade_in   = FADE_IN_S;
     const size_t fade_out  = FADE_OUT_S;
 
-    int16_t *buf = malloc(CHUNK_SAMPLES * 2 * sizeof(int16_t));
+    // C1 : utilise le buffer statique alloué dans audio_init(), pas de malloc ici.
+    int16_t *buf = s_tone_buf;
     if (!buf) return;
 
     float phase = 0.0f;
@@ -70,7 +76,7 @@ static void write_tone_internal(uint16_t freq, uint16_t dur_ms,
     bool interrupted = false;
 
     while (played < total) {
-        if (interruptible && s_fg_play) {
+        if (interruptible && atomic_load(&s_fg_play)) {
             interrupted = true;
             break;
         }
@@ -119,8 +125,7 @@ static void write_tone_internal(uint16_t freq, uint16_t dur_ms,
     // Silence de queue (évite le crunch DMA)
     size_t w;
     i2s_channel_write(s_tx, s_silence, CHUNK_SAMPLES * 2 * sizeof(int16_t), &w, pdMS_TO_TICKS(100));
-
-    free(buf);
+    // Note : pas de free() — buf = s_tone_buf statique (C1).
 }
 
 // ── Tâche musique de fond ─────────────────────────────────────────────────────
@@ -129,7 +134,7 @@ static void bg_task_fn(void *arg)
 {
     int idx = 0;
     while (s_bg_run) {
-        if (s_fg_play) {
+        if (atomic_load(&s_fg_play)) {
             vTaskDelay(pdMS_TO_TICKS(20));
             continue;
         }
@@ -138,7 +143,7 @@ static void bg_task_fn(void *arg)
 
         if (n->freq > 0) {
             if (xSemaphoreTake(s_mutex, pdMS_TO_TICKS(100)) == pdTRUE) {
-                if (!s_fg_play)
+                if (!atomic_load(&s_fg_play))
                     write_tone_internal(n->freq, n->dur_ms, true, AMPLITUDE_BG);
                 xSemaphoreGive(s_mutex);
             }
@@ -147,13 +152,13 @@ static void bg_task_fn(void *arg)
         // Gap : alimenter le DMA avec du silence (mutex obligatoire — même canal I2S)
         uint32_t gap_ms = n->gap_ms;
         while (gap_ms > 0 && s_bg_run) {
-            if (s_fg_play) {
+            if (atomic_load(&s_fg_play)) {
                 vTaskDelay(pdMS_TO_TICKS(20));
                 gap_ms = gap_ms > 20 ? gap_ms - 20 : 0;
                 continue;
             }
             if (xSemaphoreTake(s_mutex, pdMS_TO_TICKS(30)) == pdTRUE) {
-                if (!s_fg_play) {
+                if (!atomic_load(&s_fg_play)) {
                     size_t w;
                     i2s_channel_write(s_tx, s_silence,
                                       CHUNK_SAMPLES * 2 * sizeof(int16_t), &w, pdMS_TO_TICKS(30));
@@ -173,6 +178,14 @@ static void bg_task_fn(void *arg)
 
 esp_err_t audio_init(i2c_master_bus_handle_t bus)
 {
+    // C1 : allouer le buffer tone une seule fois (DMA-capable pour cohérence).
+    atomic_init(&s_fg_play, false);
+    s_tone_buf = heap_caps_malloc(CHUNK_SAMPLES * 2 * sizeof(int16_t), MALLOC_CAP_DEFAULT);
+    if (!s_tone_buf) {
+        ESP_LOGE(TAG, "audio_init: alloc tone_buf échoué");
+        return ESP_ERR_NO_MEM;
+    }
+
     // ── 1. I2S : slots 32-bit → BCLK = 44100×64 = 2.82 MHz
     //    Le PCM5122 PLL multiplie ×4 (au lieu de ×8 en 16-bit slots) → moins de jitter
     i2s_chan_config_t chan_cfg = I2S_CHANNEL_DEFAULT_CONFIG(I2S_NUM_0, I2S_ROLE_MASTER);
@@ -207,13 +220,12 @@ esp_err_t audio_init(i2c_master_bus_handle_t bus)
 
     vTaskDelay(pdMS_TO_TICKS(100));
 
-    // ── 1b. Scan I2C pour diagnostic PCM5122
-    ESP_LOGI(TAG, "I2C scan (plage 0x08-0x77) :");
-    for (uint8_t addr = 0x08; addr <= 0x77; addr++) {
-        if (i2c_master_probe(bus, addr, 50) == ESP_OK) {
-            ESP_LOGI(TAG, "  → device trouvé à 0x%02X", addr);
-        }
-    }
+    // ── 1b. Probe ciblé PCM5122 + MPR121 (scan complet inutilement lent en v6.1 :
+    //        chaque adresse libre timeout à 50 ms → ~5 s pour la plage 0x08-0x77).
+    if (i2c_master_probe(bus, PCM5122_I2C_ADDR, 50) == ESP_OK)
+        ESP_LOGI(TAG, "PCM5122 présent à 0x%02X", PCM5122_I2C_ADDR);
+    else
+        ESP_LOGW(TAG, "PCM5122 ABSENT à 0x%02X — audio désactivé probable", PCM5122_I2C_ADDR);
 
     // ── 2. PCM5122
     i2c_device_config_t dev_cfg = {
@@ -225,7 +237,15 @@ esp_err_t audio_init(i2c_master_bus_handle_t bus)
 
     // PCM5122 en mode I2C (MODE pins à GND) → config PLL complète obligatoire.
     // BCLK = 44100×64 = 2,822,400 Hz. PLL cible = BCLK×16 = 45,158,400 Hz.
-    pcm_write(0x00, 0x00);   // Page 0
+    // m6 : vérifier le premier accès I2C — si KO, le DAC est absent ou non alimenté.
+    {
+        esp_err_t probe = pcm_write(0x00, 0x00);  // Page 0
+        if (probe != ESP_OK) {
+            ESP_LOGE(TAG, "PCM5122 inaccessible (0x%02X): %s — init audio abandonnée",
+                     PCM5122_I2C_ADDR, esp_err_to_name(probe));
+            return probe;
+        }
+    }
     pcm_write(0x02, 0x10);   // Standby pendant config
     pcm_write(0x25, 0x7B);   // Ignorer erreurs clock (SCK halt, detect, PLL unlock)
     pcm_write(0x0D, 0x10);   // PLL source = BCK
@@ -273,20 +293,20 @@ esp_err_t audio_init(i2c_master_bus_handle_t bus)
 void audio_play_tone(uint16_t freq_hz, uint16_t dur_ms)
 {
     if (!s_tx || !freq_hz || !dur_ms) return;
-    s_fg_play = true;
+    atomic_store(&s_fg_play, true);
     if (xSemaphoreTake(s_mutex, pdMS_TO_TICKS(500)) == pdTRUE) {
         write_tone_internal(freq_hz, dur_ms, false, AMPLITUDE_FG);
-        s_fg_play = false;  // clear avant release pour que bg ne reprenne pas entre les deux
+        atomic_store(&s_fg_play, false);  // clear avant release pour que bg ne reprenne pas entre les deux
         xSemaphoreGive(s_mutex);
     } else {
-        s_fg_play = false;  // timeout : ne pas laisser le flag levé
+        atomic_store(&s_fg_play, false);  // timeout : ne pas laisser le flag levé
     }
 }
 
 void audio_play_sequence(const uint16_t *freqs, const uint16_t *durs, int count, uint16_t gap_ms)
 {
     if (!s_tx || !count) return;
-    s_fg_play = true;
+    atomic_store(&s_fg_play, true);
     if (xSemaphoreTake(s_mutex, pdMS_TO_TICKS(1000)) == pdTRUE) {
         for (int i = 0; i < count; i++) {
             if (freqs[i] > 0)
@@ -301,24 +321,44 @@ void audio_play_sequence(const uint16_t *freqs, const uint16_t *durs, int count,
                 }
             }
         }
-        s_fg_play = false;
+        atomic_store(&s_fg_play, false);
         xSemaphoreGive(s_mutex);
     } else {
-        s_fg_play = false;
+        atomic_store(&s_fg_play, false);
     }
 }
 
 esp_err_t audio_play_raw(const int16_t *samples, size_t num_samples, uint32_t sr)
 {
     if (!s_tx) return ESP_ERR_INVALID_STATE;
+
+    // C3 : arrêter la tâche bg proprement avant de toucher le canal I2S,
+    // puis prendre le mutex pour sérialiser avec tout accès concurrent.
+    s_bg_run = false;
+    atomic_store(&s_fg_play, true);
+
+    if (xSemaphoreTake(s_mutex, pdMS_TO_TICKS(500)) != pdTRUE) {
+        atomic_store(&s_fg_play, false);
+        ESP_LOGE(TAG, "audio_play_raw: timeout mutex");
+        return ESP_ERR_TIMEOUT;
+    }
+
+    esp_err_t ret = ESP_OK;
     if (sr != SR) {
         i2s_channel_disable(s_tx);
         i2s_std_clk_config_t clk = I2S_STD_CLK_DEFAULT_CONFIG(sr);
-        i2s_channel_reconfig_std_clock(s_tx, &clk);
+        ret = i2s_channel_reconfig_std_clock(s_tx, &clk);
         i2s_channel_enable(s_tx);
     }
-    size_t w;
-    return i2s_channel_write(s_tx, samples, num_samples * sizeof(int16_t), &w, portMAX_DELAY);
+
+    if (ret == ESP_OK) {
+        size_t w;
+        ret = i2s_channel_write(s_tx, samples, num_samples * sizeof(int16_t), &w, portMAX_DELAY);
+    }
+
+    atomic_store(&s_fg_play, false);
+    xSemaphoreGive(s_mutex);
+    return ret;
 }
 
 void audio_set_volume(uint8_t vol_pct)
@@ -379,7 +419,7 @@ static void bg_mp3_task_fn(void *arg)
     int            remaining = (int)s_mp3_size;
 
     while (s_bg_run) {
-        if (s_fg_play) { vTaskDelay(pdMS_TO_TICKS(20)); continue; }
+        if (atomic_load(&s_fg_play)) { vTaskDelay(pdMS_TO_TICKS(20)); continue; }
 
         if (remaining < 4) {
             mp3dec_init(&s_mp3_dec);
@@ -425,10 +465,10 @@ static void bg_mp3_task_fn(void *arg)
         }
         s_peak_level = (uint8_t)((uint32_t)peak * 100 / 32768);
 
-        if (s_fg_play) continue;
+        if (atomic_load(&s_fg_play)) continue;
 
         if (xSemaphoreTake(s_mutex, pdMS_TO_TICKS(100)) == pdTRUE) {
-            if (!s_fg_play) {
+            if (!atomic_load(&s_fg_play)) {
                 size_t w;
                 i2s_channel_write(s_tx, s_mp3_stereo,
                                   out_s * sizeof(int16_t), &w, pdMS_TO_TICKS(200));
@@ -448,9 +488,9 @@ void audio_bg_mp3_start(const uint8_t *data, size_t size)
     s_mp3_data = data;
     s_mp3_size = size;
     s_bg_run   = true;
-    // Stack 24 KB : mp3dec_scratch_t alloué sur la pile de mp3dec_decode_frame = ~16 KB
-    // (grbuf[2][576]=4608 + syn[33][64]=8448 + maindata[2815] + reste) + overhead FreeRTOS
-    xTaskCreate(bg_mp3_task_fn, "audio_bg_mp3", 24576, NULL, 5, &s_bg_task);
+    // C2 : stack 32 KB — mp3dec_scratch_t sur pile ~16 KB + headroom FreeRTOS + débordements potentiels
+    // (grbuf[2][576]=4608 + syn[33][64]=8448 + maindata[2815] + reste + overhead)
+    xTaskCreate(bg_mp3_task_fn, "audio_bg_mp3", 32768, NULL, 5, &s_bg_task);
     ESP_LOGI(TAG, "bg MP3 démarré (%u kB)", (unsigned)(size / 1024));
 }
 
@@ -469,7 +509,16 @@ void audio_bg_stop(void)
 {
     s_bg_run = false;
     if (s_bg_task) {
-        vTaskDelay(pdMS_TO_TICKS(120));
+        // m2 : attendre que la tâche se termine proprement plutôt qu'un délai aveugle.
+        // On sonde eTaskGetState jusqu'à eDeleted avec timeout de 500 ms.
+        const TickType_t deadline = xTaskGetTickCount() + pdMS_TO_TICKS(500);
+        while (s_bg_task && eTaskGetState(s_bg_task) != eDeleted) {
+            if (xTaskGetTickCount() >= deadline) {
+                ESP_LOGW(TAG, "audio_bg_stop: tâche bg non terminée dans les temps");
+                break;
+            }
+            vTaskDelay(pdMS_TO_TICKS(10));
+        }
         s_bg_task = NULL;
     }
 }

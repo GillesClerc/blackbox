@@ -193,7 +193,11 @@ static void draw_eye(uint8_t e, uint32_t iScale,
     eyes_wait_done(eye);
 }
 
-// Process motion + blinking + iris pour un œil
+// Process motion + blinking + iris pour un œil.
+// M4 : MONO-CONTEXTE — toutes les variables static internes (eye_index, in_motion,
+// oldX/Y, newX/Y, move_start_us, move_dur_us, uThreshold) sont partagées entre
+// les deux yeux et supposent un appel séquentiel unique depuis eyes_anim_step().
+// Ne jamais appeler frame() depuis plusieurs tâches simultanément.
 static void frame(uint16_t iScale, const eyes_anim_state_t *st)
 {
     static uint8_t eye_index = 0;
@@ -229,6 +233,9 @@ static void frame(uint16_t iScale, const eyes_anim_state_t *st)
                 eyeX = oldX = newX;
                 eyeY = oldY = newY;
             } else {
+                // m5 : move_dur_us ne peut pas être 0 ici (in_motion est mis à true
+                // seulement après rand_range(72000,144000)), mais guard défensif.
+                if (move_dur_us == 0) move_dur_us = 1;
                 int16_t e_idx = s_ease[(255 * dt) / move_dur_us] + 1;
                 eyeX = oldX + (((newX - oldX) * e_idx) / 256);
                 eyeY = oldY + (((newY - oldY) * e_idx) / 256);

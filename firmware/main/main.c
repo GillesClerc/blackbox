@@ -312,8 +312,8 @@ void app_main(void)
         }
     }
 
-    // Touch input task
-    xTaskCreate(touch_task, "touch", 4096, NULL, 5, NULL);
+    // Touch input task — m1 : pinner sur core 0 (eye_task sur core 1, I2C sur core 0).
+    xTaskCreatePinnedToCore(touch_task, "touch", 4096, NULL, 5, NULL, 0);
 
     ESP_LOGI(TAG, "EscapeBox ready — yeux GC9A01 animés, scenario engine actif");
 }

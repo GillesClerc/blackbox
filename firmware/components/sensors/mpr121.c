@@ -37,7 +37,13 @@ esp_err_t mpr121_init(i2c_master_bus_handle_t bus)
         .device_address  = MPR121_ADDR,
         .scl_speed_hz    = I2C_BUS_FREQ,
     };
-    ESP_ERROR_CHECK(i2c_master_bus_add_device(bus, &dev_cfg, &s_dev));
+    // C4 : check explicite — ESP_ERROR_CHECK interdit hors _init(), et mpr121_init
+    // est appelé depuis touch_task qui gère l'absence du périphérique (ESP_LOGW + delete).
+    esp_err_t ret = i2c_master_bus_add_device(bus, &dev_cfg, &s_dev);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "i2c_master_bus_add_device: %s", esp_err_to_name(ret));
+        return ret;
+    }
 
 #define WR(r, v) do { esp_err_t e = write_reg((r),(v)); if (e != ESP_OK) return e; } while(0)
 

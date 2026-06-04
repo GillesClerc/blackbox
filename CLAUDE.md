@@ -30,5 +30,7 @@ Box physique d'escape game. Specs completes dans :
 - C pur ESP-IDF natif. Libs externes : minimp3 (decodeur MP3), esp_lcd_gc9a01 (driver yeux), assets Uncanny Eyes Adafruit MIT (components/ui_manager/data/defaultEye.h). LVGL non utilise actuellement (dependance conservee pour usage futur).
 - Un composant = une responsabilite, un dossier dans components/
 - Logs via ESP_LOGI/LOGW/LOGE avec TAG propre par composant
-- Pas de malloc() direct → utiliser les heap ESP-IDF si necessaire
-- `ESP_ERROR_CHECK()` uniquement dans les fonctions `_init()` — partout ailleurs, verifier explicitement et retourner l'erreur (un timeout legitime appellerait `abort()`)
+- Pas de malloc() direct → utiliser les heap ESP-IDF si necessaire. Pour les buffers chauds (audio, rendu), allouer une fois en static au boot, ne jamais malloc dans le chemin run-time.
+- `ESP_ERROR_CHECK()` uniquement dans les fonctions `_init()` **appelees au boot depuis `app_main`**. Si un `_init()` est appele depuis un task runtime (hot-plug, retry I2C, etc.), verifier explicitement et retourner l'erreur — `ESP_ERROR_CHECK` y appellerait `abort()` et crasherait le systeme entier.
+- Pas de `portMAX_DELAY` sur les `xSemaphoreTake` / `xQueueReceive` dans les chemins de run-time : utiliser un timeout en ticks (typiquement `pdMS_TO_TICKS(200-500)`) et logger les timeouts. `portMAX_DELAY` n'est pas detecte par le TWDT et peut figer un task indefiniment.
+- Donnees partagees entre tasks sur dual-core : `volatile` ne suffit pas pour la coherence memoire SMP. Utiliser `<stdatomic.h>` (`atomic_store`/`atomic_load`) ou une section critique (`portENTER_CRITICAL`).

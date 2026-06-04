@@ -723,7 +723,7 @@ M2 → M3   : intégration complète + playtests
 
 **Hardware :**
 - [x] ESP32-S3-WROOM-1-N16R8 → DevKitC-1 validé sur breadboard
-- [ ] 2× GC9A01 1.3" ronds (yeux, SPI3 partagé) → driver Espressif `esp_lcd_gc9a01` intégré, validation hardware en attente
+- [x] 2× GC9A01 1.3" ronds (yeux, SPI3 partagé) → driver Espressif `esp_lcd_gc9a01` intégré, validé hardware (animation Uncanny Eyes fluide ~16 fps/œil, framebuf DMA full-frame, ISR `on_color_trans_done` + sémaphore par œil)
 - [ ] SSD1680 e-ink 2.9" (bouche, SPI2) → driver à intégrer (`esp_lcd_ssd1681`)
 - [x] Câbler PCM5122PW (I2S + I2C 0x4C) + PAM8406 + speakers 8Ω/5W → audio validé (PLL, filtre, MP3 bg)
 - [x] Câbler MPR121 breakout → keypad capacitif 12 canaux validé (I2C 0x5A)
