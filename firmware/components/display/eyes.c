@@ -8,8 +8,10 @@
 #include "esp_lcd_gc9a01.h"
 #include "esp_heap_caps.h"
 #include "esp_log.h"
+#include "esp_attr.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "freertos/semphr.h"
 #include <string.h>
 
 #define TAG "eyes"
@@ -21,8 +23,23 @@
 #define LINE_BUF_BYTES (EYE_WIDTH * sizeof(uint16_t))
 
 static esp_lcd_panel_handle_t s_panel[EYE_COUNT] = {0};
+// Sémaphore binaire par œil, signalé par l'ISR à la fin de chaque draw_bitmap.
+// État initial = "donné" pour que le premier wait passe sans bloquer.
+static SemaphoreHandle_t s_trans_done[EYE_COUNT] = {NULL, NULL};
 static uint16_t *s_line_buf = NULL;
 static bool s_initialized = false;
+
+static bool IRAM_ATTR on_trans_done(esp_lcd_panel_io_handle_t io,
+                                    esp_lcd_panel_io_event_data_t *edata,
+                                    void *user_ctx)
+{
+    (void)io;
+    (void)edata;
+    eye_id_t eye = (eye_id_t)(uintptr_t)user_ctx;
+    BaseType_t hp_woken = pdFALSE;
+    xSemaphoreGiveFromISR(s_trans_done[eye], &hp_woken);
+    return hp_woken == pdTRUE;
+}
 
 static esp_err_t hw_reset(void)
 {
@@ -42,10 +59,11 @@ static esp_err_t hw_reset(void)
     return ESP_OK;
 }
 
-static esp_err_t panel_setup(int cs_gpio, esp_lcd_panel_handle_t *out)
+static esp_err_t panel_setup(int cs_gpio, eye_id_t eye, esp_lcd_panel_handle_t *out)
 {
     esp_lcd_panel_io_handle_t io = NULL;
-    esp_lcd_panel_io_spi_config_t io_config = GC9A01_PANEL_IO_SPI_CONFIG(cs_gpio, EYES_PIN_DC, NULL, NULL);
+    esp_lcd_panel_io_spi_config_t io_config = GC9A01_PANEL_IO_SPI_CONFIG(
+        cs_gpio, EYES_PIN_DC, on_trans_done, (void *)(uintptr_t)eye);
     io_config.pclk_hz = EYES_PIXEL_CLK_HZ;
     io_config.trans_queue_depth = 10;
 
@@ -95,10 +113,17 @@ esp_err_t eyes_init(void)
     ret = hw_reset();
     if (ret != ESP_OK) return ret;
 
-    ret = panel_setup(EYES_PIN_CS_L, &s_panel[EYE_LEFT]);
+    for (int e = 0; e < EYE_COUNT; e++) {
+        // État initial = "vide" : eyes_wait_done() bloque jusqu'à la prochaine
+        // transaction complétée par l'ISR. Pattern : draw_bitmap PUIS wait_done.
+        s_trans_done[e] = xSemaphoreCreateBinary();
+        if (!s_trans_done[e]) return ESP_ERR_NO_MEM;
+    }
+
+    ret = panel_setup(EYES_PIN_CS_L, EYE_LEFT, &s_panel[EYE_LEFT]);
     if (ret != ESP_OK) return ret;
 
-    ret = panel_setup(EYES_PIN_CS_R, &s_panel[EYE_RIGHT]);
+    ret = panel_setup(EYES_PIN_CS_R, EYE_RIGHT, &s_panel[EYE_RIGHT]);
     if (ret != ESP_OK) return ret;
 
     s_line_buf = heap_caps_malloc(LINE_BUF_BYTES, MALLOC_CAP_DMA);
@@ -119,6 +144,14 @@ esp_lcd_panel_handle_t eyes_panel(eye_id_t eye)
     return s_panel[eye];
 }
 
+esp_err_t eyes_wait_done(eye_id_t eye)
+{
+    if (!s_initialized || eye >= EYE_COUNT) return ESP_ERR_INVALID_STATE;
+    if (!s_trans_done[eye]) return ESP_ERR_INVALID_STATE;
+    return xSemaphoreTake(s_trans_done[eye], portMAX_DELAY) == pdTRUE
+           ? ESP_OK : ESP_FAIL;
+}
+
 esp_err_t eyes_fill(eye_id_t eye, uint16_t color)
 {
     if (!s_initialized || eye >= EYE_COUNT) return ESP_ERR_INVALID_STATE;
@@ -131,6 +164,7 @@ esp_err_t eyes_fill(eye_id_t eye, uint16_t color)
     for (int y = 0; y < EYE_HEIGHT; y++) {
         esp_err_t ret = esp_lcd_panel_draw_bitmap(p, 0, y, EYE_WIDTH, y + 1, s_line_buf);
         if (ret != ESP_OK) return ret;
+        eyes_wait_done(eye);
     }
     return ESP_OK;
 }
@@ -146,5 +180,7 @@ esp_err_t eyes_draw(eye_id_t eye, int x, int y, int w, int h, const uint16_t *pi
 {
     if (!s_initialized || eye >= EYE_COUNT || !pixels) return ESP_ERR_INVALID_ARG;
     if (w <= 0 || h <= 0) return ESP_ERR_INVALID_ARG;
-    return esp_lcd_panel_draw_bitmap(s_panel[eye], x, y, x + w, y + h, pixels);
+    esp_err_t ret = esp_lcd_panel_draw_bitmap(s_panel[eye], x, y, x + w, y + h, pixels);
+    if (ret == ESP_OK) eyes_wait_done(eye);
+    return ret;
 }

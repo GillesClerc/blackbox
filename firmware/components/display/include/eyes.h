@@ -38,6 +38,12 @@ esp_err_t eyes_init(void);
 
 esp_lcd_panel_handle_t eyes_panel(eye_id_t eye);
 
+// Bloque jusqu'à ce que la transaction draw_bitmap qui vient d'être lancée
+// vers `eye` soit terminée (signalée par l'ISR on_color_trans_done).
+// Pattern : esp_lcd_panel_draw_bitmap(...) → eyes_wait_done(eye).
+// À l'issue, le framebuffer DMA passé peut être réutilisé sans risque.
+esp_err_t eyes_wait_done(eye_id_t eye);
+
 esp_err_t eyes_fill(eye_id_t eye, uint16_t color);
 esp_err_t eyes_fill_all(uint16_t color);
 

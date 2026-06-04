@@ -136,6 +136,8 @@ static void draw_eye(uint8_t e, uint32_t iScale,
     // Symétrie horizontale des paupières entre les deux yeux (œil R = mirror).
     int  dlidX = (e == 0) ? -1 : 1;
 
+    eye_id_t eye = (e == 0) ? EYE_LEFT : EYE_RIGHT;
+
     // Rendu en RAM dans le framebuffer dédié à cet œil, puis 1 seul draw_bitmap.
     uint16_t *fb = s_framebuf[e];
     for (int screenY = 0; screenY < SCREEN_HEIGHT;
@@ -177,16 +179,18 @@ static void draw_eye(uint8_t e, uint32_t iScale,
 
     int x0 = s_eye_xpos[e];
     int y0 = EYE_RENDER_OFFY;
+    // Lance le transfert DMA full-frame puis attend la fin via le callback ISR.
+    // Bloquant côté task, mais le CPU est libre pendant le DMA (xSemaphoreTake)
+    // donc le scheduler peut faire tourner d'autres tasks.
     esp_err_t dret = esp_lcd_panel_draw_bitmap(panel, x0, y0,
                                                x0 + SCREEN_WIDTH,
                                                y0 + SCREEN_HEIGHT,
                                                fb);
     if (dret != ESP_OK) {
         ESP_LOGE(TAG, "draw_bitmap e=%d err=%s", (int)e, esp_err_to_name(dret));
+        return;
     }
-    // TODO HACK : attendre la fin du DMA. À remplacer par un on_color_trans_done
-    // callback + semaphore pour ne pas bloquer le CPU pendant la transmission.
-    vTaskDelay(pdMS_TO_TICKS(20));
+    eyes_wait_done(eye);
 }
 
 // Process motion + blinking + iris pour un œil
