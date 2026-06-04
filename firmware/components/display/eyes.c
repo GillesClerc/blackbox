@@ -98,14 +98,8 @@ esp_err_t eyes_init(void)
     ret = panel_setup(EYES_PIN_CS_L, &s_panel[EYE_LEFT]);
     if (ret != ESP_OK) return ret;
 
-    // EYE_RIGHT (CS_R=14) non câblé physiquement en Phase 1 — ne pas
-    // enregistrer le device SPI : les transactions vers un CS flottant ne
-    // génèrent jamais d'interruption de complétion, ce qui bloque
-    // spi_device_get_trans_result() indéfiniment dès que la queue est pleine.
-    // Retirer cette ligne quand le second écran est câblé.
-    // ret = panel_setup(EYES_PIN_CS_R, &s_panel[EYE_RIGHT]);
-    // if (ret != ESP_OK) return ret;
-    s_panel[EYE_RIGHT] = NULL;
+    ret = panel_setup(EYES_PIN_CS_R, &s_panel[EYE_RIGHT]);
+    if (ret != ESP_OK) return ret;
 
     s_line_buf = heap_caps_malloc(LINE_BUF_BYTES, MALLOC_CAP_DMA);
     if (!s_line_buf) {
@@ -114,7 +108,7 @@ esp_err_t eyes_init(void)
     }
 
     s_initialized = true;
-    ESP_LOGI(TAG, "yeux GC9A01 OK (CS_L=%d actif, CS_R=%d desactive Phase1, SPI3 @ %d MHz)",
+    ESP_LOGI(TAG, "yeux GC9A01 OK (CS_L=%d, CS_R=%d, SPI3 @ %d MHz)",
              EYES_PIN_CS_L, EYES_PIN_CS_R, EYES_PIXEL_CLK_HZ / 1000000);
     return ESP_OK;
 }

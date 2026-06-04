@@ -64,16 +64,16 @@ static uint16_t s_old_iris;
 static uint32_t s_time_of_last_blink_us = 0;
 static uint32_t s_time_to_next_blink_us = 0;
 
-// Framebuffer DMA full-frame (128×128 px × 2 octets = 32 KiB).
+// Framebuffers DMA full-frame, un PAR ŒIL (128×128 px × 2 octets = 32 KiB chacun).
 //
 // On rend la frame complète en RAM, puis un SEUL esp_lcd_panel_draw_bitmap
-// pousse toute la fenêtre. Avantage par rapport au scanline-par-scanline :
-//   - 1 seule transaction SPI par frame (vs 128) → pas de risque de queue
-//     pleine ni de race sur buffer DMA partagé.
-//   - Le retour de draw_bitmap signifie que le DMA a tout copié (transaction
-//     unique + queue depth confortable), donc on peut réutiliser le buffer
-//     pour la frame suivante en toute sécurité.
-static uint16_t *s_framebuf = NULL;
+// pousse toute la fenêtre. Un buffer par œil est nécessaire parce que :
+//   - esp_lcd_panel_draw_bitmap est ASYNCHRONE (queue + DMA).
+//   - Les deux yeux alternent dans frame(). Si on partageait un seul buffer,
+//     le CPU le réécrirait pour l'œil B pendant que le DMA lit encore pour
+//     l'œil A → corruption silencieuse, écrans figés/noirs.
+// 64 KiB total tient largement dans la SRAM interne (~294 KiB dispo).
+static uint16_t *s_framebuf[NUM_EYES] = {NULL, NULL};
 #define FRAMEBUF_PX_COUNT  (SCREEN_WIDTH * SCREEN_HEIGHT)
 #define FRAMEBUF_BYTES     (FRAMEBUF_PX_COUNT * sizeof(uint16_t))
 
@@ -100,10 +100,13 @@ esp_err_t eyes_anim_init(void)
     for (int e = 0; e < NUM_EYES; e++) {
         s_blink[e].state = NOBLINK;
     }
-    s_framebuf = heap_caps_malloc(FRAMEBUF_BYTES, MALLOC_CAP_DMA);
-    if (!s_framebuf) {
-        ESP_LOGE(TAG, "framebuf alloc failed (%u bytes)", (unsigned)FRAMEBUF_BYTES);
-        return ESP_ERR_NO_MEM;
+    for (int i = 0; i < NUM_EYES; i++) {
+        s_framebuf[i] = heap_caps_malloc(FRAMEBUF_BYTES, MALLOC_CAP_DMA);
+        if (!s_framebuf[i]) {
+            ESP_LOGE(TAG, "framebuf[%d] alloc failed (%u bytes)",
+                     i, (unsigned)FRAMEBUF_BYTES);
+            return ESP_ERR_NO_MEM;
+        }
     }
     return ESP_OK;
 }
@@ -133,11 +136,12 @@ static void draw_eye(uint8_t e, uint32_t iScale,
     // Symétrie horizontale des paupières entre les deux yeux (œil R = mirror).
     int  dlidX = (e == 0) ? -1 : 1;
 
-    // Rendu en RAM dans s_framebuf, puis 1 seul draw_bitmap pour toute la zone.
+    // Rendu en RAM dans le framebuffer dédié à cet œil, puis 1 seul draw_bitmap.
+    uint16_t *fb = s_framebuf[e];
     for (int screenY = 0; screenY < SCREEN_HEIGHT;
          screenY++, sclera_y++, irisY++) {
 
-        uint16_t *line = s_framebuf + screenY * SCREEN_WIDTH;
+        uint16_t *line = fb + screenY * SCREEN_WIDTH;
 
         uint32_t scleraX = sclera_x;
         int32_t  irisX   = (int32_t)sclera_x - (SCLERA_WIDTH - IRIS_WIDTH) / 2;
@@ -176,10 +180,13 @@ static void draw_eye(uint8_t e, uint32_t iScale,
     esp_err_t dret = esp_lcd_panel_draw_bitmap(panel, x0, y0,
                                                x0 + SCREEN_WIDTH,
                                                y0 + SCREEN_HEIGHT,
-                                               s_framebuf);
+                                               fb);
     if (dret != ESP_OK) {
         ESP_LOGE(TAG, "draw_bitmap e=%d err=%s", (int)e, esp_err_to_name(dret));
     }
+    // TODO HACK : attendre la fin du DMA. À remplacer par un on_color_trans_done
+    // callback + semaphore pour ne pas bloquer le CPU pendant la transmission.
+    vTaskDelay(pdMS_TO_TICKS(20));
 }
 
 // Process motion + blinking + iris pour un œil
