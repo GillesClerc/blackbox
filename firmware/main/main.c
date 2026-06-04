@@ -1,6 +1,7 @@
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "freertos/queue.h"
 #include "eyes.h"
 #include "ui_face.h"
 #include "i2c_bus.h"
@@ -138,20 +139,44 @@ static void action_servo(const char *name, const cJSON *params)
     ESP_LOGI(TAG, "servo (Phase 2)");
 }
 
+// Le flash de LEDs prend ~720 ms (4 × 180 ms) avec des vTaskDelay bloquants.
+// Exécuté directement dans la callback du scenario_engine, il gèlait l'animation
+// des yeux (eye_task prio 4 core 1 préempté par scenario non-pinned prio 5).
+// → on délègue à une task dédiée prio 3 sur core 0, communiquée par queue.
+typedef struct {
+    char    hex[8];   // "#RRGGBB" + null
+    uint8_t count;
+} flash_cmd_t;
+
+static QueueHandle_t s_flash_queue = NULL;
+
+static void flash_task(void *arg)
+{
+    (void)arg;
+    flash_cmd_t cmd;
+    while (1) {
+        if (xQueueReceive(s_flash_queue, &cmd, portMAX_DELAY) != pdTRUE) continue;
+        for (int i = 0; i < cmd.count; i++) {
+            leds_fill_hex(cmd.hex, 255); leds_show();
+            vTaskDelay(pdMS_TO_TICKS(100));
+            leds_clear();                leds_show();
+            vTaskDelay(pdMS_TO_TICKS(80));
+        }
+    }
+}
+
 static void action_flash(const char *name, const cJSON *params)
 {
     (void)name;
+    if (!s_flash_queue) return;
     const cJSON *color = cJSON_GetObjectItem(params, "color");
     const cJSON *count = cJSON_GetObjectItem(params, "count");
-    const char  *hex   = (color && color->valuestring) ? color->valuestring : "#FFD700";
-    int          n     = (count && cJSON_IsNumber(count)) ? count->valueint : 4;
-
-    for (int i = 0; i < n; i++) {
-        leds_fill_hex(hex, 255); leds_show();
-        vTaskDelay(pdMS_TO_TICKS(100));
-        leds_clear();            leds_show();
-        vTaskDelay(pdMS_TO_TICKS(80));
-    }
+    flash_cmd_t cmd = {0};
+    const char *hex = (color && color->valuestring) ? color->valuestring : "#FFD700";
+    strncpy(cmd.hex, hex, sizeof(cmd.hex) - 1);
+    cmd.count = (count && cJSON_IsNumber(count)) ? (uint8_t)count->valueint : 4;
+    // Non-bloquant : si la queue est pleine on drop (cosmétique, pas critique).
+    xQueueSend(s_flash_queue, &cmd, 0);
 }
 
 // ─── Actions scénario : visage animé ─────────────────────────────────────────
@@ -271,6 +296,11 @@ void app_main(void)
     leds_init(48, 1);
     leds_clear();
     leds_show();
+
+    // Task dédiée pour action_flash (sinon bloque scenario_engine ~720ms et
+    // préempte eye_task sur core 1).
+    s_flash_queue = xQueueCreate(4, sizeof(flash_cmd_t));
+    xTaskCreatePinnedToCore(flash_task, "flash", 2048, NULL, 3, NULL, 0);
 
     ESP_ERROR_CHECK(eyes_init());
     eyes_fill_all(EYE_BLACK);

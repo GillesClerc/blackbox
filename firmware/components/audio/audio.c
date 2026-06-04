@@ -294,12 +294,15 @@ void audio_play_tone(uint16_t freq_hz, uint16_t dur_ms)
 {
     if (!s_tx || !freq_hz || !dur_ms) return;
     atomic_store(&s_fg_play, true);
-    if (xSemaphoreTake(s_mutex, pdMS_TO_TICKS(500)) == pdTRUE) {
+    // Timeout 50ms : un bip cosmétique qui rate parce que le canal est occupé
+    // n'est pas un bug, l'appelant peut juste passer à autre chose. Évite que
+    // touch_task (prio 5) ou scenario_engine bloquent 500ms si l'audio est busy.
+    if (xSemaphoreTake(s_mutex, pdMS_TO_TICKS(50)) == pdTRUE) {
         write_tone_internal(freq_hz, dur_ms, false, AMPLITUDE_FG);
-        atomic_store(&s_fg_play, false);  // clear avant release pour que bg ne reprenne pas entre les deux
+        atomic_store(&s_fg_play, false);
         xSemaphoreGive(s_mutex);
     } else {
-        atomic_store(&s_fg_play, false);  // timeout : ne pas laisser le flag levé
+        atomic_store(&s_fg_play, false);
     }
 }
 
@@ -490,7 +493,10 @@ void audio_bg_mp3_start(const uint8_t *data, size_t size)
     s_bg_run   = true;
     // C2 : stack 32 KB — mp3dec_scratch_t sur pile ~16 KB + headroom FreeRTOS + débordements potentiels
     // (grbuf[2][576]=4608 + syn[33][64]=8448 + maindata[2815] + reste + overhead)
-    xTaskCreate(bg_mp3_task_fn, "audio_bg_mp3", 32768, NULL, 5, &s_bg_task);
+    // Pinned core 0 prio 3 : éviter de préempter eye_task (prio 4 core 1).
+    // Décodage minimp3 = ~5ms CPU par frame de 26ms audio (~20% load), prio 3
+    // largement suffisante. Core 0 cohérent avec touch/audio I2C.
+    xTaskCreatePinnedToCore(bg_mp3_task_fn, "audio_bg_mp3", 32768, NULL, 3, &s_bg_task, 0);
     ESP_LOGI(TAG, "bg MP3 démarré (%u kB)", (unsigned)(size / 1024));
 }
 
@@ -501,7 +507,8 @@ void audio_bg_start(const audio_bg_note_t *notes, int count)
     s_bg_notes = notes;
     s_bg_count = count;
     s_bg_run   = true;
-    xTaskCreate(bg_task_fn, "audio_bg", 4096, NULL, 5, &s_bg_task);
+    // Mêmes raisons que bg_mp3 : pinné core 0 prio 3.
+    xTaskCreatePinnedToCore(bg_task_fn, "audio_bg", 4096, NULL, 3, &s_bg_task, 0);
     ESP_LOGI(TAG, "bg music démarrée (%d notes)", count);
 }
 

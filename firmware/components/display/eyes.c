@@ -114,9 +114,10 @@ esp_err_t eyes_init(void)
     if (ret != ESP_OK) return ret;
 
     for (int e = 0; e < EYE_COUNT; e++) {
-        // État initial = "vide" : eyes_wait_done() bloque jusqu'à la prochaine
-        // transaction complétée par l'ISR. Pattern : draw_bitmap PUIS wait_done.
-        s_trans_done[e] = xSemaphoreCreateBinary();
+        // Counting (pas binary) : un binary collapse les give multiples à 1, ce
+        // qui casse eyes_fill (240 draw_bitmap → 240 ISR signals à consommer).
+        // Max 255 transactions en vol simultanément, état initial 0 (vide).
+        s_trans_done[e] = xSemaphoreCreateCounting(255, 0);
         if (!s_trans_done[e]) return ESP_ERR_NO_MEM;
     }
 
@@ -171,18 +172,21 @@ esp_err_t eyes_fill(eye_id_t eye, uint16_t color)
 
     // s_line_buf ne change pas pendant la boucle (même couleur sur toutes les
     // scanlines) → pas besoin d'attendre chaque transaction, on enfile les 240
-    // scanlines en parallèle. Le driver bloque sur la queue (trans_queue_depth)
-    // quand elle est pleine. À la fin, on DRAIN tous les signaux ISR cumulés
-    // pour laisser le sémaphore en état "vide" — sinon les give multiples
-    // restent comptés comme 1 (sémaphore binaire) et la prochaine wait_done
-    // passerait sans attendre, créant une race sur le buffer DMA suivant.
+    // scanlines en parallèle puis on consomme exactement 240 signaux ISR pour
+    // garantir l'état "vide" du sémaphore en sortie. Un drain par timeout
+    // serait sujet à race (transaction encore en vol après le drain → give
+    // parasite qui décalerait la prochaine wait_done d'une frame).
     esp_lcd_panel_handle_t p = s_panel[eye];
     for (int y = 0; y < EYE_HEIGHT; y++) {
         esp_err_t ret = esp_lcd_panel_draw_bitmap(p, 0, y, EYE_WIDTH, y + 1, s_line_buf);
         if (ret != ESP_OK) return ret;
     }
-    // Drain : consomme tous les give jusqu'à timeout court → queue vide.
-    while (xSemaphoreTake(s_trans_done[eye], pdMS_TO_TICKS(50)) == pdTRUE) { }
+    for (int y = 0; y < EYE_HEIGHT; y++) {
+        if (xSemaphoreTake(s_trans_done[eye], pdMS_TO_TICKS(500)) != pdTRUE) {
+            ESP_LOGW(TAG, "eyes_fill[%d] drain timeout @y=%d", (int)eye, y);
+            return ESP_ERR_TIMEOUT;
+        }
+    }
     return ESP_OK;
 }
 
