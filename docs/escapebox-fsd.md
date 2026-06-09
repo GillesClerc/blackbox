@@ -152,7 +152,8 @@ Scores et stats remontés à la prochaine synchro
 | Adresse | Composant | Fonction | PCB |
 |---|---|---|---|
 | 0x10 | VEML7700 | Lumière ambiante | Satellite capteurs |
-| 0x28 | MTCH2120 | Capacitif 12 canaux (keypad + zones touch) | Satellite capteurs |
+| 0x28 | MTCH2120 | Capacitif 12 canaux (keypad + zones touch) — cible PCB Phase 2 | Satellite capteurs |
+| 0x5A | MPR121 | Capacitif 12 canaux (breakout Phase 1, même rôle que MTCH2120) | Proto breadboard |
 | 0x48 | PN532 | Lecteur NFC (I2C mode) | Main |
 | 0x4C | PCM5122PW | DAC audio stéréo (I2C contrôle) | Main |
 | 0x5C | MLX90614 | Température IR (sans contact) | Satellite capteurs |
@@ -264,7 +265,7 @@ bq24075 (TI) — chargeur 1.5A + power path DPPM
 
 > **Power path (DPPM)** : le système est alimenté en priorité par l'USB, le surplus charge la batterie. La box peut rester branchée sans user la batterie. **Deux LDOs séparés** pour isoler le bruit digital du chemin audio. GND unique continu (PAS de split). Voir `docs/schematics/06-power-audio.txt` pour le schéma détaillé.
 
-#### 2.2.2c Assignation des faces — Cube 150×150×150mm
+#### 2.2.2c Assignation des faces — Cube 150×150×150mm *(dimension à valider au proto boîtier — la vision mentionne 120mm)*
 
 > Les capteurs et interactions ne sont pas forcément 1:1 avec les faces. Plusieurs capteurs peuvent cohabiter sur une même face, et un même type d'interaction peut traverser plusieurs faces.
 
@@ -371,9 +372,9 @@ JST-SH (1.0mm pitch, verrouillable) pour tous les connecteurs inter-PCB :
 │  │                                                          │    │
 │  │  scenario_engine (state machine, parse JSON)             │    │
 │  │  sensor_manager  (polling I2C 50ms, event queue)         │    │
-│  │  display_manager (LVGL, 2× GC9A01 yeux, SSD1680 e-ink bouche)            │    │
+│  │  display_manager (esp_lcd : 2× GC9A01, SSD1680 e-ink)   │    │
 │  │  led_manager     (WS2812 via RMT ESP-IDF)               │    │
-│  │  servo_manager   (MCPWM ESP-IDF)                         │    │
+│  │  servo_manager   (MCPWM ESP-IDF — Phase 2)               │    │
 │  └─────────────────────────────────────────────────────────┘    │
 │                                                                  │
 │  ┌─────────────────────────────────────────────────────────┐    │
@@ -392,7 +393,7 @@ JST-SH (1.0mm pitch, verrouillable) pour tous les connecteurs inter-PCB :
 | Composant | Usage |
 |---|---|
 | ESP-IDF v6.1 | Framework de base (FreeRTOS, drivers, HAL) |
-| LVGL | Interface graphique écrans (porté ESP-IDF natif) |
+| LVGL | Non utilisé actuellement (rendu direct esp_lcd) — dépendance conservée pour usage futur éventuel |
 | esp_lcd | Drivers écrans (SPI : GC9A01 ×2, SSD1680 e-ink) |
 | led_strip via RMT | WS2812 LEDs (driver natif ESP-IDF) |
 | MCPWM | Servos (driver natif ESP-IDF) |
@@ -727,7 +728,7 @@ M2 → M3   : intégration complète + playtests
 - [ ] SSD1680 e-ink 2.9" (bouche, SPI2) → driver à intégrer (`esp_lcd_ssd1681`)
 - [x] Câbler PCM5122PW (I2S + I2C 0x4C) + PAM8406 + speakers 8Ω/5W → audio validé (PLL, filtre, MP3 bg)
 - [x] Câbler MPR121 breakout → keypad capacitif 12 canaux validé (I2C 0x5A)
-- [x] Câbler WS2812 → LEDs validées (RMT, GPIO38)
+- [x] Câbler WS2812 → LEDs validées (RMT, GPIO48)
 - [ ] Câbler PN532 breakout → valider NFC
 - [ ] Câbler MTCH2120 → valider keypad capacitif (Phase 2 PCB)
 - [ ] Câbler servo SG90 → valider compartiment (Phase 2)
@@ -756,12 +757,12 @@ M2 → M3   : intégration complète + playtests
 - [ ] `ui_manager` bouche : affichage texte mot-à-mot synchro audio
 
 **Web Platform :**
-- [ ] Projet Next.js + Supabase initialisé (Route Groups : `(marketing)`, `(app)`, `(studio)` + `middleware.ts` Supabase)
+- [ ] Projet Next.js 16 + Supabase initialisé (Route Groups : `(marketing)`, `(auth)`, `(app)` + segment réel `studio/` + `proxy.ts` Supabase — voir `docs/plans/web-implementation.md`)
 - [ ] Auth (email + Google)
 - [ ] Page catalogue (statique pour commencer)
 - [ ] Page bibliothèque (scénarios achetés)
-- [ ] Stripe checkout (paiement one-shot) + routes `/app/checkout/success` et `/app/checkout/cancel`
-- [ ] Route Handler `/app/api/webhooks/stripe/route.ts` avec vérification signature Stripe (test via `stripe listen`)
+- [ ] Stripe checkout (paiement one-shot) + routes `/checkout/success` et `/checkout/cancel`
+- [ ] Route Handler `app/api/webhooks/stripe/route.ts` avec vérification signature Stripe (test via `stripe listen`)
 - [ ] API sync basique (liste des scénarios autorisés)
 - [ ] Route publique `/v/[scenario]/[session]` (leaderboard / résultat QR code)
 
@@ -1046,7 +1047,6 @@ Critères produit — go/no-go Phase 2 :
 | JLCPCB / LCSC | Fabrication | Production bloquée |
 | Espressif ESP32-S3 | Composant | Redesign MCU nécessaire |
 | ESP-IDF | Framework | Migration vers autre SDK |
-| LVGL | Librairie | Redesign affichage |
 | Anthropic API | IA (éditeur B2B) | Fonctionnalité IA dégradée (non bloquant) |
 
 ---
@@ -1055,7 +1055,7 @@ Critères produit — go/no-go Phase 2 :
 
 ### 6.1 Interface Box ↔ Serveur (REST API)
 
-**Base URL :** `https://api.escapebox.ch/v1`
+**Base URL :** `https://box.agill.es/api/box` (dev/FFF — Coolify) · `https://escapebox.ch/api/box` (prod, Phase 3). Pas de sous-domaine API dédié ni de préfixe `/v1` : les routes sont des Route Handlers Next.js sous `app/api/box/`. Les chemins ci-dessous sont relatifs à cette base.
 
 **Authentification :** Chaque box s'authentifie par HMAC-SHA256 challenge-response basé sur son UID unique gravé dans les eFuses ESP32.
 
@@ -1176,18 +1176,18 @@ app/
     login/page.tsx
     register/page.tsx
 
-  (app)/                            → layout avec Supabase session guard (middleware.ts)
-    library/page.tsx                → Ma bibliothèque (scénarios achetés)
-    shop/page.tsx                   → Catalogue scénarios
-    shop/[slug]/page.tsx            → Détail scénario + bouton achat
+  (app)/                            → route group (PAS de segment URL) — guard session via proxy.ts
+    library/page.tsx                → /library — Ma bibliothèque (scénarios achetés)
+    shop/page.tsx                   → /shop — Catalogue scénarios
+    shop/[slug]/page.tsx            → /shop/[slug] — Détail scénario + bouton achat
     checkout/success/page.tsx       → Retour Stripe OK
     checkout/cancel/page.tsx        → Retour Stripe annulé
-    devices/page.tsx                → Mes box (liste, synchro, stats)
+    devices/page.tsx                → /devices — Mes box (liste, synchro, stats)
     devices/add/page.tsx            → Associer une nouvelle box (BLE provisioning)
-    scores/page.tsx                 → Historique des parties
-    account/page.tsx                → Mon compte, abonnement
+    scores/page.tsx                 → /scores — Historique des parties
+    account/page.tsx                → /account — Mon compte, abonnement
 
-  (studio)/                         → layout avec guard plan Pro+
+  studio/                           → vrai segment /studio (pas un route group — guard plan Pro+)
     page.tsx                        → Éditeur B2B
     new/page.tsx
     [id]/edit/page.tsx
@@ -1204,7 +1204,9 @@ app/
 
   marketplace/page.tsx              → Scénarios communautaires (Phase 3)
 
-middleware.ts                       → Supabase updateSession (protège (app) et (studio))
+proxy.ts                            → Next 16 (ex-middleware.ts) : refresh session Supabase +
+                                      protection des préfixes réels (/shop, /library, /devices,
+                                      /scores, /account, /checkout, /studio)
 ```
 
 ### 6.4 Interface Utilisateur — Box
@@ -1214,48 +1216,49 @@ middleware.ts                       → Supabase updateSession (protège (app) e
 - **Yeux (2× GC9A01)** — `components/ui_manager/eyes_anim.c`, port C ESP-IDF du pipeline « Uncanny Eyes » Adafruit (MIT, Phil Burgess) via le fork GC9A01 de thelastoutpostworkshop. Rendu 128×128 centré dans 240×240, mouvement autonome (drift aléatoire + clignements) en mode IDLE. Actions JSON disponibles dans les scénarios : `eye_blink`, `eye_emotion {type: happy|sad|surprised|sleepy|angry|closed}`, `eye_look {direction: left|right|up|down|center}`. Asset embarqué : `defaultEye.h` (~156 KB flash).
 - **Bouche (SSD1680 e-ink)** — à implémenter. Affichage texte mot-à-mot synchro audio.
 
-**Menu / configuration : déportés sur l'app mobile / web** (provisioning BLE puis Wi-Fi sync). Le rotary encoder physique reste optionnel (raccourci Phase 2 Pro).
+**Navigation : boutons physiques + visage.** Le joueur navigue avec les touches capacitives (MPR121/MTCH2120) et les boutons GPIO45/46 ; le personnage répond par la bouche e-ink (texte), la voix (audio) et les yeux. La configuration avancée (compte, langue, renommage) est déportée sur la webapp.
 
-**États de l'écran :**
+**États de la box :**
 
 ```
-BOOT          → Logo EscapeBox + animation (< 5s)
-MENU          → Accueil : liste des scénarios installés (cartes tactiles)
+BOOT          → Yeux s'ouvrent + jingle (< 5s)
+MENU          → Personnage idle, sélection de scénario (voir 6.4.1)
 PLAYING       → Scénario en cours
-SYNC          → Barre de progression download
-SETTINGS      → Réglages (voir arborescence 6.4.2)
+SYNC          → Texte progression sur la bouche e-ink + LEDs pulsées
+SETTINGS      → Réglages on-device minimaux (voir 6.4.2)
 TEST          → Mode Test capteurs (dev only, voir 6.4.3)
-CHARGING      → Indicateur de charge (si batterie faible)
-ERROR         → Message d'erreur + QR code support
+CHARGING      → Indicateur de charge (LEDs + yeux SLEEPY si batterie faible)
+ERROR         → Message e-ink + QR code support
 ```
 
-#### 6.4.1 Écran d'accueil (MENU)
+#### 6.4.1 Accueil et lancement d'une partie (MENU)
 
-- **Header** : nom de la box · icône état WiFi (connecté / hors-ligne) · bouton ⟳ Synchroniser · bouton ⚙ Réglages.
-- **Corps** : liste scrollable des scénarios installés sous forme de cartes (titre, durée, difficulté, vignette). Tap sur une carte → écran Détails (synopsis, nb joueurs) → bouton **Lancer**.
-- Si aucun scénario installé : invite à synchroniser.
+- **Idle** : le personnage vit (clignements, regards). La bouche e-ink affiche le nom du scénario sélectionné.
+- **Navigation** : touches capacitives ◀ / ▶ (ou boutons GPIO45/46) pour parcourir les scénarios installés. À chaque changement : titre sur la bouche e-ink + annonce vocale (titre, durée, difficulté), yeux qui réagissent.
+- **Lancement** : touche ✓ (appui long 1 s) → confirmation vocale « Commencer [titre] ? » → second appui ✓ pour démarrer.
+- **Raccourci NFC** : poser la carte NFC d'un scénario sur la box le lance directement (cohérent avec la vision « poser un objet NFC → elle s'allume »).
+- Si aucun scénario installé : le personnage invite vocalement à synchroniser (texte e-ink + QR vers la webapp).
 
-#### 6.4.2 Arborescence Réglages
+#### 6.4.2 Réglages on-device (minimaux)
+
+Pas de menu de réglages écran : seules les actions indispensables sans réseau sont accessibles sur la box, le reste passe par la webapp.
 
 ```
-Réglages
- ├ Volume              slider 0–100 % → registres I2C PCM5122 (0x4C) + amplitude soft
- ├ Luminosité          slider 10–100 % → PWM backlight          ⚠ dépend câblage GPIO rétroéclairage
- ├ Langue              FR / DE / EN                              ⚠ Phase 2 (dépend i18n UI + scénarios)
- ├ Reconfigurer WiFi   relance le provisioning BLE (§6.2)
- ├ Diagnostic réseau   SSID · RSSI · IP · état serveur (ping GET /box/challenge) · dernière sync
- ├ Infos box           version firmware · box_uid · espace SD · uptime           [lecture seule]
- ├ Reset usine         efface NVS (creds WiFi, prefs, association) → reprovisioning   ⚠ double confirmation
- └ Mode Test           [visible uniquement si Mode dev déverrouillé — voir 6.4.3]
+Volume              → potentiomètre rotatif dédié (ADC) — registres I2C PCM5122 (0x4C) + amplitude soft
+Synchroniser        → touche ⟳ dédiée (ou combinaison) — état affiché sur la bouche e-ink
+Reconfigurer WiFi   → appui long 5 s sur ⟳ au boot → relance le provisioning BLE (§6.2)
+Infos box           → appui long 5 s sur ✓ → e-ink affiche version · box_uid · IP/RSSI · espace SD
+Reset usine         → appui 10 s sur ⟳ + ✓ simultanés → confirmation vocale + appui ✓ → efface NVS
+Langue / renommage  → webapp uniquement (appliqués à la prochaine sync)
 ```
 
-Les préférences (volume, luminosité, langue) sont persistées en **NVS** via `config_manager`.
+Les préférences (volume par défaut, langue) sont persistées en **NVS** via `config_manager`.
 
 #### 6.4.3 Mode dev & Mode Test (diagnostic capteurs)
 
-**Déverrouillage (caché aux joueurs)** : dans `Réglages → Infos box`, taper **7 fois rapidement** (< 3 s) sur le champ « version firmware ». Un toast confirme « Mode dev activé », un flag persistant est écrit en NVS (`dev_mode=1`) et l'entrée **Mode Test** apparaît dans Réglages. Re-taper 7× le désactive.
+**Déverrouillage (caché aux joueurs)** : depuis l'écran Infos box (§6.4.2), taper **7 fois rapidement** (< 3 s) sur la touche capacitive ✓. Confirmation vocale « Mode dev activé », flag persistant en NVS (`dev_mode=1`). Re-taper 7× le désactive.
 
-**Mode Test** affiche un dashboard temps réel (rafraîchi à la cadence du `sensor_manager`, ~50 ms) de **tous les capteurs/actionneurs**, pour déboguer le hardware sans recompiler :
+**Mode Test** affiche un dashboard temps réel (rafraîchi à la cadence du `sensor_manager`, ~50 ms) de **tous les capteurs/actionneurs**, paginé sur la bouche e-ink (navigation ◀ / ▶) et dupliqué sur UART, pour déboguer le hardware sans recompiler :
 
 | Bloc | Données affichées | Phase (capteur) |
 |---|---|---|
@@ -1317,17 +1320,19 @@ blackbox/
 │   ├── components/
 │   │   ├── scenario/            # Moteur JSON + state machine
 │   │   ├── nfc/                 # Driver PN532
-│   │   ├── sensors/             # Drivers I2C : LSM6DSOXTR, TMAG5273, VEML7700, MTCH2120
+│   │   ├── sensors/             # Drivers I2C : MPR121, LSM6DSOXTR, TMAG5273, VEML7700, MTCH2120, AS5600
 │   │   ├── display/             # eyes.c — 2× GC9A01 1.3" (SPI3 partagé, esp_lcd_gc9a01)
 │   │   ├── ui_manager/           # ui_face + eyes_anim (port Uncanny Eyes, data/defaultEye.h)
 │   │   ├── mouth/                # SSD1680 e-ink 2.9" — bouche (SPI2, esp_lcd_ssd1681) [TODO]
 │   │   ├── audio/               # I2S DMA + PCM5122PW (DAC) + PAM8406 (amp)
+│   │   ├── minimp3/             # Décodeur MP3 single-header
 │   │   ├── leds/                # WS2812 via RMT
-│   │   ├── servo/               # SG90 via MCPWM
+│   │   ├── servo/               # SG90 via MCPWM (Phase 2)
 │   │   ├── storage/             # SD card SPI+FAT + NVS
-│   │   ├── wifi_manager/        # Sync + BLE provisioning (NimBLE)
-│   │   ├── ota_manager/         # esp_https_ota + vérification ECDSA
-│   │   └── crypto/              # Vérification ECDSA P-256 (mbedTLS)
+│   │   ├── config_manager/      # WiFi creds, box ID, préférences (NVS)
+│   │   ├── wifi_manager/        # Sync + BLE provisioning (NimBLE) [Phase 2]
+│   │   ├── ota_manager/         # esp_https_ota + vérification ECDSA [Phase 2]
+│   │   └── crypto/              # Vérification ECDSA P-256 (mbedTLS) [Phase 2]
 │   ├── CMakeLists.txt
 │   ├── sdkconfig.defaults       # Config ESP-IDF par défaut
 │   └── partitions.csv           # Partition table custom
@@ -1357,10 +1362,19 @@ CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
 CONFIG_LOG_DEFAULT_LEVEL_INFO=y
 ```
 
-**Partition table custom :**
+**Partition table custom — état actuel (Phase 1)** : flash configurée à 8 MB, partition app unique de 7.9 MB (gros MP3 embarqués, pas d'OTA) :
 
 ```csv
-# partitions.csv — N16R8 (16 MB flash)
+# partitions.csv — actuel (flash configurée 8 MB)
+# Name,   Type, SubType, Offset,   Size
+nvs,      data, nvs,     0x9000,   0x6000
+factory,  app,  factory, 0x10000,  0x7F0000   # 7.9 MB app
+```
+
+**Cible Phase 2 (OTA, 16 MB exploités)** — à appliquer quand l'OTA arrive (FW-04) :
+
+```csv
+# partitions.csv — cible Phase 2 (N16R8, 16 MB)
 # Name,   Type, SubType, Offset,   Size
 nvs,      data, nvs,     0x9000,   0x5000
 otadata,  data, ota,     0xe000,   0x2000
@@ -1368,6 +1382,7 @@ app0,     app,  ota_0,   0x10000,  0x400000   # 4 MB — firmware cible < 2.5 MB
 app1,     app,  ota_1,   0x410000, 0x400000   # 4 MB — partition OTA inactive
 storage,  data, fat,     0x810000, 0x7F0000   # ~8 MB FAT (assets + config)
 ```
+> La migration implique de repasser `CONFIG_ESPTOOLPY_FLASHSIZE` à 16MB et de déplacer les assets MP3 de la partition app vers la FAT/SD.
 
 #### 7.1.4 Premier flash (USB)
 
@@ -1375,20 +1390,21 @@ storage,  data, fat,     0x810000, 0x7F0000   # ~8 MB FAT (assets + config)
 # Configurer la cible (une seule fois)
 idf.py set-target esp32s3
 
-# Compiler
+# Compiler (depuis firmware/)
 idf.py build
 
-# Flasher
-idf.py -p /dev/ttyUSB0 flash
+# Flasher (esptool direct — `idf.py flash` ne passe pas les bons paramètres flash ici)
+python -m esptool --chip esp32s3 -p /dev/ttyACM0 -b 460800 \
+  --before default-reset --after hard-reset write_flash \
+  --flash_mode dio --flash_size 8MB --flash_freq 80m \
+  0x0 build/bootloader/bootloader.bin \
+  0x8000 build/partition_table/partition-table.bin \
+  0x10000 build/blackbox.bin
 
-# Monitor série
-idf.py -p /dev/ttyUSB0 monitor
-
-# Flash + monitor en une commande
-idf.py -p /dev/ttyUSB0 flash monitor
+# Monitor série : depuis un terminal hôte (WSL2), pas depuis le container
 ```
 
-**Logs attendus au premier démarrage :**
+**Logs attendus au premier démarrage (cible Phase 1 complète) :**
 
 ```
 [BOOT] EscapeBox Firmware v0.1.0
@@ -1396,19 +1412,18 @@ idf.py -p /dev/ttyUSB0 flash monitor
 [CONFIG] No WiFi config found - entering provisioning mode
 [BLE] Advertising as: EscapeBox-1234
 [BLE] Pairing code: X7K2PQ
-[DISPLAY] LVGL initialized - 800x480
-[DISPLAY] Compass display initialized - 240x240
+[EYES] 2x GC9A01 initialized - 240x240 @ 40MHz (CS_L=40, CS_R=14)
+[MOUTH] SSD1680 e-ink initialized - 296x128
 [STORAGE] SD card: 8.00 GB
-[STORAGE] LittleFS: 1.75 MB free
 [SCENARIO] Found 1 scenario on SD: capitaine_verdier_v1
-[AUDIO] I2S initialized - Speaker + Mic
-[SENSORS] I2C scan: 0x10 0x28 0x36 0x48 0x4C 0x5C 0x6A 0x76 - OK
+[AUDIO] PCM5122 PLL locked - I2S 44100 Hz 16-bit
+[SENSORS] I2C scan: 0x10 0x35 0x48 0x4C 0x5A 0x5C 0x6A 0x76 - OK
 [BOOT] Ready
 ```
 
 #### 7.1.5 Configuration initiale WiFi (via webapp)
 
-1. Aller sur `https://escapebox.ch/app/devices/add`
+1. Aller sur `https://box.agill.es/devices/add` (prod Phase 3 : `escapebox.ch/devices/add`)
 2. Cliquer "Associer ma box"
 3. La webapp utilise la Web Bluetooth API pour scanner les devices BLE
 4. Sélectionner "EscapeBox-XXXX" dans la liste
@@ -1459,17 +1474,15 @@ Flux OTA automatique :
 - `esp_https_ota` ne supporte pas le resume HTTP Range — la prochaine synchro retente le download depuis le début.
 - La taille cible maximale du binaire firmware est **< 2.5 MB** (à vérifier en CI avant chaque release). Les partitions OTA sont dimensionnées à 0x400000 (4 MB) sur le N16R8 (16 MB flash).
 
-#### 7.2.2 OTA forcée via WiFi local (développement)
+#### 7.2.2 OTA locale (développement)
+
+`espota.py` est un outil Arduino, indisponible en ESP-IDF. Pour tester l'OTA en local : servir le binaire depuis un serveur HTTP sur le LAN et pointer `esp_https_ota` dessus :
 
 ```bash
-# Générer le binaire
 idf.py build
-
-# Flasher via réseau (la box doit être en mode OTA local)
-espota.py -i 192.168.1.xxx -p 3232 -f build/blackbox.bin
+python3 -m http.server 8070 -d build/    # sur la machine de dev
+# La box (mode dev, §6.4.3) télécharge http://192.168.1.xxx:8070/blackbox.bin
 ```
-
-La box doit être en mode OTA local (menu Settings → OTA local → ON).
 
 #### 7.2.3 Rollback manuel
 
@@ -1489,10 +1502,10 @@ Si la box ne démarre plus après une OTA :
 
 ```
 1. Allumer la box (bouton ON/OFF ou sortir du deep sleep)
-2. Menu principal → liste des scénarios
-3. Rotary encoder pour naviguer → appui pour sélectionner
-4. Confirmation : "Commencer Le Trésor du Capitaine Verdier ?"
-5. La box charge le YAML depuis la SD → vérifie la signature
+2. MENU : le personnage annonce le scénario sélectionné (bouche e-ink + voix)
+3. Touches ◀ / ▶ pour naviguer → ✓ pour sélectionner (ou pose de la carte NFC du scénario)
+4. Confirmation vocale : "Commencer Le Trésor du Capitaine Verdier ?" → ✓
+5. La box charge le JSON depuis la SD → vérifie la signature
 6. Écrans : animation de démarrage thématique
 7. Audio : narration d'introduction
 8. Jeu commence → moteur de scénario prend le contrôle
@@ -1564,15 +1577,13 @@ Ces 3 réponses sont liées à la session (`hints_used`, `duration_sec`, `score`
 [ ] EQ DSP PCM5122 testée sur un scénario (pas de distorsion)
 [ ] Micro détecte un claquement de mains à 1 mètre
 [ ] PN532 lit un tag NTAG213 en < 500ms
-[ ] MTCH2120 keypad détecte les 12 touches avec < 1% faux positifs
-[ ] AS5600 mesure la rotation avec précision ≤ 2° sur 360°
+[ ] MPR121 keypad détecte les 12 touches avec < 1% faux positifs (MTCH2120 : même test en Phase 2 PCB)
+[ ] Potentiomètres ADC : valeur stable, pleine échelle sur les 3 canaux
 [ ] LSM6DSOXTR détecte une inclinaison de 15° minimum
 [ ] BMP280 détecte un souffle buccal à 5 cm
 [ ] VEML7700 distingue pièce éclairée / pièce sombre
 [ ] MLX90614 mesure la température d'une main à 2 cm
-[ ] Servo 1 ouvre / ferme le compartiment en < 2s sans calage
 [ ] WS2812 : toute la chaîne répond, couleurs correctes
-[ ] Laser : s'allume / s'éteint proprement via MOSFET
 [ ] USB-C : programmation ET charge fonctionnels simultanément
 [ ] Carte SD : lecture / écriture à > 1 MB/s
 [ ] Batterie : tient 90 minutes sous charge normale
@@ -1582,7 +1593,7 @@ Ces 3 réponses sont liées à la session (`hints_used`, `duration_sec`, `score`
 #### 8.1.2 Tests firmware
 
 ```
-[ ] Le moteur YAML parse un scénario complet (Verdier) sans erreur
+[ ] Le moteur de scénario parse le JSON généré complet (Verdier) sans erreur
 [ ] Toutes les transitions de states s'enchaînent correctement
 [ ] Les timeouts déclenchent les hints au bon moment
 [ ] Le fallback hardware fonctionne (débrancher un capteur → mode dégradé)

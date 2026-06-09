@@ -4,6 +4,21 @@
 
 ---
 
+## Découpage en phases (sprint ~4 semaines)
+
+| Phase | Contenu | Livrable vérifiable |
+|---|---|---|
+| **0** | Infra Coolify : Supabase self-hosted + service Next.js | `curl` → 200 sur les deux domaines |
+| **1** | Init projet + landing + formulaire waitlist | Landing en ligne, emails dans `waitlist` |
+| **2** | Auth (email + Google) + schéma SQL + catalogue + bibliothèque | Register/login OK, `/shop` liste le seed |
+| **3** | API box : challenge/auth (HMAC→JWT), register, sync, session + page publique `/v/` | `curl` du flux d'auth box complet |
+| **4** | Stripe : checkout + webhook → licence | Achat test 4242… → licence en DB |
+| **5** | Studio + simulateur (Phase 2 produit) | Player JSON dans le navigateur |
+
+> Ordre choisi pour livrer de la valeur visible tôt (landing/waitlist pour le FFF) et débloquer le firmware ensuite (API box avant Stripe — la box peut synchroniser des scénarios gratuits sans paiement).
+
+---
+
 ## Phase 0 — Infrastructure Coolify (manuel, ~1h)
 
 ### 0.1 Supabase self-hosted
@@ -31,7 +46,7 @@ BOX_MASTER_SECRET=<openssl rand -hex 32>   # master de dérivation par-box (jama
 NEXT_PUBLIC_APP_URL=https://box.agill.es
 ```
 
-### 0.3 Stripe test mode (optionnel, sera fait phase 4)
+### 0.3 Stripe test mode (optionnel, sera fait en Phase 4)
 1. stripe.com → Test mode → Créer produit "Capitaine Verdier" prix fixe CHF
 2. Récupérer `pk_test_` / `sk_test_`
 3. Webhook → `https://box.agill.es/api/webhooks/stripe`
@@ -86,12 +101,13 @@ web/
       scores/page.tsx                           #   → /scores
       account/page.tsx                          #   → /account
     api/
-      box/
+      box/                                      # WB-11 : rate limiting 10 req/min/box_uid (Phase 2 produit)
         challenge/route.ts                      # GET  — nonce HMAC (usage unique, TTL 60s)
         auth/route.ts                           # POST — HMAC response → JWT 2h
-        register/route.ts                       # POST — enregistrement box (BLE provisioning)
+        register/route.ts                       # POST — enregistrement box (max 3 box/compte, WB-04)
         sync/route.ts                           # GET  — scénarios + firmware
         session/route.ts                        # POST — upload score
+      waitlist/route.ts                         # POST — formulaire landing (ou server action)
       checkout/route.ts
       webhooks/
         stripe/route.ts
@@ -263,7 +279,9 @@ export async function verifyBoxJwt(token: string) {
 **`lib/stripe.ts`**
 ```typescript
 import Stripe from 'stripe'
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2024-04-10' })
+// Pas d'apiVersion épinglée : le SDK utilise la version qu'il a été buildé contre,
+// ce qui garantit la cohérence types ↔ API. Épingler une vieille date casse les types.
+export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 ```
 
 ---
@@ -310,6 +328,8 @@ create table public.devices (
 );
 alter table public.devices enable row level security;
 create policy "own devices" on public.devices for all using (auth.uid() = owner_id);
+-- WB-04 : max 3 box par compte — vérifié dans /api/box/register (count avant insert),
+-- pas de contrainte SQL (le service_role doit pouvoir réassigner en SAV)
 
 -- Scenarios
 create table public.scenarios (
@@ -370,9 +390,16 @@ create table public.game_sessions (
   hints_used integer default 0,
   completed boolean default false,
   session_token text unique default encode(gen_random_bytes(16), 'hex'),
+  -- Micro-enquête post-partie (FSD §7.3.4), remplie depuis la page /v/ publique
+  feedback_rating smallint check (feedback_rating between 1 and 3),       -- 😕/😊/🤩
+  feedback_difficulty text check (feedback_difficulty in ('too_easy','balanced','too_hard')),
+  feedback_recommend boolean,
   played_at timestamptz default now()
 );
--- Insertion via service_role (firmware) — pas de RLS user
+-- Insertion : route /api/box/session (service_role après vérif JWT box).
+-- Lecture page /v/[scenario]/[session] et écriture feedback : route handler
+-- server-side (service_role) qui matche le session_token — jamais d'accès
+-- client direct, pas de policy RLS publique.
 
 -- Challenges box (anti-replay du nonce d'auth)
 -- Indispensable : une Map en mémoire ne survit ni aux restarts ni au multi-instance.
@@ -383,7 +410,8 @@ create table public.box_challenges (
   used boolean default false
 );
 -- /api/box/challenge insère ; /api/box/auth vérifie (non used, non expiré) puis used=true.
--- Purge périodique : delete from box_challenges where expires_at < now();
+-- Purge opportuniste (pas besoin de cron) : chaque GET /api/box/challenge commence par
+-- delete from box_challenges where expires_at < now();
 
 -- Seed
 insert into public.scenarios (slug, title, description, price_chf, difficulty, duration_min, scenario_path)
@@ -401,7 +429,9 @@ values ('capitaine_verdier', 'Le Mystère du Capitaine Verdier',
 curl https://supabase.agill.es/rest/v1/          # → 200
 curl https://box.agill.es                       # → page Next.js
 
-# Phase 1 : register/login OK · tables dans Supabase Studio · git push → Coolify build vert
+# Phase 1 : landing en ligne · POST waitlist → ligne dans la table · git push → Coolify build vert
+
+# Phase 2 : register/login OK · tables dans Supabase Studio · /shop affiche le seed
 
 # Phase 3 — Auth box
 curl "https://box.agill.es/api/box/challenge?box_uid=ESP32S3-TEST-0001"
@@ -412,7 +442,7 @@ curl -X POST https://box.agill.es/api/box/auth \
   -d '{"box_uid":"ESP32S3-TEST-0001","challenge":"abc123...","challenge_response":"hmac..."}'
 # → { "token": "eyJ...", "server_time": 1234567890 }
 
-# Stripe webhook local
+# Phase 4 — Stripe webhook local
 stripe listen --forward-to localhost:3000/api/webhooks/stripe
 # Achat test (card 4242 4242 4242 4242) → license créée dans Supabase
 ```

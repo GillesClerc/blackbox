@@ -12,7 +12,7 @@ Box physique électronique posée au centre d'une table. Les joueurs résolvent 
 
 ## L'objet
 
-Cube 120×120×120mm en bois et ardoise. Design artisanal, pensé pour rester sur une étagère entre deux parties. À l'intérieur : ESP32-S3, batterie LiPo, capteurs (NFC, capacitif, boussole, accéléromètre, souffle, angle magnétique, lumière, Hall), deux écrans, haut-parleur stéréo. Un compartiment servo crée le moment de révélation physique.
+Cube ~120-150mm de côté en bois et ardoise *(dimension finale à valider au proto boîtier — la FSD travaille sur 150mm)*. Design artisanal, pensé pour rester sur une étagère entre deux parties. À l'intérieur : ESP32-S3, batterie LiPo, capteurs (NFC, capacitif, accéléromètre/gyro, souffle, température IR, aimant 3D, lumière, micro, potentiomètres), trois écrans (deux yeux ronds + bouche e-ink), haut-parleur stéréo. Un compartiment servo crée le moment de révélation physique (Phase 2).
 
 Deux gammes :
 - **Box Lite** (99-129 CHF) : MDF, capteurs essentiels, grand public
