@@ -16,6 +16,7 @@
 #include "esp_random.h"
 #include "esp_heap_caps.h"
 #include "esp_log.h"
+#include "esp_task_wdt.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include <stdlib.h>
@@ -200,6 +201,10 @@ static void draw_eye(uint8_t e, uint32_t iScale,
 // Ne jamais appeler frame() depuis plusieurs tâches simultanément.
 static void frame(uint16_t iScale, const eyes_anim_state_t *st)
 {
+    // TWDT : eyes_anim_step() dure ~10 s (split blocant), le reset doit donc se
+    // faire ici, à la granularité frame. No-op si la tâche n'est pas enregistrée.
+    esp_task_wdt_reset();
+
     static uint8_t eye_index = 0;
     uint32_t t = micros();
 

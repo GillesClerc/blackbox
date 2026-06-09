@@ -155,7 +155,7 @@ static void flash_task(void *arg)
     (void)arg;
     flash_cmd_t cmd;
     while (1) {
-        if (xQueueReceive(s_flash_queue, &cmd, portMAX_DELAY) != pdTRUE) continue;
+        if (xQueueReceive(s_flash_queue, &cmd, pdMS_TO_TICKS(500)) != pdTRUE) continue;
         for (int i = 0; i < cmd.count; i++) {
             leds_fill_hex(cmd.hex, 255); leds_show();
             vTaskDelay(pdMS_TO_TICKS(100));

@@ -34,8 +34,10 @@ esp_err_t mtch2120_init(i2c_master_bus_handle_t bus) {
 esp_err_t mtch2120_read(mtch2120_data_t *out) {
     if (!s_dev) return ESP_ERR_INVALID_STATE;
 
+    // Fonction runtime : jamais d'ESP_ERROR_CHECK ici (abort() sur glitch I2C).
     uint8_t buf[2];
-    ESP_ERROR_CHECK(i2c_bus_read_regs(s_dev, REG_DET_STATUS_0, buf, 2));
+    esp_err_t ret = i2c_bus_read_regs(s_dev, REG_DET_STATUS_0, buf, 2);
+    if (ret != ESP_OK) { ESP_LOGW(TAG, "mtch2120_read: I2C %s", esp_err_to_name(ret)); return ret; }
 
     out->touched = (uint16_t)buf[0] | ((uint16_t)(buf[1] & 0x0F) << 8);
     for (int i = 0; i < MTCH2120_NUM_CH; i++) {

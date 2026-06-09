@@ -36,7 +36,8 @@ static i2s_chan_handle_t        s_tx       = NULL;
 static i2c_master_dev_handle_t  s_dac      = NULL;
 static SemaphoreHandle_t        s_mutex    = NULL;
 static atomic_bool              s_fg_play;   // M3 : accès concurrent bg/fg — atomic_bool C11
-static volatile bool            s_bg_run   = false;
+static atomic_bool              s_bg_run;    // SMP : lu par la tâche bg (core 0), écrit depuis d'autres cores
+static atomic_bool              s_bg_exited; // posé par la tâche bg juste avant vTaskDelete(NULL)
 static volatile uint8_t         s_peak_level = 0;
 static TaskHandle_t             s_bg_task  = NULL;
 static const audio_bg_note_t   *s_bg_notes = NULL;
@@ -133,7 +134,7 @@ static void write_tone_internal(uint16_t freq, uint16_t dur_ms,
 static void bg_task_fn(void *arg)
 {
     int idx = 0;
-    while (s_bg_run) {
+    while (atomic_load(&s_bg_run)) {
         if (atomic_load(&s_fg_play)) {
             vTaskDelay(pdMS_TO_TICKS(20));
             continue;
@@ -151,7 +152,7 @@ static void bg_task_fn(void *arg)
 
         // Gap : alimenter le DMA avec du silence (mutex obligatoire — même canal I2S)
         uint32_t gap_ms = n->gap_ms;
-        while (gap_ms > 0 && s_bg_run) {
+        while (gap_ms > 0 && atomic_load(&s_bg_run)) {
             if (atomic_load(&s_fg_play)) {
                 vTaskDelay(pdMS_TO_TICKS(20));
                 gap_ms = gap_ms > 20 ? gap_ms - 20 : 0;
@@ -170,7 +171,7 @@ static void bg_task_fn(void *arg)
 
         idx = (idx + 1) % s_bg_count;
     }
-    s_bg_task = NULL;
+    atomic_store(&s_bg_exited, true);
     vTaskDelete(NULL);
 }
 
@@ -180,6 +181,8 @@ esp_err_t audio_init(i2c_master_bus_handle_t bus)
 {
     // C1 : allouer le buffer tone une seule fois (DMA-capable pour cohérence).
     atomic_init(&s_fg_play, false);
+    atomic_init(&s_bg_run, false);
+    atomic_init(&s_bg_exited, true);
     s_tone_buf = heap_caps_malloc(CHUNK_SAMPLES * 2 * sizeof(int16_t), MALLOC_CAP_DEFAULT);
     if (!s_tone_buf) {
         ESP_LOGE(TAG, "audio_init: alloc tone_buf échoué");
@@ -337,7 +340,7 @@ esp_err_t audio_play_raw(const int16_t *samples, size_t num_samples, uint32_t sr
 
     // C3 : arrêter la tâche bg proprement avant de toucher le canal I2S,
     // puis prendre le mutex pour sérialiser avec tout accès concurrent.
-    s_bg_run = false;
+    atomic_store(&s_bg_run, false);
     atomic_store(&s_fg_play, true);
 
     if (xSemaphoreTake(s_mutex, pdMS_TO_TICKS(500)) != pdTRUE) {
@@ -356,7 +359,13 @@ esp_err_t audio_play_raw(const int16_t *samples, size_t num_samples, uint32_t sr
 
     if (ret == ESP_OK) {
         size_t w;
-        ret = i2s_channel_write(s_tx, samples, num_samples * sizeof(int16_t), &w, portMAX_DELAY);
+        // Timeout dimensionné sur la durée réelle du sample (stéréo) + 1s de marge.
+        // portMAX_DELAY gèlerait la tâche appelante (invisible du TWDT) sur un DMA bloqué.
+        uint32_t dur_ms = (uint32_t)((uint64_t)num_samples * 1000 / ((sr ? sr : SR) * 2));
+        ret = i2s_channel_write(s_tx, samples, num_samples * sizeof(int16_t), &w,
+                                pdMS_TO_TICKS(dur_ms + 1000));
+        if (ret == ESP_ERR_TIMEOUT)
+            ESP_LOGW(TAG, "audio_play_raw: timeout I2S (%u samples)", (unsigned)num_samples);
     }
 
     atomic_store(&s_fg_play, false);
@@ -421,7 +430,7 @@ static void bg_mp3_task_fn(void *arg)
     const uint8_t *ptr       = s_mp3_data;
     int            remaining = (int)s_mp3_size;
 
-    while (s_bg_run) {
+    while (atomic_load(&s_bg_run)) {
         if (atomic_load(&s_fg_play)) { vTaskDelay(pdMS_TO_TICKS(20)); continue; }
 
         if (remaining < 4) {
@@ -480,7 +489,7 @@ static void bg_mp3_task_fn(void *arg)
         }
     }
     s_peak_level = 0;
-    s_bg_task = NULL;
+    atomic_store(&s_bg_exited, true);
     vTaskDelete(NULL);
 }
 
@@ -490,7 +499,8 @@ void audio_bg_mp3_start(const uint8_t *data, size_t size)
     audio_bg_stop();
     s_mp3_data = data;
     s_mp3_size = size;
-    s_bg_run   = true;
+    atomic_store(&s_bg_exited, false);
+    atomic_store(&s_bg_run, true);
     // C2 : stack 32 KB — mp3dec_scratch_t sur pile ~16 KB + headroom FreeRTOS + débordements potentiels
     // (grbuf[2][576]=4608 + syn[33][64]=8448 + maindata[2815] + reste + overhead)
     // Pinned core 0 prio 3 : éviter de préempter eye_task (prio 4 core 1).
@@ -506,7 +516,8 @@ void audio_bg_start(const audio_bg_note_t *notes, int count)
     audio_bg_stop();
     s_bg_notes = notes;
     s_bg_count = count;
-    s_bg_run   = true;
+    atomic_store(&s_bg_exited, false);
+    atomic_store(&s_bg_run, true);
     // Mêmes raisons que bg_mp3 : pinné core 0 prio 3.
     xTaskCreatePinnedToCore(bg_task_fn, "audio_bg", 4096, NULL, 3, &s_bg_task, 0);
     ESP_LOGI(TAG, "bg music démarrée (%d notes)", count);
@@ -514,12 +525,13 @@ void audio_bg_start(const audio_bg_note_t *notes, int count)
 
 void audio_bg_stop(void)
 {
-    s_bg_run = false;
+    atomic_store(&s_bg_run, false);
     if (s_bg_task) {
-        // m2 : attendre que la tâche se termine proprement plutôt qu'un délai aveugle.
-        // On sonde eTaskGetState jusqu'à eDeleted avec timeout de 500 ms.
+        // M3 : ne jamais déréférencer s_bg_task (TOCTOU — la tâche bg peut se
+        // terminer entre le test et l'usage, et eTaskGetState(NULL) est UB).
+        // On attend le flag atomique s_bg_exited posé juste avant vTaskDelete(NULL).
         const TickType_t deadline = xTaskGetTickCount() + pdMS_TO_TICKS(500);
-        while (s_bg_task && eTaskGetState(s_bg_task) != eDeleted) {
+        while (!atomic_load(&s_bg_exited)) {
             if (xTaskGetTickCount() >= deadline) {
                 ESP_LOGW(TAG, "audio_bg_stop: tâche bg non terminée dans les temps");
                 break;

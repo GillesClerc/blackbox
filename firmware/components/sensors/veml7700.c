@@ -50,8 +50,11 @@ esp_err_t veml7700_init(i2c_master_bus_handle_t bus) {
 esp_err_t veml7700_read(veml7700_data_t *out) {
     if (!s_dev) return ESP_ERR_INVALID_STATE;
 
-    ESP_ERROR_CHECK(veml_read16(REG_ALS,   &out->als_raw));
-    ESP_ERROR_CHECK(veml_read16(REG_WHITE, &out->white));
+    // Fonction runtime : jamais d'ESP_ERROR_CHECK ici (abort() sur glitch I2C).
+    esp_err_t ret = veml_read16(REG_ALS, &out->als_raw);
+    if (ret != ESP_OK) { ESP_LOGW(TAG, "veml7700_read: I2C %s", esp_err_to_name(ret)); return ret; }
+    ret = veml_read16(REG_WHITE, &out->white);
+    if (ret != ESP_OK) { ESP_LOGW(TAG, "veml7700_read: I2C %s", esp_err_to_name(ret)); return ret; }
     out->lux = (float)out->als_raw * LUX_RESOLUTION;
     return ESP_OK;
 }

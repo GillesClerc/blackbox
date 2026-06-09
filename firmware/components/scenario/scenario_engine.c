@@ -3,6 +3,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/queue.h"
+#include "esp_task_wdt.h"
 #include "cJSON.h"
 #include <string.h>
 #include <stdlib.h>
@@ -259,7 +260,13 @@ static void engine_task(void *arg) {
     }
     enter_step(cJSON_GetStringValue(cJSON_GetObjectItem(first, "id")));
 
+    // TWDT : signale un blocage du moteur. Pas de panic par défaut (warning log),
+    // donc une action longue (audio bloquant >5s) ne crashe pas, elle se voit juste.
+    esp_err_t wdt_ret = esp_task_wdt_add(NULL);
+    if (wdt_ret != ESP_OK) ESP_LOGW(TAG, "esp_task_wdt_add: %s", esp_err_to_name(wdt_ret));
+
     while (1) {
+        if (wdt_ret == ESP_OK) esp_task_wdt_reset();
         if (!s_current) {
             vTaskDelay(pdMS_TO_TICKS(1000));
             continue;
@@ -382,6 +389,18 @@ static void engine_task(void *arg) {
 // --- API publique ---
 
 esp_err_t scenario_engine_init(const char *json) {
+    // Réinit possible (changement de scénario) : libérer l'état précédent.
+    if (s_root) {
+        cJSON_Delete(s_root);
+        s_root  = NULL;
+        s_steps = NULL;
+        s_current = NULL;
+    }
+    if (s_queue) {
+        vQueueDelete(s_queue);
+        s_queue = NULL;
+    }
+
     s_root = cJSON_Parse(json);
     if (!s_root) {
         const char *err = cJSON_GetErrorPtr();
@@ -432,8 +451,10 @@ esp_err_t scenario_engine_post_event(const scenario_event_t *evt) {
 
 esp_err_t scenario_engine_start(void) {
     if (!s_steps || !s_queue) return ESP_ERR_INVALID_STATE;
-    BaseType_t r = xTaskCreate(engine_task, "scenario_engine",
-                               ENGINE_STACK_SIZE, NULL, ENGINE_PRIORITY, NULL);
+    // Core 0 : laisse eye_task (core 1) tranquille — voir flash_task dans main.c.
+    BaseType_t r = xTaskCreatePinnedToCore(engine_task, "scenario_engine",
+                                           ENGINE_STACK_SIZE, NULL, ENGINE_PRIORITY,
+                                           NULL, 0);
     if (r != pdPASS) {
         ESP_LOGE(TAG, "échec création tâche");
         return ESP_FAIL;

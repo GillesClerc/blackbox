@@ -41,12 +41,16 @@ esp_err_t as5600_init(i2c_master_bus_handle_t bus) {
 esp_err_t as5600_read(as5600_data_t *out) {
     if (!s_dev) return ESP_ERR_INVALID_STATE;
 
+    // Fonction runtime : jamais d'ESP_ERROR_CHECK ici (abort() sur glitch I2C).
     uint8_t status;
-    i2c_bus_read_reg(s_dev, REG_STATUS, &status);
+    esp_err_t ret = i2c_bus_read_reg(s_dev, REG_STATUS, &status);
+    if (ret != ESP_OK) { ESP_LOGW(TAG, "as5600_read: I2C %s", esp_err_to_name(ret)); return ret; }
 
     uint8_t raw[2], ang[2];
-    ESP_ERROR_CHECK(i2c_bus_read_regs(s_dev, REG_RAW_ANGLE_H, raw, 2));
-    ESP_ERROR_CHECK(i2c_bus_read_regs(s_dev, REG_ANGLE_H,     ang, 2));
+    ret = i2c_bus_read_regs(s_dev, REG_RAW_ANGLE_H, raw, 2);
+    if (ret != ESP_OK) { ESP_LOGW(TAG, "as5600_read: I2C %s", esp_err_to_name(ret)); return ret; }
+    ret = i2c_bus_read_regs(s_dev, REG_ANGLE_H, ang, 2);
+    if (ret != ESP_OK) { ESP_LOGW(TAG, "as5600_read: I2C %s", esp_err_to_name(ret)); return ret; }
 
     out->raw_angle = ((uint16_t)(raw[0] & 0x0F) << 8) | raw[1];
     out->angle     = ((uint16_t)(ang[0] & 0x0F) << 8) | ang[1];

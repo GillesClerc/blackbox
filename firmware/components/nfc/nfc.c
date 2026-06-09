@@ -104,6 +104,10 @@ static esp_err_t pn532_read_response(uint8_t expected_cmd,
         return ESP_ERR_INVALID_RESPONSE;
     }
     uint8_t len = raw[4] - 2;  // LEN inclut TFI + CMD, on soustrait les 2
+    if (len > sizeof(raw) - 8) {
+        ESP_LOGE(TAG, "LEN invalide (%u > %u)", len, (unsigned)(sizeof(raw) - 8));
+        return ESP_ERR_INVALID_RESPONSE;
+    }
     if (data_len) *data_len = len;
     if (data && len) memcpy(data, &raw[8], len);
     return ESP_OK;

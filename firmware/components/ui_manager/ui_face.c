@@ -8,6 +8,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/semphr.h"
+#include "esp_task_wdt.h"
 
 #define TAG "ui_face"
 
@@ -65,7 +66,11 @@ static void eye_task(void *arg)
 {
     (void)arg;
     ESP_LOGI(TAG, "eye task running");
+    // TWDT : détecte un freeze de l'animation (SPI bloqué, mutex jamais rendu...).
+    esp_err_t wdt_ret = esp_task_wdt_add(NULL);
+    if (wdt_ret != ESP_OK) ESP_LOGW(TAG, "esp_task_wdt_add: %s", esp_err_to_name(wdt_ret));
     while (1) {
+        if (wdt_ret == ESP_OK) esp_task_wdt_reset();
         eyes_anim_state_t snapshot;
         // M1 : timeout 200 ms — la section critique est <1 µs (copie struct).
         if (xSemaphoreTake(s_mutex, pdMS_TO_TICKS(MUTEX_TIMEOUT_MS)) != pdTRUE) {

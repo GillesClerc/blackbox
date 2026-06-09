@@ -63,8 +63,13 @@ esp_err_t lsm6_read(lsm6_data_t *out) {
     if (!s_dev) return ESP_ERR_INVALID_STATE;
 
     uint8_t raw[14];  // TEMP(2) + GYRO(6) + ACCEL(6) — reg TEMP_L=0x20 à OUTZ_H_A=0x2D
-    // Lire 14 octets depuis REG_TEMP_L (auto-incrément activé via CTRL3_C)
-    ESP_ERROR_CHECK(i2c_bus_read_regs(s_dev, REG_TEMP_L, raw, 14));
+    // Lire 14 octets depuis REG_TEMP_L (auto-incrément activé via CTRL3_C).
+    // Fonction runtime : jamais d'ESP_ERROR_CHECK ici (abort() sur glitch I2C).
+    esp_err_t ret = i2c_bus_read_regs(s_dev, REG_TEMP_L, raw, 14);
+    if (ret != ESP_OK) {
+        ESP_LOGW(TAG, "lsm6_read: I2C %s", esp_err_to_name(ret));
+        return ret;
+    }
 
     int16_t temp_raw = (int16_t)((raw[1] << 8) | raw[0]);
     int16_t gx_raw   = (int16_t)((raw[3] << 8) | raw[2]);
@@ -92,14 +97,18 @@ float lsm6_pitch_deg(const lsm6_data_t *d) {
 esp_err_t lsm6_sleep(void) {
     if (!s_dev) return ESP_ERR_INVALID_STATE;
     // ODR=0 sur les deux capteurs = power down
-    ESP_ERROR_CHECK(i2c_bus_write_reg(s_dev, REG_CTRL1_XL, 0x00));
-    ESP_ERROR_CHECK(i2c_bus_write_reg(s_dev, REG_CTRL2_G,  0x00));
+    esp_err_t ret = i2c_bus_write_reg(s_dev, REG_CTRL1_XL, 0x00);
+    if (ret != ESP_OK) { ESP_LOGW(TAG, "lsm6_sleep: I2C %s", esp_err_to_name(ret)); return ret; }
+    ret = i2c_bus_write_reg(s_dev, REG_CTRL2_G, 0x00);
+    if (ret != ESP_OK) { ESP_LOGW(TAG, "lsm6_sleep: I2C %s", esp_err_to_name(ret)); return ret; }
     return ESP_OK;
 }
 
 esp_err_t lsm6_wake(void) {
     if (!s_dev) return ESP_ERR_INVALID_STATE;
-    ESP_ERROR_CHECK(i2c_bus_write_reg(s_dev, REG_CTRL1_XL, CTRL1_XL_104HZ_2G));
-    ESP_ERROR_CHECK(i2c_bus_write_reg(s_dev, REG_CTRL2_G,  CTRL2_G_104HZ_250));
+    esp_err_t ret = i2c_bus_write_reg(s_dev, REG_CTRL1_XL, CTRL1_XL_104HZ_2G);
+    if (ret != ESP_OK) { ESP_LOGW(TAG, "lsm6_wake: I2C %s", esp_err_to_name(ret)); return ret; }
+    ret = i2c_bus_write_reg(s_dev, REG_CTRL2_G, CTRL2_G_104HZ_250);
+    if (ret != ESP_OK) { ESP_LOGW(TAG, "lsm6_wake: I2C %s", esp_err_to_name(ret)); return ret; }
     return ESP_OK;
 }
