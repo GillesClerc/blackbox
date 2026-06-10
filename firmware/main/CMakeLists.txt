@@ -16,7 +16,7 @@ idf_component_register(SRCS "main.c"
                     INCLUDE_DIRS "."
                     EMBED_TXTFILES "../scenarios/capitaine_verdier.json"
                     EMBED_FILES    ${EMBED_BIN}
-                    REQUIRES display ui_manager sensors audio leds scenario config_manager freertos log esp_driver_i2c esp_timer)
+                    REQUIRES hal_display ui_manager hal_i2c_bus hal_touch hal_audio hal_leds scenario config_manager freertos log esp_timer)
 
 if(COMPILE_DEFS)
     target_compile_definitions(__idf_main PRIVATE ${COMPILE_DEFS})

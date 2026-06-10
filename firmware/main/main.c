@@ -2,12 +2,12 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/queue.h"
-#include "eyes.h"
+#include "hal_display.h"
 #include "ui_face.h"
-#include "i2c_bus.h"
-#include "audio.h"
-#include "mpr121.h"
-#include "leds.h"
+#include "hal_i2c_bus.h"
+#include "hal_audio.h"
+#include "hal_touch.h"
+#include "hal_leds.h"
 #include "scenario_engine.h"
 #include "config_manager.h"
 #include "cJSON.h"
@@ -28,7 +28,7 @@ extern const uint8_t _binary_ambient_mp3_end[];
 // ─── Musique de fond (fallback sans MP3) ─────────────────────────────────────
 
 #ifndef HAS_AMBIENT_MP3
-static const audio_bg_note_t s_ambient[] = {
+static const hal_audio_bg_note_t s_ambient[] = {
     {110, 250, 1800}, {0, 0, 600}, {138, 180, 1200}, {0, 0, 400},
     {123, 200, 2000}, {0, 0, 1000}, {110, 350, 2500}, {0, 0, 1400},
     {147, 200, 1000}, {138, 150, 1500}, {0, 0, 2200},
@@ -41,10 +41,10 @@ static const audio_bg_note_t s_ambient[] = {
 static void led_hex(const char *hex)
 {
     if (!hex || hex[0] != '#' || strlen(hex) < 7)
-        leds_clear();
+        hal_leds_clear();
     else
-        leds_fill_hex(hex, 80);
-    leds_show();
+        hal_leds_fill_hex(hex, 80);
+    hal_leds_show();
 }
 
 // ─── Audio ───────────────────────────────────────────────────────────────────
@@ -56,31 +56,31 @@ static void play_audio(const char *name)
     if (strcmp(name, "correct") == 0) {
         static const uint16_t f[] = {659, 784, 1047};
         static const uint16_t d[] = {130, 130,  280};
-        audio_play_sequence(f, d, 3, 30);
+        hal_audio_play_sequence(f, d, 3, 30);
         return;
     }
     if (strcmp(name, "wrong") == 0) {
         static const uint16_t f[] = {220, 185};
         static const uint16_t d[] = {200, 350};
-        audio_play_sequence(f, d, 2, 20);
+        hal_audio_play_sequence(f, d, 2, 20);
         return;
     }
     if (strcmp(name, "victoire") == 0) {
         static const uint16_t f[] = {523, 659, 784, 1047, 1319};
         static const uint16_t d[] = {120, 120, 120,  120,  500};
-        audio_play_sequence(f, d, 5, 25);
+        hal_audio_play_sequence(f, d, 5, 25);
         return;
     }
     if (strcmp(name, "activation") == 0) {
         static const uint16_t f[] = {440, 554, 659};
         static const uint16_t d[] = {120, 120, 250};
-        audio_play_sequence(f, d, 3, 20);
+        hal_audio_play_sequence(f, d, 3, 20);
         return;
     }
     if (strcmp(name, "intro_ambient") == 0) {
         static const uint16_t f[] = {110, 138, 165, 185};
         static const uint16_t d[] = {350, 250, 250, 500};
-        audio_play_sequence(f, d, 4, 80);
+        hal_audio_play_sequence(f, d, 4, 80);
         return;
     }
 
@@ -96,11 +96,11 @@ static void play_audio(const char *name)
     };
     for (int i = 0; tbl[i].n; i++) {
         if (strcmp(name, tbl[i].n) == 0) {
-            audio_play_tone(tbl[i].f, tbl[i].d);
+            hal_audio_play_tone(tbl[i].f, tbl[i].d);
             return;
         }
     }
-    audio_play_tone(440, 120);
+    hal_audio_play_tone(440, 120);
 }
 
 // ─── Callbacks scénario (texte → log en attendant le nouveau UI) ─────────────
@@ -157,9 +157,9 @@ static void flash_task(void *arg)
     while (1) {
         if (xQueueReceive(s_flash_queue, &cmd, pdMS_TO_TICKS(500)) != pdTRUE) continue;
         for (int i = 0; i < cmd.count; i++) {
-            leds_fill_hex(cmd.hex, 255); leds_show();
+            hal_leds_fill_hex(cmd.hex, 255); hal_leds_show();
             vTaskDelay(pdMS_TO_TICKS(100));
-            leds_clear();                leds_show();
+            hal_leds_clear();                hal_leds_show();
             vTaskDelay(pdMS_TO_TICKS(80));
         }
     }
@@ -223,23 +223,23 @@ static int  s_code_len = 0;
 static void touch_task(void *arg)
 {
     (void)arg;
-    esp_err_t ret = mpr121_init();
+    esp_err_t ret = hal_touch_init();
     if (ret != ESP_OK) {
-        ESP_LOGW(TAG, "MPR121 absent: %s", esp_err_to_name(ret));
+        ESP_LOGW(TAG, "touch absent: %s", esp_err_to_name(ret));
         vTaskDelete(NULL);
         return;
     }
 
-    mpr121_data_t prev = {0}, curr;
-    TickType_t hold_start[MPR121_NUM_CH] = {0};
-    bool       hold_fired[MPR121_NUM_CH] = {false};
+    hal_touch_data_t prev = {0}, curr;
+    TickType_t hold_start[HAL_TOUCH_NUM_CH] = {0};
+    bool       hold_fired[HAL_TOUCH_NUM_CH] = {false};
 
     while (1) {
-        if (mpr121_read(&curr) != ESP_OK) { vTaskDelay(pdMS_TO_TICKS(50)); continue; }
+        if (hal_touch_read(&curr) != ESP_OK) { vTaskDelay(pdMS_TO_TICKS(50)); continue; }
 
         TickType_t now = xTaskGetTickCount();
 
-        for (int i = 0; i < MPR121_NUM_CH; i++) {
+        for (int i = 0; i < HAL_TOUCH_NUM_CH; i++) {
             bool rose  = curr.ch[i] && !prev.ch[i];
             bool fell  = !curr.ch[i] && prev.ch[i];
             bool held  = curr.ch[i] && !hold_fired[i] && hold_start[i]
@@ -249,7 +249,7 @@ static void touch_task(void *arg)
 
             if (held) {
                 hold_fired[i] = true;
-                audio_play_tone(1200, 100);
+                hal_audio_play_tone(1200, 100);
                 scenario_event_t evt = {0};
                 if      (i == 11) { evt.type = EVT_RFID_READ;    strncpy(evt.str, "04:VE:RD:01", sizeof(evt.str)-1); }
                 else if (i == 10) { evt.type = EVT_ROTARY_VALUE; evt.int_val = 270; }
@@ -263,13 +263,13 @@ static void touch_task(void *arg)
                         s_code[s_code_len++] = '0' + i;
                         s_code[s_code_len]   = '\0';
                         ESP_LOGI(TAG, "code=%s", s_code);
-                        audio_play_tone(880 + i * 40, 40);
+                        hal_audio_play_tone(880 + i * 40, 40);
                     }
                 } else if (i == 10) {
                     if (s_code_len > 0) {
                         s_code[--s_code_len] = '\0';
                         ESP_LOGI(TAG, "code=%s", s_code);
-                        audio_play_tone(440, 50);
+                        hal_audio_play_tone(440, 50);
                     }
                 } else if (i == 11) {
                     if (s_code_len > 0) {
@@ -293,26 +293,26 @@ static void touch_task(void *arg)
 void app_main(void)
 {
     // Hardware init
-    leds_init(48, 1);
-    leds_clear();
-    leds_show();
+    hal_leds_init(48, 1);
+    hal_leds_clear();
+    hal_leds_show();
 
     // Task dédiée pour action_flash (sinon bloque scenario_engine ~720ms et
     // préempte eye_task sur core 1).
     s_flash_queue = xQueueCreate(4, sizeof(flash_cmd_t));
     xTaskCreatePinnedToCore(flash_task, "flash", 2048, NULL, 3, NULL, 0);
 
-    ESP_ERROR_CHECK(eyes_init());
-    eyes_fill_all(EYE_BLACK);
+    ESP_ERROR_CHECK(hal_display_init());
+    hal_display_fill_all(EYE_BLACK);
     ESP_ERROR_CHECK(config_manager_init());
 
     ESP_ERROR_CHECK(ui_face_init());
     ESP_ERROR_CHECK(ui_face_start());
 
     // I2C + audio
-    ESP_ERROR_CHECK(i2c_bus_init());
-    ESP_ERROR_CHECK(audio_init());
-    audio_set_volume(config_get_volume());
+    ESP_ERROR_CHECK(hal_i2c_bus_init());
+    ESP_ERROR_CHECK(hal_audio_init());
+    hal_audio_set_volume(config_get_volume());
 
     // Scenario engine — sans UI : les actions screen_* loggent les textes.
     esp_err_t ret = scenario_engine_init(capitaine_verdier_json_start);
@@ -334,10 +334,10 @@ void app_main(void)
             ESP_LOGE(TAG, "scenario_engine_start: %s", esp_err_to_name(ret));
         } else {
 #ifdef HAS_AMBIENT_MP3
-            audio_bg_mp3_start(_binary_ambient_mp3_start,
+            hal_audio_bg_mp3_start(_binary_ambient_mp3_start,
                                _binary_ambient_mp3_end - _binary_ambient_mp3_start);
 #else
-            audio_bg_start(s_ambient, sizeof(s_ambient) / sizeof(s_ambient[0]));
+            hal_audio_bg_start(s_ambient, sizeof(s_ambient) / sizeof(s_ambient[0]));
 #endif
         }
     }

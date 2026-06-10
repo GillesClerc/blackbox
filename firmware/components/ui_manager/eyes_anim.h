@@ -1,7 +1,7 @@
 #pragma once
 
 #include <stdint.h>
-#include "eyes.h"   // EYE_LEFT/EYE_RIGHT, EYE_WIDTH/EYE_HEIGHT
+#include "hal_display.h"   // EYE_LEFT/EYE_RIGHT, EYE_WIDTH/EYE_HEIGHT
 
 // Modulations exposées par ui_face pour customiser le rendu sans toucher
 // au pipeline Uncanny Eyes interne.
@@ -19,7 +19,7 @@ typedef struct {
 // Reset to safe defaults (zeros).
 void eyes_anim_state_init(eyes_anim_state_t *s);
 
-// Init pipeline (utilise eyes_init() côté driver — doit avoir été appelé avant).
+// Init pipeline (utilise hal_display_init() côté driver — doit avoir été appelé avant).
 esp_err_t eyes_anim_init(void);
 
 // Effectue 1 frame pour 1 œil (alterne L/R en interne). Retourne ESP_OK.

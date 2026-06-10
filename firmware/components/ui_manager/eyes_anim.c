@@ -2,16 +2,15 @@
 // Adapté du fork GC9A01 de thelastoutpostworkshop / Bodmer (TFT_eSPI).
 //
 // Différences notables :
-//   - SPI/DMA gérés via esp_lcd (driver eyes.c / esp_lcd_gc9a01).
+//   - SPI/DMA gérés par le HAL (hal_display, API hal_display_draw_eye).
 //   - Pas de PROGMEM ni de macros Arduino.
 //   - L'œil rendu reste 128×128 (taille des assets defaultEye.h), centré
 //     dans la fenêtre 240×240 du GC9A01. Le reste reste noir.
 //   - Modulations émotion exposées via eyes_anim_state_t.
 
 #include "eyes_anim.h"
-#include "eyes.h"
+#include "hal_display.h"
 #include "data/eye_assets.h"
-#include "esp_lcd_panel_ops.h"
 #include "esp_timer.h"
 #include "esp_random.h"
 #include "esp_heap_caps.h"
@@ -67,12 +66,11 @@ static uint32_t s_time_to_next_blink_us = 0;
 
 // Framebuffers DMA full-frame, un PAR ŒIL (128×128 px × 2 octets = 32 KiB chacun).
 //
-// On rend la frame complète en RAM, puis un SEUL esp_lcd_panel_draw_bitmap
-// pousse toute la fenêtre. Un buffer par œil est nécessaire parce que :
-//   - esp_lcd_panel_draw_bitmap est ASYNCHRONE (queue + DMA).
-//   - Les deux yeux alternent dans frame(). Si on partageait un seul buffer,
-//     le CPU le réécrirait pour l'œil B pendant que le DMA lit encore pour
-//     l'œil A → corruption silencieuse, écrans figés/noirs.
+// On rend la frame complète en RAM, puis un SEUL hal_display_draw_eye
+// pousse toute la fenêtre (bloquant jusqu'à fin du DMA — le buffer est
+// réutilisable au retour). Un buffer par œil est conservé pour pouvoir
+// repasser en pipeline asynchrone (rendre l'œil B pendant que le DMA
+// pousse l'œil A) sans risque de corruption.
 // 64 KiB total tient largement dans la SRAM interne (~294 KiB dispo).
 static uint16_t *s_framebuf[NUM_EYES] = {NULL, NULL};
 #define FRAMEBUF_PX_COUNT  (SCREEN_WIDTH * SCREEN_HEIGHT)
@@ -129,9 +127,6 @@ static void draw_eye(uint8_t e, uint32_t iScale,
         lT = 255;
     }
 
-    esp_lcd_panel_handle_t panel = eyes_panel(e == 0 ? EYE_LEFT : EYE_RIGHT);
-    if (!panel) return;
-
     int32_t irisY = (int32_t)sclera_y - (SCLERA_HEIGHT - IRIS_HEIGHT) / 2;
 
     // Symétrie horizontale des paupières entre les deux yeux (œil R = mirror).
@@ -180,18 +175,13 @@ static void draw_eye(uint8_t e, uint32_t iScale,
 
     int x0 = s_eye_xpos[e];
     int y0 = EYE_RENDER_OFFY;
-    // Lance le transfert DMA full-frame puis attend la fin via le callback ISR.
-    // Bloquant côté task, mais le CPU est libre pendant le DMA (xSemaphoreTake)
-    // donc le scheduler peut faire tourner d'autres tasks.
-    esp_err_t dret = esp_lcd_panel_draw_bitmap(panel, x0, y0,
-                                               x0 + SCREEN_WIDTH,
-                                               y0 + SCREEN_HEIGHT,
-                                               fb);
+    // Transfert DMA full-frame bloquant côté task, mais le CPU est libre
+    // pendant le DMA (sémaphore interne) donc le scheduler tourne.
+    esp_err_t dret = hal_display_draw_eye(eye, x0, y0,
+                                          SCREEN_WIDTH, SCREEN_HEIGHT, fb);
     if (dret != ESP_OK) {
-        ESP_LOGE(TAG, "draw_bitmap e=%d err=%s", (int)e, esp_err_to_name(dret));
-        return;
+        ESP_LOGE(TAG, "draw_eye e=%d err=%s", (int)e, esp_err_to_name(dret));
     }
-    eyes_wait_done(eye);
 }
 
 // Process motion + blinking + iris pour un œil.
