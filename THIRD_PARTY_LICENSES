@@ -1,0 +1,83 @@
+Third-party licenses — Blackbox / EscapeBox firmware
+=====================================================
+
+Le firmware embarque ou dérive des composants tiers suivants. Le reste du
+code (composants hal_*, scenario, ui_manager hors port Uncanny Eyes,
+config_manager, main) est propriétaire — © Gilles Clerc, tous droits réservés.
+
+
+1. Uncanny Eyes — Adafruit Industries (MIT)
+-------------------------------------------
+Fichiers concernés :
+  firmware/components/ui_manager/eyes_anim.c   (port ESP-IDF du pipeline de rendu)
+  firmware/components/ui_manager/data/defaultEye.h (assets générés par les
+  scripts Adafruit ; via le fork GC9A01 de thelastoutpostworkshop / Bodmer)
+
+The MIT License (MIT)
+
+Copyright (c) 2016 Phil Burgess / Paint Your Dragon for Adafruit Industries
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+
+2. minimp3 — lieff (CC0 1.0 / domaine public)
+---------------------------------------------
+Fichiers concernés :
+  firmware/components/minimp3/
+
+To the extent possible under law, the author(s) have dedicated all copyright
+and related and neighboring rights to this software to the public domain
+worldwide. This software is distributed without any warranty.
+See <http://creativecommons.org/publicdomain/zero/1.0/>.
+
+
+3. ESP-IDF — Espressif Systems (Apache License 2.0)
+---------------------------------------------------
+Framework et drivers (esp_lcd, i2s_std, i2c_master, led_strip, FreeRTOS
+port, etc.) liés au binaire.
+
+Copyright 2015-2026 Espressif Systems (Shanghai) CO LTD
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not
+use this file except in compliance with the License. You may obtain a copy
+of the License at http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+License for the specific language governing permissions and limitations
+under the License.
+
+FreeRTOS (inclus dans ESP-IDF) : Copyright Amazon.com, Inc. — MIT License.
+
+
+4. esp_lcd_gc9a01 — Espressif Systems (Apache License 2.0)
+----------------------------------------------------------
+Composant géré (firmware/managed_components/espressif__esp_lcd_gc9a01),
+driver des écrans GC9A01. Mêmes termes Apache-2.0 que ci-dessus.
+
+cmake_utilities (espressif__cmake_utilities) : Apache-2.0, idem.
+
+
+5. LVGL (MIT) — dépendance déclarée, non utilisée actuellement
+--------------------------------------------------------------
+firmware/managed_components/lvgl__lvgl — Copyright (c) 2021 LVGL Kft.
+MIT License (mêmes termes que la section 1). Conservée pour usage futur ;
+si elle reste inutilisée au moment de la production, la retirer du build
+et de ce fichier.
