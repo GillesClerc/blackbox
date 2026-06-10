@@ -1371,18 +1371,20 @@ nvs,      data, nvs,     0x9000,   0x6000
 factory,  app,  factory, 0x10000,  0x7F0000   # 7.9 MB app
 ```
 
-**Cible Phase 2 (OTA, 16 MB exploités)** — à appliquer quand l'OTA arrive (FW-04) :
+**Cible Phase 2 (OTA, 16 MB exploités)** — à appliquer quand l'OTA arrive (FW-04). Table de référence maintenue dans le skill `esp32-escapebox-expert` (`assets/partitions.csv`) :
 
 ```csv
 # partitions.csv — cible Phase 2 (N16R8, 16 MB)
-# Name,   Type, SubType, Offset,   Size
-nvs,      data, nvs,     0x9000,   0x5000
-otadata,  data, ota,     0xe000,   0x2000
-app0,     app,  ota_0,   0x10000,  0x400000   # 4 MB — firmware cible < 2.5 MB
-app1,     app,  ota_1,   0x410000, 0x400000   # 4 MB — partition OTA inactive
-storage,  data, fat,     0x810000, 0x7F0000   # ~8 MB FAT (assets + config)
+# Name,    Type, SubType,  Offset,   Size
+nvs,       data, nvs,      0x9000,   0x6000
+otadata,   data, ota,      0xF000,   0x2000
+nvs_keys,  data, nvs_keys, 0x11000,  0x1000     # clés NVS encryption (prod)
+factory,   app,  factory,  0x20000,  0x300000   # 3 MB — image de secours (reflash USB only)
+ota_0,     app,  ota_0,    0x320000, 0x300000   # 3 MB — slot OTA actif
+ota_1,     app,  ota_1,    0x620000, 0x300000   # 3 MB — slot OTA inactif
+storage,   data, littlefs, 0x920000, 0x6E0000   # ~6.9 MB LittleFS (assets MP3 + scénarios)
 ```
-> La migration implique de repasser `CONFIG_ESPTOOLPY_FLASHSIZE` à 16MB et de déplacer les assets MP3 de la partition app vers la FAT/SD.
+> La migration (FW-04) implique : `CONFIG_ESPTOOLPY_FLASHSIZE_16MB=y`, `CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE=y` (rollback validé par self-test boot via `esp_ota_mark_app_valid_cancel_rollback()`), et le déplacement des assets MP3 de la partition app vers LittleFS. La partition `factory` sert d'image de secours : jamais mise à jour par OTA, restaurable si les deux slots OTA sont corrompus.
 
 #### 7.1.4 Premier flash (USB)
 
@@ -1456,7 +1458,7 @@ Flux OTA automatique :
 2. Box compare avec sa version actuelle
 3. Si version_serveur > version_locale :
    a. Afficher sur écran : "Mise à jour disponible (v1.2.3) - Installation..."
-   b. Download depuis CDN vers la partition OTA inactive (app1 si app0 active)
+   b. Download depuis CDN vers la partition OTA inactive (ota_1 si ota_0 active)
    c. Vérifier SHA256 du fichier téléchargé
    d. Vérifier signature ECDSA P-256 du binaire (clé publique compilée dans le firmware)
    e. Si signature invalide → esp_ota_abort(), annuler, log erreur, continuer sur partition actuelle
