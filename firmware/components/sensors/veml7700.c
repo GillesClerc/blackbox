@@ -31,13 +31,13 @@ static esp_err_t veml_read16(uint8_t reg, uint16_t *out) {
     return ret;
 }
 
-esp_err_t veml7700_init(i2c_master_bus_handle_t bus) {
+esp_err_t veml7700_init(void) {
     i2c_device_config_t dev_cfg = {
         .dev_addr_length = I2C_ADDR_BIT_LEN_7,
         .device_address  = VEML7700_ADDR,
         .scl_speed_hz    = 400000,
     };
-    ESP_ERROR_CHECK(i2c_master_bus_add_device(bus, &dev_cfg, &s_dev));
+    ESP_ERROR_CHECK(i2c_master_bus_add_device(i2c_bus_handle(), &dev_cfg, &s_dev));
 
     // Wake up + config gain=1x, IT=100ms
     ESP_ERROR_CHECK(veml_write16(REG_ALS_CONF, ALS_CONF_DEFAULT));

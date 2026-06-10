@@ -1,4 +1,5 @@
 #include "nfc.h"
+#include "i2c_bus.h"
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -115,14 +116,14 @@ static esp_err_t pn532_read_response(uint8_t expected_cmd,
 
 // --- API publique ---
 
-esp_err_t nfc_init(i2c_master_bus_handle_t bus)
+esp_err_t nfc_init(void)
 {
     i2c_device_config_t dev_cfg = {
         .dev_addr_length = I2C_ADDR_BIT_LEN_7,
         .device_address  = NFC_PN532_ADDR,
         .scl_speed_hz    = 100000,  // PN532 : 100 kHz max en I2C
     };
-    esp_err_t ret = i2c_master_bus_add_device(bus, &dev_cfg, &s_dev);
+    esp_err_t ret = i2c_master_bus_add_device(i2c_bus_handle(), &dev_cfg, &s_dev);
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "PN532 non trouvé sur le bus I2C");
         return ret;

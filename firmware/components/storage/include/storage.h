@@ -4,10 +4,8 @@
 #include <stddef.h>
 #include "esp_err.h"
 
-// SD card via SPI — pins configurables
-// SPI2 (FSPI) avec ses pins IO_MUX natifs : SPI3 est pris par les yeux GC9A01,
+// SD card via SPI2 (FSPI), pins IO_MUX natifs : SPI3 est pris par les yeux GC9A01,
 // GPIO14 = CS oeil droit, GPIO19/20 = USB D-/D+ → interdits.
-#define STORAGE_SPI_HOST    SPI2_HOST
 #define STORAGE_PIN_MOSI    11
 #define STORAGE_PIN_MISO    13
 #define STORAGE_PIN_CLK     12

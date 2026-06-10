@@ -1,14 +1,13 @@
 #pragma once
 #include <stdint.h>
 #include "esp_err.h"
-#include "driver/i2c_master.h"
 
 #define AUDIO_PIN_BCLK    4
 #define AUDIO_PIN_LRCK    5
 #define AUDIO_PIN_DOUT    6
 #define PCM5122_I2C_ADDR 0x4C
 
-esp_err_t audio_init(i2c_master_bus_handle_t bus);
+esp_err_t audio_init(void);
 esp_err_t audio_play_raw(const int16_t *samples, size_t num_samples, uint32_t sample_rate_hz);
 
 // Joue un bip sinusoïdal avec enveloppe (anti-crissement).

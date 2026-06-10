@@ -11,13 +11,13 @@
 static i2c_master_dev_handle_t s_dev   = NULL;
 static mtch2120_data_t         s_last  = { 0 };
 
-esp_err_t mtch2120_init(i2c_master_bus_handle_t bus) {
+esp_err_t mtch2120_init(void) {
     i2c_device_config_t dev_cfg = {
         .dev_addr_length = I2C_ADDR_BIT_LEN_7,
         .device_address  = MTCH2120_ADDR,
         .scl_speed_hz    = 400000,
     };
-    ESP_ERROR_CHECK(i2c_master_bus_add_device(bus, &dev_cfg, &s_dev));
+    ESP_ERROR_CHECK(i2c_master_bus_add_device(i2c_bus_handle(), &dev_cfg, &s_dev));
 
     // Vérifier que le chip répond (lecture du status initial)
     uint8_t buf[2];

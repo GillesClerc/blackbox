@@ -1,7 +1,6 @@
 #pragma once
 #include <stdint.h>
 #include "esp_err.h"
-#include "driver/i2c_master.h"
 
 // VEML7700 — capteur de lumière ambiante — Vishay
 // Adresse I2C fixe : 0x10
@@ -14,7 +13,7 @@ typedef struct {
 } veml7700_data_t;
 
 // Initialise et démarre les mesures (temps d'intégration 100ms).
-esp_err_t veml7700_init(i2c_master_bus_handle_t bus);
+esp_err_t veml7700_init(void);
 
 // Lit la luminosité courante.
 esp_err_t veml7700_read(veml7700_data_t *out);

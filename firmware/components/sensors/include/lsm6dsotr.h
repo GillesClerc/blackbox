@@ -1,7 +1,6 @@
 #pragma once
 #include <stdint.h>
 #include "esp_err.h"
-#include "driver/i2c_master.h"
 
 // LSM6DSOTR — IMU 6 axes (accéléromètre + gyroscope) — STMicroelectronics
 // I2C : 0x6A (SDO=GND) ou 0x6B (SDO=VDD)
@@ -14,7 +13,7 @@ typedef struct {
 } lsm6_data_t;
 
 // Initialise le capteur. Retourne ESP_ERR_NOT_FOUND si WHO_AM_I incorrect.
-esp_err_t lsm6_init(i2c_master_bus_handle_t bus, uint8_t addr);
+esp_err_t lsm6_init(uint8_t addr);
 
 // Lit les 6 axes + température.
 esp_err_t lsm6_read(lsm6_data_t *out);

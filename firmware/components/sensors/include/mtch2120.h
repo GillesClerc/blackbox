@@ -2,7 +2,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "esp_err.h"
-#include "driver/i2c_master.h"
 
 // MTCH2120 — contrôleur tactile capacitif 12 canaux — Microchip
 // Adresse I2C : 0x28
@@ -15,7 +14,7 @@ typedef struct {
 } mtch2120_data_t;
 
 // Initialise le contrôleur.
-esp_err_t mtch2120_init(i2c_master_bus_handle_t bus);
+esp_err_t mtch2120_init(void);
 
 // Lit l'état de tous les canaux.
 esp_err_t mtch2120_read(mtch2120_data_t *out);

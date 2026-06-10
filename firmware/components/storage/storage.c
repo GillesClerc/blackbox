@@ -10,6 +10,8 @@
 
 #define TAG "storage"
 
+#define STORAGE_SPI_HOST  SPI2_HOST
+
 static sdmmc_card_t *s_card = NULL;
 
 esp_err_t storage_init(void)

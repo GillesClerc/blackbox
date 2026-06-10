@@ -30,7 +30,7 @@ static esp_err_t write_reg(uint8_t reg, uint8_t val)
     return i2c_master_transmit(s_dev, buf, 2, 100);
 }
 
-esp_err_t mpr121_init(i2c_master_bus_handle_t bus)
+esp_err_t mpr121_init(void)
 {
     i2c_device_config_t dev_cfg = {
         .dev_addr_length = I2C_ADDR_BIT_LEN_7,
@@ -39,7 +39,7 @@ esp_err_t mpr121_init(i2c_master_bus_handle_t bus)
     };
     // C4 : check explicite — ESP_ERROR_CHECK interdit hors _init(), et mpr121_init
     // est appelé depuis touch_task qui gère l'absence du périphérique (ESP_LOGW + delete).
-    esp_err_t ret = i2c_master_bus_add_device(bus, &dev_cfg, &s_dev);
+    esp_err_t ret = i2c_master_bus_add_device(i2c_bus_handle(), &dev_cfg, &s_dev);
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "i2c_master_bus_add_device: %s", esp_err_to_name(ret));
         return ret;

@@ -223,7 +223,7 @@ static int  s_code_len = 0;
 static void touch_task(void *arg)
 {
     (void)arg;
-    esp_err_t ret = mpr121_init(i2c_bus_handle());
+    esp_err_t ret = mpr121_init();
     if (ret != ESP_OK) {
         ESP_LOGW(TAG, "MPR121 absent: %s", esp_err_to_name(ret));
         vTaskDelete(NULL);
@@ -311,7 +311,7 @@ void app_main(void)
 
     // I2C + audio
     ESP_ERROR_CHECK(i2c_bus_init());
-    ESP_ERROR_CHECK(audio_init(i2c_bus_handle()));
+    ESP_ERROR_CHECK(audio_init());
     audio_set_volume(config_get_volume());
 
     // Scenario engine — sans UI : les actions screen_* loggent les textes.

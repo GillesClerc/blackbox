@@ -177,7 +177,7 @@ static void bg_task_fn(void *arg)
 
 // ── API publique ──────────────────────────────────────────────────────────────
 
-esp_err_t audio_init(i2c_master_bus_handle_t bus)
+esp_err_t audio_init(void)
 {
     // C1 : allouer le buffer tone une seule fois (DMA-capable pour cohérence).
     atomic_init(&s_fg_play, false);
@@ -225,7 +225,7 @@ esp_err_t audio_init(i2c_master_bus_handle_t bus)
 
     // ── 1b. Probe ciblé PCM5122 + MPR121 (scan complet inutilement lent en v6.1 :
     //        chaque adresse libre timeout à 50 ms → ~5 s pour la plage 0x08-0x77).
-    if (i2c_master_probe(bus, PCM5122_I2C_ADDR, 50) == ESP_OK)
+    if (i2c_master_probe(i2c_bus_handle(), PCM5122_I2C_ADDR, 50) == ESP_OK)
         ESP_LOGI(TAG, "PCM5122 présent à 0x%02X", PCM5122_I2C_ADDR);
     else
         ESP_LOGW(TAG, "PCM5122 ABSENT à 0x%02X — audio désactivé probable", PCM5122_I2C_ADDR);
@@ -236,7 +236,7 @@ esp_err_t audio_init(i2c_master_bus_handle_t bus)
         .device_address  = PCM5122_I2C_ADDR,
         .scl_speed_hz    = I2C_BUS_FREQ,
     };
-    ESP_ERROR_CHECK(i2c_master_bus_add_device(bus, &dev_cfg, &s_dac));
+    ESP_ERROR_CHECK(i2c_master_bus_add_device(i2c_bus_handle(), &dev_cfg, &s_dac));
 
     // PCM5122 en mode I2C (MODE pins à GND) → config PLL complète obligatoire.
     // BCLK = 44100×64 = 2,822,400 Hz. PLL cible = BCLK×16 = 45,158,400 Hz.

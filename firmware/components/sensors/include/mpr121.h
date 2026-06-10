@@ -2,7 +2,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "esp_err.h"
-#include "driver/i2c_master.h"
 
 // MPR121 — contrôleur tactile capacitif 12 canaux — NXP
 // Utilisé en Phase 1 proto (breakout AliExpress)
@@ -21,7 +20,7 @@ typedef struct {
     bool     ch[MPR121_NUM_CH];     // état individuel par canal
 } mpr121_data_t;
 
-esp_err_t mpr121_init(i2c_master_bus_handle_t bus);
+esp_err_t mpr121_init(void);
 esp_err_t mpr121_read(mpr121_data_t *out);
 bool      mpr121_is_touched(uint8_t channel);
 int       mpr121_first_touched(void);

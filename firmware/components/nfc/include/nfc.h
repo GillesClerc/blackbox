@@ -2,7 +2,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "esp_err.h"
-#include "driver/i2c_master.h"
 
 // PN532 NFC — I2C adresse 0x24 (ADD1=0, ADD0=0)
 // IMPORTANT : jumper I2C doit être soudé sur le module AliExpress
@@ -17,7 +16,7 @@ typedef struct {
 } nfc_tag_t;
 
 // Initialise le PN532 (SAMConfiguration — mode normal).
-esp_err_t nfc_init(i2c_master_bus_handle_t bus);
+esp_err_t nfc_init(void);
 
 // Tente de lire un tag ISO14443A. Bloque jusqu'à timeout_ms.
 // Retourne ESP_OK si tag détecté, ESP_ERR_TIMEOUT sinon.

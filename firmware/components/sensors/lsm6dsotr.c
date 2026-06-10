@@ -30,13 +30,13 @@
 
 static i2c_master_dev_handle_t s_dev = NULL;
 
-esp_err_t lsm6_init(i2c_master_bus_handle_t bus, uint8_t addr) {
+esp_err_t lsm6_init(uint8_t addr) {
     i2c_device_config_t dev_cfg = {
         .dev_addr_length = I2C_ADDR_BIT_LEN_7,
         .device_address  = addr,
         .scl_speed_hz    = 400000,
     };
-    ESP_ERROR_CHECK(i2c_master_bus_add_device(bus, &dev_cfg, &s_dev));
+    ESP_ERROR_CHECK(i2c_master_bus_add_device(i2c_bus_handle(), &dev_cfg, &s_dev));
 
     // WHO_AM_I
     uint8_t who;
