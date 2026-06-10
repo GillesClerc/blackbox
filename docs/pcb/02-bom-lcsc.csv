@@ -51,3 +51,6 @@ BMP280,U23,LGA-8,C83291,1,Satellite,Pression / souffle
 MLX90614ESF-AAA,U24,TO-39,C3663467,1,Satellite,Temperature IR sans contact
 TMAG5273A2QDBVR,U25,SOT-23-6,C3715882,1,Satellite,Hall lineaire 3D I2C (remplace A3144E)
 100nF 16V ceramique,C30-C35,0402,—,6,Satellite,Decouplage capteurs
+Bourns PTA6043-2015CPB103,SL1-SL4,Slide-PTA6043-60mm,C17203852,4,Face avant,Fader 60mm 10kΩ lineaire carbon (enigmes) - datasheet docs/datasheets/Bourns-PTA6043.pdf
+Bourns PDB181-K420K-103B,RV1-RV4,Pot-PDB181-17mm-panel,C6251250,4,Face avant,Pot rotatif 17mm 10kΩ lineaire knurled axe 6mm (enigmes) - datasheet docs/datasheets/Bourns-PDB181.pdf
+E-Switch 100SP1T1B4M1QE,SW1-SW2,Toggle-100SP-12mm-bushing,—,2,Face avant,Toggle SPDT ON-ON panel 12mm (a sourcer DigiKey/Mouser - non LCSC) - datasheet docs/datasheets/E-Switch-100-series-toggle.pdf
