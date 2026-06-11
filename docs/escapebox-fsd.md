@@ -160,6 +160,7 @@ Scores et stats remontés à la prochaine synchro
 | 0x6A | LSM6DSOXTR | Accéléromètre + gyroscope 6 axes + MLC | Satellite capteurs |
 | 0x35 | TMAG5273 | Hall linéaire 3D (distance/angle aimant) | Satellite capteurs |
 | 0x76 | BMP280 | Pression / détection souffle | Satellite capteurs |
+| 0x48 | ADS7830 | ADC 8 canaux 8 bits — 4 faders SL1-SL4 + 4 pots RV1-RV4 (ratiométrique, REFIN=3V3) | Face avant |
 
 > **Composants retirés du Phase 1** : AS5600 (rotation magnétique), servos SG90, laser. Remplacés par potentiomètres rotatifs mécaniques + interactions software.
 
@@ -215,9 +216,9 @@ Scores et stats remontés à la prochaine synchro
 
 | GPIO | Fonction | Composant | Notes |
 |---|---|---|---|
-| GPIO1 | ADC (pot 1) | Potentiomètre rotatif | ADC1_CH0 |
-| GPIO2 | ADC (pot 2) | Potentiomètre rotatif | ADC1_CH1 |
-| GPIO3 | ADC (pot 3) | Potentiomètre rotatif | ADC1_CH2, ou bouton |
+| GPIO1 | Toggle SW1 | E-Switch 100SP SPDT (face avant, via J8) | Input, pull-up interne |
+| GPIO2 | Toggle SW2 | E-Switch 100SP SPDT (face avant, via J8) | Input, pull-up interne |
+| GPIO3 | Réserve | (libre — analogique migré sur ADS7830 I2C) | ADC1_CH2 dispo si besoin |
 | GPIO19 | USB D- | USB-C natif | — |
 | GPIO20 | USB D+ | USB-C natif | — |
 | GPIO45 | Bouton / reserve | Strapping pin (attention) | Input avec pull-up ext |
@@ -231,7 +232,8 @@ Scores et stats remontés à la prochaine synchro
 
 ```
 GPIO 0      — (strapping boot, réservé)
-GPIO 1-3    — ADC potentiomètres (satellites)
+GPIO 1-2    — Toggles SW1/SW2 (face avant, via J8)
+GPIO 3      — (réserve, ADC1_CH2 dispo — analogique migré sur ADS7830 I2C)
 GPIO 4-6    — I2S0 audio out (PCM5122)
 GPIO 7      — I2S1 SD (ICS-43434 micro)
 GPIO 8-13   — SPI2 e-ink bouche (SSD1680 : CS/DC/RST/MOSI/SCLK/BUSY)
@@ -329,7 +331,8 @@ Composants embarqués :
 **PCB Satellite Interaction** (taille selon la face, 2 couches) :
 
 Composants à câbler (pas forcément sur PCB dédié) :
-- Potentiomètres rotatifs (analogique, vers ADC main)
+- 4 faders SL1-SL4 + 4 pots rotatifs RV1-RV4 → ADS7830 (ADC I2C 0x48 sur PCB face avant)
+- 2 toggles SW1/SW2 (vers GPIO1/2 main, via J8)
 - Boutons mécaniques (via MTCH2120 ou GPIO direct)
 - WS2812 LEDs (chaîne série depuis GPIO48)
 - 2× GC9A01 1.3" ronds (SPI3 depuis main, CS séparés)
@@ -342,7 +345,7 @@ JST-SH (1.0mm pitch, verrouillable) pour tous les connecteurs inter-PCB :
 - 4 pins I2C : VCC(3.3V), GND, SDA, SCL
 - 10 pins SPI3 yeux : VCC(3.3V), GND, MOSI, SCLK, CS_L, CS_R, DC, RST, (rsv×2)
 - 6 pins SPI2 e-ink : VCC(3.3V), GND, MOSI, SCLK, CS, DC (RST+BUSY sur main)
-- 6 pins ADC : VCC(3.3V), GND, ADC1, ADC2, ADC3, (reserve)
+- 6 pins toggles (J8) : VCC(3.3V), GND, SW1, SW2, GPIO3(rsv), (rsv)
 - 4 pins LED/Hall : VCC(5V), GND, WS2812_DATA, (rsv)
 
 **Boîtier** :
@@ -1244,7 +1247,7 @@ ERROR         → Message e-ink + QR code support
 Pas de menu de réglages écran : seules les actions indispensables sans réseau sont accessibles sur la box, le reste passe par la webapp.
 
 ```
-Volume              → potentiomètre rotatif dédié (ADC) — registres I2C PCM5122 (0x4C) + amplitude soft
+Volume              → potentiomètre rotatif dédié (lu via ADS7830 0x48) — registres I2C PCM5122 (0x4C) + amplitude soft
 Synchroniser        → touche ⟳ dédiée (ou combinaison) — état affiché sur la bouche e-ink
 Reconfigurer WiFi   → appui long 5 s sur ⟳ au boot → relance le provisioning BLE (§6.2)
 Infos box           → appui long 5 s sur ✓ → e-ink affiche version · box_uid · IP/RSSI · espace SD
@@ -1419,7 +1422,7 @@ python -m esptool --chip esp32s3 -p /dev/ttyACM0 -b 460800 \
 [STORAGE] SD card: 8.00 GB
 [SCENARIO] Found 1 scenario on SD: capitaine_verdier_v1
 [AUDIO] PCM5122 PLL locked - I2S 44100 Hz 16-bit
-[SENSORS] I2C scan: 0x10 0x35 0x48 0x4C 0x5A 0x5C 0x6A 0x76 - OK
+[SENSORS] I2C scan: 0x10 0x24 0x35 0x48 0x4C 0x5A 0x5C 0x6A 0x76 - OK
 [BOOT] Ready
 ```
 
@@ -1580,7 +1583,8 @@ Ces 3 réponses sont liées à la session (`hints_used`, `duration_sec`, `score`
 [ ] Micro détecte un claquement de mains à 1 mètre
 [ ] PN532 lit un tag NTAG213 en < 500ms
 [ ] MPR121 keypad détecte les 12 touches avec < 1% faux positifs (MTCH2120 : même test en Phase 2 PCB)
-[ ] Potentiomètres ADC : valeur stable, pleine échelle sur les 3 canaux
+[ ] ADS7830 : valeur stable, pleine échelle sur les 8 canaux (SL1-SL4 + RV1-RV4)
+[ ] Toggles SW1/SW2 : niveaux propres sur GPIO1/2 (pull-up interne)
 [ ] LSM6DSOXTR détecte une inclinaison de 15° minimum
 [ ] BMP280 détecte un souffle buccal à 5 cm
 [ ] VEML7700 distingue pièce éclairée / pièce sombre

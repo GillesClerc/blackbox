@@ -17,7 +17,7 @@ USB-C 16pin SMD,J1,USB-C-16P,—,1,Main,Connecteur USB-C femelle (chercher sur S
 Connecteur JST-SH 4pin,J3-J6,JST-SH-4P,—,4,Main,Bus I2C vers satellites
 Connecteur JST-SH 10pin,J7,JST-SH-10P,—,1,Main,SPI3 vers 2x GC9A01 yeux
 Connecteur JST-SH 8pin,J7b,JST-SH-8P,—,1,Main,SPI2 vers SSD1680 e-ink bouche
-Connecteur JST-SH 6pin,J8,JST-SH-6P,—,1,Main,ADC potentiometres
+Connecteur JST-SH 6pin,J8,JST-SH-6P,—,1,Main,Toggles SW1/SW2 face avant + reserve GPIO3 (ex-ADC potentiometres - analogique migre sur ADS7830 I2C)
 Connecteur JST-SH 4pin,J9,JST-SH-4P,—,1,Main,WS2812 + reserve
 Connecteur JST-PH 2pin,J10,JST-PH-2P,—,1,Main,Batterie LiPo
 Slot microSD push-push,J11,TF-PUSH,C91145,1,Main,Carte SD sur SPI2 partage (MISO=15 CS=47) - verifier ref LCSC avant commande
@@ -51,6 +51,9 @@ BMP280,U23,LGA-8,C83291,1,Satellite,Pression / souffle
 MLX90614ESF-BAA,U24,TO-39,—,1,Satellite,Temperature IR sans contact - variante 3V obligatoire (AAA=5V incompatible rail 3V3) - adresse usine 0x5A a reprogrammer en 0x5C (EEPROM) - verifier dispo LCSC/Mouser
 TMAG5273A2QDBVR,U25,SOT-23-6,C3715882,1,Satellite,Hall lineaire 3D I2C (remplace A3144E)
 100nF 16V ceramique,C30-C35,0402,—,6,Satellite,Decouplage capteurs
+ADS7830IPWR,U26,TSSOP-16,C161747,1,Face avant,ADC 8ch 8-bit I2C addr 0x48 - lit SL1-SL4 + RV1-RV4 ratiometrique (REFIN=3V3) - datasheet docs/datasheets/ADS7830.md
+100nF 16V ceramique,C_FP1,0402,—,1,Face avant,Decouplage ADS7830 VDD
+1µF 10V ceramique,C_FP2,0402,—,1,Face avant,ADS7830 REFIN (ref externe ratiometrique)
 Bourns PTA6043-2015CPB103,SL1-SL4,Slide-PTA6043-60mm,C17203852,4,Face avant,Fader 60mm 10kΩ lineaire carbon (enigmes) - datasheet docs/datasheets/Bourns-PTA6043.pdf
 Bourns PDB181-K420K-103B,RV1-RV4,Pot-PDB181-17mm-panel,C6251250,4,Face avant,Pot rotatif 17mm 10kΩ lineaire knurled axe 6mm (enigmes) - datasheet docs/datasheets/Bourns-PDB181.pdf
 E-Switch 100SP1T1B4M1QE,SW1-SW2,Toggle-100SP-12mm-bushing,—,2,Face avant,Toggle SPDT ON-ON panel 12mm (a sourcer DigiKey/Mouser - non LCSC) - datasheet docs/datasheets/E-Switch-100-series-toggle.pdf

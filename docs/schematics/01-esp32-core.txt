@@ -55,10 +55,11 @@
   │  GPIO41 ─── DC    → GC9A01 ×2 (partagé)                  │
   │  GPIO42 ─── RST   → GC9A01 ×2 (partagé)                  │
   │                                                           │
-  │  ── ADC (potentiometres) ───────────                      │
-  │  GPIO1  ─── ADC1_CH0 ← pot 1 (wiper)                     │
-  │  GPIO2  ─── ADC1_CH1 ← pot 2 (wiper)                     │
-  │  GPIO3  ─── ADC1_CH2 ← pot 3 (wiper)                     │
+  │  ── Toggles face avant (via J8) ────                      │
+  │  GPIO1  ─── SW1 (toggle SPDT, pull-up interne)           │
+  │  GPIO2  ─── SW2 (toggle SPDT, pull-up interne)           │
+  │  GPIO3  ─── (réserve, ADC1_CH2 dispo)                    │
+  │  (analogique SL1-4/RV1-4 → ADS7830 I2C 0x48 face avant)  │
   │                                                           │
   │  ── GPIO divers ────────────────────                      │
   │  GPIO48 ─── WS2812 DATA (RMT)                            │

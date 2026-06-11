@@ -50,49 +50,39 @@
 
 
   ┌─────────────────────────────────────────────────────────────────────────┐
-  │               POTENTIOMETRES ROTATIFS — ADC                          │
+  │               TOGGLES FACE AVANT (J8) + ANALOGIQUE ADS7830           │
   └─────────────────────────────────────────────────────────────────────────┘
 
-  3 potentiometres rotatifs (10kΩ lineaire) connectes aux entrees
-  ADC de l'ESP32-S3. Cable via JST-SH 6 pins.
+  Les 8 controles analogiques (4 faders SL1-SL4 + 4 pots rotatifs RV1-RV4,
+  10kΩ lineaires) sont numerises par l'ADS7830 (I2C 0x48) directement sur
+  le PCB face avant — voir 03-sensors-i2c.txt. GPIO1-3 liberes → J8
+  re-cable pour les 2 toggles SPDT SW1/SW2.
 
-  Connecteur JST-SH 6 pins (PCB main → satellite interaction) :
-  ┌─────────────────────────────────┐
-  │ Pin │ Signal    │ GPIO         │
-  │  1  │ 3.3V      │ —            │
-  │  2  │ GND       │ —            │
-  │  3  │ POT1      │ GPIO1 (ADC1) │
-  │  4  │ POT2      │ GPIO2 (ADC1) │
-  │  5  │ POT3      │ GPIO3 (ADC1) │
-  │  6  │ (reserve) │ —            │
-  └─────────────────────────────────┘
+  Connecteur JST-SH 6 pins J8 (PCB main → face avant) :
+  ┌──────────────────────────────────────┐
+  │ Pin │ Signal    │ GPIO              │
+  │  1  │ 3.3V      │ —                 │
+  │  2  │ GND       │ —                 │
+  │  3  │ SW1       │ GPIO1 (pull-up)   │
+  │  4  │ SW2       │ GPIO2 (pull-up)   │
+  │  5  │ (reserve) │ GPIO3 (ADC1_CH2)  │
+  │  6  │ (reserve) │ —                 │
+  └──────────────────────────────────────┘
 
-  Schema par potentiometre :
+  Schema par toggle (SPDT ON-ON, E-Switch 100SP) :
 
-       3.3V_D
+       GPIO1/2 (input, pull-up interne ESP32)
          │
-      ┌──┴──┐
-      │     │ Terminal A (haut)
-      │     │
-      │ 10kΩ│ potentiometre
-      │ lin.│
-      │     ├──── Wiper → GPIO (ADC1_CHx)
-      │     │              │
-      │     │           ┌──┴──┐
-      │     │           │100nF│ (filtre anti-bruit)
-      │     │           └──┬──┘
-      │     │              │
-      │     │ Terminal B   │
-      └──┬──┘              │
-         │                 │
-        GND               GND
+         ├──── commun toggle
+         │
+       ┌─┴─┐
+       │ \ │ position 1 → GND   (lecture 0)
+       │  \│ position 2 → NC    (lecture 1 via pull-up)
+       └───┘
 
-  ADC ESP32-S3 : 12 bits (0-4095), reference interne.
-  Attenuation : 12 dB (range 0-2.5V environ) ou 0 dB (0-0.95V).
-  Calibration : utiliser esp_adc_cal pour correction lineaire.
-
-  Filtre 100nF sur le wiper : lisse le bruit du curseur.
-  Lecture : echantillonnage a 20 Hz, moyenne glissante 4 echantillons.
+  Anti-rebond : software (debounce 50ms dans le firmware).
+  Lecture analogique : via ADS7830, polling I2C ~50 Hz par voie,
+  moyenne glissante 4 echantillons cote firmware.
 
 
   ┌─────────────────────────────────────────────────────────────────────────┐

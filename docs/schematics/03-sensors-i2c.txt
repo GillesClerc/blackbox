@@ -16,17 +16,17 @@
   ESP32-S3 GPIO21 ───────┤ SDA    │
   ESP32-S3 GPIO17 ───────┼────────┤ SCL
                          │        │
-              ┌──────────┼────────┼──────────────────┐
-              │          │        │                   │
-     JST-SH 4p #1       │        │          JST-SH 4p #2
-     (vers sat.capt.)    │        │          (vers sat.capt. spare)
-              │          │        │                   │
-         ┌────┴────┐     │        │              ┌────┴────┐
-         │ Pin 1:  │     │        │              │ Spare   │
-         │ 3.3V    │     │        │              │ pour    │
-         │ Pin 2:  │     │        │              │ futur   │
-         │ GND     │     │        │              │ capteur │
-         │ Pin 3:  │     │        │              └─────────┘
+              ┌──────────┼────────┼──────────┬───────────────────┐
+              │          │        │          │                   │
+     JST-SH 4p #1       │        │   JST-SH 4p #2      JST-SH 4p #3
+     (vers sat.capt.)    │        │   (vers face avant)  (spare futur capteur)
+              │          │        │          │
+         ┌────┴────┐     │        │     ┌────┴─────────┐
+         │ Pin 1:  │     │        │     │ ADS7830      │
+         │ 3.3V    │     │        │     │ (0x48)       │
+         │ Pin 2:  │     │        │     │ 8ch ADC      │
+         │ GND     │     │        │     │ SL1-4 RV1-4  │
+         │ Pin 3:  │     │        │     └──────────────┘
          │ SDA     │     │        │
          │ Pin 4:  │     │        │
          │ SCL     │     │        │
@@ -40,7 +40,7 @@
                     └──────────────────┘
 
   Vitesse : 100 kHz (stable sur cables JST jusqu'a ~30cm)
-  Capacite bus max : < 400 pF (7 devices + cable = ~200 pF, OK)
+  Capacite bus max : < 400 pF (8 devices + cables = ~220 pF, OK)
 
 
   ┌─────────────────────────────────────────────────────────────────────────┐
@@ -326,6 +326,56 @@
   - Detection angle rotation aimant (plateau, cadran)
   - Detection position aimant (X/Y sur une surface)
   - Seuil configurable pour emulation ON/OFF si besoin
+
+
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │               ADS7830 — ADC 8 canaux (PCB face avant)                 │
+  └─────────────────────────────────────────────────────────────────────────┘
+
+                          3.3V (rail face avant)
+                           │
+                ┌──────────┼──────────┐
+                │       ┌──┴──┐    ┌──┴──┐
+                │       │100nF│    │ 1µF │
+                │       └──┬──┘    └──┬──┘
+                │          │          │
+  ┌─────────────┴──────────┴──────────┴─────────────────┐
+  │                  ADS7830 (U26)                       │
+  │                  (TSSOP-16)                          │
+  │                                                     │
+  │  +VDD  ── 3.3V + 100nF                             │
+  │  REFIN ── 3.3V + 1µF (ref externe ratiometrique)   │
+  │  GND   ── GND                                       │
+  │  COM   ── GND (borne -IN commune single-ended)     │
+  │  SDA   ── I2C SDA (bus partage, via JST-SH)        │
+  │  SCL   ── I2C SCL (bus partage, via JST-SH)        │
+  │  A0    ── GND ┐                                     │
+  │  A1    ── GND ┘ → adresse 0x48                     │
+  │                                                     │
+  │  CH0 ←── SL1 curseur (fader 1)   ┐                 │
+  │  CH1 ←── SL2 curseur (fader 2)   │ potentiometres  │
+  │  CH2 ←── SL3 curseur (fader 3)   │ 10kΩ alimentes  │
+  │  CH3 ←── SL4 curseur (fader 4)   │ par le meme     │
+  │  CH4 ←── RV1 curseur (pot rot 1) │ rail 3.3V que   │
+  │  CH5 ←── RV2 curseur (pot rot 2) │ REFIN → mesure  │
+  │  CH6 ←── RV3 curseur (pot rot 3) │ ratiometrique   │
+  │  CH7 ←── RV4 curseur (pot rot 4) ┘                 │
+  │                                                     │
+  └─────────────────────────────────────────────────────┘
+
+  ADC SAR 8 bits, 8 entrees single-ended, pilote par I2C. Remplace
+  les 3 entrees ADC ESP32 (GPIO1-3 liberes → toggles SW1/SW2 + reserve).
+
+  Mode ratiometrique : REFIN cable sur le rail 3.3V qui alimente les
+  potentiometres → la lecture est independante des variations du rail.
+  Cote firmware : PD1PD0=01 dans le command byte (ref interne 2.5V OFF).
+
+  ⚠ Mapping canaux C2-C0 du command byte NON sequentiel — voir
+  docs/datasheets/ADS7830.md (table commandes CH0..CH7 dans l'ordre :
+  0x84, 0xC4, 0x94, 0xD4, 0xA4, 0xE4, 0xB4, 0xF4).
+
+  Protocole : write 1 byte commande → read 1 byte resultat.
+  Pas de registre de configuration, pas de WHO_AM_I (probe = ACK).
 
 
 ══════════════════════════════════════════════════════════════════════════════

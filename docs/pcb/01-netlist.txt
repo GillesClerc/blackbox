@@ -29,7 +29,7 @@ NET 3V3_D (digital):
   J3.VCC, J4.VCC, J5.VCC, J6.VCC (I2C satellites)
   J7.VCC (2x GC9A01 yeux)
   J7b.VCC (SSD1680 e-ink bouche)
-  J8.VCC (potentiometres)
+  J8.VCC (toggles face avant + reserve)
   R3.1, R4.1 (pull-up I2C)
   R5.1 (pull-up XSMT)
   R6.1 (pull-up EN)
@@ -173,22 +173,21 @@ NET SPI3_RST:
   J7.RST (GC9A01 #1 RES + GC9A01 #2 RES, partage)
 
 
-═══ ADC — POTENTIOMETRES ════════════════════════════════════════════════════
+═══ TOGGLES FACE AVANT (via J8) ═════════════════════════════════════════════
+(les 8 controles analogiques SL1-SL4 + RV1-RV4 sont numerises par l'ADS7830
+ sur le PCB face avant — voir section FACE AVANT. GPIO1-3 liberes.)
 
-NET POT1:
-  U1.GPIO1 (ADC1_CH0)
-  J8.POT1
-  C_F1.+ (100nF filtre, autre borne GND)
+NET SW1:
+  U1.GPIO1
+  J8.SW1 (toggle SPDT commun -> GPIO1, borne vers GND, pull-up interne ESP32)
 
-NET POT2:
-  U1.GPIO2 (ADC1_CH1)
-  J8.POT2
-  C_F2.+ (100nF filtre)
+NET SW2:
+  U1.GPIO2
+  J8.SW2 (toggle SPDT commun -> GPIO2, borne vers GND, pull-up interne ESP32)
 
-NET POT3:
-  U1.GPIO3 (ADC1_CH2)
-  J8.POT3
-  C_F3.+ (100nF filtre)
+NET GPIO3_RSV:
+  U1.GPIO3 (ADC1_CH2, reserve)
+  J8.RSV (pin reserve)
 
 
 ═══ GPIO DIVERS ═════════════════════════════════════════════════════════════
@@ -381,6 +380,50 @@ NET SAT_3V3:
   U20.VDD, U21.VDD, U21.VDDIO, U22.VDD, U23.VDD, U23.VDDIO,
   U24.VDD, U25.VDD (TMAG5273)
   C30-C35.+ (decouplage 100nF chaque)
+
+
+═══ FACE AVANT — ADS7830 + CONTROLES ANALOGIQUES (bus I2C sur JST) ══════════
+
+Le PCB face avant porte U26 (ADS7830, ADC 8 canaux 8 bits, adresse I2C 0x48)
+qui numerise les 4 faders SL1-SL4 et les 4 pots rotatifs RV1-RV4. Connexion
+au main par un JST-SH 4p du bus I2C (J3-J6). Mesure ratiometrique : REFIN
+cable sur le rail 3V3 qui alimente aussi les potentiometres (PD1PD0=01 cote
+firmware pour couper la ref interne 2.5V).
+
+NET FP_I2C_SDA:
+  J_FP.SDA (JST-SH pin 3)
+  U26.SDA (pin 15)
+
+NET FP_I2C_SCL:
+  J_FP.SCL (JST-SH pin 4)
+  U26.SCL (pin 14)
+
+NET FP_3V3:
+  J_FP.VCC (JST-SH pin 1)
+  U26.+VDD (pin 16), C_FP1.+ (100nF decouplage)
+  U26.REFIN (pin 10), C_FP2.+ (1uF — ref externe ratiometrique)
+  SL1.1, SL2.1, SL3.1, SL4.1 (faders, borne haute)
+  RV1.1, RV2.1, RV3.1, RV4.1 (pots rotatifs, borne haute)
+
+NET FP_GND:
+  J_FP.GND (JST-SH pin 2)
+  U26.GND (pin 9)
+  U26.COM (pin 11, borne -IN commune single-ended)
+  U26.A0 (pin 12), U26.A1 (pin 13) -> adresse 0x48
+  SL1.3, SL2.3, SL3.3, SL4.3, RV1.3, RV2.3, RV3.3, RV4.3 (bornes basses)
+  C_FP1.-, C_FP2.-
+
+NET FP_CH0:  U26.CH0 (pin 1) -> SL1.2 (curseur fader 1)
+NET FP_CH1:  U26.CH1 (pin 2) -> SL2.2 (curseur fader 2)
+NET FP_CH2:  U26.CH2 (pin 3) -> SL3.2 (curseur fader 3)
+NET FP_CH3:  U26.CH3 (pin 4) -> SL4.2 (curseur fader 4)
+NET FP_CH4:  U26.CH4 (pin 5) -> RV1.2 (curseur pot rotatif 1)
+NET FP_CH5:  U26.CH5 (pin 6) -> RV2.2 (curseur pot rotatif 2)
+NET FP_CH6:  U26.CH6 (pin 7) -> RV3.2 (curseur pot rotatif 3)
+NET FP_CH7:  U26.CH7 (pin 8) -> RV4.2 (curseur pot rotatif 4)
+
+(Attention firmware : le mapping canal -> bits C2-C0 du command byte n'est
+ pas sequentiel — voir docs/datasheets/ADS7830.md)
 
 
 ═══ NOTES DE CABLAGE ════════════════════════════════════════════════════════
