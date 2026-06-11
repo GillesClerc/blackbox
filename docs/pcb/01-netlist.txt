@@ -8,13 +8,14 @@
 ═══ ALIMENTATIONS ════════════════════════════════════════════════════════════
 
 NET 5V_USB:
-  J1.VBUS, U8.IN, D1.A
+  J1.VBUS, U8.IN, C_IN_BQ.+, U12.VBUS
 
 NET VSYS:
   U8.OUT (bq24075 power path output)
   U5.VIN (LDO digital), C23.+
   U6.VIN (LDO audio), C24.+
-  U7.VIN (MT3608 boost)
+  U7.VIN (MT3608 boost), U7.EN (tie a VIN), C_B1.+
+  L1.1 (inductance boost, autre borne sur BOOST_SW)
   (USB branche: ~4.4V / batterie: 3.0-4.2V)
 
 NET VBAT:
@@ -40,10 +41,23 @@ NET 3V3_A (audio):
   U2.CPVDD (pin 5), C3_CP.+
   U2.XSMT (pin 12) via R5
 
+NET BOOST_SW:
+  U7.SW (MT3608 pin 1)
+  L1.2 (autre borne sur VSYS)
+  D1.A (SS14 anode)
+
+NET BOOST_FB:
+  U7.FB (MT3608 pin 3)
+  R_FB_H.2 (750k, autre borne sur 5V)
+  R_FB_L.1 (100k, autre borne sur GND)
+
 NET 5V:
-  U7.VOUT, C25.+
+  D1.K (SS14 cathode), C25.+
+  R_FB_H.1 (diviseur feedback)
   J9.VCC (WS2812)
   U3.VDD (PAM8406)
+  (VOUT = 0.6V x (1 + 750k/100k) = 5.1V — le MT3608 n'a pas de pin VOUT,
+   la sortie passe par SW -> D1)
 
 NET GND:
   (toutes les masses — plan continu, pas de split)
@@ -101,15 +115,19 @@ NET I2S1_SD:
   U4.SD (ICS-43434)
 
 
-═══ BUS SPI2 — E-INK BOUCHE (SSD1680) ══════════════════════════════════════
+═══ BUS SPI2 — E-INK BOUCHE (SSD1680) + microSD (J11) ══════════════════════
+(bus partage : MOSI/SCLK communs, MISO utilise par la SD seule,
+ CS distincts — e-ink GPIO10, SD GPIO47)
 
 NET SPI2_MOSI:
   U1.GPIO11
   J7b.MOSI (SSD1680 DIN)
+  J11.DI (microSD Data In — bus partage e-ink + SD)
 
 NET SPI2_SCLK:
   U1.GPIO12
   J7b.SCLK (SSD1680 CLK)
+  J11.CLK (microSD clock — bus partage)
 
 NET SPI2_CS:
   U1.GPIO10
@@ -180,11 +198,13 @@ NET WS2812_DATA:
   R8.1 (330R serie)
   R8.2 -> J9.DATA (premiere LED WS2812)
 
-NET GPIO15_RSV:
-  U1.GPIO15 (reserve, libre — ex-XPT2046 IRQ)
+NET SPI2_MISO:
+  U1.GPIO15
+  J11.DO (microSD Data Out — seul peripherique SPI2 utilisant MISO)
 
-NET GPIO47_RSV:
-  U1.GPIO47 (reserve, libre)
+NET SPI2_CS_SD:
+  U1.GPIO47
+  J11.CS (microSD chip select — distinct du CS e-ink GPIO10)
 
 NET BTN1:
   U1.GPIO45
@@ -281,7 +301,7 @@ NET PAM_SHDN:
 ═══ CHARGE BATTERIE (bq24075 + DW01A/FS8205) ════════════════════════════════
 
 NET BQ_ILIM:
-  U8.ILIM (pin 12) -> R_ILIM (1.5k vers GND, input current si mode RILIM)
+  U8.ILIM (pin 12) -> R_ILIM (1.5k vers GND -> I_IN max ~1.07A, mode RILIM actif)
 
 NET BQ_ISET:
   U8.ISET (pin 16) -> R_ISET (890R vers GND -> courant charge 1A)
@@ -293,18 +313,20 @@ NET BQ_SYSOFF:
   U8.SYSOFF (pin 15) -> GND (systeme ON, NE PAS laisser flottant)
 
 NET BQ_TS:
-  U8.TS -> R_TS1 (10k vers VSYS) + R_TS2 (10k vers GND)
-  (diviseur tension pour desactiver monitoring temperature)
+  U8.TS -> R_TS (10k vers GND)
+  (pas de NTC dans le pack : 10k fixe TS->VSS maintient une tension valide,
+   SLUS810N table 7-1 et §9.3.6 — un diviseur vers VSYS fausserait la mesure
+   car TS est polarisee par une source de courant interne 75uA)
 
 NET BQ_CE:
   U8.CE (pin 4) -> GND (active LOW, LOW = charge ON)
 
 NET BQ_EN1:
-  U8.EN1 (pin 6) -> VSYS (HIGH)
+  U8.EN1 (pin 6) -> GND (LOW)
 
 NET BQ_EN2:
-  U8.EN2 (pin 5) -> GND (LOW)
-  (EN2=L, EN1=H -> limite courant USB 500mA, ref SLUS810N p.11)
+  U8.EN2 (pin 5) -> VSYS (HIGH)
+  (EN2=H, EN1=L -> mode RILIM : I_IN max = K_ILIM/R_ILIM ~1.07A, ref SLUS810N table 7-2)
 
 NET BQ_PGOOD:
   U8.PGOOD (open drain, optionnel -> LED ou GPIO ESP32)

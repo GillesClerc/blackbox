@@ -36,7 +36,7 @@
                     │   Sur PCB Main   │
                     │                  │
                     │  PCM5122 (0x4C)  │
-                    │  PN532   (0x48)  │
+                    │  PN532   (0x24)  │
                     └──────────────────┘
 
   Vitesse : 100 kHz (stable sur cables JST jusqu'a ~30cm)
@@ -239,7 +239,8 @@
   │                                                     │
   └─────────────────────────────────────────────────────┘
 
-  Adresse par defaut : 0x5C. Modifiable via EEPROM interne.
+  Adresse usine : 0x5A (collision MPR121 Phase 1 !) — a reprogrammer
+  en 0x5C via EEPROM interne avant montage sur le bus partage.
   Precision : ±0.5°C dans range 0-50°C.
   Fenetre : trou dans le boitier avec film PE transparent IR.
 
@@ -281,7 +282,8 @@
 
   Alternative : module PN532 breakout avec antenne FPC externe.
 
-  Adresse I2C : 0x48 (fixe en I2C mode, pas configurable).
+  Adresse I2C : 0x24 (7 bits, fixe en I2C mode — 0x48 est la notation
+  8 bits ; le firmware ESP-IDF utilise 0x24).
   Protocole : NXP PN532 I2C frame format (pas raw I2C registers).
 
 

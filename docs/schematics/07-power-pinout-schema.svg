@@ -287,19 +287,19 @@
 <use href="#cv" x="593" y="210"/>
 <text x="572" y="220" text-anchor="end" font-size="8" font-weight="bold">C_IN</text>
 <text x="572" y="232" text-anchor="end" font-size="8">4.7µF/10V</text>
-<line x1="600" y1="234" x2="600" y2="244" stroke="#000" stroke-width="0.9"/>
-<use href="#gnd" x="593" y="244"/>
+<line x1="600" y1="234" x2="600" y2="240" stroke="#000" stroke-width="0.9"/>
+<use href="#gnd" x="593" y="240"/>
 
-<!-- p6 EN1 ← VSYS -->
+<!-- p6 EN1 → GND (mode RILIM) -->
 <line x1="620" y1="222" x2="640" y2="222" stroke="#000" stroke-width="0.9"/>
-<polygon points="450,218 470,218 476,222 470,226 450,226" fill="#FFF8E1" stroke="#F57F17" stroke-width="0.8"/>
-<text x="463" y="225" text-anchor="middle" font-size="8" font-weight="bold" fill="#F57F17">VSYS</text>
-<line x1="476" y1="222" x2="620" y2="222" stroke="#000" stroke-width="0.9"/>
+<line x1="620" y1="222" x2="620" y2="235" stroke="#000" stroke-width="0.9"/>
+<use href="#gnd" x="613" y="235"/>
 
-<!-- p5 EN2 → GND -->
+<!-- p5 EN2 ← VSYS (mode RILIM) -->
 <line x1="620" y1="252" x2="640" y2="252" stroke="#000" stroke-width="0.9"/>
-<line x1="620" y1="252" x2="620" y2="265" stroke="#000" stroke-width="0.9"/>
-<use href="#gnd" x="613" y="265"/>
+<polygon points="450,248 470,248 476,252 470,256 450,256" fill="#FFF8E1" stroke="#F57F17" stroke-width="0.8"/>
+<text x="463" y="255" text-anchor="middle" font-size="8" font-weight="bold" fill="#F57F17">VSYS</text>
+<line x1="476" y1="252" x2="620" y2="252" stroke="#000" stroke-width="0.9"/>
 
 <!-- p4 CE → GND -->
 <line x1="620" y1="282" x2="640" y2="282" stroke="#000" stroke-width="0.9"/>
@@ -320,22 +320,13 @@
 <use href="#gnd" x="593" y="355"/>
 <text x="560" y="345" text-anchor="end" font-size="7" fill="#B71C1C">⚠ jamais flottant</text>
 
-<!-- p1 TS ← 10kΩ/10kΩ divider VSYS/GND -->
+<!-- p1 TS ← R_TS 10kΩ → GND (pas de NTC, datasheet §9.3.6) -->
 <line x1="620" y1="382" x2="640" y2="382" stroke="#000" stroke-width="0.9"/>
 <line x1="510" y1="382" x2="620" y2="382" stroke="#000" stroke-width="0.9"/>
-<circle cx="510" cy="382" r="2.5" fill="#000"/>
-<!-- R_TS1 up to VSYS -->
-<use href="#rv" x="504" y="346"/>
-<text x="490" y="362" text-anchor="end" font-size="8" font-weight="bold">R_TS1</text>
-<text x="490" y="372" text-anchor="end" font-size="8">10kΩ</text>
-<line x1="510" y1="346" x2="510" y2="338" stroke="#000" stroke-width="0.9"/>
-<polygon points="438,334 460,334 466,338 460,342 438,342" fill="#FFF8E1" stroke="#F57F17" stroke-width="0.8"/>
-<text x="450" y="341" text-anchor="middle" font-size="8" font-weight="bold" fill="#F57F17">VSYS</text>
-<line x1="466" y1="338" x2="510" y2="338" stroke="#000" stroke-width="0.9"/>
-<!-- R_TS2 down to GND -->
 <use href="#rv" x="504" y="392"/>
-<text x="490" y="410" text-anchor="end" font-size="8" font-weight="bold">R_TS2</text>
+<text x="490" y="410" text-anchor="end" font-size="8" font-weight="bold">R_TS</text>
 <text x="490" y="420" text-anchor="end" font-size="8">10kΩ</text>
+<text x="490" y="430" text-anchor="end" font-size="7" fill="#666">(pas de NTC)</text>
 <line x1="510" y1="382" x2="510" y2="392" stroke="#000" stroke-width="0.9"/>
 <line x1="510" y1="428" x2="510" y2="438" stroke="#000" stroke-width="0.9"/>
 <use href="#gnd" x="503" y="438"/>
@@ -425,8 +416,8 @@
 <text x="976" y="404" text-anchor="middle" font-size="8" font-weight="bold" fill="#1565C0">3.3V_D</text>
 
 <!-- ════════ Annotations bq24075 ════════ -->
-<text x="720" y="488" text-anchor="middle" font-size="8" font-weight="bold" fill="#555">Configuration : CE=GND (charge ON) · EN2=L/EN1=H → 500mA USB · TMR=GND (timers OFF)</text>
-<text x="720" y="500" text-anchor="middle" font-size="8" fill="#666">SYSOFF=GND (système ON) · TS divider 10k+10k → désactive monitoring NTC</text>
+<text x="720" y="488" text-anchor="middle" font-size="8" font-weight="bold" fill="#555">Configuration : CE=GND (charge ON) · EN2=H/EN1=L → mode RILIM ≈1.07A · TMR=GND (timers OFF)</text>
+<text x="720" y="500" text-anchor="middle" font-size="8" fill="#666">SYSOFF=GND (système ON) · TS = 10kΩ fixe vers GND (pas de NTC, datasheet §9.3.6)</text>
 <text x="720" y="512" text-anchor="middle" font-size="8" fill="#666">I_CHG = K_ISET/R_ISET = 890Ω → 1.0A · PAD thermique → plan GND (vias Ø0.3mm)</text>
 </g>
 
@@ -952,7 +943,7 @@
 <text x="1080" y="1024" font-size="8" fill="#444">J1.VBUS  · U8.IN(p13)  · U12.VBUS(p5)  · D1.A (anode SS14 via L1)</text>
 
 <text x="1005" y="1038" font-size="8" font-weight="bold" fill="#F57F17">VSYS</text>
-<text x="1080" y="1038" font-size="8" fill="#444">U8.OUT(p10,11)  · U5.VIN(p1)  · U6.VIN(p1)  · U7.IN(p5)  · U8.EN1(p6)  · R_TS1</text>
+<text x="1080" y="1038" font-size="8" fill="#444">U8.OUT(p10,11)  · U5.VIN(p1)  · U6.VIN(p1)  · U7.IN(p5)  · U8.EN2(p5)</text>
 
 <text x="1005" y="1052" font-size="8" font-weight="bold" fill="#795548">VBAT</text>
 <text x="1080" y="1052" font-size="8" fill="#444">BT1.B+  · J10.+  · U8.BAT(p2,3)  · R_VCC → U9.VCC(p5)</text>
@@ -973,9 +964,9 @@
 <text x="1080" y="1122" font-size="8" fill="#444">U9.CS(p2) + U9.GND(p6)  ↔  U10.S1(p2,3) + U10.S2(p6,7)</text>
 
 <text x="1005" y="1140" font-size="9" font-weight="bold" fill="#555">Configuration bq24075 :</text>
-<text x="1005" y="1153" font-size="8" fill="#444">CE=GND (charge ON)  ·  EN2=GND, EN1=VSYS (500mA USB)  ·  TMR=GND (timers OFF)</text>
+<text x="1005" y="1153" font-size="8" fill="#444">CE=GND (charge ON)  ·  EN2=VSYS, EN1=GND (mode RILIM ≈1.07A)  ·  TMR=GND (timers OFF)</text>
 <text x="1005" y="1166" font-size="8" fill="#444">SYSOFF=GND (système ON)  ·  R_ISET=890Ω (I_CHG=1A)  ·  R_ILIM=1.5kΩ (mode RILIM)</text>
-<text x="1005" y="1179" font-size="8" fill="#444">TS divider 10k+10k = 50% VSYS → désactive monitoring NTC batterie</text>
+<text x="1005" y="1179" font-size="8" fill="#444">TS sans NTC : R_TS=10kΩ fixe TS→VSS (datasheet §9.3.6)</text>
 </g>
 
 <!-- Footer -->

@@ -16,7 +16,7 @@ IMU iNEMO 6 axes à très basse consommation (0,55 mA en mode combo haute perfor
 - **Package** : LGA-14L (Land Grid Array, 14 pads)
 - **Dimensions** : 2,5 × 3,0 × 0,83 mm (L × W × H typ.)
 - **Pitch** : 0,5 mm (pads périphériques)
-- **Empreinte LCSC / DigiKey** : LCSC C485229 (LSM6DSOXTR) ; DigiKey 497-LSM6DSOXTRCT-ND
+- **Empreinte LCSC / DigiKey** : LCSC C481766 (LSM6DSOXTR, vérifié lcsc.com + JLCPCB 2026-06-11) ; DigiKey 497-LSM6DSOXTRCT-ND
 
 ## Pinout
 

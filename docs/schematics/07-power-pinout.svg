@@ -64,12 +64,12 @@
 <line x1="282" y1="82" x2="842" y2="82" stroke="#EEEEEE" stroke-width="0.5"/>
 
 <!-- bq24075 Left pins -->
-<text x="294" y="96" font-size="8" fill="#F9A825">p01  TS    → 10kΩ↑VSYS + 10kΩ↓GND (div. 50%)</text>
+<text x="294" y="96" font-size="8" fill="#F9A825">p01  TS    → R_TS=10kΩ → GND (pas de NTC)</text>
 <text x="294" y="111" font-size="8" fill="#795548">p02  BAT   → VBAT + C_BAT 4.7µF/10V · DW01A VCC</text>
 <text x="294" y="126" font-size="8" fill="#795548">p03  BAT   → idem p02 (2 broches parallèles)</text>
 <text x="294" y="141" font-size="8" fill="#424242">p04  CE    → GND  (actif bas — charge ON)</text>
-<text x="294" y="156" font-size="8" fill="#424242">p05  EN2   → GND  (LOW)</text>
-<text x="294" y="171" font-size="8" fill="#F9A825">p06  EN1   → VSYS (HIGH)  ⇒ EN2=L/EN1=H = 500mA</text>
+<text x="294" y="156" font-size="8" fill="#F9A825">p05  EN2   → VSYS (HIGH)</text>
+<text x="294" y="171" font-size="8" fill="#424242">p06  EN1   → GND  (LOW)  ⇒ EN2=H/EN1=L = mode RILIM</text>
 <text x="294" y="186" font-size="8" fill="#1565C0">p07  PGOOD → 100kΩ↑ 3.3V_D (open drain, actif bas)</text>
 <text x="294" y="201" font-size="8" fill="#424242">p08  VSS   → GND + PAD thermique (vias Ø0.3mm)</text>
 <line x1="282" y1="210" x2="562" y2="210" stroke="#EEEEEE" stroke-width="0.5"/>
@@ -95,13 +95,13 @@
 <line x1="562" y1="210" x2="842" y2="210" stroke="#EEEEEE" stroke-width="0.5"/>
 <text x="572" y="225" font-size="8" font-weight="bold" fill="#555">Formules (SLUS810N) :</text>
 <text x="572" y="239" font-size="8" fill="#444">I_CHG  = K_ISET / R_ISET = 890 / 890 = 1.0A</text>
-<text x="572" y="253" font-size="8" fill="#444">  (R_ISET valide : 590Ω–5.9kΩ)</text>
+<text x="572" y="253" font-size="8" fill="#444">  (R_ISET valide : 590Ω–8.9kΩ, rév. N)</text>
 <text x="572" y="267" font-size="8" fill="#444">I_ILIM = K_ILIM / R_ILIM  (mode EN2=H,EN1=L)</text>
 <text x="572" y="281" font-size="8" fill="#444">Table EN2/EN1 :</text>
-<text x="572" y="295" font-size="8" fill="#424242">  L/L → 100mA  L/H → 500mA ← notre config</text>
-<text x="572" y="309" font-size="8" fill="#424242">  H/L → R_ILIM  H/H → Standby (suspend)</text>
-<text x="572" y="323" font-size="8" fill="#888">TS 50% = (10k+10k)/(10k+10k) → désactive</text>
-<text x="572" y="337" font-size="8" fill="#888">monitoring NTC (datasheet p.15)</text>
+<text x="572" y="295" font-size="8" fill="#424242">  L/L → 100mA  L/H → 500mA</text>
+<text x="572" y="309" font-size="8" fill="#424242">  H/L → R_ILIM ← notre config (≈1.07A)  H/H → Standby</text>
+<text x="572" y="323" font-size="8" fill="#888">TS sans NTC : 10kΩ fixe TS→VSS maintient</text>
+<text x="572" y="337" font-size="8" fill="#888">une tension valide (datasheet §9.3.6)</text>
 
 <!-- ════════════════════════════════════════════════════════════
      SECTION 3 : DW01A + FS8205A
@@ -248,7 +248,7 @@
 <text x="876" y="626" font-size="8" fill="#333">✓  PAD bq24075 : souder sur copper fill GND</text>
 <text x="876" y="640" font-size="8" fill="#333">✓  L1 MT3608 : inductance blindée Isat &gt;2A</text>
 <text x="876" y="654" font-size="8" fill="#333">✓  D1 SS14 (SMA) : cathode côté condensateur</text>
-<text x="876" y="668" font-size="8" fill="#333">✓  TS R_TS1/R_TS2 : résistances proches p01</text>
+<text x="876" y="668" font-size="8" fill="#333">✓  TS R_TS 10kΩ : résistance proche p01</text>
 <text x="876" y="682" font-size="8" fill="#333">✓  Piste VSYS : 0.5mm min (courant 1.5A)</text>
 <text x="876" y="696" font-size="8" fill="#333">✓  Piste 5V_USB : 0.5mm min (courant 2A)</text>
 <text x="876" y="710" font-size="8" fill="#B71C1C">✓  C25 16V obligatoire : derating DC-bias</text>
@@ -272,12 +272,11 @@
 <text x="22" y="834" font-size="8" fill="#444">→ AP2112K U5 p1 (VIN) + p3 (EN)</text>
 <text x="22" y="846" font-size="8" fill="#444">→ AP2112K U6 p1 (VIN) + p3 (EN)</text>
 <text x="22" y="858" font-size="8" fill="#444">→ MT3608 U7 p5 (IN) + p4 (EN)</text>
-<text x="22" y="870" font-size="8" fill="#444">→ R_TS1 10kΩ (TS divider haut)</text>
-<text x="22" y="882" font-size="8" fill="#444">→ bq24075 p6 (EN1 HIGH = 500mA)</text>
-<text x="22" y="894" font-size="8" fill="#444">+ C_OUT=4.7µF céram. OUT–GND</text>
-<text x="22" y="906" font-size="8" fill="#444">+ C_D1/C_A1/C_B1 en entrée LDO/boost</text>
-<text x="22" y="918" font-size="8" fill="#444">+ R_TS2 10kΩ vers GND</text>
-<text x="22" y="930" font-size="8" fill="#444">bq24075 p4(CE) p5(EN2) p14(TMR) p15(SYSOFF) → GND</text>
+<text x="22" y="870" font-size="8" fill="#444">→ bq24075 p5 (EN2 HIGH = mode RILIM)</text>
+<text x="22" y="882" font-size="8" fill="#444">+ C_OUT=4.7µF céram. OUT–GND</text>
+<text x="22" y="894" font-size="8" fill="#444">+ C_D1/C_A1/C_B1 en entrée LDO/boost</text>
+<text x="22" y="906" font-size="8" fill="#444">bq24075 p1 (TS) → R_TS=10kΩ → GND</text>
+<text x="22" y="918" font-size="8" fill="#444">bq24075 p4(CE) p6(EN1) p14(TMR) p15(SYSOFF) → GND</text>
 <text x="22" y="942" font-size="8" fill="#444">bq24075 p16(ISET)→890Ω·GND  p12(ILIM)→1.5kΩ·GND</text>
 
 <!-- Column 2 -->

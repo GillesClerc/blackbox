@@ -82,9 +82,9 @@
               │                    bq24075RGTR                         │
               │                                                        │
    TS ────────┤ Pin 1  : TS                                            │
-   divider    │          Entree thermistor NTC                         │
-   10k+10k    │          R_TS1=10k vers VSYS + R_TS2=10k vers GND    │
-              │          Diviseur 50% → desactive monitoring temp     │
+   R_TS=10k   │          Entree thermistor NTC                         │
+   vers GND   │          Pas de NTC dans le pack : R_TS=10k fixe      │
+              │          TS→VSS (datasheet §9.3.6, tension valide)    │
               │                                                        │
    VBAT ──────┤ Pin 2  : BAT ─────┐                                   │
               │                    ├── vers DW01A VCC puis LiPo B+     │
@@ -97,10 +97,10 @@
               │          Pull-down interne 285k                        │
               │          NOTRE CONFIG : GND → charge toujours ON      │
               │                                                        │
-   GND ───────┤ Pin 5  : EN2                                          │
+   VSYS ──────┤ Pin 5  : EN2                                          │
               │          Pull-down interne 285k                        │
               │                                                        │
-   VSYS ──────┤ Pin 6  : EN1                                          │
+   GND ───────┤ Pin 6  : EN1                                          │
               │          Pull-down interne 285k                        │
               │                                                        │
               │          Table EN2/EN1 (ref datasheet SLUS810N p.11) : │
@@ -108,11 +108,12 @@
               │          │ EN2  │ EN1  │ Limite courant IN    │        │
               │          ├──────┼──────┼──────────────────────┤        │
               │          │  0   │  0   │ 100 mA (USB100)      │        │
-              │          │  0   │  1   │ 500 mA (USB500)      │ ← CFG │
-              │          │  1   │  0   │ R_ILIM (programmable) │        │
+              │          │  0   │  1   │ 500 mA (USB500)      │        │
+              │          │  1   │  0   │ R_ILIM (programmable) │ ← CFG │
               │          │  1   │  1   │ Standby (USB suspend) │        │
               │          └──────┴──────┴──────────────────────┘        │
-              │          NOTRE CONFIG : EN2=GND(L), EN1=VSYS(H) → 500mA│
+              │          NOTRE CONFIG : EN2=VSYS(H), EN1=GND(L)       │
+              │          → mode RILIM : I_IN ≈ 1.07A (R_ILIM=1.5k)    │
               │                                                        │
    PGOOD ─────┤ Pin 7  : PGOOD (open drain, active low)               │
               │          Pull-up 100k vers 3V3_D                       │
@@ -132,15 +133,14 @@
    VSYS ──────┤ Pin 11 : OUT ─────┘                                   │
               │          2 pins paralleles pour courant                 │
               │          C_OUT = 4.7uF ceramique OUT-GND              │
-              │          USB branche : ~4.4V                           │
+              │          USB branche : ~5.5V (V_OUT(REG) du BQ24075)  │
               │          Batterie seule : 3.0-4.2V                     │
               │                                                        │
    R_ILIM ────┤ Pin 12 : ILIM (Input current Limit)                   │
               │          R_ILIM = 1.5k vers GND                        │
-              │          Actif quand EN2=H, EN1=L                      │
-              │          Dans notre config (500mA via EN), ce pin      │
-              │          n'est pas actif mais doit quand meme avoir    │
-              │          une resistance pour le mode RILIM eventuel    │
+              │          Actif quand EN2=H, EN1=L (NOTRE CONFIG)      │
+              │          I_IN_MAX = K_ILIM/R_ILIM = 1610/1500 ≈ 1.07A │
+              │          ⚠ Flottant = toute charge desactivee        │
               │                                                        │
    5V_USB ────┤ Pin 13 : IN (entree USB)                               │
               │          Plage : 4.35 - 6.6V                           │
@@ -460,8 +460,7 @@
   bq24075 pin 10,11 (OUT) ── VSYS ──┬── AP2112K U5 pin 1 (VIN) + pin 3 (EN)
                                      ├── AP2112K U6 pin 1 (VIN) + pin 3 (EN)
                                      ├── MT3608 U7 pin 5 (IN) + pin 4 (EN)
-                                     ├── R_TS1 10k (TS divider haut)
-                                     └── bq24075 pin 6 (EN1, HIGH=500mA)
+                                     └── bq24075 pin 5 (EN2, HIGH=mode RILIM)
 
   bq24075 pin 2,3 (BAT) ──── R_VCC 100R ──── DW01A U9 pin 5 (VCC)
                               ──── J10.+ (LiPo B+)
@@ -480,10 +479,10 @@
   AP2112K U6 pin 5 (VOUT) ── 3.3V_A + C_A2 10uF
   MT3608 VOUT (via D1)    ── 5V + C_B2 22uF
 
-  bq24075 pin 1 (TS) ────── R_TS1=10k vers VSYS + R_TS2=10k vers GND
+  bq24075 pin 1 (TS) ────── R_TS=10k vers GND (pas de NTC, datasheet §9.3.6)
   bq24075 pin 4 (CE) ────── GND (LOW = charge ON)
-  bq24075 pin 5 (EN2) ───── GND (LOW)
-  bq24075 pin 6 (EN1) ───── VSYS (HIGH) → config EN2=L/EN1=H = 500mA
+  bq24075 pin 5 (EN2) ───── VSYS (HIGH)
+  bq24075 pin 6 (EN1) ───── GND (LOW) → mode RILIM : I_IN ≈ 1.07A (R_ILIM=1.5k)
   bq24075 pin 7 (PGOOD) ─── 100k pull-up 3V3_D (optionnel)
   bq24075 pin 8 (VSS) ───── GND + pad thermique (vias)
   bq24075 pin 9 (CHG) ──── 100k pull-up 3V3_D (optionnel)

@@ -154,9 +154,9 @@ Scores et stats remontés à la prochaine synchro
 | 0x10 | VEML7700 | Lumière ambiante | Satellite capteurs |
 | 0x28 | MTCH2120 | Capacitif 12 canaux (keypad + zones touch) — cible PCB Phase 2 | Satellite capteurs |
 | 0x5A | MPR121 | Capacitif 12 canaux (breakout Phase 1, même rôle que MTCH2120) | Proto breadboard |
-| 0x48 | PN532 | Lecteur NFC (I2C mode) | Main |
+| 0x24 | PN532 | Lecteur NFC (I2C mode — 0x24 en 7 bits, parfois noté 0x48 en 8 bits) | Main |
 | 0x4C | PCM5122PW | DAC audio stéréo (I2C contrôle) | Main |
-| 0x5C | MLX90614 | Température IR (sans contact) | Satellite capteurs |
+| 0x5C | MLX90614 | Température IR (sans contact) — adresse usine 0x5A, reprogrammée en 0x5C via EEPROM (évite collision MPR121) | Satellite capteurs |
 | 0x6A | LSM6DSOXTR | Accéléromètre + gyroscope 6 axes + MLC | Satellite capteurs |
 | 0x35 | TMAG5273 | Hall linéaire 3D (distance/angle aimant) | Satellite capteurs |
 | 0x76 | BMP280 | Pression / détection souffle | Satellite capteurs |

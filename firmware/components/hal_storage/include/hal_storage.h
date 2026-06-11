@@ -4,12 +4,12 @@
 #include <stddef.h>
 #include "esp_err.h"
 
-// SD card via SPI2 (FSPI), pins IO_MUX natifs : SPI3 est pris par les yeux GC9A01,
-// GPIO14 = CS oeil droit, GPIO19/20 = USB D-/D+ → interdits.
+// SD card sur SPI2, bus partagé avec l'e-ink SSD1680 (MOSI=11, CLK=12 communs).
+// MISO=15 et CS=47 : 13 est le BUSY e-ink et 10 son CS (FSD §3.2.2, pins gelées).
 #define STORAGE_PIN_MOSI    11
-#define STORAGE_PIN_MISO    13
+#define STORAGE_PIN_MISO    15
 #define STORAGE_PIN_CLK     12
-#define STORAGE_PIN_CS      10
+#define STORAGE_PIN_CS      47
 
 #define STORAGE_MOUNT_POINT "/sdcard"
 #define STORAGE_MAX_FILES   8

@@ -23,10 +23,10 @@
                     │  OUT ──→ VSYS           │──→ vers regulateurs
                     │  BAT ──→ LiPo           │
                     │                         │
-                    │  ILIM: R=1.5kΩ (1A chg) │
-                    │  EN2=L, EN1=H (500mA USB)│
-                    │  CE=H (charge enable)   │
-                    │  TS: 10kΩ+10kΩ divider  │
+                    │  ILIM: R=1.5kΩ (~1.07A) │
+                    │  EN2=H, EN1=L (RILIM)   │
+                    │  CE=L (charge ON)       │
+                    │  TS: R=10kΩ vers GND    │
                     │  PGOOD: open drain      │
                     └───────┬─────┬───────────┘
                             │     │
@@ -226,8 +226,7 @@
   │──────│─────────────────│──────────────│─────────│─────────│─────│
   │ U_CH │ bq24075RGTR     │ chargeur+PP  │ QFN-16  │ C15464  │  1  │
   │ R_IL │ Resistance      │ 1.5kΩ        │ 0402    │         │  1  │ ILIM (1A charge)
-  │ R_TS1│ Resistance      │ 10kΩ         │ 0402    │         │  1  │ TS divider haut
-  │ R_TS2│ Resistance      │ 10kΩ         │ 0402    │         │  1  │ TS divider bas
+  │ R_TS │ Resistance      │ 10kΩ         │ 0402    │         │  1  │ TS vers GND (pas de NTC)
   │ U_A  │ AP2112K-3.3     │ 3.3V LDO     │ SOT-23-5│ C51118  │  1  │
   │ C_A1 │ Capa ceramique  │ 1µF/10V      │ 0402    │         │  1  │ entree LDO
   │ C_A2 │ Capa ceramique  │ 10µF/10V     │ 0805    │         │  1  │ sortie LDO

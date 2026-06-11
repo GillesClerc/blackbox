@@ -92,12 +92,12 @@
   <text x="258" y="169" font-size="8" font-weight="bold" fill="#F57F17">OUT  p10,11 → VSYS  +  C_OUT 4.7µF</text>
   <line x1="245" y1="176" x2="490" y2="176" stroke="#EEEEEE" stroke-width="0.5"/>
   <text x="258" y="189" font-size="8" fill="#444">CE     = GND  (charge ON, active L)</text>
-  <text x="258" y="202" font-size="8" fill="#444">EN2=L, EN1=VSYS  →  500 mA USB</text>
+  <text x="258" y="202" font-size="8" fill="#444">EN2=VSYS, EN1=L  →  mode RILIM ≈1.07A</text>
   <text x="258" y="215" font-size="8" fill="#444">ISET: 890Ω  →  I_CHG = 1A</text>
   <text x="258" y="228" font-size="8" fill="#444">ILIM: 1.5kΩ  (mode RILIM)</text>
   <text x="258" y="241" font-size="8" fill="#444">TMR    = GND  (timers off)</text>
   <text x="258" y="254" font-size="8" fill="#444">SYSOFF = GND  (système ON) ⚠</text>
-  <text x="258" y="267" font-size="8" fill="#444">TS: 10kΩ+10kΩ  diviseur VSYS/GND</text>
+  <text x="258" y="267" font-size="8" fill="#444">TS: R_TS=10kΩ → GND (pas de NTC)</text>
   <text x="258" y="282" font-size="8" fill="#999">VQFN-16 3×3mm · thermal pad → GND — U8</text>
 
   <!-- 5V_USB wire: USB-C right → bq24075 top -->

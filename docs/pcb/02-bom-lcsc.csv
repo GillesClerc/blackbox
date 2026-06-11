@@ -20,6 +20,7 @@ Connecteur JST-SH 8pin,J7b,JST-SH-8P,—,1,Main,SPI2 vers SSD1680 e-ink bouche
 Connecteur JST-SH 6pin,J8,JST-SH-6P,—,1,Main,ADC potentiometres
 Connecteur JST-SH 4pin,J9,JST-SH-4P,—,1,Main,WS2812 + reserve
 Connecteur JST-PH 2pin,J10,JST-PH-2P,—,1,Main,Batterie LiPo
+Slot microSD push-push,J11,TF-PUSH,C91145,1,Main,Carte SD sur SPI2 partage (MISO=15 CS=47) - verifier ref LCSC avant commande
 Inductance 22µH,L1,1210,—,1,Main,Pour MT3608 boost (22uH recommande datasheet)
 100nF 16V ceramique,C1-C12,0402,—,12,Main,Decouplage (ESP32/PCM5122/capteurs)
 10µF 10V ceramique,C13-C18,0805,—,6,Main,Bulk decouplage (LDO/PCM5122)
@@ -39,8 +40,7 @@ Inductance 22µH,L1,1210,—,1,Main,Pour MT3608 boost (22uH recommande datasheet
 100kΩ,R_FB_L,0402,—,1,Main,MT3608 feedback diviseur bas
 4.7µF 10V ceramique,C_BAT,0603,—,1,Main,bq24075 BAT decouplage
 4.7µF 10V ceramique,C_OUT,0603,—,1,Main,bq24075 OUT decouplage
-10kΩ,R_TS1,0402,—,1,Main,bq24075 TS divider haut
-10kΩ,R_TS2,0402,—,1,Main,bq24075 TS divider bas
+10kΩ,R_TS,0402,—,1,Main,bq24075 TS pin1 vers GND (pas de NTC - 10k fixe TS->VSS datasheet §9.3.6)
 5.1kΩ,R9-R10,0402,—,2,Main,USB-C CC1/CC2
 22Ω,R11-R12,0402,—,2,Main,Serie USB D+/D-
 Diode Schottky SS14,D1,SMA,—,1,Main,Protection MT3608
@@ -48,7 +48,7 @@ MTCH2120-I/MX,U20,QFN-20,—,1,Satellite,Touch capacitif 12ch (pas sur LCSC - Di
 LSM6DSOXTR,U21,LGA-14,C481766,1,Satellite,Accelerometre+gyro 6 axes + MLC
 VEML7700-TT,U22,OPLGA,C1850416,1,Satellite,Capteur lumiere ambiante
 BMP280,U23,LGA-8,C83291,1,Satellite,Pression / souffle
-MLX90614ESF-AAA,U24,TO-39,C3663467,1,Satellite,Temperature IR sans contact
+MLX90614ESF-BAA,U24,TO-39,—,1,Satellite,Temperature IR sans contact - variante 3V obligatoire (AAA=5V incompatible rail 3V3) - adresse usine 0x5A a reprogrammer en 0x5C (EEPROM) - verifier dispo LCSC/Mouser
 TMAG5273A2QDBVR,U25,SOT-23-6,C3715882,1,Satellite,Hall lineaire 3D I2C (remplace A3144E)
 100nF 16V ceramique,C30-C35,0402,—,6,Satellite,Decouplage capteurs
 Bourns PTA6043-2015CPB103,SL1-SL4,Slide-PTA6043-60mm,C17203852,4,Face avant,Fader 60mm 10kΩ lineaire carbon (enigmes) - datasheet docs/datasheets/Bourns-PTA6043.pdf
