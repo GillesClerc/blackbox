@@ -31,7 +31,7 @@
 1. Coolify → New Resource → Application → GitHub
 2. Repo `GillesClerc/blackbox`, branch `master`, **base directory `web/`**
 3. Build pack : Nixpacks
-4. Domaine `box.agill.es` (dev/FFF) — prod : `escapebox.ch` (Phase 3)
+4. Domaine `box.agill.es` (dev/FFF) — prod : `escapebox.ch` (à valider, Phase 3)
 5. SSL auto
 
 Variables d'env :
