@@ -62,7 +62,13 @@ static char *scenario_json_from_sd(void)
         char path[320];
         snprintf(path, sizeof(path), SCENARIO_SD_ROOT "/%s/scenario.json", e->d_name);
         FILE *f = fopen(path, "rb");
-        if (!f) continue;
+        if (!f) {
+            char dpath[320];
+            snprintf(dpath, sizeof(dpath), SCENARIO_SD_ROOT "/%s", e->d_name);
+            ESP_LOGW(TAG, "pas de scenario.json dans %s :", dpath);
+            hal_storage_list_dir(dpath);
+            continue;
+        }
 
         fseek(f, 0, SEEK_END);
         long size = ftell(f);
@@ -373,8 +379,12 @@ void app_main(void)
     hal_audio_set_volume(config_get_volume());
 
     // Carte SD optionnelle : scénario + assets si présente, sinon embarqué.
-    if (hal_storage_init() != ESP_OK)
+    if (hal_storage_init() != ESP_OK) {
         ESP_LOGW(TAG, "SD absente ou illisible — scénario embarqué");
+    } else {
+        hal_storage_list_dir(STORAGE_MOUNT_POINT);
+        hal_storage_list_dir(SCENARIO_SD_ROOT);
+    }
 
     char *sd_json = scenario_json_from_sd();
 
