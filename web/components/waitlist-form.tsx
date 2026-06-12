@@ -35,6 +35,7 @@ export function WaitlistForm({ id }: { id?: string }) {
           required
           autoComplete="email"
           placeholder="vous@exemple.ch"
+          suppressHydrationWarning
           className="h-12 flex-1 rounded-lg border border-input bg-night/60 px-4 text-base text-foreground placeholder:text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
         />
         <button
