@@ -574,7 +574,7 @@ steps:
 | Éditeur visuel | React Flow (mode Pro) |
 | Éditeur code | Monaco Editor (mode Expert YAML) |
 | IA | Anthropic API (Claude) — assistance génération scénarios |
-| Hébergement | Coolify sur VPS (ou Vercel) |
+| Hébergement | Coolify self-hosted (Nixpacks, base dir `web/`, domaine dev box.agill.es) + Supabase self-hosted — en production depuis 2026-06 |
 
 **Schéma base de données (tables principales) :**
 
@@ -695,7 +695,7 @@ POST /api/box/session
 | Composants électroniques | 300 CHF | 500 CHF |
 | Matériaux boîtier (impression 3D, peinture) | 100 CHF | 200 CHF |
 | Assets son & illustration | 0 CHF | 700 CHF |
-| Infrastructure web (Supabase free, Vercel free) | 0 CHF | 0 CHF |
+| Infrastructure web (Coolify + Supabase self-hosted sur VPS existant) | 0 CHF | 0 CHF |
 | Imprévus / itérations | 100 CHF | 300 CHF |
 | **Total** | **500 CHF** | **1700 CHF** |
 
@@ -752,21 +752,23 @@ M2 → M3   : intégration complète + playtests
 - [x] Outil YAML→JSON (tools/yaml2json.py avec validation)
 - [x] Driver NFC PN532 (écrit — validation hardware en attente)
 - [x] Driver servos SG90 MCPWM (écrit — Phase 2)
-- [x] Système de fichiers SD SPI+FAT (écrit — validation hardware en attente)
-- [x] App scénario principale (main.c) — JSON embarqué, callbacks audio/led/eye_*, keypad MPR121, hold 2s pour simuler rfid/rotary/tilt
-- [x] Flash 8 MB config avec partition custom (7.9 MB app, supporte MP3 4+ MB)
+- [x] Système de fichiers SD SPI+FAT — validé sur cible (module 5V, SPI2 CS=47, monté sur /sdcard)
+- [x] App scénario principale (main.c) — scénario + ambient.mp3 chargés depuis SD (`/sdcard/scenarios/<dir>/`), fallback embarqué ; callbacks audio/led/eye_*, keypad MPR121, hold 2s pour simuler rfid/rotary/tilt
+- [x] Partitions OTA 16 MB (factory + ota_0 + ota_1 de 3 MB, storage LittleFS 6.9 MB, rollback activé) — validées sur cible
+- [x] PSRAM octal 8 MB activée (SPIRAM_MODE_OCT 80 MHz) — buffers scénario et MP3 en MALLOC_CAP_SPIRAM
 - [x] `ui_manager` v2 — animation yeux (Uncanny Eyes Adafruit MIT porté ESP-IDF) : 2× GC9A01, rendu 128×128 centré, mouvement autonome + clignements aléatoires, émotions HAPPY/SAD/SURPRISED/SLEEPY/ANGRY/CLOSED, regard L/R/U/D pilotable depuis le scénario JSON (`eye_blink`, `eye_emotion`, `eye_look`)
 - [ ] Driver bouche e-ink SSD1680 (`esp_lcd_ssd1681`) — à intégrer
 - [ ] `ui_manager` bouche : affichage texte mot-à-mot synchro audio
 
 **Web Platform :**
-- [ ] Projet Next.js 16 + Supabase initialisé (Route Groups : `(marketing)`, `(auth)`, `(app)` + segment réel `studio/` + `proxy.ts` Supabase — voir `docs/plans/web-implementation.md`)
-- [ ] Auth (email + Google)
-- [ ] Page catalogue (statique pour commencer)
-- [ ] Page bibliothèque (scénarios achetés)
-- [ ] Stripe checkout (paiement one-shot) + routes `/checkout/success` et `/checkout/cancel`
-- [ ] Route Handler `app/api/webhooks/stripe/route.ts` avec vérification signature Stripe (test via `stripe listen`)
-- [ ] API sync basique (liste des scénarios autorisés)
+- [x] Projet Next.js 16.2.6 + shadcn/ui initialisé dans `web/` (monorepo, voir `docs/plans/web-implementation.md`)
+- [x] Landing « Ouvrez l'œil » + waitlist (server action zod + table `waitlist` RLS insert-only) — déployée sur Coolify (Nixpacks, base dir `web/`, box.agill.es), Supabase self-hosted opérationnel, circuit validé de bout en bout
+- [ ] Auth (email + Google) + pages login/register/account ← **prochaine étape**
+- [ ] API box : challenge/auth/sync (HMAC par box via HKDF, JWT 2h) ← priorisée avant catalogue/Stripe
+- [ ] Page catalogue (statique pour commencer) — *reportée après l'API box*
+- [ ] Page bibliothèque (scénarios achetés) — *reportée*
+- [ ] Stripe checkout (paiement one-shot) + routes `/checkout/success` et `/checkout/cancel` — *reporté*
+- [ ] Route Handler `app/api/webhooks/stripe/route.ts` avec vérification signature Stripe (test via `stripe listen`) — *reporté*
 - [ ] Route publique `/v/[scenario]/[session]` (leaderboard / résultat QR code)
 
 **Scénario — Processus de création (1 scénario complet) :**
