@@ -222,22 +222,25 @@
   │                         BOM ALIMENTATION AUDIO                        │
   └─────────────────────────────────────────────────────────────────────────┘
 
-  │ Ref  │ Composant       │ Valeur       │ Package │ LCSC    │ Qte │
-  │──────│─────────────────│──────────────│─────────│─────────│─────│
-  │ U_CH │ bq24075RGTR     │ chargeur+PP  │ QFN-16  │ C15464  │  1  │
-  │ R_IL │ Resistance      │ 1.5kΩ        │ 0402    │         │  1  │ ILIM (1A charge)
-  │ R_TS │ Resistance      │ 10kΩ         │ 0402    │         │  1  │ TS vers GND (pas de NTC)
-  │ U_A  │ AP2112K-3.3     │ 3.3V LDO     │ SOT-23-5│ C51118  │  1  │
-  │ C_A1 │ Capa ceramique  │ 1µF/10V      │ 0402    │         │  1  │ entree LDO
-  │ C_A2 │ Capa ceramique  │ 10µF/10V     │ 0805    │         │  1  │ sortie LDO
-  │ C1   │ Capa ceramique  │ 10µF/16V     │ 0805    │         │  3  │ AVDD,DVDD,CPVDD
-  │ C2   │ Capa ceramique  │ 100nF/16V    │ 0402    │         │  4  │ AVDD,DVDD,CPVDD,LDOO
-  │ C3   │ Capa ceramique  │ 2.2µF/25V    │ 0603    │         │  2  │ charge pump
-  │ R1   │ Resistance      │ 100Ω         │ 0603    │         │  2  │ filtre sortie
-  │ C4   │ Capa ceramique  │ 22nF/50V     │ 0603    │         │  2  │ filtre sortie
-  │ R2   │ Resistance      │ 10kΩ         │ 0402    │         │  1  │ pull-up XSMT
-  │──────│─────────────────│──────────────│─────────│─────────│─────│
-  │      │                 │              │         │ TOTAL   │ 17  │
+  │ Ref         │ Composant      │ Valeur    │ Package │ LCSC    │ Qte │
+  │─────────────│────────────────│───────────│─────────│─────────│─────│
+  │ U8          │ bq24075RGTR    │ charg.+PP │ QFN-16  │ C15464  │  1  │
+  │ R_ILIM      │ Resistance     │ 1.5kΩ     │ 0402    │         │  1  │ ILIM (mode RILIM)
+  │ R_TS        │ Resistance     │ 10kΩ      │ 0402    │         │  1  │ TS vers GND (pas de NTC)
+  │ U6          │ AP2112K-3.3    │ 3.3V LDO  │ SOT-23-5│ C51118  │  1  │
+  │ C_A1        │ Capa ceramique │ 1µF/10V   │ 0402    │         │  1  │ entree LDO
+  │ C_A2        │ Capa ceramique │ 10µF/10V  │ 0805    │         │  1  │ sortie LDO
+  │ C15-C17     │ Capa ceramique │ 10µF/16V  │ 0805    │         │  3  │ bulk AVDD,DVDD,CPVDD
+  │ C1_AV/C2_DV │ Capa ceramique │ 100nF/16V │ 0402    │         │  4  │ AVDD,DVDD,CPVDD,LDOO
+  │  /C3_CP/C_LDOO                                                     │
+  │ C19-C20     │ Capa ceramique │ 2.2µF/25V │ 0603    │         │  2  │ charge pump
+  │ R1-R2       │ Resistance     │ 100Ω      │ 0603    │         │  2  │ filtre sortie
+  │ C21-C22     │ Capa ceramique │ 22nF/50V  │ 0603    │         │  2  │ filtre sortie
+  │ R5          │ Resistance     │ 10kΩ      │ 0402    │         │  1  │ pull-up XSMT (3V3_A)
+  │─────────────│────────────────│───────────│─────────│─────────│─────│
+  │             │                │           │         │ TOTAL   │ 17  │
+
+  (designateurs alignes sur docs/pcb/02-bom-lcsc.csv et 01-netlist.txt)
 
   Cout total composants audio : < 1.50 EUR (bq24075 inclus)
 

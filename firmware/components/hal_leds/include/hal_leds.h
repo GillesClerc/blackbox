@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include "esp_err.h"
 
-#define LEDS_DEFAULT_GPIO  16
+#define LEDS_DEFAULT_GPIO  48
 #define LEDS_MAX_COUNT     60
 
 // Initialise le canal RMT pour le bus WS2812B.

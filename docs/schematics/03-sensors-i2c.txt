@@ -268,7 +268,7 @@
   │  SCL  ── I2C SCL                                       │
   │  I0   ── GND  ┐                                        │
   │  I1   ── 3.3V ┘ → I2C mode (I0=0, I1=1)              │
-  │  RSTPD── 3.3V via 10kΩ (ou GPIO libre pour reset)    │
+  │  RSTPD── 3.3V via 10kΩ (R7 — pas de reset GPIO)      │
   │  IRQ  ── (non connecte ou GPIO libre)                  │
   │                                                        │
   │  ANT1 ── antenne PCB ──┐ antenne boucle integree      │

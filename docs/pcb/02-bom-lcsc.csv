@@ -18,22 +18,25 @@ Connecteur JST-SH 4pin,J3-J6,JST-SH-4P,—,4,Main,Bus I2C vers satellites
 Connecteur JST-SH 10pin,J7,JST-SH-10P,—,1,Main,SPI3 vers 2x GC9A01 yeux
 Connecteur JST-SH 8pin,J7b,JST-SH-8P,—,1,Main,SPI2 vers SSD1680 e-ink bouche
 Connecteur JST-SH 6pin,J8,JST-SH-6P,—,1,Main,Toggles SW1/SW2 face avant + reserve GPIO3 (ex-ADC potentiometres - analogique migre sur ADS7830 I2C)
-Connecteur JST-SH 4pin,J9,JST-SH-4P,—,1,Main,WS2812 + reserve
+Connecteur JST-PH 4pin,J9,JST-PH-4P,—,1,Main,WS2812 + reserve (PH 2mm 3A/contact - 32 LEDs = jusqu'a ~1.9A sur 5V, JST-SH 1A insuffisant)
 Connecteur JST-PH 2pin,J10,JST-PH-2P,—,1,Main,Batterie LiPo
 Slot microSD push-push,J11,TF-PUSH,C91145,1,Main,Carte SD sur SPI2 partage (MISO=15 CS=47) - verifier ref LCSC avant commande
 Inductance 22µH,L1,1210,—,1,Main,Pour MT3608 boost (22uH recommande datasheet)
-100nF 16V ceramique,C1-C12,0402,—,12,Main,Decouplage (ESP32/PCM5122/capteurs)
-10µF 10V ceramique,C13-C18,0805,—,6,Main,Bulk decouplage (LDO/PCM5122)
+100nF 16V ceramique,C1-C12,0402,—,12,Main,Decouplage generique (ESP32/PN532/divers)
+100nF 16V ceramique,C1_AV/C2_DV/C3_CP/C_LDOO/C_EN,0402,—,5,Main,PCM5122 AVDD/DVDD/CPVDD/LDOO + filtre RC EN ESP32 (designateurs netlist)
+10µF 10V ceramique,C_D2/C_A2/C_B1,0805,—,3,Main,Sorties LDO U5/U6 + entree MT3608
+10µF 16V ceramique,C15-C17,0805,—,3,Main,Bulk decouplage PCM5122 (AVDD/DVDD/CPVDD)
 2.2µF 25V ceramique,C19-C20,0603,—,2,Main,Charge pump PCM5122
 22nF 50V ceramique,C21-C22,0603,—,2,Main,Filtre RC sortie audio
-4.7µF 10V ceramique,C_IN_BQ,0603,—,1,Main,bq24075 IN pin13 decouplage (datasheet 4.7uF min)
-1µF 10V ceramique,C23-C24,0402,—,2,Main,Entree LDOs
-22µF 16V ceramique,C25,0805,—,1,Main,Sortie MT3608 boost (16V pour derating DC bias)
+4.7µF 10V ceramique,C_IN,0603,—,1,Main,bq24075 IN pin13 decouplage (datasheet 4.7uF min)
+1µF 10V ceramique,C_D1/C_A1,0402,—,2,Main,Entrees LDO U5/U6
+22µF 16V ceramique,C_B2,0805,—,1,Main,Sortie MT3608 boost (16V pour derating DC bias)
 100Ω,R1-R2,0603,—,2,Main,Filtre RC sortie audio
 4.7kΩ,R3-R4,0402,—,2,Main,Pull-up I2C SDA/SCL
-10kΩ,R5-R7,0402,—,3,Main,Pull-up XSMT/EN/Hall
+10kΩ,R5-R7,0402,—,3,Main,Pull-up XSMT (R5 vers 3V3_A) / EN ESP32 (R6) / RSTPD PN532 (R7 - ex-Hall retire)
 330Ω,R8,0402,—,1,Main,Serie WS2812 data
-1.5kΩ,R_IL,0402,—,1,Main,bq24075 ILIM pin12 (input current limit en mode RILIM EN2=H/EN1=L)
+1.5kΩ,R_ILIM,0402,—,1,Main,bq24075 ILIM pin12 (input current limit en mode RILIM EN2=H/EN1=L)
+100kΩ,R_PG/R_CHG,0402,—,2,Main,Pull-up debug PGOOD/CHG bq24075 (DNP par defaut - pads testpoint)
 890Ω,R_ISET,0402,—,1,Main,bq24075 ISET pin16 (charge current 1A)
 100Ω,R_VCC,0402,—,1,Main,DW01A VCC serie (protection)
 750kΩ,R_FB_H,0402,—,1,Main,MT3608 feedback diviseur haut

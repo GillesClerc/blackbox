@@ -8,12 +8,12 @@
 ═══ ALIMENTATIONS ════════════════════════════════════════════════════════════
 
 NET 5V_USB:
-  J1.VBUS, U8.IN, C_IN_BQ.+, U12.VBUS
+  J1.VBUS, U8.IN, C_IN.+, U12.VBUS
 
 NET VSYS:
   U8.OUT (bq24075 power path output)
-  U5.VIN (LDO digital), C23.+
-  U6.VIN (LDO audio), C24.+
+  U5.VIN (LDO digital), C_D1.+
+  U6.VIN (LDO audio), C_A1.+
   U7.VIN (MT3608 boost), U7.EN (tie a VIN), C_B1.+
   L1.1 (inductance boost, autre borne sur BOOST_SW)
   (USB branche: ~4.4V / batterie: 3.0-4.2V)
@@ -22,7 +22,7 @@ NET VBAT:
   U8.BAT (bq24075), U9.VDD (DW01A), J10.+, C_BAT.+
 
 NET 3V3_D (digital):
-  U5.VOUT, C13.+, C_A2.+
+  U5.VOUT, C_D2.+
   U1.3V3 (ESP32-S3 VDD)
   U4.VDD (ICS-43434)
   U11.VDD (PN532)
@@ -31,11 +31,13 @@ NET 3V3_D (digital):
   J7b.VCC (SSD1680 e-ink bouche)
   J8.VCC (toggles face avant + reserve)
   R3.1, R4.1 (pull-up I2C)
-  R5.1 (pull-up XSMT)
   R6.1 (pull-up EN)
+  R7.1 (pull-up RSTPD PN532)
+  R_PG.1, R_CHG.1 (pull-up debug PGOOD/CHG, DNP par defaut)
 
 NET 3V3_A (audio):
-  U6.VOUT, C14.+
+  U6.VOUT, C_A2.+
+  R5.1 (pull-up XSMT — vers 3V3_A, cf. NET PCM_XSMT)
   U2.AVDD (pin 1), C1_AV.+
   U2.DVDD (pin 19), C2_DV.+
   U2.CPVDD (pin 5), C3_CP.+
@@ -52,7 +54,7 @@ NET BOOST_FB:
   R_FB_L.1 (100k, autre borne sur GND)
 
 NET 5V:
-  D1.K (SS14 cathode), C25.+
+  D1.K (SS14 cathode), C_B2.+
   R_FB_H.1 (diviseur feedback)
   J9.VCC (WS2812)
   U3.VDD (PAM8406)
@@ -83,6 +85,10 @@ NET I2C_SCL:
   U2.SCL (PCM5122 pin 13)
   U11.SCL (PN532)
   J3.SCL, J4.SCL, J5.SCL, J6.SCL (satellites)
+
+NET PN532_RSTPD:
+  U11.RSTPD
+  R7.2 (10k pull-up vers 3V3_D — PN532 toujours actif, pas de reset GPIO)
 
 
 ═══ BUS I2S0 — AUDIO SORTIE ═════════════════════════════════════════════════
@@ -328,10 +334,12 @@ NET BQ_EN2:
   (EN2=H, EN1=L -> mode RILIM : I_IN max = K_ILIM/R_ILIM ~1.07A, ref SLUS810N table 7-2)
 
 NET BQ_PGOOD:
-  U8.PGOOD (open drain, optionnel -> LED ou GPIO ESP32)
+  U8.PGOOD (pin 7, open drain)
+  R_PG.2 (100k pull-up vers 3V3_D, DNP par defaut — testpoint debug sonde)
 
 NET BQ_CHG:
-  U8.CHG (open drain, optionnel -> LED charge en cours)
+  U8.CHG (pin 9, open drain)
+  R_CHG.2 (100k pull-up vers 3V3_D, DNP par defaut — testpoint debug sonde)
 
 NET BAT_PROT:
   U9.VCC (pin 5) -> R_VCC 100R -> bq24075 BAT (pin 2,3) -> J10.+ (LiPo B+)

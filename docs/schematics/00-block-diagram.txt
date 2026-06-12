@@ -44,7 +44,7 @@
   │                     │   GPIO1-2 ───┼───> JST-SH 6p (toggles SW1/SW2)│
   │                     │   (3=rsv)    │                                  │
   │                     │              │                                  │
-  │                     │   GPIO48 ────┼───> JST-SH 4p (WS2812)         │
+  │                     │   GPIO48 ────┼───> JST-PH 4p (WS2812)         │
   │                     │              │                                  │
   │                     │   USB ───────┼───> USB-C (GPIO19-20)           │
   │                     │   UART0 ─────┼───> debug (GPIO43-44)           │

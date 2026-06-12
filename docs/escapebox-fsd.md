@@ -341,12 +341,12 @@ Composants à câbler (pas forcément sur PCB dédié) :
 
 **Connectique backbone** :
 
-JST-SH (1.0mm pitch, verrouillable) pour tous les connecteurs inter-PCB :
+JST-SH (1.0mm pitch, verrouillable) pour les connecteurs signaux inter-PCB ; JST-PH (2.0mm, 3A/contact) pour la puissance (J9 LEDs, J10 batterie) :
 - 4 pins I2C : VCC(3.3V), GND, SDA, SCL
 - 10 pins SPI3 yeux : VCC(3.3V), GND, MOSI, SCLK, CS_L, CS_R, DC, RST, (rsv×2)
 - 6 pins SPI2 e-ink : VCC(3.3V), GND, MOSI, SCLK, CS, DC (RST+BUSY sur main)
 - 6 pins toggles (J8) : VCC(3.3V), GND, SW1, SW2, GPIO3(rsv), (rsv)
-- 4 pins LED/Hall : VCC(5V), GND, WS2812_DATA, (rsv)
+- 4 pins LED (J9, JST-PH — jusqu'à ~1.9A sur 5V) : VCC(5V), GND, WS2812_DATA, (rsv)
 
 **Boîtier** :
 - Phase proto : Imprimé en 3D (PLA/PETG)
