@@ -10,10 +10,13 @@
 #include "hal_leds.h"
 #include "scenario_engine.h"
 #include "config_manager.h"
+#include "hal_storage.h"
 #include "cJSON.h"
+#include "esp_heap_caps.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <dirent.h>
 
 #define TAG "main"
 
@@ -35,6 +38,61 @@ static const hal_audio_bg_note_t s_ambient[] = {
     {110, 200, 800},  {0, 0, 3000},
 };
 #endif
+
+// ─── Scénario depuis la carte SD ─────────────────────────────────────────────
+
+#define SCENARIO_SD_ROOT  "/sdcard/scenarios"
+#define SCENARIO_JSON_MAX (256 * 1024)
+
+// Dossier du scénario actif sur SD ("" si scénario embarqué) — sert aussi
+// à localiser les assets (ambient.mp3, ...).
+static char s_scenario_dir[280];
+
+// Cherche le premier dossier de /sdcard/scenarios contenant scenario.json et
+// le charge en PSRAM (NUL-terminé). NULL si SD absente ou rien d'exploitable.
+static char *scenario_json_from_sd(void)
+{
+    DIR *root = opendir(SCENARIO_SD_ROOT);
+    if (!root) return NULL;
+
+    char *json = NULL;
+    struct dirent *e;
+    while (!json && (e = readdir(root)) != NULL) {
+        if (e->d_name[0] == '.') continue;
+        char path[320];
+        snprintf(path, sizeof(path), SCENARIO_SD_ROOT "/%s/scenario.json", e->d_name);
+        FILE *f = fopen(path, "rb");
+        if (!f) continue;
+
+        fseek(f, 0, SEEK_END);
+        long size = ftell(f);
+        fseek(f, 0, SEEK_SET);
+        if (size <= 0 || size > SCENARIO_JSON_MAX) {
+            ESP_LOGW(TAG, "scenario.json hors limites (%ld octets): %s", size, path);
+            fclose(f);
+            continue;
+        }
+        json = heap_caps_malloc((size_t)size + 1, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+        if (!json) {
+            ESP_LOGE(TAG, "alloc PSRAM scénario échouée (%ld octets)", size);
+            fclose(f);
+            break;
+        }
+        size_t n = fread(json, 1, (size_t)size, f);
+        fclose(f);
+        if (n != (size_t)size) {
+            ESP_LOGW(TAG, "lecture incomplète %u/%ld: %s", (unsigned)n, size, path);
+            heap_caps_free(json);
+            json = NULL;
+            continue;
+        }
+        json[size] = '\0';
+        snprintf(s_scenario_dir, sizeof(s_scenario_dir), SCENARIO_SD_ROOT "/%s", e->d_name);
+        ESP_LOGI(TAG, "scénario SD: %s (%ld octets)", path, size);
+    }
+    closedir(root);
+    return json;
+}
 
 // ─── Helpers LED ─────────────────────────────────────────────────────────────
 
@@ -314,8 +372,20 @@ void app_main(void)
     ESP_ERROR_CHECK(hal_audio_init());
     hal_audio_set_volume(config_get_volume());
 
+    // Carte SD optionnelle : scénario + assets si présente, sinon embarqué.
+    if (hal_storage_init() != ESP_OK)
+        ESP_LOGW(TAG, "SD absente ou illisible — scénario embarqué");
+
+    char *sd_json = scenario_json_from_sd();
+
     // Scenario engine — sans UI : les actions screen_* loggent les textes.
-    esp_err_t ret = scenario_engine_init(capitaine_verdier_json_start);
+    esp_err_t ret = scenario_engine_init(sd_json ? sd_json : capitaine_verdier_json_start);
+    if (ret != ESP_OK && sd_json) {
+        ESP_LOGW(TAG, "scénario SD invalide — fallback sur le scénario embarqué");
+        s_scenario_dir[0] = '\0';
+        ret = scenario_engine_init(capitaine_verdier_json_start);
+    }
+    if (sd_json) heap_caps_free(sd_json);  // cJSON_Parse a copié le contenu
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "scenario_engine_init: %s", esp_err_to_name(ret));
     } else {
@@ -333,12 +403,20 @@ void app_main(void)
         if (ret != ESP_OK) {
             ESP_LOGE(TAG, "scenario_engine_start: %s", esp_err_to_name(ret));
         } else {
+            bool bg_started = false;
+            if (s_scenario_dir[0]) {
+                char mp3_path[300];
+                snprintf(mp3_path, sizeof(mp3_path), "%s/ambient.mp3", s_scenario_dir);
+                bg_started = (hal_audio_play_bg(mp3_path) == ESP_OK);
+            }
+            if (!bg_started) {
 #ifdef HAS_AMBIENT_MP3
-            hal_audio_bg_mp3_start(_binary_ambient_mp3_start,
-                               _binary_ambient_mp3_end - _binary_ambient_mp3_start);
+                hal_audio_bg_mp3_start(_binary_ambient_mp3_start,
+                                   _binary_ambient_mp3_end - _binary_ambient_mp3_start);
 #else
-            hal_audio_bg_start(s_ambient, sizeof(s_ambient) / sizeof(s_ambient[0]));
+                hal_audio_bg_start(s_ambient, sizeof(s_ambient) / sizeof(s_ambient[0]));
 #endif
+            }
         }
     }
 
