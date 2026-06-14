@@ -30,6 +30,11 @@ Box physique d'escape game. Specs completes dans :
 - Commiter souvent avec des messages clairs, sans co-authored by claude
 - Pusher apres chaque feature stable
 
+## Web platform (web/)
+- Next.js 16 + Supabase self-hosted (Coolify). Landing + auth + API box. Plan : `docs/plans/web-implementation.md`.
+- API box (`web/app/api/box/`) : challenge → auth (HMAC HKDF par box_uid → JWT 2h) → sync. Secret par box derive du `BOX_MASTER_SECRET` serveur (jamais embarque) ; routes box via client service_role (`lib/supabase/admin.ts`), la box n'est pas un user Supabase.
+- ⚠ **DETTE — enregistrement box (`/api/box/register`)** : on est parti sur **l'option A (claim simple)** — un utilisateur connecte revendique un `box_uid`, sans preuve que la box est en sa possession. Suffisant pour le FFF (Gilles seul enregistre ses propres box). **AVANT toute inscription multi-utilisateur publique**, passer a **l'option B (claim + preuve HMAC)** : la box signe un challenge pendant le provisioning BLE pour prouver qu'elle detient son secret derive. Sinon squat possible (revendiquer un UID qu'on ne possede pas → scores/sync detournes). Necessite `provision_box.py` + HAL box-auth firmware (pas encore ecrits).
+
 ## Conventions code
 - C pur ESP-IDF natif. Libs externes : minimp3 (decodeur MP3), esp_lcd_gc9a01 (driver yeux), assets Uncanny Eyes Adafruit MIT (components/ui_manager/data/defaultEye.h). LVGL non utilise actuellement (dependance conservee pour usage futur).
 - Un composant = une responsabilite, un dossier dans components/
