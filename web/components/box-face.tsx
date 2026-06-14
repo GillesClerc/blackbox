@@ -1,6 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 
 const TAGLINE = "Ouvrez l'œil.";
 const WAKE_DELAY_MS = 600;
@@ -89,13 +95,25 @@ function Eye({
   );
 }
 
+function usePrefersReducedMotion() {
+  return useSyncExternalStore(
+    (cb) => {
+      const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+      mq.addEventListener("change", cb);
+      return () => mq.removeEventListener("change", cb);
+    },
+    () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+    () => false
+  );
+}
+
 export function BoxFace() {
   const faceRef = useRef<HTMLDivElement>(null);
   const lastMoveRef = useRef(0);
   const typeTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const revertRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pokeRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [reduced, setReduced] = useState(false);
+  const reduced = usePrefersReducedMotion();
   const [awake, setAwake] = useState(false);
   const [blinking, setBlinking] = useState(false);
   const [wink, setWink] = useState<"left" | "right" | null>(null);
@@ -129,15 +147,6 @@ export function BoxFace() {
     },
     [reduced]
   );
-
-  useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setReduced(mq.matches);
-    if (mq.matches) {
-      setAwake(true);
-      setTyped(TAGLINE.length);
-    }
-  }, []);
 
   useEffect(() => {
     if (reduced) return;
@@ -202,7 +211,7 @@ export function BoxFace() {
     };
   }, [reduced, typeOut]);
 
-  const doneTyping = typed >= message.length;
+  const doneTyping = reduced || typed >= message.length;
 
   // clin d'œil complice juste après que la bouche a fini d'écrire
   useEffect(() => {
@@ -230,7 +239,7 @@ export function BoxFace() {
     }
   };
 
-  const closed = !awake || blinking;
+  const closed = !reduced && (!awake || blinking);
 
   return (
     <div className="mx-auto w-fit" style={{ perspective: "1100px" }}>
@@ -265,8 +274,8 @@ export function BoxFace() {
           style={{ transform: "rotateX(4deg)" }}
         >
           <span className="font-mono text-sm sm:text-base font-bold tracking-wide text-eink-ink">
-            {message.slice(0, typed)}
-            {!doneTyping && !reduced && (
+            {reduced ? message : message.slice(0, typed)}
+            {!doneTyping && (
               <span className="eink-caret inline-block w-[0.6em] -mb-0.5 h-[1em] translate-y-[0.15em] bg-eink-ink" />
             )}
           </span>
