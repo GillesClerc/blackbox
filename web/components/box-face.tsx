@@ -1,23 +1,44 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 const TAGLINE = "Ouvrez l'œil.";
 const WAKE_DELAY_MS = 600;
 const TYPE_START_MS = 1400;
 const TYPE_INTERVAL_MS = 90;
+const QUIP_REVERT_MS = 4200;
+
+// répliques lâchées quand on clique la bouche : elle répond, sans rien dévoiler
+const QUIPS = [
+  "Vous brûlez.",
+  "Pas si vite.",
+  "Curieux ?",
+  "Chut.",
+  "Encore un peu.",
+  "Je vous vois.",
+  "Approchez.",
+  "Presque.",
+];
 
 function Eye({
   offset,
   closed,
+  poked,
+  onPoke,
+  label,
 }: {
   offset: { x: number; y: number };
   closed: boolean;
+  poked: boolean;
+  onPoke: () => void;
+  label: string;
 }) {
   return (
-    <div
-      className="relative size-24 sm:size-32 rounded-full overflow-hidden border-4 border-[#222a3d] bg-night shadow-[0_0_40px_-6px_rgba(232,163,61,0.3),inset_0_0_18px_rgba(0,0,0,0.9)]"
-      aria-hidden="true"
+    <button
+      type="button"
+      onClick={onPoke}
+      aria-label={label}
+      className="relative size-24 sm:size-32 cursor-pointer select-none rounded-full overflow-hidden border-4 border-[#222a3d] bg-night shadow-[0_0_40px_-6px_rgba(232,163,61,0.3),inset_0_0_18px_rgba(0,0,0,0.9)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-iris"
     >
       {/* sclère */}
       <div
@@ -44,7 +65,10 @@ function Eye({
           }}
         >
           {/* pupille */}
-          <div className="eye-pupil absolute left-1/2 top-1/2 size-[44%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#0a0703] shadow-[inset_0_0_5px_rgba(0,0,0,1)]" />
+          <div
+            className="eye-pupil absolute left-1/2 top-1/2 size-[44%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#0a0703] shadow-[inset_0_0_5px_rgba(0,0,0,1)]"
+            data-poked={poked}
+          />
           {/* reflets — placés bas pour rester visibles sous la paupière */}
           <div className="absolute left-[22%] top-[30%] size-[16%] rounded-full bg-white/75 blur-[1px]" />
           <div className="absolute left-[62%] top-[60%] size-[9%] rounded-full bg-white/35 blur-[1px]" />
@@ -54,27 +78,57 @@ function Eye({
       <div
         className="eye-lid-top absolute -left-[8%] -right-[8%] -top-full h-full bg-[#1a2130]"
         data-closed={closed}
-        style={{ borderRadius: "0 0 50% 50% / 0 0 32% 32%" }}
+        style={{ borderRadius: "0 0 40% 40% / 0 0 20% 20%" }}
       />
       <div
         className="eye-lid-bottom absolute -bottom-full -left-[8%] -right-[8%] h-full bg-[#1a2130]"
         data-closed={closed}
-        style={{ borderRadius: "50% 50% 0 0 / 24% 24% 0 0" }}
+        style={{ borderRadius: "42% 42% 0 0 / 15% 15% 0 0" }}
       />
-    </div>
+    </button>
   );
 }
 
 export function BoxFace() {
   const faceRef = useRef<HTMLDivElement>(null);
   const lastMoveRef = useRef(0);
+  const typeTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const revertRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pokeRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [reduced, setReduced] = useState(false);
   const [awake, setAwake] = useState(false);
   const [blinking, setBlinking] = useState(false);
   const [wink, setWink] = useState<"left" | "right" | null>(null);
+  const [poke, setPoke] = useState<"left" | "right" | null>(null);
+  const [message, setMessage] = useState(TAGLINE);
   const [typed, setTyped] = useState(0);
   // regard en coin par défaut : elle ne vous fixe pas, elle vous jauge
   const [offset, setOffset] = useState({ x: 6, y: 2 });
+
+  const typeOut = useCallback(
+    (text: string) => {
+      if (typeTimerRef.current) clearInterval(typeTimerRef.current);
+      setMessage(text);
+      if (reduced) {
+        setTyped(text.length);
+        return;
+      }
+      setTyped(0);
+      typeTimerRef.current = setInterval(() => {
+        setTyped((n) => {
+          if (n >= text.length) {
+            if (typeTimerRef.current) {
+              clearInterval(typeTimerRef.current);
+              typeTimerRef.current = null;
+            }
+            return n;
+          }
+          return n + 1;
+        });
+      }, TYPE_INTERVAL_MS);
+    },
+    [reduced]
+  );
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -103,17 +157,7 @@ export function BoxFace() {
     };
     scheduleBlink(3200);
 
-    const typeStart = setTimeout(() => {
-      const typeTimer = setInterval(() => {
-        setTyped((n) => {
-          if (n >= TAGLINE.length) {
-            clearInterval(typeTimer);
-            return n;
-          }
-          return n + 1;
-        });
-      }, TYPE_INTERVAL_MS);
-    }, TYPE_START_MS);
+    const typeStart = setTimeout(() => typeOut(TAGLINE), TYPE_START_MS);
 
     const onMove = (e: MouseEvent) => {
       const face = faceRef.current;
@@ -152,12 +196,15 @@ export function BoxFace() {
       clearInterval(saccade);
       clearInterval(winkTimer);
       window.removeEventListener("mousemove", onMove);
+      if (typeTimerRef.current) clearInterval(typeTimerRef.current);
+      if (revertRef.current) clearTimeout(revertRef.current);
+      if (pokeRef.current) clearTimeout(pokeRef.current);
     };
-  }, [reduced]);
+  }, [reduced, typeOut]);
 
-  const doneTyping = typed >= TAGLINE.length;
+  const doneTyping = typed >= message.length;
 
-  // clin d'œil complice juste après que la bouche a fini d'écrire le tagline
+  // clin d'œil complice juste après que la bouche a fini d'écrire
   useEffect(() => {
     if (reduced || !doneTyping) return;
     const t = setTimeout(() => {
@@ -167,6 +214,22 @@ export function BoxFace() {
     return () => clearTimeout(t);
   }, [doneTyping, reduced]);
 
+  const pokeEye = (side: "left" | "right") => {
+    setPoke(side);
+    if (pokeRef.current) clearTimeout(pokeRef.current);
+    pokeRef.current = setTimeout(() => setPoke(null), 420);
+  };
+
+  const pokeMouth = () => {
+    const pool = QUIPS.filter((q) => q !== message);
+    const next = pool[Math.floor(Math.random() * pool.length)] ?? QUIPS[0];
+    typeOut(next);
+    if (revertRef.current) clearTimeout(revertRef.current);
+    if (!reduced) {
+      revertRef.current = setTimeout(() => typeOut(TAGLINE), QUIP_REVERT_MS);
+    }
+  };
+
   const closed = !awake || blinking;
 
   return (
@@ -175,25 +238,39 @@ export function BoxFace() {
         ref={faceRef}
         className="rounded-[2rem] border border-border bg-gradient-to-b from-[#1d2435] to-[#131927] px-8 py-9 sm:px-12 sm:py-11 shadow-[0_30px_70px_-18px_rgba(0,0,0,0.85)]"
         style={{ transform: "rotateX(7deg)" }}
-        role="img"
-        aria-label="La façade d'EscapeBox : deux yeux animés au regard malicieux et une bouche à encre électronique qui affiche « Ouvrez l'œil. »"
+        role="group"
+        aria-label="Le visage d'EscapeBox : touchez les yeux ou la bouche pour la faire réagir."
       >
         <div className="flex items-center justify-center gap-8 sm:gap-12">
-          <Eye offset={offset} closed={closed || wink === "left"} />
-          <Eye offset={offset} closed={closed || wink === "right"} />
+          <Eye
+            offset={offset}
+            closed={closed || wink === "left" || poke === "left"}
+            poked={poke !== null}
+            onPoke={() => pokeEye("left")}
+            label="Œil gauche — cliquez pour la chatouiller"
+          />
+          <Eye
+            offset={offset}
+            closed={closed || wink === "right" || poke === "right"}
+            poked={poke !== null}
+            onPoke={() => pokeEye("right")}
+            label="Œil droit — cliquez pour la chatouiller"
+          />
         </div>
-        <div
-          className="mx-auto mt-8 flex h-16 w-56 sm:h-20 sm:w-72 items-center justify-center rounded-md bg-eink-paper shadow-[inset_0_2px_10px_rgba(0,0,0,0.35)]"
+        <button
+          type="button"
+          onClick={pokeMouth}
+          aria-label="La bouche — cliquez pour la faire parler"
+          className="mx-auto mt-8 flex h-16 w-56 sm:h-20 sm:w-72 cursor-pointer select-none items-center justify-center rounded-md bg-eink-paper shadow-[inset_0_2px_10px_rgba(0,0,0,0.35)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-iris"
           style={{ transform: "rotateX(4deg)" }}
-          aria-hidden="true"
         >
           <span className="font-mono text-sm sm:text-base font-bold tracking-wide text-eink-ink">
-            {TAGLINE.slice(0, typed)}
+            {message.slice(0, typed)}
             {!doneTyping && !reduced && (
               <span className="eink-caret inline-block w-[0.6em] -mb-0.5 h-[1em] translate-y-[0.15em] bg-eink-ink" />
             )}
           </span>
-        </div>
+        </button>
       </div>
     </div>
   );

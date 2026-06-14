@@ -1,5 +1,4 @@
 import {
-  Wind,
   Pointer,
   Nfc,
   SunMedium,
@@ -31,11 +30,6 @@ const STEPS = [
 ];
 
 const SENSES = [
-  {
-    icon: Wind,
-    code: "SOUFFLE",
-    text: "Une flamme à éteindre, de la poussière à chasser. Approchez-vous.",
-  },
   {
     icon: Pointer,
     code: "TOUCHER",

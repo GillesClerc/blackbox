@@ -113,26 +113,58 @@
 
 .eye-lid-top,
 .eye-lid-bottom {
-  transition: transform 120ms ease-in;
+  transition: translate 120ms ease-in;
+}
+
+/* dérive lente et désynchronisée : les paupières « respirent » au repos.
+   Animée sur transform pendant que l'ouverture/fermeture passe par translate
+   → les deux propriétés se composent sans que la dérive casse la transition
+   du clignement. */
+.eye-lid-top {
+  animation: lid-top-idle 6.5s ease-in-out infinite;
+}
+
+.eye-lid-bottom {
+  animation: lid-bottom-idle 8s ease-in-out infinite;
 }
 
 .eye-lid-top[data-closed="true"] {
-  transform: translateY(64%);
+  translate: 0 64%;
 }
 
 .eye-lid-bottom[data-closed="true"] {
-  transform: translateY(-46%);
+  translate: 0 -46%;
 }
 
 .eye-lid-top[data-closed="false"] {
   /* paupières mi-closes au repos : ouverture en amande, regard en coin */
-  transform: translateY(30%);
-  transition: transform 280ms cubic-bezier(0.2, 0.8, 0.3, 1);
+  translate: 0 30%;
+  transition: translate 280ms cubic-bezier(0.2, 0.8, 0.3, 1);
 }
 
 .eye-lid-bottom[data-closed="false"] {
-  transform: translateY(-16%);
-  transition: transform 280ms cubic-bezier(0.2, 0.8, 0.3, 1);
+  translate: 0 -16%;
+  transition: translate 280ms cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+
+@keyframes lid-top-idle {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(5%);
+  }
+}
+
+@keyframes lid-bottom-idle {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4%);
+  }
 }
 
 .eye-iris {
@@ -141,6 +173,13 @@
 
 .eye-pupil {
   animation: pupil-breathe 6.5s ease-in-out infinite;
+  /* dilatation au clic : sur transform pour se composer avec le scale de
+     pupil-breathe sans l'écraser */
+  transition: transform 150ms ease-out;
+}
+
+.eye-pupil[data-poked="true"] {
+  transform: scale(1.4);
 }
 
 @keyframes pupil-breathe {
@@ -168,10 +207,17 @@
   .eye-lid-bottom,
   .eye-iris {
     transition: none;
+    animation: none;
   }
-  .eink-caret,
+  .eink-caret {
+    animation: none;
+  }
   .eye-pupil {
     animation: none;
+    transition: none;
+  }
+  .eye-pupil[data-poked="true"] {
+    transform: none;
   }
   html {
     scroll-behavior: auto;
