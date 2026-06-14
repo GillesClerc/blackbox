@@ -10,6 +10,7 @@
 #include "hal_leds.h"
 #include "scenario_engine.h"
 #include "config_manager.h"
+#include "hal_box_auth.h"
 #include "hal_storage.h"
 #include "cJSON.h"
 #include "esp_heap_caps.h"
@@ -369,6 +370,12 @@ void app_main(void)
     ESP_ERROR_CHECK(hal_display_init());
     hal_display_fill_all(EYE_BLACK);
     ESP_ERROR_CHECK(config_manager_init());
+
+    // Identifiants box (provisionnés par tools/provision_box.py). Non bloquant :
+    // la box tourne sans, l'auth serveur sera juste indisponible.
+    if (hal_box_auth_init() != ESP_OK) {
+        ESP_LOGW(TAG, "box non provisionnée — lancer tools/provision_box.py");
+    }
 
     ESP_ERROR_CHECK(ui_face_init());
     ESP_ERROR_CHECK(ui_face_start());

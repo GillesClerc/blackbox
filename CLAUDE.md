@@ -33,7 +33,14 @@ Box physique d'escape game. Specs completes dans :
 ## Web platform (web/)
 - Next.js 16 + Supabase self-hosted (Coolify). Landing + auth + API box. Plan : `docs/plans/web-implementation.md`.
 - API box (`web/app/api/box/`) : challenge → auth (HMAC HKDF par box_uid → JWT 2h) → sync. Secret par box derive du `BOX_MASTER_SECRET` serveur (jamais embarque) ; routes box via client service_role (`lib/supabase/admin.ts`), la box n'est pas un user Supabase.
-- ⚠ **DETTE — enregistrement box (`/api/box/register`)** : on est parti sur **l'option A (claim simple)** — un utilisateur connecte revendique un `box_uid`, sans preuve que la box est en sa possession. Suffisant pour le FFF (Gilles seul enregistre ses propres box). **AVANT toute inscription multi-utilisateur publique**, passer a **l'option B (claim + preuve HMAC)** : la box signe un challenge pendant le provisioning BLE pour prouver qu'elle detient son secret derive. Sinon squat possible (revendiquer un UID qu'on ne possede pas → scores/sync detournes). Necessite `provision_box.py` + HAL box-auth firmware (pas encore ecrits).
+- ⚠ **DETTE — enregistrement box (`/api/box/register`)** : on est parti sur **l'option A (claim simple)** — un utilisateur connecte revendique un `box_uid`, sans preuve que la box est en sa possession. Suffisant pour le FFF (Gilles seul enregistre ses propres box). **AVANT toute inscription multi-utilisateur publique**, passer a **l'option B (claim + preuve HMAC)** : la box signe un challenge pendant le provisioning BLE pour prouver qu'elle detient son secret derive. Sinon squat possible (revendiquer un UID qu'on ne possede pas → scores/sync detournes). L'option B necessitera de cabler `hal_box_auth_sign` dans le flux de provisioning BLE.
+
+## Auth box (provisioning + firmware)
+- Secret par box : `box_secret = HKDF-SHA256(BOX_MASTER_SECRET, info="escapebox:<box_uid>", 32)`. Le `BOX_MASTER_SECRET` reste cote serveur (jamais embarque ni commite). Crypto partagee host↔serveur dans `tools/box_crypto.py`.
+- `box_uid` derive de la MAC eFuse : `ESP32S3-XXXX-XXXX`.
+- Provisioning : `BOX_MASTER_SECRET=<hex> python3 tools/provision_box.py --port /dev/ttyACM0 [--flash]`. Dry-run par defaut ; `--flash` ecrit la NVS `box_creds` (efface les autres namespaces nvs → faire au premier provisioning). Enregistrer ensuite le `box_uid` via `POST /api/box/register`.
+- Firmware `hal_box_auth` : lit `box_creds` en NVS, `hal_box_auth_sign(challenge, ...)` signe `"<box_uid>:<challenge>"` en HMAC-SHA256 (PSA crypto — l'API HMAC de `mbedtls/md.h` est privee dans mbedTLS 4 / ESP-IDF v6.1).
+- ⚠ Flux reseau box↔cloud (challenge→auth→sync HTTPS) **pas encore implemente** : en attente du `wifi_manager` + stack HTTPS.
 
 ## Conventions code
 - C pur ESP-IDF natif. Libs externes : minimp3 (decodeur MP3), esp_lcd_gc9a01 (driver yeux), assets Uncanny Eyes Adafruit MIT (components/ui_manager/data/defaultEye.h). LVGL non utilise actuellement (dependance conservee pour usage futur).

@@ -754,6 +754,8 @@ M2 → M3   : intégration complète + playtests
 - [x] Driver servos SG90 MCPWM (écrit — Phase 2)
 - [x] Système de fichiers SD SPI+FAT — validé sur cible (module 5V, SPI2 CS=47, monté sur /sdcard)
 - [x] App scénario principale (main.c) — scénario + ambient.mp3 chargés depuis SD (`/sdcard/scenarios/<dir>/`), fallback embarqué ; callbacks audio/led/eye_*, keypad MPR121, hold 2s pour simuler rfid/rotary/tilt
+- [x] `hal_box_auth` — creds box en NVS (`box_creds`) + signature challenge HMAC-SHA256 via PSA crypto (mbedTLS 4). Provisionné par `tools/provision_box.py`
+- [ ] `wifi_manager` + sync HTTPS (challenge→auth→sync vers l'API box) — **prochaine étape firmware**
 - [x] Partitions OTA 16 MB (factory + ota_0 + ota_1 de 3 MB, storage LittleFS 6.9 MB, rollback activé) — validées sur cible
 - [x] PSRAM octal 8 MB activée (SPIRAM_MODE_OCT 80 MHz) — buffers scénario et MP3 en MALLOC_CAP_SPIRAM
 - [x] `ui_manager` v2 — animation yeux (Uncanny Eyes Adafruit MIT porté ESP-IDF) : 2× GC9A01, rendu 128×128 centré, mouvement autonome + clignements aléatoires, émotions HAPPY/SAD/SURPRISED/SLEEPY/ANGRY/CLOSED, regard L/R/U/D pilotable depuis le scénario JSON (`eye_blink`, `eye_emotion`, `eye_look`)
@@ -763,8 +765,10 @@ M2 → M3   : intégration complète + playtests
 **Web Platform :**
 - [x] Projet Next.js 16.2.6 + shadcn/ui initialisé dans `web/` (monorepo, voir `docs/plans/web-implementation.md`)
 - [x] Landing « Ouvrez l'œil » + waitlist (server action zod + table `waitlist` RLS insert-only) — déployée sur Coolify (Nixpacks, base dir `web/`, box.agill.es), Supabase self-hosted opérationnel, circuit validé de bout en bout
-- [ ] Auth (email + Google) + pages login/register/account ← **prochaine étape**
-- [ ] API box : challenge/auth/sync (HMAC par box via HKDF, JWT 2h) ← priorisée avant catalogue/Stripe
+- [x] Auth (email + Google) + pages login/register/account — déployée et validée en prod (box.agill.es)
+- [x] API box : challenge/auth/sync/register (HMAC par box via HKDF, JWT 2h) — déployée et validée bout-en-bout (flux nominal + 9 cas de sécurité). Register en **option A (claim simple)**, dette option B (preuve HMAC) avant inscription publique
+- [x] Provisioning box : `tools/provision_box.py` (dérive le secret du `BOX_MASTER_SECRET`, écrit la NVS `box_creds`) + `tools/box_crypto.py` (source crypto HKDF/HMAC partagée host↔serveur)
+- [x] Firmware `hal_box_auth` : lit `box_uid`/`box_secret` en NVS, signe un challenge HMAC-SHA256 (PSA crypto). **Flux réseau challenge→auth→sync en attente de la stack WiFi+HTTPS**
 - [ ] Page catalogue (statique pour commencer) — *reportée après l'API box*
 - [ ] Page bibliothèque (scénarios achetés) — *reportée*
 - [ ] Stripe checkout (paiement one-shot) + routes `/checkout/success` et `/checkout/cancel` — *reporté*

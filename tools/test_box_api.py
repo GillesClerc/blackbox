@@ -16,8 +16,6 @@ Usage:
 Le master n'est JAMAIS commité : passe-le par variable d'environnement.
 """
 import argparse
-import hashlib
-import hmac
 import json
 import os
 import sys
@@ -25,35 +23,8 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-HASH_LEN = 32  # SHA-256
-
-
-def hkdf_sha256(ikm: bytes, salt: bytes, info: bytes, length: int) -> bytes:
-    """RFC 5869, conforme à Node crypto.hkdfSync('sha256', ...)."""
-    if not salt:
-        salt = b"\x00" * HASH_LEN
-    prk = hmac.new(salt, ikm, hashlib.sha256).digest()  # Extract
-    okm = b""
-    t = b""
-    counter = 1
-    while len(okm) < length:
-        t = hmac.new(prk, t + info + bytes([counter]), hashlib.sha256).digest()
-        okm += t
-        counter += 1
-    return okm[:length]
-
-
-def box_secret(master: str, box_uid: str) -> bytes:
-    return hkdf_sha256(
-        master.encode(), b"", f"escapebox:{box_uid}".encode(), 32
-    )
-
-
-def box_hmac(master: str, box_uid: str, challenge: str) -> str:
-    secret = box_secret(master, box_uid)
-    return hmac.new(
-        secret, f"{box_uid}:{challenge}".encode(), hashlib.sha256
-    ).hexdigest()
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from box_crypto import box_hmac  # noqa: E402
 
 
 def http_json(method: str, url: str, body: dict | None = None,
