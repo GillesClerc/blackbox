@@ -73,13 +73,21 @@ def read_mac(port: str) -> bytes:
     return bytes(int(b, 16) for b in macs[0].split(":"))
 
 
-def make_nvs_bin(box_uid: str, secret: bytes, size: int, out_bin: str) -> None:
+def make_nvs_bin(box_uid: str, secret: bytes, size: int, out_bin: str,
+                 wifi_ssid: str | None = None,
+                 wifi_pass: str | None = None) -> None:
     csv = (
         "key,type,encoding,value\n"
         "box_creds,namespace,,\n"
         f"box_uid,data,string,{box_uid}\n"
         f"box_secret,data,hex2bin,{secret.hex()}\n"
     )
+    if wifi_ssid:
+        # Identifiants WiFi lus par hal_wifi (namespace distinct).
+        csv += "wifi_creds,namespace,,\n"
+        csv += f"ssid,data,string,{wifi_ssid}\n"
+        if wifi_pass:
+            csv += f"pass,data,string,{wifi_pass}\n"
     with tempfile.NamedTemporaryFile("w", suffix=".csv", delete=False) as f:
         f.write(csv)
         csv_path = f.name
@@ -113,7 +121,14 @@ def main() -> int:
                     help="écrit réellement la NVS (sinon dry-run)")
     ap.add_argument("--show-secret", action="store_true",
                     help="affiche le secret dérivé en clair (sensible)")
+    ap.add_argument("--wifi-ssid", help="SSID WiFi à écrire dans la NVS "
+                                        "(namespace wifi_creds, lu par hal_wifi)")
+    ap.add_argument("--wifi-pass", help="mot de passe WiFi (omis = réseau ouvert)")
     args = ap.parse_args()
+
+    if args.wifi_pass and not args.wifi_ssid:
+        print("ERREUR : --wifi-pass nécessite --wifi-ssid", file=sys.stderr)
+        return 2
 
     master = os.environ.get("BOX_MASTER_SECRET")
     if not master:
@@ -140,7 +155,11 @@ def main() -> int:
     with tempfile.NamedTemporaryFile(suffix=".bin", delete=False) as f:
         out_bin = f.name
     try:
-        make_nvs_bin(box_uid, secret, size, out_bin)
+        make_nvs_bin(box_uid, secret, size, out_bin,
+                     args.wifi_ssid, args.wifi_pass)
+        if args.wifi_ssid:
+            print(f"WiFi SSID      : {args.wifi_ssid}"
+                  f"{' (réseau ouvert)' if not args.wifi_pass else ''}")
         print(f"image NVS      : {os.path.getsize(out_bin)} octets "
               f"(partition nvs @ {hex(offset)}, taille {hex(size)})")
 

@@ -11,7 +11,10 @@
 #include "scenario_engine.h"
 #include "config_manager.h"
 #include "hal_box_auth.h"
+#include "hal_wifi.h"
 #include "hal_storage.h"
+#include "esp_http_client.h"
+#include "esp_crt_bundle.h"
 #include "cJSON.h"
 #include "esp_heap_caps.h"
 #include <stdio.h>
@@ -353,6 +356,41 @@ static void touch_task(void *arg)
     }
 }
 
+// ─── Smoke-test réseau (temporaire) ──────────────────────────────────────────
+// Valide WiFi + DNS + TLS (bundle CA Mozilla) en frappant la landing.
+// Sera remplacé par le composant box_sync (challenge → auth → sync).
+static void https_smoke_test(void)
+{
+    esp_http_client_config_t cfg = {
+        .url               = "https://box.agill.es/",
+        .crt_bundle_attach = esp_crt_bundle_attach,
+        .timeout_ms        = 10000,
+    };
+    esp_http_client_handle_t client = esp_http_client_init(&cfg);
+    if (!client) {
+        ESP_LOGE(TAG, "smoke-test : esp_http_client_init a échoué");
+        return;
+    }
+    esp_err_t err = esp_http_client_perform(client);
+    if (err == ESP_OK) {
+        ESP_LOGI(TAG, "smoke-test HTTPS OK : status=%d",
+                 esp_http_client_get_status_code(client));
+    } else {
+        ESP_LOGE(TAG, "smoke-test HTTPS échec : %s", esp_err_to_name(err));
+    }
+    esp_http_client_cleanup(client);
+}
+
+// Tâche réseau de boot (core 0) : la connexion WiFi bloque jusqu'à 15 s et le
+// handshake TLS consomme ~6-8 KB de pile — à isoler de main_task (pile ~3,5 KB).
+static void net_boot_task(void *arg)
+{
+    if (hal_wifi_connect(15000) == ESP_OK) {
+        https_smoke_test();
+    }
+    vTaskDelete(NULL);
+}
+
 // ─── app_main ────────────────────────────────────────────────────────────────
 
 void app_main(void)
@@ -441,4 +479,11 @@ void app_main(void)
     xTaskCreatePinnedToCore(touch_task, "touch", 4096, NULL, 5, NULL, 0);
 
     ESP_LOGI(TAG, "EscapeBox ready — yeux GC9A01 animés, scenario engine actif");
+
+    // Réseau : connexion + smoke-test dans une tâche dédiée (pile TLS), core 0.
+    if (hal_wifi_init() == ESP_OK) {
+        xTaskCreatePinnedToCore(net_boot_task, "net_boot", 8192, NULL, 4, NULL, 0);
+    } else {
+        ESP_LOGW(TAG, "WiFi non provisionné — provision_box.py --wifi-ssid …");
+    }
 }
