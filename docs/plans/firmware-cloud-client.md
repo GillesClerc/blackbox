@@ -16,7 +16,8 @@
 |---|---|---|
 | ~~F1~~ | ✅ Auth challenge/HMAC → JWT | fait, validé sur cible |
 | ~~F2~~ | ✅ Sync + scenario.json sur SD | fait, remplacé par F3 |
-| **F3** | **Packages d'assets** : outillage + serveur versionné + install incrémentale (sha256/fichier) | Scénario avec MP3 propres publié → tout arrive sur SD ; bump de version → seuls les fichiers modifiés re-téléchargés |
+| **F3.1** | **Packages d'assets** : outillage + serveur versionné + install incrémentale (sha256/fichier) | Scénario avec MP3 propres publié → tout arrive sur SD ; bump de version → seuls les fichiers modifiés re-téléchargés |
+| **F3.2** | **Livraison contrôlée** (solde la dette « statique public ») : route `/api/box/pkg/…` JWT + droit `device_scenarios` | `curl` sans token → 401 ; token d'une box sans licence → 403 ; la box télécharge normalement |
 | **F4** | **Mixage audio** : voix/SFX MP3 par-dessus la musique de fond + résolution `"play"` → asset SD | Une voix off jouée pendant l'ambiance, sans glitch ; fallback tons si asset absent |
 | **F5** | Provisioning BLE (NimBLE) + register **option B** (preuve HMAC) | Box neuve appairée depuis `/devices/add` (Web Bluetooth) : Wi-Fi + enregistrement prouvé |
 | **F6** | OTA : `esp_https_ota` depuis le bloc `firmware_update` du sync | Release en DB → mise à jour + rollback si boot invalide |
@@ -41,10 +42,12 @@ Rappels valables partout : task réseau core 0 prio 3 (jamais au-dessus du jeu),
 
 ## F3 — Packages d'assets
 
-### Format de package (serveur, statique)
+En deux temps : **F3.1** met en place le format de package + l'install incrémentale (fichiers encore servis en statique) ; **F3.2** bascule la livraison derrière l'auth box et solde la dette du CLAUDE.md. Découpés pour valider la mécanique de download avant d'y ajouter l'auth.
+
+### Format de package (serveur)
 
 ```
-web/public/scenarios/<slug>/
+web/scenario-packages/<slug>/     ← HORS de public/ dès F3.2 (privé)
   manifest.json          ← généré, JAMAIS écrit à la main
   scenario.json
   ambient.mp3            ← musique de fond du scénario
@@ -69,11 +72,24 @@ web/public/scenarios/<slug>/
 - **`tools/package_scenario.py <src_dir> --slug <slug> [--version N] --out web/public/scenarios/`** : copie les fichiers, calcule tailles + sha256, écrit le manifest. Refuse les chemins non sûrs. Sans `--version` : incrémente celle du manifest de destination existant.
 - Contrainte assets audio (pour F4) : MP3 44 100 Hz, mono ou stéréo, CBR recommandé — documentée ici, vérifiée par l'outil (warning).
 
-### Côté web/DB
+### Côté web/DB (F3.1)
 
 - `alter table scenarios rename column scenario_path to package_path;` puis valeurs → `/scenarios/<slug>` (dossier, plus un fichier). Ajouter `version int not null default 1`.
-- Route sync : renvoyer `package_path` + `version` par scénario. Rien d'autre ne change (la livraison reste statique publique — dette Stripe inchangée, cf. CLAUDE.md).
-- Publier = `package_scenario.py` + commit `web/public/scenarios/<slug>/` + bump `scenarios.version` en DB.
+- Route sync : renvoyer `package_path` + `version` par scénario.
+- Publier = `package_scenario.py` + commit du dossier package + bump `scenarios.version` en DB.
+
+### F3.2 — Livraison contrôlée (solde la dette CLAUDE.md)
+
+- Les packages déménagent de `web/public/scenarios/` vers **`web/scenario-packages/`** (hors de `public/` → plus servis en statique). Les visuels boutique (`cover_url`) restent publics, seul le **contenu** est protégé.
+- Nouvelle route **`web/app/api/box/pkg/[slug]/[...path]/route.ts`** :
+  1. `Authorization: Bearer <JWT box>` vérifié (`verifyBoxJwt`) ;
+  2. droit vérifié : `device_scenarios` contient (device_id du JWT, scénario du slug) et le scénario est `active` ;
+  3. `path` assaini (mêmes règles que le firmware : relatif, pas de `..`, charset strict) puis résolu sous `scenario-packages/<slug>/` uniquement ;
+  4. streaming du fichier (`fs` + `ReadableStream`, `Content-Length`, `application/octet-stream`).
+- `package_path` en DB passe à `/api/box/pkg/<slug>` — le firmware ne change pas de logique (base + path), il ajoute juste le Bearer sur les downloads (et gère un 401 en cours de gros package : ré-auth + reprise, déjà couvert par l'install incrémentale).
+- ⚠ Nixpacks déploie le repo complet donc `fs.readFile` fonctionne ; si un jour le build passe en `output: standalone`, ajouter `outputFileTracingIncludes` pour embarquer `scenario-packages/`.
+- Mettre à jour la dette dans CLAUDE.md à ce jalon.
+- Vérif : `curl` sans token → 401 ; JWT d'une box sans licence sur le slug → 403 ; `..%2f` dans le path → 400 ; la box télécharge le package complet normalement.
 
 ### Côté firmware (`cloud_client`)
 
@@ -139,7 +155,7 @@ Côté firmware : event `SESSION_UPLOAD` en fin de partie, **file offline** `/sd
 - **Priorités de tasks** : audio (rendu mixer) et yeux sont les chemins temps réel — `cloud_client` et l'host NimBLE en dessous. Vérifier l'absence de glitch audio pendant un download (cf. contention SD, F3).
 - **Secrets** : `wifi_pass` write-only en BLE, jamais loggé ; JWT jamais persisté ; `BOX_MASTER_SECRET` strictement côté serveur/provisioning.
 - **`provision_box.py` reste le chemin usine** (secret box) ; le BLE ne provisionne que le Wi-Fi utilisateur + l'enregistrement. NVS `box_creds` et `wifi_creds` indépendants.
-- **Livraison statique publique** (dette CLAUDE.md) : les packages restent téléchargeables sans auth — à passer en livraison contrôlée avant Stripe.
+- **Livraison statique publique** (dette CLAUDE.md) : réglée par F3.2 — les packages ne sont plus téléchargeables sans JWT box + licence.
 
 ## Hors périmètre (plans ultérieurs)
 
