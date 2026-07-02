@@ -16,8 +16,8 @@
 |---|---|---|
 | ~~F1~~ | ✅ Auth challenge/HMAC → JWT | fait, validé sur cible |
 | ~~F2~~ | ✅ Sync + scenario.json sur SD | fait, remplacé par F3 |
-| **F3.1** | **Packages d'assets** : outillage + serveur versionné + install incrémentale (sha256/fichier) | Scénario avec MP3 propres publié → tout arrive sur SD ; bump de version → seuls les fichiers modifiés re-téléchargés |
-| **F3.2** | **Livraison contrôlée** (solde la dette « statique public ») : route `/api/box/pkg/…` JWT + droit `device_scenarios` | `curl` sans token → 401 ; token d'une box sans licence → 403 ; la box télécharge normalement |
+| ~~F3.1~~ | ✅ **Packages d'assets** : outillage + serveur versionné + install incrémentale (sha256/fichier) | fait, validé sur cible (v1 → v2 : seul scenario.json re-téléchargé) |
+| ~~F3.2~~ | ✅ **Livraison contrôlée** (dette « statique public » soldée) : route `/api/box/pkg/…` JWT + droit `device_scenarios` | fait, validé : 401 sans token, 403 sans licence, 400 traversée |
 | **F4** | **Mixage audio** : voix/SFX MP3 par-dessus la musique de fond + résolution `"play"` → asset SD | Une voix off jouée pendant l'ambiance, sans glitch ; fallback tons si asset absent |
 | **F5** | Provisioning BLE (NimBLE) + register **option B** (preuve HMAC) | Box neuve appairée depuis `/devices/add` (Web Bluetooth) : Wi-Fi + enregistrement prouvé |
 | **F6** | OTA : `esp_https_ota` depuis le bloc `firmware_update` du sync | Release en DB → mise à jour + rollback si boot invalide |
