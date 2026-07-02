@@ -42,7 +42,7 @@ Box physique d'escape game. Specs completes dans :
 - `box_uid` derive de la MAC eFuse : `ESP32S3-XXXX-XXXX`.
 - Provisioning : `BOX_MASTER_SECRET=<hex> python3 tools/provision_box.py --port /dev/ttyACM0 [--flash]`. Dry-run par defaut ; `--flash` ecrit la NVS `box_creds` (efface les autres namespaces nvs → faire au premier provisioning). Enregistrer ensuite le `box_uid` via `POST /api/box/register`.
 - Firmware `hal_box_auth` : lit `box_creds` en NVS, `hal_box_auth_sign(challenge, ...)` signe `"<box_uid>:<challenge>"` en HMAC-SHA256 (PSA crypto — l'API HMAC de `mbedtls/md.h` est privee dans mbedTLS 4 / ESP-IDF v6.1).
-- Flux reseau box↔cloud : `cloud_client` (challenge→auth→sync HTTPS) **valide sur cible**, scenarios telecharges sur SD + manifest (jalons F1+F2 du plan `docs/plans/firmware-cloud-client.md`). API URL via `CONFIG_ESCAPEBOX_API_URL`, surcharge NVS `cloud/api_url`. Reste : scores (F3), BLE + option B (F4), OTA (F5).
+- Flux reseau box↔cloud : `cloud_client` (challenge→auth→sync HTTPS) **valide sur cible**, scenarios telecharges sur SD + manifest (jalons F1+F2 du plan `docs/plans/firmware-cloud-client.md`). API URL via `CONFIG_ESCAPEBOX_API_URL`, surcharge NVS `cloud/api_url`. Reste : packages d'assets versionnes (F3), mixer audio (F4), BLE + option B (F5), OTA (F6) ; scores optionnels.
 
 ## Conventions code
 - C pur ESP-IDF natif. Libs externes : minimp3 (decodeur MP3), esp_lcd_gc9a01 (driver yeux), assets Uncanny Eyes Adafruit MIT (components/ui_manager/data/defaultEye.h). LVGL non utilise actuellement (dependance conservee pour usage futur).
