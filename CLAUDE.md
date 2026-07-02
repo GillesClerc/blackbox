@@ -4,6 +4,7 @@ Box physique d'escape game. Specs completes dans :
 - `docs/escapebox-fsd.md` — hardware, phases, composants, architecture
 - `docs/escapebox-vision.md` — vision produit
 - `docs/plans/web-implementation.md` — plan web platform
+- `docs/plans/firmware-cloud-client.md` — plan client cloud firmware (auth/sync/scores, BLE provisioning, OTA)
 - `docs/datasheets/` — PDF officiels + synthese markdown par composant (pinout, registres, sequence d'init, exemple ESP-IDF, drivers existants). Consulter avant de coder un nouveau peripherique. Skill `/component-research <REF>` pour en ajouter un.
 
 ## Environnement
