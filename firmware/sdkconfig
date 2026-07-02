@@ -3863,6 +3863,13 @@ CONFIG_WL_SECTOR_SIZE=4096
 # end of Wear Levelling
 
 #
+# EscapeBox — cloud client
+#
+# default:
+CONFIG_ESCAPEBOX_API_URL="https://box.agill.es"
+# end of EscapeBox — cloud client
+
+#
 # CMake Utilities
 #
 # default:

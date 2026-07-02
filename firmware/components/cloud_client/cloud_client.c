@@ -1,9 +1,13 @@
 #include "cloud_client.h"
 
+#include <ctype.h>
+#include <errno.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/stat.h>
 #include <sys/time.h>
 #include <time.h>
+#include <unistd.h>
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
@@ -181,6 +185,209 @@ static esp_err_t do_auth(void)
     return ESP_OK;
 }
 
+// ─── Scénarios sur SD (F2) ───────────────────────────────────────────────────
+// Layout aligné sur le chargeur de main.c : /sdcard/scenarios/<slug>/scenario.json
+// (ambient.mp3 et autres assets vivent dans le même dossier, jamais touchés ici).
+
+#define SCENARIO_SD_ROOT   "/sdcard/scenarios"
+#define MANIFEST_PATH      SCENARIO_SD_ROOT "/manifest.json"
+#define SCENARIO_MAX_BYTES (256 * 1024)  // même limite que le chargeur main.c
+#define SD_PATH_MAX        192
+
+// Le slug devient un nom de dossier : alphanumérique + '-' '_' strictement
+// (le serveur est de confiance, mais pas de traversée de chemin possible).
+static bool slug_is_safe(const char *slug)
+{
+    size_t n = strlen(slug);
+    if (n == 0 || n > 64) return false;
+    for (size_t i = 0; i < n; i++) {
+        char c = slug[i];
+        if (!isalnum((unsigned char)c) && c != '-' && c != '_') return false;
+    }
+    return true;
+}
+
+// Télécharge url vers dst_path en streaming via un .tmp renommé à la fin —
+// jamais de fichier tronqué visible. Réutilise s_resp comme buffer de chunks.
+static esp_err_t download_to_file(const char *url, const char *dst_path)
+{
+    char tmp_path[SD_PATH_MAX + 8];
+    snprintf(tmp_path, sizeof(tmp_path), "%s.tmp", dst_path);
+
+    esp_http_client_config_t cfg = {
+        .url               = url,
+        .crt_bundle_attach = esp_crt_bundle_attach,
+        .timeout_ms        = HTTP_TIMEOUT_MS,
+    };
+    esp_http_client_handle_t client = esp_http_client_init(&cfg);
+    if (!client) return ESP_FAIL;
+
+    esp_err_t err = esp_http_client_open(client, 0);
+    if (err == ESP_OK) {
+        esp_http_client_fetch_headers(client);
+        int status = esp_http_client_get_status_code(client);
+        if (status != 200) {
+            ESP_LOGW(TAG, "download %s : status=%d", url, status);
+            err = ESP_FAIL;
+        } else {
+            FILE *f = fopen(tmp_path, "wb");
+            if (!f) {
+                ESP_LOGW(TAG, "création %s impossible", tmp_path);
+                err = ESP_FAIL;
+            } else {
+                size_t total = 0;
+                for (;;) {
+                    int n = esp_http_client_read(client, s_resp, RESP_BUF_SIZE);
+                    if (n < 0) { err = ESP_FAIL; break; }
+                    if (n == 0) break;
+                    total += (size_t)n;
+                    if (total > SCENARIO_MAX_BYTES) {
+                        ESP_LOGW(TAG, "download %s : > %d octets, abandonné",
+                                 url, SCENARIO_MAX_BYTES);
+                        err = ESP_FAIL;
+                        break;
+                    }
+                    if (fwrite(s_resp, 1, (size_t)n, f) != (size_t)n) {
+                        ESP_LOGW(TAG, "écriture SD échouée (%s)", tmp_path);
+                        err = ESP_FAIL;
+                        break;
+                    }
+                }
+                if (err == ESP_OK &&
+                    !esp_http_client_is_complete_data_received(client)) {
+                    ESP_LOGW(TAG, "download %s : transfert incomplet", url);
+                    err = ESP_FAIL;
+                }
+                fclose(f);
+                if (err == ESP_OK) {
+                    unlink(dst_path);  // FAT : rename vers un fichier existant échoue
+                    if (rename(tmp_path, dst_path) != 0) {
+                        ESP_LOGW(TAG, "rename %s : %s", tmp_path, strerror(errno));
+                        err = ESP_FAIL;
+                    } else {
+                        ESP_LOGI(TAG, "téléchargé %s (%u octets)", dst_path,
+                                 (unsigned)total);
+                    }
+                }
+                if (err != ESP_OK) unlink(tmp_path);
+            }
+        }
+        esp_http_client_close(client);
+    }
+    esp_http_client_cleanup(client);
+    return err;
+}
+
+// Manifest des scénarios installés : [{slug,id,installed_at}]. Registre local
+// pour sauter les téléchargements déjà faits (portera les versions plus tard).
+// Corrompu ou absent → re-download : self-healing, jamais bloquant.
+static cJSON *manifest_load(void)
+{
+    FILE *f = fopen(MANIFEST_PATH, "rb");
+    if (!f) return NULL;
+    size_t n = fread(s_resp, 1, RESP_BUF_SIZE - 1, f);
+    fclose(f);
+    s_resp[n] = '\0';
+    return cJSON_Parse(s_resp);
+}
+
+static bool manifest_has(const cJSON *manifest, const char *slug)
+{
+    const cJSON *e;
+    cJSON_ArrayForEach(e, manifest) {
+        const cJSON *s = cJSON_GetObjectItemCaseSensitive(e, "slug");
+        if (cJSON_IsString(s) && strcmp(s->valuestring, slug) == 0) return true;
+    }
+    return false;
+}
+
+static void manifest_save(const cJSON *manifest)
+{
+    char *out = cJSON_PrintUnformatted(manifest);
+    if (!out) return;
+
+    FILE *f  = fopen(MANIFEST_PATH ".tmp", "wb");
+    bool  ok = f && fwrite(out, 1, strlen(out), f) == strlen(out);
+    if (f) fclose(f);
+    if (ok) {
+        unlink(MANIFEST_PATH);
+        ok = rename(MANIFEST_PATH ".tmp", MANIFEST_PATH) == 0;
+    } else {
+        unlink(MANIFEST_PATH ".tmp");
+    }
+    if (!ok) ESP_LOGW(TAG, "écriture du manifest échouée");
+    cJSON_free(out);
+}
+
+// Installe sur SD les scénarios listés par le sync (modèle pull). "Installé" =
+// présent au manifest ET scenario.json existant sur SD. Un scénario téléchargé
+// sera pris en compte par le chargeur au prochain boot.
+static void install_scenarios(const cJSON *scenarios)
+{
+    if (!cJSON_IsArray(scenarios) || cJSON_GetArraySize(scenarios) == 0) return;
+
+    // mkdir sonde aussi la présence de la SD : ENOENT = non montée.
+    if (mkdir(SCENARIO_SD_ROOT, 0775) != 0 && errno != EEXIST) {
+        ESP_LOGW(TAG, "SD indisponible (%s) — téléchargement des scénarios sauté",
+                 strerror(errno));
+        return;
+    }
+
+    cJSON *old_manifest = manifest_load();
+    cJSON *new_manifest = cJSON_CreateArray();
+    if (!new_manifest) {
+        cJSON_Delete(old_manifest);
+        return;
+    }
+
+    const cJSON *item;
+    cJSON_ArrayForEach(item, scenarios) {
+        const cJSON *slug = cJSON_GetObjectItemCaseSensitive(item, "slug");
+        const cJSON *path = cJSON_GetObjectItemCaseSensitive(item, "scenario_path");
+        if (!cJSON_IsString(slug) || !slug_is_safe(slug->valuestring) ||
+            !cJSON_IsString(path) || path->valuestring[0] != '/') {
+            ESP_LOGW(TAG, "scénario ignoré (slug ou scenario_path invalide)");
+            continue;
+        }
+
+        char dir[SD_PATH_MAX], json_path[SD_PATH_MAX + 16];
+        snprintf(dir, sizeof(dir), SCENARIO_SD_ROOT "/%s", slug->valuestring);
+        snprintf(json_path, sizeof(json_path), "%s/scenario.json", dir);
+
+        struct stat st;
+        bool installed = manifest_has(old_manifest, slug->valuestring) &&
+                         stat(json_path, &st) == 0;
+        if (!installed) {
+            if (mkdir(dir, 0775) != 0 && errno != EEXIST) {
+                ESP_LOGW(TAG, "mkdir %s : %s", dir, strerror(errno));
+                continue;
+            }
+            char url[URL_MAX];
+            snprintf(url, sizeof(url), "%s%s", s_base_url, path->valuestring);
+            if (download_to_file(url, json_path) != ESP_OK) continue;
+        }
+
+        cJSON *entry = cJSON_CreateObject();
+        if (entry) {
+            cJSON_AddStringToObject(entry, "slug", slug->valuestring);
+            const cJSON *id = cJSON_GetObjectItemCaseSensitive(item, "id");
+            if (cJSON_IsString(id)) {
+                cJSON_AddStringToObject(entry, "id", id->valuestring);
+            }
+            const cJSON *at = cJSON_GetObjectItemCaseSensitive(item, "installed_at");
+            if (cJSON_IsString(at)) {
+                cJSON_AddStringToObject(entry, "installed_at", at->valuestring);
+            }
+            cJSON_AddItemToArray(new_manifest, entry);
+        }
+    }
+
+    // Réécrit à chaque sync : couvre les nouveaux ET les entrées disparues.
+    manifest_save(new_manifest);
+    cJSON_Delete(old_manifest);
+    cJSON_Delete(new_manifest);
+}
+
 // ─── Sync ────────────────────────────────────────────────────────────────────
 
 static esp_err_t do_sync(int *status)
@@ -217,7 +424,9 @@ static esp_err_t do_sync(int *status)
         }
     }
 
-    // F2 téléchargera les scénarios sur SD ; F5 traitera firmware_update.
+    install_scenarios(scenarios);
+
+    // F5 traitera firmware_update ; loggé pour l'instant.
     const cJSON *fw = cJSON_GetObjectItemCaseSensitive(root, "firmware_update");
     if (cJSON_IsObject(fw)) {
         const cJSON *ver = cJSON_GetObjectItemCaseSensitive(fw, "version");
