@@ -1,0 +1,17 @@
+{
+  "slug": "capitaine_verdier",
+  "version": 1,
+  "total_bytes": 1035187,
+  "files": [
+    {
+      "path": "ambient.mp3",
+      "bytes": 1025671,
+      "sha256": "3940e63abdfc5bd4098058e6d0333017706f56bb47edd204b7753f878ea2cf51"
+    },
+    {
+      "path": "scenario.json",
+      "bytes": 9516,
+      "sha256": "a777c038074864650c3d4c09dfd873d3365b74c6e6e3e711a11de56c2272881a"
+    }
+  ]
+}

@@ -2,4 +2,4 @@
 idf_component_register(SRCS "cloud_client.c"
                     INCLUDE_DIRS "include"
                     PRIV_REQUIRES esp_http_client mbedtls scenario esp_timer
-                                  esp_app_format nvs_flash hal_box_auth hal_wifi log)
+                                  esp_app_format nvs_flash fatfs hal_box_auth hal_wifi log)

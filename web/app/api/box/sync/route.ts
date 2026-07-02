@@ -49,10 +49,12 @@ export async function GET(request: NextRequest) {
     .eq("id", deviceId);
 
   // Scénarios installés (modèle pull : le webhook Stripe a inséré le droit).
+  // package_path pointe sur la racine du package (/api/box/pkg/<slug>) ; la
+  // box y ajoute /manifest.json puis les chemins relatifs du manifest.
   const { data: rows } = await supabase
     .from("device_scenarios")
     .select(
-      "installed_at, scenarios(id, slug, title, scenario_path, active)"
+      "installed_at, scenarios(id, slug, title, package_path, version, active)"
     )
     .eq("device_id", deviceId);
 
@@ -62,7 +64,8 @@ export async function GET(request: NextRequest) {
         id: string;
         slug: string;
         title: string;
-        scenario_path: string | null;
+        package_path: string | null;
+        version: number | null;
         active: boolean | null;
       } | null;
       if (!s || s.active === false) return null;
@@ -70,7 +73,8 @@ export async function GET(request: NextRequest) {
         id: s.id,
         slug: s.slug,
         title: s.title,
-        scenario_path: s.scenario_path,
+        package_path: s.package_path,
+        version: s.version ?? 1,
         installed_at: r.installed_at,
       };
     })
