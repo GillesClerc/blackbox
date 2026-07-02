@@ -1,0 +1,10 @@
+menu "EscapeBox — cloud client"
+
+    config ESCAPEBOX_API_URL
+        string "Base URL de l'API EscapeBox"
+        default "https://box.agill.es"
+        help
+            Racine de l'API web (sans slash final). Surchargeable au runtime
+            par la clé NVS "cloud/api_url" pour tester contre un serveur local.
+
+endmenu
