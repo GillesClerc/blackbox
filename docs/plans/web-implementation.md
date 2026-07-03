@@ -17,6 +17,8 @@
 
 > Ordre choisi pour livrer de la valeur visible tôt (landing/waitlist pour le FFF) et débloquer le firmware ensuite (API box avant Stripe — la box peut synchroniser des scénarios gratuits sans paiement).
 
+> ⚠ **Mise à jour 2026-07 (F3 firmware)** : la livraison des scénarios décrite plus bas a évolué — voir `docs/plans/firmware-cloud-client.md`. En résumé : `scenarios.scenario_path` est devenu `package_path` (+ colonne `version`), les artefacts ne sont plus dans `web/public/scenarios/` mais dans `web/scenario-packages/` (privé), servis par `GET /api/box/pkg/[slug]/[...path]` (JWT box + droit `device_scenarios`). Le schéma SQL et l'arborescence ci-dessous n'ont pas été réécrits.
+
 ---
 
 ## Phase 0 — Infrastructure Coolify (manuel, ~1h)
