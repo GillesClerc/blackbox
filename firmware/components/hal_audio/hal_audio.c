@@ -8,6 +8,7 @@
 #include "freertos/queue.h"
 #include "freertos/semphr.h"
 #include "minimp3.h"
+#include "esp_timer.h"
 #include <math.h>
 #include <string.h>
 #include <stdio.h>
@@ -280,7 +281,15 @@ static void tonebg_step(void)
 
 static void mixer_task_fn(void *arg)
 {
+    // Instrumentation : production vs temps réel. 250 chunks = 5 s d'audio ;
+    // si le temps réel écoulé dépasse nettement 5 s → le mixer ne suit pas.
+    int64_t  stat_t0    = esp_timer_get_time();
+    int64_t  busy_us    = 0;
+    int64_t  worst_us   = 0;
+    uint32_t chunks     = 0;
+
     for (;;) {
+        int64_t t_prod = esp_timer_get_time();
         memset(s_acc, 0, (size_t)CHUNK_FRAMES * 2 * sizeof(int32_t));
 
         tonebg_step();
@@ -315,6 +324,10 @@ static void mixer_task_fn(void *arg)
         }
         s_peak_level = (uint8_t)(peak * 100 / 32768);
 
+        int64_t prod = esp_timer_get_time() - t_prod;
+        busy_us += prod;
+        if (prod > worst_us) worst_us = prod;
+
         // Le blocage sur le DMA (~20 ms de données) cadence la boucle. Timeout
         // dimensionné sur le chunk + marge — jamais portMAX_DELAY.
         size_t    w;
@@ -324,6 +337,27 @@ static void mixer_task_fn(void *arg)
         if (e == ESP_ERR_TIMEOUT) {
             ESP_LOGW(TAG, "mixer : timeout I2S");
         }
+        if (w != (size_t)CHUNK_FRAMES * 2 * sizeof(int16_t)) {
+            ESP_LOGW(TAG, "mixer : écriture partielle %u", (unsigned)w);
+        }
+
+        // Sentinelle temps réel : n'alerte que si la production décroche
+        // (5 s d'audio en > 5,3 s réel, ou un chunk > 100 ms — tampon 130 ms).
+        // Diag 2026-07 : production mesurée en temps réel exact, sortie
+        // vérifiée propre sur banc host — les craquements du proto viennent du
+        // câblage breadboard (A/B identique avec l'ancien pipeline).
+        if (++chunks == 250) {
+            int64_t wall = esp_timer_get_time() - stat_t0;
+            if (wall > 5300000 || worst_us > 100000) {
+                ESP_LOGW(TAG, "mixer en retard : 5000 ms audio en %lld ms (pire chunk %lld µs)",
+                         wall / 1000, worst_us);
+            }
+            stat_t0  = esp_timer_get_time();
+            busy_us  = 0;
+            worst_us = 0;
+            chunks   = 0;
+        }
+        (void)busy_us;
     }
 }
 
@@ -496,14 +530,27 @@ esp_err_t hal_audio_init(void)
     atomic_init(&s_one_ctrl.is_active, false);
     atomic_init(&s_tonebg_req, false);
 
+    // Buffers chauds du mixer (~29 KB) en RAM interne : touchés échantillon par
+    // échantillon toutes les 20 ms — en PSRAM ils partagent le bus avec le rendu
+    // des yeux (core 1). Fallback PSRAM si l'interne venait à manquer.
     s_acc = heap_caps_malloc((size_t)CHUNK_FRAMES * 2 * sizeof(int32_t),
-                             MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+                             MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+    if (!s_acc) s_acc = heap_caps_malloc((size_t)CHUNK_FRAMES * 2 * sizeof(int32_t),
+                                         MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
     s_out = heap_caps_malloc((size_t)CHUNK_FRAMES * 2 * sizeof(int16_t),
-                             MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+                             MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+    if (!s_out) s_out = heap_caps_malloc((size_t)CHUNK_FRAMES * 2 * sizeof(int16_t),
+                                         MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
     s_bg_voice.pcm  = heap_caps_malloc(MINIMP3_MAX_SAMPLES_PER_FRAME * 2 * sizeof(int16_t),
-                                       MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+                                       MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+    if (!s_bg_voice.pcm)
+        s_bg_voice.pcm = heap_caps_malloc(MINIMP3_MAX_SAMPLES_PER_FRAME * 2 * sizeof(int16_t),
+                                          MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
     s_one_voice.pcm = heap_caps_malloc(MINIMP3_MAX_SAMPLES_PER_FRAME * 2 * sizeof(int16_t),
-                                       MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+                                       MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+    if (!s_one_voice.pcm)
+        s_one_voice.pcm = heap_caps_malloc(MINIMP3_MAX_SAMPLES_PER_FRAME * 2 * sizeof(int16_t),
+                                           MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
     if (!s_acc || !s_out || !s_bg_voice.pcm || !s_one_voice.pcm) {
         ESP_LOGE(TAG, "alloc buffers mixer échouée");
         return ESP_ERR_NO_MEM;
