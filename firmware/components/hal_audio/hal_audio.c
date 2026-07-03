@@ -158,7 +158,7 @@ static void mp3_voice_mix(mp3_voice_t *v, mp3_ctrl_t *c, int32_t *acc,
     while (filled < needed) {
         if (v->pcm_pos >= v->pcm_len) {
             if (v->remaining < 4) {
-                if (!v->loop) break;  // one-shot terminé
+                if (!v->loop || v->size < 4) break;  // fini (ou source vide)
                 v->ptr       = v->data;
                 v->remaining = (int)v->size;
                 mp3dec_init(&v->dec);
@@ -394,7 +394,9 @@ esp_err_t hal_audio_init(void)
     //    Le PCM5122 PLL multiplie ×4 (au lieu de ×8 en 16-bit slots) → moins de jitter
     i2s_chan_config_t chan_cfg = I2S_CHANNEL_DEFAULT_CONFIG(I2S_NUM_0, I2S_ROLE_MASTER);
     chan_cfg.auto_clear    = true;
-    chan_cfg.dma_desc_num  = 8;
+    // 12 × 480 frames ≈ 130 ms de tampon DMA : marge contre les pics CPU
+    // (TLS/sha256 de cloud_client au boot) sans latence perceptible.
+    chan_cfg.dma_desc_num  = 12;
     chan_cfg.dma_frame_num = 480;
     ESP_ERROR_CHECK(i2s_new_channel(&chan_cfg, &s_tx, NULL));
 
@@ -511,11 +513,12 @@ esp_err_t hal_audio_init(void)
     s_api_mutex  = xSemaphoreCreateMutex();
     if (!s_tone_queue || !s_api_mutex) return ESP_ERR_NO_MEM;
 
-    // Core 0 prio 3 (comme l'ancien audio_bg_mp3) : décode 0-2 frames minimp3
-    // par chunk de 20 ms, cadencé par le blocage DMA. Stack 32 KB : le scratch
-    // minimp3 vit sur la pile.
+    // Core 0 prio 4 : temps réel — doit préempter cloud_client (prio 3, TLS +
+    // sha256 au boot), sinon underruns DMA (craquements, musique « ralentie »).
+    // Sous scenario_engine/touch (5) : l'input garde la main. Stack 32 KB : le
+    // scratch minimp3 vit sur la pile.
     BaseType_t ok = xTaskCreatePinnedToCore(mixer_task_fn, "audio_mixer", 32768,
-                                            NULL, 3, NULL, 0);
+                                            NULL, 4, NULL, 0);
     if (ok != pdPASS) return ESP_FAIL;
     s_mixer_ok = true;
 
