@@ -16,6 +16,7 @@
 #include "cloud_client.h"
 #include "cJSON.h"
 #include "esp_heap_caps.h"
+#include <ctype.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -116,9 +117,29 @@ static void led_hex(const char *hex)
 
 // ─── Audio ───────────────────────────────────────────────────────────────────
 
+// Nom de son du scénario → nom de fichier : alphanumérique + '-' '_' strict.
+static bool audio_name_is_safe(const char *name)
+{
+    size_t n = strlen(name);
+    if (n == 0 || n > 64) return false;
+    for (size_t i = 0; i < n; i++) {
+        char c = name[i];
+        if (!isalnum((unsigned char)c) && c != '-' && c != '_') return false;
+    }
+    return true;
+}
+
 static void play_audio(const char *name)
 {
     if (!name) return;
+
+    // Asset du scénario d'abord (F4) : <scenario_dir>/audio/<nom>.mp3, joué en
+    // one-shot par-dessus la musique de fond (ducking). Absent → tons builtin.
+    if (s_scenario_dir[0] && audio_name_is_safe(name)) {
+        char path[sizeof(s_scenario_dir) + 80];
+        snprintf(path, sizeof(path), "%s/audio/%s.mp3", s_scenario_dir, name);
+        if (hal_audio_play_oneshot(path) == ESP_OK) return;
+    }
 
     if (strcmp(name, "correct") == 0) {
         static const uint16_t f[] = {659, 784, 1047};

@@ -5,11 +5,11 @@
 #include "driver/gpio.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "freertos/queue.h"
 #include "freertos/semphr.h"
 #include "minimp3.h"
 #include <math.h>
 #include <string.h>
-#include <stdlib.h>
 #include <stdio.h>
 #include <stdatomic.h>
 
@@ -26,29 +26,98 @@
 #define PCM5122_REG_VOL_R   0x3E
 
 #define SR              44100
-#define CHUNK_SAMPLES   (SR * 20 / 1000)  // 20ms chunks — granularité interruption bg
-#define FADE_IN_S       (SR * 5  / 1000)  // 5ms  fade-in
-#define FADE_OUT_S      (SR * 12 / 1000)  // 12ms fade-out
-#define AMPLITUDE_FG     3000.0f          // foreground (bips touch, équilibré vs MP3 bg)
-#define AMPLITUDE_BG     1000.0f          // background tons synthétiques (fallback sans MP3)
+#define CHUNK_FRAMES    (SR * 20 / 1000)  // 20 ms — granularité du mixer
+#define FADE_IN_S       (SR * 5  / 1000)  // 5 ms  fade-in des tons
+#define FADE_OUT_S      (SR * 12 / 1000)  // 12 ms fade-out des tons
+#define AMPLITUDE_FG     3000.0f          // bips (équilibré vs MP3)
+#define AMPLITUDE_BG     1000.0f          // ambiance tons fallback
 
-static i2s_chan_handle_t        s_tx       = NULL;
-static i2c_master_dev_handle_t  s_dac      = NULL;
-static SemaphoreHandle_t        s_mutex    = NULL;
-static atomic_bool              s_fg_play;   // M3 : accès concurrent bg/fg — atomic_bool C11
-static atomic_bool              s_bg_run;    // SMP : lu par la tâche bg (core 0), écrit depuis d'autres cores
-static atomic_bool              s_bg_exited; // posé par la tâche bg juste avant vTaskDelete(NULL)
-static volatile uint8_t         s_peak_level = 0;
-static TaskHandle_t             s_bg_task  = NULL;
-static const hal_audio_bg_note_t   *s_bg_notes = NULL;
-static int                      s_bg_count = 0;
+#define MP3_BG_VOLUME   0.50f   // musique de fond sous les voix/bips
+#define DUCK_GAIN       0.35f   // atténuation du fond pendant un one-shot
+#define TONE_QUEUE_LEN  32
 
-// Buffer silence statique (BSS, déjà zéro)
-static int16_t s_silence[CHUNK_SAMPLES * 2];
+// Fichiers MP3 acceptés (bg comme one-shot) : 4 MB en PSRAM.
+#define AUDIO_FILE_MAX_SIZE (4 * 1024 * 1024)
 
-// C1 : buffer tone alloué une seule fois dans hal_audio_init(), protégé par s_mutex.
-// Évite un malloc/free à chaque bip (fragmentation heap, latence non déterministe).
-static int16_t *s_tone_buf = NULL;
+static i2s_chan_handle_t       s_tx  = NULL;
+static i2c_master_dev_handle_t s_dac = NULL;
+
+// ─── Mixer 4 voix ─────────────────────────────────────────────────────────────
+// Une seule task (audio_mixer) écrit sur l'I2S. Les voix sont sommées en 32
+// bits avec saturation par blocs de 20 ms :
+//   bg MP3 (boucle, ducké) + one-shot MP3 + bips fg (queue) + tons bg fallback.
+// Contrat de concurrence : les champs d'une voix MP3 (data/size/loop) ne sont
+// écrits par l'API que voix inactive (handshake req_active/is_active), la
+// task mixer est la seule à toucher l'état de décodage.
+
+// Voix MP3 : source en mémoire (flash embarquée ou PSRAM), décodée frame par
+// frame dans un FIFO PCM stéréo. mp3dec_t reste en .bss interne (état chaud).
+typedef struct {
+    atomic_bool    req_active;  // demandé par l'API
+    atomic_bool    is_active;   // état réel, écrit par le mixer
+    const uint8_t *data;        // valides uniquement voix inactive (handshake)
+    size_t         size;
+    bool           loop;
+} mp3_ctrl_t;
+
+typedef struct {
+    bool           on;         // état mixer
+    const uint8_t *data;
+    size_t         size;
+    const uint8_t *ptr;
+    int            remaining;
+    bool           loop;
+    int16_t       *pcm;        // PSRAM : MINIMP3_MAX_SAMPLES_PER_FRAME*2 échantillons
+    int            pcm_len, pcm_pos;  // en échantillons int16 (stéréo entrelacé)
+    mp3dec_t       dec;
+} mp3_voice_t;
+
+static mp3_ctrl_t  s_bg_ctrl, s_one_ctrl;
+static mp3_voice_t s_bg_voice, s_one_voice;
+
+// Voix tons : une note en cours (sinus + enveloppe), puis un gap de silence.
+typedef struct {
+    bool     active;
+    uint16_t freq;      // 0 = silence (le gap et la durée comptent quand même)
+    float    amp;
+    size_t   total, pos;  // frames de la note
+    size_t   gap;         // frames de silence après
+    float    phase;
+} tone_state_t;
+
+typedef struct {
+    uint16_t freq, dur_ms, gap_ms;
+} tone_evt_t;
+
+static QueueHandle_t s_tone_queue;   // bips fg → mixer
+static tone_state_t  s_tonefg_state;
+
+// Ambiance tons fallback : config posée par l'API (sous mutex) avant req=true.
+static atomic_bool                s_tonebg_req;
+static const hal_audio_bg_note_t *s_tonebg_cfg_notes;
+static int                        s_tonebg_cfg_count;
+static bool                       s_tonebg_on;    // état mixer
+static const hal_audio_bg_note_t *s_tonebg_notes;
+static int                        s_tonebg_count, s_tonebg_idx;
+static tone_state_t               s_tonebg_state;
+
+// Buffers du mixer (PSRAM, alloués une fois au boot).
+static int32_t *s_acc;   // accumulation 32 bits, CHUNK_FRAMES*2
+static int16_t *s_out;   // sortie s16,            CHUNK_FRAMES*2
+// Frame de décodage partagée (une seule voix décodée à la fois, task mixer).
+static int16_t s_frame_pcm[MINIMP3_MAX_SAMPLES_PER_FRAME];
+
+static float            s_duck = 1.0f;   // rampe de ducking (task mixer)
+static volatile uint8_t s_peak_level;
+
+// Fichiers MP3 chargés depuis SD/FS (bg et one-shot), réutilisés entre appels.
+static uint8_t *s_bgfile_buf;
+static size_t   s_bgfile_cap;
+static uint8_t *s_onefile_buf;
+static size_t   s_onefile_cap;
+
+static SemaphoreHandle_t s_api_mutex;  // sérialise les appels API (pas la task mixer)
+static bool              s_mixer_ok;
 
 // ── I2C helpers ───────────────────────────────────────────────────────────────
 
@@ -57,138 +126,270 @@ static esp_err_t pcm_write(uint8_t reg, uint8_t val) {
     return i2c_master_transmit(s_dac, buf, 2, 50);
 }
 
-// ── Génération waveform interne ───────────────────────────────────────────────
+// ── Voix MP3 (task mixer) ─────────────────────────────────────────────────────
 
-// interruptible=true : sort dès que s_fg_play devient vrai (avec fade-out court).
-static void write_tone_internal(uint16_t freq, uint16_t dur_ms,
-                                 bool interruptible, float amp)
+// Mixe jusqu'à `frames` frames de la voix dans acc (gain en Q8).
+static void mp3_voice_mix(mp3_voice_t *v, mp3_ctrl_t *c, int32_t *acc,
+                          int frames, float gain)
 {
-    const size_t total     = (size_t)SR * dur_ms / 1000;
-    const size_t fade_in   = FADE_IN_S;
-    const size_t fade_out  = FADE_OUT_S;
-
-    // C1 : utilise le buffer statique alloué dans hal_audio_init(), pas de malloc ici.
-    int16_t *buf = s_tone_buf;
-    if (!buf) return;
-
-    float phase = 0.0f;
-    const float delta = 2.0f * M_PI * freq / (float)SR;
-    size_t played = 0;
-    bool interrupted = false;
-
-    while (played < total) {
-        if (interruptible && atomic_load(&s_fg_play)) {
-            interrupted = true;
-            break;
+    if (!atomic_load(&c->req_active)) {
+        if (v->on) {
+            v->on = false;
+            atomic_store(&c->is_active, false);
         }
+        return;
+    }
+    if (!v->on) {  // activation : l'API a posé data/size/loop avant req=true
+        v->data      = c->data;
+        v->size      = c->size;
+        v->loop      = c->loop;
+        v->ptr       = v->data;
+        v->remaining = (int)v->size;
+        v->pcm_len   = 0;
+        v->pcm_pos   = 0;
+        mp3dec_init(&v->dec);
+        v->on = true;
+        atomic_store(&c->is_active, true);
+    }
 
-        size_t n = CHUNK_SAMPLES < total - played ? CHUNK_SAMPLES : total - played;
-        for (size_t i = 0; i < n; i++) {
-            size_t pos = played + i;
-            float env;
-            if (total <= fade_in + fade_out) {
-                // Ton très court : triangle
-                env = pos < total / 2
-                    ? (float)pos * 2.0f / total
-                    : (float)(total - pos) * 2.0f / total;
-            } else if (pos < fade_in) {
-                env = (float)pos / fade_in;
-            } else if (pos + fade_out >= total) {
-                env = (float)(total - pos) / fade_out;
+    const int gq     = (int)(gain * 256.0f);
+    const int needed = frames * 2;
+    int       filled = 0;
+    while (filled < needed) {
+        if (v->pcm_pos >= v->pcm_len) {
+            if (v->remaining < 4) {
+                if (!v->loop) break;  // one-shot terminé
+                v->ptr       = v->data;
+                v->remaining = (int)v->size;
+                mp3dec_init(&v->dec);
+            }
+            mp3dec_frame_info_t info;
+            int samples = mp3dec_decode_frame(&v->dec, v->ptr, v->remaining,
+                                              s_frame_pcm, &info);
+            if (info.frame_bytes > 0) {
+                v->ptr       += info.frame_bytes;
+                v->remaining -= info.frame_bytes;
             } else {
-                env = 1.0f;
-            }
-            int16_t s = (int16_t)(sinf(phase) * amp * env);
-            buf[i * 2]     = s;
-            buf[i * 2 + 1] = s;
-            phase += delta;
-            if (phase > 2.0f * M_PI) phase -= 2.0f * M_PI;
-        }
-        size_t w;
-        i2s_channel_write(s_tx, buf, n * 2 * sizeof(int16_t), &w, pdMS_TO_TICKS(200));
-        played += n;
-    }
-
-    // Fade-out si interrompu (évite le clic)
-    if (interrupted) {
-        size_t n = fade_out < (size_t)CHUNK_SAMPLES ? fade_out : CHUNK_SAMPLES;
-        for (size_t i = 0; i < n; i++) {
-            float env = (float)(n - i) / n;
-            int16_t s = (int16_t)(sinf(phase) * amp * env);
-            buf[i * 2] = buf[i * 2 + 1] = s;
-            phase += delta;
-            if (phase > 2.0f * M_PI) phase -= 2.0f * M_PI;
-        }
-        size_t w;
-        i2s_channel_write(s_tx, buf, n * 2 * sizeof(int16_t), &w, pdMS_TO_TICKS(100));
-    }
-
-    // Silence de queue (évite le crunch DMA)
-    size_t w;
-    i2s_channel_write(s_tx, s_silence, CHUNK_SAMPLES * 2 * sizeof(int16_t), &w, pdMS_TO_TICKS(100));
-    // Note : pas de free() — buf = s_tone_buf statique (C1).
-}
-
-// ── Tâche musique de fond ─────────────────────────────────────────────────────
-
-static void bg_task_fn(void *arg)
-{
-    int idx = 0;
-    while (atomic_load(&s_bg_run)) {
-        if (atomic_load(&s_fg_play)) {
-            vTaskDelay(pdMS_TO_TICKS(20));
-            continue;
-        }
-
-        const hal_audio_bg_note_t *n = &s_bg_notes[idx % s_bg_count];
-
-        if (n->freq > 0) {
-            if (xSemaphoreTake(s_mutex, pdMS_TO_TICKS(100)) == pdTRUE) {
-                if (!atomic_load(&s_fg_play))
-                    write_tone_internal(n->freq, n->dur_ms, true, AMPLITUDE_BG);
-                xSemaphoreGive(s_mutex);
-            }
-        }
-
-        // Gap : alimenter le DMA avec du silence (mutex obligatoire — même canal I2S)
-        uint32_t gap_ms = n->gap_ms;
-        while (gap_ms > 0 && atomic_load(&s_bg_run)) {
-            if (atomic_load(&s_fg_play)) {
-                vTaskDelay(pdMS_TO_TICKS(20));
-                gap_ms = gap_ms > 20 ? gap_ms - 20 : 0;
+                v->ptr++;
+                v->remaining--;
                 continue;
             }
-            if (xSemaphoreTake(s_mutex, pdMS_TO_TICKS(30)) == pdTRUE) {
-                if (!atomic_load(&s_fg_play)) {
-                    size_t w;
-                    i2s_channel_write(s_tx, s_silence,
-                                      CHUNK_SAMPLES * 2 * sizeof(int16_t), &w, pdMS_TO_TICKS(30));
+            if (samples <= 0) continue;
+
+            if (info.channels == 1) {
+                for (int i = 0; i < samples; i++) {
+                    v->pcm[2 * i]     = s_frame_pcm[i];
+                    v->pcm[2 * i + 1] = s_frame_pcm[i];
                 }
-                xSemaphoreGive(s_mutex);
+            } else {
+                memcpy(v->pcm, s_frame_pcm, (size_t)samples * 2 * sizeof(int16_t));
             }
-            gap_ms = gap_ms > 20 ? gap_ms - 20 : 0;
+            v->pcm_len = samples * 2;
+            v->pcm_pos = 0;
         }
 
-        idx = (idx + 1) % s_bg_count;
+        int take = needed - filled;
+        if (take > v->pcm_len - v->pcm_pos) take = v->pcm_len - v->pcm_pos;
+        for (int i = 0; i < take; i++) {
+            acc[filled + i] += ((int32_t)v->pcm[v->pcm_pos + i] * gq) >> 8;
+        }
+        filled += take;
+        v->pcm_pos += take;
     }
-    atomic_store(&s_bg_exited, true);
-    vTaskDelete(NULL);
+
+    if (filled < needed && !v->loop) {  // fin du one-shot
+        v->on = false;
+        atomic_store(&c->req_active, false);
+        atomic_store(&c->is_active, false);
+    }
+}
+
+// ── Voix tons (task mixer) ────────────────────────────────────────────────────
+
+static void tone_start(tone_state_t *t, uint16_t freq, uint16_t dur_ms,
+                       uint16_t gap_ms, float amp)
+{
+    t->freq   = freq;
+    t->amp    = amp;
+    t->total  = (size_t)SR * dur_ms / 1000;
+    t->pos    = 0;
+    t->gap    = (size_t)SR * gap_ms / 1000;
+    t->phase  = 0.0f;
+    t->active = (t->total > 0 || t->gap > 0);
+}
+
+// Mixe la note en cours (sinus + enveloppe anti-crissement) dans acc.
+static void tone_mix(tone_state_t *t, int32_t *acc, int frames)
+{
+    if (!t->active) return;
+    const float delta = 2.0f * (float)M_PI * t->freq / (float)SR;
+    for (int i = 0; i < frames; i++) {
+        if (t->pos < t->total) {
+            if (t->freq) {
+                float env;
+                if (t->total <= (size_t)(FADE_IN_S + FADE_OUT_S)) {
+                    env = t->pos < t->total / 2
+                        ? (float)t->pos * 2.0f / t->total
+                        : (float)(t->total - t->pos) * 2.0f / t->total;
+                } else if (t->pos < (size_t)FADE_IN_S) {
+                    env = (float)t->pos / FADE_IN_S;
+                } else if (t->pos + FADE_OUT_S >= t->total) {
+                    env = (float)(t->total - t->pos) / FADE_OUT_S;
+                } else {
+                    env = 1.0f;
+                }
+                int32_t s = (int32_t)(sinf(t->phase) * t->amp * env);
+                acc[2 * i]     += s;
+                acc[2 * i + 1] += s;
+                t->phase += delta;
+                if (t->phase > 2.0f * (float)M_PI) t->phase -= 2.0f * (float)M_PI;
+            }
+            t->pos++;
+        } else if (t->gap > 0) {
+            t->gap--;
+        } else {
+            t->active = false;
+            return;
+        }
+    }
+}
+
+// Ambiance tons fallback : enchaîne les notes en boucle.
+static void tonebg_step(void)
+{
+    if (!atomic_load(&s_tonebg_req)) {
+        s_tonebg_on           = false;
+        s_tonebg_state.active = false;
+        return;
+    }
+    if (!s_tonebg_on) {  // activation : copie de la config posée par l'API
+        s_tonebg_notes        = s_tonebg_cfg_notes;
+        s_tonebg_count        = s_tonebg_cfg_count;
+        s_tonebg_idx          = 0;
+        s_tonebg_state.active = false;
+        s_tonebg_on           = true;
+    }
+    if (!s_tonebg_state.active && s_tonebg_count > 0) {
+        const hal_audio_bg_note_t *n = &s_tonebg_notes[s_tonebg_idx];
+        s_tonebg_idx = (s_tonebg_idx + 1) % s_tonebg_count;
+        tone_start(&s_tonebg_state, n->freq, n->dur_ms, n->gap_ms, AMPLITUDE_BG);
+    }
+}
+
+// ── Task mixer ────────────────────────────────────────────────────────────────
+
+static void mixer_task_fn(void *arg)
+{
+    for (;;) {
+        memset(s_acc, 0, (size_t)CHUNK_FRAMES * 2 * sizeof(int32_t));
+
+        tonebg_step();
+        tone_mix(&s_tonebg_state, s_acc, CHUNK_FRAMES);
+
+        if (!s_tonefg_state.active) {
+            tone_evt_t evt;
+            if (xQueueReceive(s_tone_queue, &evt, 0) == pdTRUE) {
+                tone_start(&s_tonefg_state, evt.freq, evt.dur_ms, evt.gap_ms,
+                           AMPLITUDE_FG);
+            }
+        }
+        tone_mix(&s_tonefg_state, s_acc, CHUNK_FRAMES);
+
+        // Ducking du fond pendant un one-shot — rampe ~80 ms, pas de step audible.
+        float target = atomic_load(&s_one_ctrl.is_active) ? DUCK_GAIN : 1.0f;
+        s_duck += (target - s_duck) * 0.25f;
+
+        mp3_voice_mix(&s_bg_voice, &s_bg_ctrl, s_acc, CHUNK_FRAMES,
+                      MP3_BG_VOLUME * s_duck);
+        mp3_voice_mix(&s_one_voice, &s_one_ctrl, s_acc, CHUNK_FRAMES, 1.0f);
+
+        // Saturation 32→16 bits + niveau de crête.
+        int32_t peak = 0;
+        for (int i = 0; i < CHUNK_FRAMES * 2; i++) {
+            int32_t v = s_acc[i];
+            if (v > 32767)  v = 32767;
+            if (v < -32768) v = -32768;
+            s_out[i] = (int16_t)v;
+            int32_t a = v < 0 ? -v : v;
+            if (a > peak) peak = a;
+        }
+        s_peak_level = (uint8_t)(peak * 100 / 32768);
+
+        // Le blocage sur le DMA (~20 ms de données) cadence la boucle. Timeout
+        // dimensionné sur le chunk + marge — jamais portMAX_DELAY.
+        size_t    w;
+        esp_err_t e = i2s_channel_write(s_tx, s_out,
+                                        (size_t)CHUNK_FRAMES * 2 * sizeof(int16_t),
+                                        &w, pdMS_TO_TICKS(20 + 1000));
+        if (e == ESP_ERR_TIMEOUT) {
+            ESP_LOGW(TAG, "mixer : timeout I2S");
+        }
+    }
+}
+
+// ── Handshake API ↔ mixer ─────────────────────────────────────────────────────
+
+// Désactive une voix MP3 et attend que le mixer l'ait relâchée (≤ 500 ms) —
+// après quoi son buffer source peut être libéré/réécrit sans danger.
+static void voice_stop_wait(mp3_ctrl_t *c)
+{
+    atomic_store(&c->req_active, false);
+    const TickType_t deadline = xTaskGetTickCount() + pdMS_TO_TICKS(500);
+    while (atomic_load(&c->is_active)) {
+        if (xTaskGetTickCount() >= deadline) {
+            ESP_LOGW(TAG, "voix MP3 non relâchée dans les temps");
+            break;
+        }
+        vTaskDelay(pdMS_TO_TICKS(10));
+    }
+}
+
+// Charge un fichier dans un buffer PSRAM réutilisable (realloc si trop petit).
+// À n'appeler que voix arrêtée (voice_stop_wait) — le buffer peut être rejoué.
+static esp_err_t load_file_psram(const char *path, uint8_t **buf, size_t *cap,
+                                 size_t *out_size)
+{
+    FILE *f = fopen(path, "rb");
+    if (!f) return ESP_ERR_NOT_FOUND;
+
+    fseek(f, 0, SEEK_END);
+    long fsize = ftell(f);
+    fseek(f, 0, SEEK_SET);
+    if (fsize <= 0 || (size_t)fsize > AUDIO_FILE_MAX_SIZE) {
+        fclose(f);
+        ESP_LOGW(TAG, "%s : taille invalide (%ld octets)", path, fsize);
+        return ESP_FAIL;
+    }
+
+    if (*buf && *cap < (size_t)fsize) {
+        heap_caps_free(*buf);
+        *buf = NULL;
+        *cap = 0;
+    }
+    if (!*buf) {
+        *buf = heap_caps_malloc((size_t)fsize, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+        if (!*buf) {
+            fclose(f);
+            ESP_LOGE(TAG, "%s : alloc PSRAM échouée (%ld octets)", path, fsize);
+            return ESP_ERR_NO_MEM;
+        }
+        *cap = (size_t)fsize;
+    }
+
+    size_t nread = fread(*buf, 1, (size_t)fsize, f);
+    fclose(f);
+    if (nread != (size_t)fsize) {
+        ESP_LOGW(TAG, "%s : lecture incomplète %u/%ld", path, (unsigned)nread, fsize);
+        return ESP_FAIL;
+    }
+    *out_size = (size_t)fsize;
+    return ESP_OK;
 }
 
 // ── API publique ──────────────────────────────────────────────────────────────
 
 esp_err_t hal_audio_init(void)
 {
-    // C1 : allouer le buffer tone une seule fois (DMA-capable pour cohérence).
-    atomic_init(&s_fg_play, false);
-    atomic_init(&s_bg_run, false);
-    atomic_init(&s_bg_exited, true);
-    s_tone_buf = heap_caps_malloc(CHUNK_SAMPLES * 2 * sizeof(int16_t), MALLOC_CAP_DEFAULT);
-    if (!s_tone_buf) {
-        ESP_LOGE(TAG, "hal_audio_init: alloc tone_buf échoué");
-        return ESP_ERR_NO_MEM;
-    }
-
     // ── 1. I2S : slots 32-bit → BCLK = 44100×64 = 2.82 MHz
     //    Le PCM5122 PLL multiplie ×4 (au lieu de ×8 en 16-bit slots) → moins de jitter
     i2s_chan_config_t chan_cfg = I2S_CHANNEL_DEFAULT_CONFIG(I2S_NUM_0, I2S_ROLE_MASTER);
@@ -223,7 +424,7 @@ esp_err_t hal_audio_init(void)
 
     vTaskDelay(pdMS_TO_TICKS(100));
 
-    // ── 1b. Probe ciblé PCM5122 + MPR121 (scan complet inutilement lent en v6.1 :
+    // ── 1b. Probe ciblé PCM5122 (scan complet inutilement lent en v6.1 :
     //        chaque adresse libre timeout à 50 ms → ~5 s pour la plage 0x08-0x77).
     if (i2c_master_probe(hal_i2c_bus_handle(), PCM5122_I2C_ADDR, 50) == ESP_OK)
         ESP_LOGI(TAG, "PCM5122 présent à 0x%02X", PCM5122_I2C_ADDR);
@@ -286,91 +487,173 @@ esp_err_t hal_audio_init(void)
                  (status & 0x10) ? "locked" : "NOT locked");
     }
 
-    s_mutex = xSemaphoreCreateMutex();
-    if (!s_mutex) return ESP_ERR_NO_MEM;
+    // ── 3. Mixer : buffers PSRAM (pas de malloc au runtime) + task unique.
+    atomic_init(&s_bg_ctrl.req_active, false);
+    atomic_init(&s_bg_ctrl.is_active, false);
+    atomic_init(&s_one_ctrl.req_active, false);
+    atomic_init(&s_one_ctrl.is_active, false);
+    atomic_init(&s_tonebg_req, false);
 
-    ESP_LOGI(TAG, "I2S démarré (BCLK=%d LRCK=%d DOUT=%d)", AUDIO_PIN_BCLK, AUDIO_PIN_LRCK, AUDIO_PIN_DOUT);
+    s_acc = heap_caps_malloc((size_t)CHUNK_FRAMES * 2 * sizeof(int32_t),
+                             MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+    s_out = heap_caps_malloc((size_t)CHUNK_FRAMES * 2 * sizeof(int16_t),
+                             MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+    s_bg_voice.pcm  = heap_caps_malloc(MINIMP3_MAX_SAMPLES_PER_FRAME * 2 * sizeof(int16_t),
+                                       MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+    s_one_voice.pcm = heap_caps_malloc(MINIMP3_MAX_SAMPLES_PER_FRAME * 2 * sizeof(int16_t),
+                                       MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+    if (!s_acc || !s_out || !s_bg_voice.pcm || !s_one_voice.pcm) {
+        ESP_LOGE(TAG, "alloc buffers mixer échouée");
+        return ESP_ERR_NO_MEM;
+    }
+
+    s_tone_queue = xQueueCreate(TONE_QUEUE_LEN, sizeof(tone_evt_t));
+    s_api_mutex  = xSemaphoreCreateMutex();
+    if (!s_tone_queue || !s_api_mutex) return ESP_ERR_NO_MEM;
+
+    // Core 0 prio 3 (comme l'ancien audio_bg_mp3) : décode 0-2 frames minimp3
+    // par chunk de 20 ms, cadencé par le blocage DMA. Stack 32 KB : le scratch
+    // minimp3 vit sur la pile.
+    BaseType_t ok = xTaskCreatePinnedToCore(mixer_task_fn, "audio_mixer", 32768,
+                                            NULL, 3, NULL, 0);
+    if (ok != pdPASS) return ESP_FAIL;
+    s_mixer_ok = true;
+
+    ESP_LOGI(TAG, "I2S + mixer démarrés (BCLK=%d LRCK=%d DOUT=%d)",
+             AUDIO_PIN_BCLK, AUDIO_PIN_LRCK, AUDIO_PIN_DOUT);
     return ESP_OK;
 }
 
 void hal_audio_play_tone(uint16_t freq_hz, uint16_t dur_ms)
 {
-    if (!s_tx || !freq_hz || !dur_ms) return;
-    atomic_store(&s_fg_play, true);
-    // Timeout 50ms : un bip cosmétique qui rate parce que le canal est occupé
-    // n'est pas un bug, l'appelant peut juste passer à autre chose. Évite que
-    // touch_task (prio 5) ou scenario_engine bloquent 500ms si l'audio est busy.
-    if (xSemaphoreTake(s_mutex, pdMS_TO_TICKS(50)) == pdTRUE) {
-        write_tone_internal(freq_hz, dur_ms, false, AMPLITUDE_FG);
-        atomic_store(&s_fg_play, false);
-        xSemaphoreGive(s_mutex);
-    } else {
-        atomic_store(&s_fg_play, false);
+    if (!s_tone_queue || !freq_hz || !dur_ms) return;
+    tone_evt_t evt = { .freq = freq_hz, .dur_ms = dur_ms, .gap_ms = 0 };
+    if (xQueueSend(s_tone_queue, &evt, 0) != pdTRUE) {
+        ESP_LOGD(TAG, "queue tons pleine — bip ignoré");
     }
 }
 
-void hal_audio_play_sequence(const uint16_t *freqs, const uint16_t *durs, int count, uint16_t gap_ms)
+void hal_audio_play_sequence(const uint16_t *freqs, const uint16_t *durs,
+                             int count, uint16_t gap_ms)
 {
-    if (!s_tx || !count) return;
-    atomic_store(&s_fg_play, true);
-    if (xSemaphoreTake(s_mutex, pdMS_TO_TICKS(1000)) == pdTRUE) {
-        for (int i = 0; i < count; i++) {
-            if (freqs[i] > 0)
-                write_tone_internal(freqs[i], durs[i], false, AMPLITUDE_FG);
-            if (gap_ms > 0 && i < count - 1) {
-                size_t gap_s = (size_t)SR * gap_ms / 1000;
-                size_t w;
-                while (gap_s > 0) {
-                    size_t n = gap_s < CHUNK_SAMPLES ? gap_s : CHUNK_SAMPLES;
-                    i2s_channel_write(s_tx, s_silence, n * 2 * sizeof(int16_t), &w, pdMS_TO_TICKS(100));
-                    gap_s -= n;
-                }
-            }
+    if (!s_tone_queue || !freqs || !durs || count <= 0) return;
+    for (int i = 0; i < count; i++) {
+        tone_evt_t evt = {
+            .freq   = freqs[i],
+            .dur_ms = durs[i],
+            .gap_ms = (i < count - 1) ? gap_ms : 0,
+        };
+        if (xQueueSend(s_tone_queue, &evt, pdMS_TO_TICKS(10)) != pdTRUE) {
+            ESP_LOGW(TAG, "queue tons pleine — séquence tronquée (%d/%d)", i, count);
+            return;
         }
-        atomic_store(&s_fg_play, false);
-        xSemaphoreGive(s_mutex);
-    } else {
-        atomic_store(&s_fg_play, false);
     }
 }
 
-esp_err_t hal_audio_play_raw(const int16_t *samples, size_t num_samples, uint32_t sr)
+esp_err_t hal_audio_play_oneshot(const char *path)
 {
-    if (!s_tx) return ESP_ERR_INVALID_STATE;
-
-    // C3 : arrêter la tâche bg proprement avant de toucher le canal I2S,
-    // puis prendre le mutex pour sérialiser avec tout accès concurrent.
-    atomic_store(&s_bg_run, false);
-    atomic_store(&s_fg_play, true);
-
-    if (xSemaphoreTake(s_mutex, pdMS_TO_TICKS(500)) != pdTRUE) {
-        atomic_store(&s_fg_play, false);
-        ESP_LOGE(TAG, "hal_audio_play_raw: timeout mutex");
+    if (!path) return ESP_ERR_INVALID_ARG;
+    if (!s_mixer_ok) return ESP_ERR_INVALID_STATE;
+    if (xSemaphoreTake(s_api_mutex, pdMS_TO_TICKS(500)) != pdTRUE) {
         return ESP_ERR_TIMEOUT;
     }
 
-    esp_err_t ret = ESP_OK;
-    if (sr != SR) {
-        i2s_channel_disable(s_tx);
-        i2s_std_clk_config_t clk = I2S_STD_CLK_DEFAULT_CONFIG(sr);
-        ret = i2s_channel_reconfig_std_clock(s_tx, &clk);
-        i2s_channel_enable(s_tx);
+    voice_stop_wait(&s_one_ctrl);
+
+    size_t    size = 0;
+    esp_err_t err  = load_file_psram(path, &s_onefile_buf, &s_onefile_cap, &size);
+    if (err == ESP_OK) {
+        s_one_ctrl.data = s_onefile_buf;
+        s_one_ctrl.size = size;
+        s_one_ctrl.loop = false;
+        atomic_store(&s_one_ctrl.req_active, true);
+        ESP_LOGI(TAG, "one-shot %s (%u kB)", path, (unsigned)(size / 1024));
+    }
+    xSemaphoreGive(s_api_mutex);
+    return err;
+}
+
+void hal_audio_oneshot_stop(void)
+{
+    if (!s_api_mutex) return;
+    if (xSemaphoreTake(s_api_mutex, pdMS_TO_TICKS(500)) != pdTRUE) return;
+    voice_stop_wait(&s_one_ctrl);
+    xSemaphoreGive(s_api_mutex);
+}
+
+bool hal_audio_oneshot_active(void)
+{
+    return atomic_load(&s_one_ctrl.is_active);
+}
+
+void hal_audio_bg_mp3_start(const uint8_t *data, size_t size)
+{
+    if (!data || !size || !s_mixer_ok) return;
+    if (xSemaphoreTake(s_api_mutex, pdMS_TO_TICKS(500)) != pdTRUE) return;
+
+    voice_stop_wait(&s_bg_ctrl);
+    atomic_store(&s_tonebg_req, false);  // une seule musique de fond à la fois
+
+    s_bg_ctrl.data = data;
+    s_bg_ctrl.size = size;
+    s_bg_ctrl.loop = true;
+    atomic_store(&s_bg_ctrl.req_active, true);
+
+    xSemaphoreGive(s_api_mutex);
+    ESP_LOGI(TAG, "bg MP3 démarré (%u kB)", (unsigned)(size / 1024));
+}
+
+void hal_audio_bg_start(const hal_audio_bg_note_t *notes, int count)
+{
+    if (!notes || count <= 0 || !s_mixer_ok) return;
+    if (xSemaphoreTake(s_api_mutex, pdMS_TO_TICKS(500)) != pdTRUE) return;
+
+    voice_stop_wait(&s_bg_ctrl);
+    s_tonebg_cfg_notes = notes;
+    s_tonebg_cfg_count = count;
+    atomic_store(&s_tonebg_req, true);
+
+    xSemaphoreGive(s_api_mutex);
+    ESP_LOGI(TAG, "bg tons démarré (%d notes)", count);
+}
+
+void hal_audio_bg_stop(void)
+{
+    if (!s_api_mutex) return;
+    if (xSemaphoreTake(s_api_mutex, pdMS_TO_TICKS(500)) != pdTRUE) return;
+    voice_stop_wait(&s_bg_ctrl);
+    atomic_store(&s_tonebg_req, false);
+    xSemaphoreGive(s_api_mutex);
+}
+
+esp_err_t hal_audio_play_bg(const char *path)
+{
+    if (!path) return ESP_ERR_INVALID_ARG;
+    if (!s_mixer_ok) return ESP_ERR_INVALID_STATE;
+    if (xSemaphoreTake(s_api_mutex, pdMS_TO_TICKS(500)) != pdTRUE) {
+        return ESP_ERR_TIMEOUT;
     }
 
-    if (ret == ESP_OK) {
-        size_t w;
-        // Timeout dimensionné sur la durée réelle du sample (stéréo) + 1s de marge.
-        // portMAX_DELAY gèlerait la tâche appelante (invisible du TWDT) sur un DMA bloqué.
-        uint32_t dur_ms = (uint32_t)((uint64_t)num_samples * 1000 / ((sr ? sr : SR) * 2));
-        ret = i2s_channel_write(s_tx, samples, num_samples * sizeof(int16_t), &w,
-                                pdMS_TO_TICKS(dur_ms + 1000));
-        if (ret == ESP_ERR_TIMEOUT)
-            ESP_LOGW(TAG, "hal_audio_play_raw: timeout I2S (%u samples)", (unsigned)num_samples);
-    }
+    // Arrêter la voix bg AVANT de toucher le buffer (elle peut le lire).
+    voice_stop_wait(&s_bg_ctrl);
+    atomic_store(&s_tonebg_req, false);
 
-    atomic_store(&s_fg_play, false);
-    xSemaphoreGive(s_mutex);
-    return ret;
+    size_t    size = 0;
+    esp_err_t err  = load_file_psram(path, &s_bgfile_buf, &s_bgfile_cap, &size);
+    if (err == ESP_OK) {
+        s_bg_ctrl.data = s_bgfile_buf;
+        s_bg_ctrl.size = size;
+        s_bg_ctrl.loop = true;
+        atomic_store(&s_bg_ctrl.req_active, true);
+        ESP_LOGI(TAG, "bg MP3 fichier %s (%u kB)", path, (unsigned)(size / 1024));
+    }
+    xSemaphoreGive(s_api_mutex);
+    return err;
+}
+
+uint8_t hal_audio_get_peak_level(void)
+{
+    return s_peak_level;
 }
 
 void hal_audio_set_volume(uint8_t vol_pct)
@@ -406,204 +689,9 @@ void hal_audio_set_analog_gain(uint8_t step)
 void hal_audio_stop(void)
 {
     hal_audio_bg_stop();
+    hal_audio_oneshot_stop();
     if (s_dac) {
         pcm_write(PCM5122_REG_MUTE,  0x11);
         pcm_write(PCM5122_REG_POWER, 0x10);
     }
-}
-
-// ── Musique de fond MP3 ───────────────────────────────────────────────────────
-
-#define MP3_BG_VOLUME   0.50f   // 50% amplitude : fond sonore sous les bips foreground
-
-static const uint8_t *s_mp3_data = NULL;
-static size_t         s_mp3_size = 0;
-
-// Buffers statiques pour éviter 7 KB de stack dans la tâche
-static int16_t s_mp3_pcm[MINIMP3_MAX_SAMPLES_PER_FRAME];
-static int16_t s_mp3_stereo[MINIMP3_MAX_SAMPLES_PER_FRAME * 2];
-static mp3dec_t s_mp3_dec;
-
-static void bg_mp3_task_fn(void *arg)
-{
-    mp3dec_init(&s_mp3_dec);
-    const uint8_t *ptr       = s_mp3_data;
-    int            remaining = (int)s_mp3_size;
-
-    while (atomic_load(&s_bg_run)) {
-        if (atomic_load(&s_fg_play)) { vTaskDelay(pdMS_TO_TICKS(20)); continue; }
-
-        if (remaining < 4) {
-            mp3dec_init(&s_mp3_dec);
-            ptr       = s_mp3_data;
-            remaining = (int)s_mp3_size;
-            ESP_LOGD(TAG, "MP3 loop");
-            taskYIELD();
-            continue;
-        }
-
-        mp3dec_frame_info_t info;
-        int samples = mp3dec_decode_frame(&s_mp3_dec, ptr, remaining,
-                                          s_mp3_pcm, &info);
-
-        if (info.frame_bytes > 0) {
-            ptr       += info.frame_bytes;
-            remaining -= info.frame_bytes;
-        } else {
-            ptr++; remaining--;
-            taskYIELD();
-            continue;
-        }
-
-        if (samples <= 0) { taskYIELD(); continue; }
-
-        // Mono → stéréo entrelacé + réduction volume
-        int out_s = samples * 2;
-        if (info.channels == 1) {
-            for (int i = 0; i < samples; i++) {
-                int16_t v = (int16_t)(s_mp3_pcm[i] * MP3_BG_VOLUME);
-                s_mp3_stereo[i * 2]     = v;
-                s_mp3_stereo[i * 2 + 1] = v;
-            }
-        } else {
-            for (int i = 0; i < out_s; i++)
-                s_mp3_stereo[i] = (int16_t)(s_mp3_pcm[i] * MP3_BG_VOLUME);
-        }
-
-        int16_t peak = 0;
-        for (int i = 0; i < out_s; i++) {
-            int16_t abs_v = s_mp3_stereo[i] < 0 ? -s_mp3_stereo[i] : s_mp3_stereo[i];
-            if (abs_v > peak) peak = abs_v;
-        }
-        s_peak_level = (uint8_t)((uint32_t)peak * 100 / 32768);
-
-        if (atomic_load(&s_fg_play)) continue;
-
-        if (xSemaphoreTake(s_mutex, pdMS_TO_TICKS(100)) == pdTRUE) {
-            if (!atomic_load(&s_fg_play)) {
-                size_t w;
-                i2s_channel_write(s_tx, s_mp3_stereo,
-                                  out_s * sizeof(int16_t), &w, pdMS_TO_TICKS(200));
-            }
-            xSemaphoreGive(s_mutex);
-        }
-    }
-    s_peak_level = 0;
-    atomic_store(&s_bg_exited, true);
-    vTaskDelete(NULL);
-}
-
-void hal_audio_bg_mp3_start(const uint8_t *data, size_t size)
-{
-    if (!data || !size) return;
-    hal_audio_bg_stop();
-    s_mp3_data = data;
-    s_mp3_size = size;
-    atomic_store(&s_bg_exited, false);
-    atomic_store(&s_bg_run, true);
-    // C2 : stack 32 KB — mp3dec_scratch_t sur pile ~16 KB + headroom FreeRTOS + débordements potentiels
-    // (grbuf[2][576]=4608 + syn[33][64]=8448 + maindata[2815] + reste + overhead)
-    // Pinned core 0 prio 3 : éviter de préempter eye_task (prio 4 core 1).
-    // Décodage minimp3 = ~5ms CPU par frame de 26ms audio (~20% load), prio 3
-    // largement suffisante. Core 0 cohérent avec touch/audio I2C.
-    xTaskCreatePinnedToCore(bg_mp3_task_fn, "audio_bg_mp3", 32768, NULL, 3, &s_bg_task, 0);
-    ESP_LOGI(TAG, "bg MP3 démarré (%u kB)", (unsigned)(size / 1024));
-}
-
-void hal_audio_bg_start(const hal_audio_bg_note_t *notes, int count)
-{
-    if (!notes || count <= 0) return;
-    hal_audio_bg_stop();
-    s_bg_notes = notes;
-    s_bg_count = count;
-    atomic_store(&s_bg_exited, false);
-    atomic_store(&s_bg_run, true);
-    // Mêmes raisons que bg_mp3 : pinné core 0 prio 3.
-    xTaskCreatePinnedToCore(bg_task_fn, "audio_bg", 4096, NULL, 3, &s_bg_task, 0);
-    ESP_LOGI(TAG, "bg music démarrée (%d notes)", count);
-}
-
-void hal_audio_bg_stop(void)
-{
-    atomic_store(&s_bg_run, false);
-    if (s_bg_task) {
-        // M3 : ne jamais déréférencer s_bg_task (TOCTOU — la tâche bg peut se
-        // terminer entre le test et l'usage, et eTaskGetState(NULL) est UB).
-        // On attend le flag atomique s_bg_exited posé juste avant vTaskDelete(NULL).
-        const TickType_t deadline = xTaskGetTickCount() + pdMS_TO_TICKS(500);
-        while (!atomic_load(&s_bg_exited)) {
-            if (xTaskGetTickCount() >= deadline) {
-                ESP_LOGW(TAG, "hal_audio_bg_stop: tâche bg non terminée dans les temps");
-                break;
-            }
-            vTaskDelay(pdMS_TO_TICKS(10));
-        }
-        s_bg_task = NULL;
-    }
-}
-
-// ── SPIFFS-based background MP3 playback ─────────────────────────────────────
-
-// Buffer holding the file contents between calls; freed on next call or stop.
-static uint8_t *s_file_mp3_buf  = NULL;
-static size_t   s_file_mp3_cap  = 0;
-
-// Maximum file size accepted (4 MB in PSRAM).
-#define AUDIO_PLAY_BG_MAX_SIZE (4 * 1024 * 1024)
-
-uint8_t hal_audio_get_peak_level(void)
-{
-    return s_peak_level;
-}
-
-esp_err_t hal_audio_play_bg(const char *path)
-{
-    if (!path) return ESP_ERR_INVALID_ARG;
-
-    FILE *f = fopen(path, "rb");
-    if (!f) {
-        ESP_LOGW(TAG, "hal_audio_play_bg: cannot open %s", path);
-        return ESP_ERR_NOT_FOUND;
-    }
-
-    fseek(f, 0, SEEK_END);
-    long fsize = ftell(f);
-    fseek(f, 0, SEEK_SET);
-
-    if (fsize <= 0 || (size_t)fsize > AUDIO_PLAY_BG_MAX_SIZE) {
-        fclose(f);
-        ESP_LOGW(TAG, "hal_audio_play_bg: file too large or empty (%ld bytes)", fsize);
-        return ESP_FAIL;
-    }
-
-    // Stop current background playback before touching the buffer.
-    hal_audio_bg_stop();
-
-    // Reuse or reallocate PSRAM buffer.
-    if (s_file_mp3_buf && s_file_mp3_cap < (size_t)fsize) {
-        heap_caps_free(s_file_mp3_buf);
-        s_file_mp3_buf = NULL;
-        s_file_mp3_cap = 0;
-    }
-    if (!s_file_mp3_buf) {
-        s_file_mp3_buf = heap_caps_malloc((size_t)fsize, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
-        if (!s_file_mp3_buf) {
-            fclose(f);
-            ESP_LOGE(TAG, "hal_audio_play_bg: PSRAM alloc failed (%ld bytes)", fsize);
-            return ESP_ERR_NO_MEM;
-        }
-        s_file_mp3_cap = (size_t)fsize;
-    }
-
-    size_t nread = fread(s_file_mp3_buf, 1, (size_t)fsize, f);
-    fclose(f);
-
-    if (nread != (size_t)fsize) {
-        ESP_LOGW(TAG, "hal_audio_play_bg: short read %u/%ld", (unsigned)nread, fsize);
-        return ESP_FAIL;
-    }
-
-    ESP_LOGI(TAG, "hal_audio_play_bg: %s (%u kB)", path, (unsigned)(nread / 1024));
-    hal_audio_bg_mp3_start(s_file_mp3_buf, nread);
-    return ESP_OK;
 }
