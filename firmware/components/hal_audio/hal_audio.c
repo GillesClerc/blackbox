@@ -530,27 +530,21 @@ esp_err_t hal_audio_init(void)
     atomic_init(&s_one_ctrl.is_active, false);
     atomic_init(&s_tonebg_req, false);
 
-    // Buffers chauds du mixer (~29 KB) en RAM interne : touchés échantillon par
-    // échantillon toutes les 20 ms — en PSRAM ils partagent le bus avec le rendu
-    // des yeux (core 1). Fallback PSRAM si l'interne venait à manquer.
+    // Buffers du mixer en PSRAM : la RAM interne est réservée aux stacks
+    // WiFi/BLE (le banc host + la sentinelle prouvent que le débit PSRAM
+    // suffit largement au mix temps réel).
     s_acc = heap_caps_malloc((size_t)CHUNK_FRAMES * 2 * sizeof(int32_t),
-                             MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+                             MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
     if (!s_acc) s_acc = heap_caps_malloc((size_t)CHUNK_FRAMES * 2 * sizeof(int32_t),
-                                         MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+                                         MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
     s_out = heap_caps_malloc((size_t)CHUNK_FRAMES * 2 * sizeof(int16_t),
-                             MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+                             MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
     if (!s_out) s_out = heap_caps_malloc((size_t)CHUNK_FRAMES * 2 * sizeof(int16_t),
-                                         MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+                                         MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
     s_bg_voice.pcm  = heap_caps_malloc(MINIMP3_MAX_SAMPLES_PER_FRAME * 2 * sizeof(int16_t),
-                                       MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
-    if (!s_bg_voice.pcm)
-        s_bg_voice.pcm = heap_caps_malloc(MINIMP3_MAX_SAMPLES_PER_FRAME * 2 * sizeof(int16_t),
-                                          MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+                                       MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
     s_one_voice.pcm = heap_caps_malloc(MINIMP3_MAX_SAMPLES_PER_FRAME * 2 * sizeof(int16_t),
-                                       MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
-    if (!s_one_voice.pcm)
-        s_one_voice.pcm = heap_caps_malloc(MINIMP3_MAX_SAMPLES_PER_FRAME * 2 * sizeof(int16_t),
-                                           MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+                                       MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
     if (!s_acc || !s_out || !s_bg_voice.pcm || !s_one_voice.pcm) {
         ESP_LOGE(TAG, "alloc buffers mixer échouée");
         return ESP_ERR_NO_MEM;

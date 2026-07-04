@@ -18,6 +18,13 @@ esp_err_t hal_wifi_init(void);
 // délai. Renvoie ESP_OK si connectée, ESP_FAIL sinon.
 esp_err_t hal_wifi_connect(uint32_t timeout_ms);
 
+// Applique de nouveaux identifiants (provisioning BLE) : persiste en NVS
+// "wifi_creds", initialise la stack si besoin, déconnecte l'éventuelle session
+// en cours et configure la STA. Ne connecte PAS — appeler hal_wifi_connect()
+// ensuite. pass peut être vide (réseau ouvert). Appelable depuis un task
+// runtime : retourne l'erreur, n'abort jamais.
+esp_err_t hal_wifi_set_credentials(const char *ssid, const char *pass);
+
 bool hal_wifi_is_connected(void);
 
 #ifdef __cplusplus

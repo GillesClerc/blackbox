@@ -14,6 +14,7 @@
 #include "hal_wifi.h"
 #include "hal_storage.h"
 #include "cloud_client.h"
+#include "ble_prov.h"
 #include "cJSON.h"
 #include "esp_heap_caps.h"
 #include <ctype.h>
@@ -308,6 +309,12 @@ static void action_eye_look(const char *name, const cJSON *params)
 static char s_code[16];
 static int  s_code_len = 0;
 
+// WiFi obtenu via l'appairage BLE → sync cloud immédiat.
+static void on_ble_wifi_ok(void)
+{
+    cloud_client_request_sync();
+}
+
 static void touch_task(void *arg)
 {
     (void)arg;
@@ -316,6 +323,14 @@ static void touch_task(void *arg)
         ESP_LOGW(TAG, "touch absent: %s", esp_err_to_name(ret));
         vTaskDelete(NULL);
         return;
+    }
+
+    // Touche maintenue pendant le boot = fenêtre d'appairage BLE (5 min) —
+    // seul déclencheur manuel tant que le menu n'existe pas.
+    hal_touch_data_t boot_touch;
+    if (hal_touch_read(&boot_touch) == ESP_OK && boot_touch.touched) {
+        ESP_LOGI(TAG, "touche maintenue au boot — appairage BLE");
+        ble_prov_start(300, on_ble_wifi_ok);
     }
 
     hal_touch_data_t prev = {0}, curr;
@@ -475,14 +490,21 @@ void app_main(void)
 
     ESP_LOGI(TAG, "EscapeBox ready — yeux GC9A01 animés, scenario engine actif");
 
-    // Réseau : connexion dans une tâche dédiée (bloque 15 s), puis sync cloud
-    // au boot via cloud_client (task propre, pile TLS).
+    ESP_LOGI(TAG, "heap interne libre avant réseau : %u octets",
+             (unsigned)heap_caps_get_free_size(MALLOC_CAP_INTERNAL));
+
+    // Réseau : cloud_client toujours prêt (le WiFi peut arriver plus tard via
+    // BLE). Identifiants présents → connexion dans une tâche dédiée ; absents
+    // → fenêtre d'appairage BLE (box neuve).
+    if (cloud_client_init() != ESP_OK) {
+        ESP_LOGW(TAG, "cloud_client indisponible — pas de sync");
+    }
     if (hal_wifi_init() == ESP_OK) {
-        if (cloud_client_init() != ESP_OK) {
-            ESP_LOGW(TAG, "cloud_client indisponible — pas de sync");
-        }
         xTaskCreatePinnedToCore(net_boot_task, "net_boot", 4096, NULL, 4, NULL, 0);
     } else {
-        ESP_LOGW(TAG, "WiFi non provisionné — provision_box.py --wifi-ssid …");
+        ESP_LOGW(TAG, "WiFi non provisionné — fenêtre d'appairage BLE");
+        if (ble_prov_start(300, on_ble_wifi_ok) != ESP_OK) {
+            ESP_LOGW(TAG, "appairage BLE indisponible");
+        }
     }
 }
