@@ -19,7 +19,7 @@
 | ~~F3.1~~ | ✅ **Packages d'assets** : outillage + serveur versionné + install incrémentale (sha256/fichier) | fait, validé sur cible (v1 → v2 : seul scenario.json re-téléchargé) |
 | ~~F3.2~~ | ✅ **Livraison contrôlée** (dette « statique public » soldée) : route `/api/box/pkg/…` JWT + droit `device_scenarios` | fait, validé : 401 sans token, 403 sans licence, 400 traversée |
 | ~~F4~~ | ✅ **Mixage audio** : task `audio_mixer` unique (bg MP3 + one-shot MP3 + tons), ducking, `"play"` → `audio/<nom>.mp3` avec fallback tons | fait, validé sur cible (timing temps réel mesuré) et sur banc host (sortie = référence). ⚠ Craquements du proto = câblage breadboard (A/B identique avec l'ancien pipeline), à régler au PCB (découplage ampli) |
-| **F5** | Provisioning BLE (NimBLE) + register **option B** (preuve HMAC) | Box neuve appairée depuis `/devices/add` (Web Bluetooth) : Wi-Fi + enregistrement prouvé |
+| **F5** | Provisioning BLE (NimBLE) + register **option B** (preuve HMAC) | Code fait + déployé ; validé sur cible : advertising + coexistence WiFi/TLS, fenêtre 5 min propre. **Reste : parcours navigateur E2E** (Chrome → /devices/add) |
 | **F6** | OTA : `esp_https_ota` depuis le bloc `firmware_update` du sync | Release en DB → mise à jour + rollback si boot invalide |
 | *Opt.* | *Scores : `POST /api/box/session` + envoi fin de partie (file offline SD)* | *À activer avec le premier scénario à leaderboard/QR* |
 
