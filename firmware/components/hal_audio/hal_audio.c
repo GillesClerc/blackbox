@@ -556,10 +556,13 @@ esp_err_t hal_audio_init(void)
 
     // Core 0 prio 4 : temps réel — doit préempter cloud_client (prio 3, TLS +
     // sha256 au boot), sinon underruns DMA (craquements, musique « ralentie »).
-    // Sous scenario_engine/touch (5) : l'input garde la main. Stack 32 KB : le
-    // scratch minimp3 vit sur la pile.
-    BaseType_t ok = xTaskCreatePinnedToCore(mixer_task_fn, "audio_mixer", 32768,
-                                            NULL, 4, NULL, 0);
+    // Sous scenario_engine/touch (5) : l'input garde la main. Stack 32 KB (le
+    // scratch minimp3 vit sur la pile) en PSRAM : la RAM interne est réservée
+    // à WiFi+BLE. Licite car ce task ne touche JAMAIS la flash SPI ni la NVS
+    // (décodage + I2S uniquement — contrainte des stacks en PSRAM).
+    BaseType_t ok = xTaskCreatePinnedToCoreWithCaps(mixer_task_fn, "audio_mixer",
+                                                    32768, NULL, 4, NULL, 0,
+                                                    MALLOC_CAP_SPIRAM);
     if (ok != pdPASS) return ESP_FAIL;
     s_mixer_ok = true;
 
