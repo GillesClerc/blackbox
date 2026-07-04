@@ -12,7 +12,7 @@ else()
     message(STATUS "[EscapeBox] ambient.mp3 absent → ambiance par synthèse de tons")
 endif()
 
-idf_component_register(SRCS "main.c"
+idf_component_register(SRCS "main.c" "boot_menu.c"
                     INCLUDE_DIRS "."
                     EMBED_TXTFILES "../scenarios/capitaine_verdier.json"
                     EMBED_FILES    ${EMBED_BIN}

@@ -29,6 +29,12 @@ export default async function AppLayout({
           </Link>
           <nav className="flex items-center gap-2">
             <Link
+              href="/devices"
+              className="rounded-md px-3 py-2 font-mono text-xs tracking-wider text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            >
+              MES BOX
+            </Link>
+            <Link
               href="/account"
               className="rounded-md px-3 py-2 font-mono text-xs tracking-wider text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
             >

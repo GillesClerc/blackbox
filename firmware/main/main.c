@@ -15,6 +15,8 @@
 #include "hal_storage.h"
 #include "cloud_client.h"
 #include "ble_prov.h"
+#include "boot_menu.h"
+#include "nvs.h"
 #include "cJSON.h"
 #include "esp_heap_caps.h"
 #include <ctype.h>
@@ -53,53 +55,66 @@ static const hal_audio_bg_note_t s_ambient[] = {
 // à localiser les assets (ambient.mp3, ...).
 static char s_scenario_dir[280];
 
-// Cherche le premier dossier de /sdcard/scenarios contenant scenario.json et
-// le charge en PSRAM (NUL-terminé). NULL si SD absente ou rien d'exploitable.
+// Charge <SCENARIO_SD_ROOT>/<name>/scenario.json en PSRAM (NUL-terminé) et
+// positionne s_scenario_dir. NULL si absent/illisible.
+static char *load_scenario_dir(const char *name)
+{
+    char path[320];
+    snprintf(path, sizeof(path), SCENARIO_SD_ROOT "/%s/scenario.json", name);
+    FILE *f = fopen(path, "rb");
+    if (!f) return NULL;
+
+    fseek(f, 0, SEEK_END);
+    long size = ftell(f);
+    fseek(f, 0, SEEK_SET);
+    if (size <= 0 || size > SCENARIO_JSON_MAX) {
+        ESP_LOGW(TAG, "scenario.json hors limites (%ld octets): %s", size, path);
+        fclose(f);
+        return NULL;
+    }
+    char *json = heap_caps_malloc((size_t)size + 1, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+    if (!json) {
+        ESP_LOGE(TAG, "alloc PSRAM scénario échouée (%ld octets)", size);
+        fclose(f);
+        return NULL;
+    }
+    size_t n = fread(json, 1, (size_t)size, f);
+    fclose(f);
+    if (n != (size_t)size) {
+        ESP_LOGW(TAG, "lecture incomplète %u/%ld: %s", (unsigned)n, size, path);
+        heap_caps_free(json);
+        return NULL;
+    }
+    json[size] = '\0';
+    snprintf(s_scenario_dir, sizeof(s_scenario_dir), SCENARIO_SD_ROOT "/%s", name);
+    ESP_LOGI(TAG, "scénario SD: %s (%ld octets)", path, size);
+    return json;
+}
+
+// Scénario actif : la préférence NVS (menu de boot) d'abord, sinon le premier
+// dossier exploitable de la SD.
 static char *scenario_json_from_sd(void)
 {
+    char   pref[64] = {0};
+    size_t len      = sizeof(pref);
+    nvs_handle_t nvs;
+    if (nvs_open("cloud", NVS_READONLY, &nvs) == ESP_OK) {
+        nvs_get_str(nvs, "active_scenario", pref, &len);
+        nvs_close(nvs);
+    }
+    if (pref[0]) {
+        char *json = load_scenario_dir(pref);
+        if (json) return json;
+        ESP_LOGW(TAG, "scénario actif '%s' introuvable — premier disponible", pref);
+    }
+
     DIR *root = opendir(SCENARIO_SD_ROOT);
     if (!root) return NULL;
-
     char *json = NULL;
     struct dirent *e;
     while (!json && (e = readdir(root)) != NULL) {
         if (e->d_name[0] == '.') continue;
-        char path[320];
-        snprintf(path, sizeof(path), SCENARIO_SD_ROOT "/%s/scenario.json", e->d_name);
-        FILE *f = fopen(path, "rb");
-        if (!f) {
-            char dpath[320];
-            snprintf(dpath, sizeof(dpath), SCENARIO_SD_ROOT "/%s", e->d_name);
-            ESP_LOGW(TAG, "pas de scenario.json dans %s :", dpath);
-            hal_storage_list_dir(dpath);
-            continue;
-        }
-
-        fseek(f, 0, SEEK_END);
-        long size = ftell(f);
-        fseek(f, 0, SEEK_SET);
-        if (size <= 0 || size > SCENARIO_JSON_MAX) {
-            ESP_LOGW(TAG, "scenario.json hors limites (%ld octets): %s", size, path);
-            fclose(f);
-            continue;
-        }
-        json = heap_caps_malloc((size_t)size + 1, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
-        if (!json) {
-            ESP_LOGE(TAG, "alloc PSRAM scénario échouée (%ld octets)", size);
-            fclose(f);
-            break;
-        }
-        size_t n = fread(json, 1, (size_t)size, f);
-        fclose(f);
-        if (n != (size_t)size) {
-            ESP_LOGW(TAG, "lecture incomplète %u/%ld: %s", (unsigned)n, size, path);
-            heap_caps_free(json);
-            json = NULL;
-            continue;
-        }
-        json[size] = '\0';
-        snprintf(s_scenario_dir, sizeof(s_scenario_dir), SCENARIO_SD_ROOT "/%s", e->d_name);
-        ESP_LOGI(TAG, "scénario SD: %s (%ld octets)", path, size);
+        json = load_scenario_dir(e->d_name);
     }
     closedir(root);
     return json;
@@ -325,14 +340,6 @@ static void touch_task(void *arg)
         return;
     }
 
-    // Touche maintenue pendant le boot = fenêtre d'appairage BLE (5 min) —
-    // seul déclencheur manuel tant que le menu n'existe pas.
-    hal_touch_data_t boot_touch;
-    if (hal_touch_read(&boot_touch) == ESP_OK && boot_touch.touched) {
-        ESP_LOGI(TAG, "touche maintenue au boot — appairage BLE");
-        ble_prov_start(300, on_ble_wifi_ok);
-    }
-
     hal_touch_data_t prev = {0}, curr;
     TickType_t hold_start[HAL_TOUCH_NUM_CH] = {0};
     bool       hold_fired[HAL_TOUCH_NUM_CH] = {false};
@@ -440,6 +447,11 @@ void app_main(void)
         hal_storage_list_dir(STORAGE_MOUNT_POINT);
         hal_storage_list_dir(SCENARIO_SD_ROOT);
     }
+
+    // Menu de boot (boutons + visage) : invite 4 s, choix du scénario
+    // (NVS cloud/active_scenario) et appairage BLE. Avant le chargeur (la
+    // sélection doit le précéder) et avant touch_task (un seul lecteur).
+    boot_menu_maybe_run(on_ble_wifi_ok);
 
     char *sd_json = scenario_json_from_sd();
 
