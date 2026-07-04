@@ -23,7 +23,7 @@
 | **F6** | OTA : `esp_https_ota` depuis le bloc `firmware_update` du sync | Release en DB → mise à jour + rollback si boot invalide |
 | *Opt.* | *Scores : `POST /api/box/session` + envoi fin de partie (file offline SD)* | *À activer avec le premier scénario à leaderboard/QR* |
 
-> Chantier connexe (hors de ce plan, UI) : **menu de démarrage** (choix du scénario, Wi-Fi, paramètres). F3 prépare le terrain : clé NVS `active_scenario` lue par le chargeur + liste des scénarios installés.
+> Chantier connexe (UI) : **menu de démarrage v1 FAIT** (main/boot_menu.c) — invite 4 s au boot, keypad ◀=4 ▶=6 ✓=#, items Jouer / Scénario (cycle + NVS `cloud/active_scenario`, respecté par le chargeur) / Appairage BLE. Annonces yeux+LEDs+bips ; e-ink + annonces vocales à venir avec les assets.
 
 ---
 
