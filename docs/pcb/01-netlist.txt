@@ -38,10 +38,14 @@ NET 3V3_D (digital):
 NET 3V3_A (audio):
   U6.VOUT, C_A2.+
   R5.1 (pull-up XSMT — vers 3V3_A, cf. NET PCM_XSMT)
-  U2.AVDD (pin 1), C1_AV.+
-  U2.DVDD (pin 19), C2_DV.+
-  U2.CPVDD (pin 5), C3_CP.+
-  U2.XSMT (pin 12) via R5
+  U2.AVDD (pin 8), C1_AV.+
+  U2.DVDD (pin 28), C2_DV.+
+  U2.CPVDD (pin 1), C3_CP.+
+  U2.XSMT (pin 25) via R5
+  (⚠ pins PCM5122 corrigees 2026-09-11 — vs datasheet TI SLAS763C, mode I2C.
+   L'ancien netlist avait TOUS les numeros de pins PCM5122 faux, y compris
+   ceux-ci. CPGND(3)/DGND(27)/AGND(9) restent a raccorder explicitement —
+   non couverts par le NET GND generique actuel, a traiter au schematic capture.)
 
 NET BOOST_SW:
   U7.SW (MT3608 pin 1)
@@ -75,14 +79,14 @@ NET GND:
 NET I2C_SDA:
   U1.GPIO21
   R3.2 (pull-up 4.7k vers 3V3_D)
-  U2.SDA (PCM5122 pin 14)
+  U2.SDA (PCM5122 pin 11)
   U11.SDA (PN532)
   J3.SDA, J4.SDA, J5.SDA, J6.SDA (satellites)
 
 NET I2C_SCL:
   U1.GPIO17
   R4.2 (pull-up 4.7k vers 3V3_D)
-  U2.SCL (PCM5122 pin 13)
+  U2.SCL (PCM5122 pin 12)
   U11.SCL (PN532)
   J3.SCL, J4.SCL, J5.SCL, J6.SCL (satellites)
 
@@ -95,15 +99,15 @@ NET PN532_RSTPD:
 
 NET I2S0_BCLK:
   U1.GPIO4
-  U2.BCK (PCM5122 pin 16)
+  U2.BCK (PCM5122 pin 21)
 
 NET I2S0_LRCK:
   U1.GPIO5
-  U2.LRCK (PCM5122 pin 15)
+  U2.LRCK (PCM5122 pin 23)
 
 NET I2S0_DOUT:
   U1.GPIO6
-  U2.DIN (PCM5122 pin 17)
+  U2.DIN (PCM5122 pin 22)
 
 
 ═══ BUS I2S1 — AUDIO ENTREE (MICRO) ═════════════════════════════════════════
@@ -246,11 +250,11 @@ NET USB_CC2:
 ═══ PCM5122 — CONNEXIONS INTERNES ═══════════════════════════════════════════
 
 NET PCM_XSMT:
-  U2.XSMT (pin 12)
+  U2.XSMT (pin 25)
   R5.2 (10k pull-up vers 3V3_A -> unmute)
 
 NET PCM_LDOO:
-  U2.LDOO (pin 20)
+  U2.LDOO (pin 26)
   C_LDOO.+ (100nF vers GND, sortie LDO interne)
 
 NET PCM_OUTL:
@@ -272,17 +276,20 @@ NET AUDIO_R:
   U3.INR (PAM8406 entree droite)
 
 NET PCM_CAPP:
-  U2.CAPP (pin 4)
+  U2.CAPP (pin 2)
   C19.+ (2.2uF/25V flying cap)
 
 NET PCM_CAPM:
-  U2.CAPM (pin 2)
+  U2.CAPM (pin 4)
   C19.- (autre borne flying cap)
   C20.+ (2.2uF/25V reservoir cap, autre borne vers VNEG)
 
 NET PCM_VNEG:
-  U2.VNEG (pin 3)
+  U2.VNEG (pin 5)
   C20.- (reservoir cap)
+
+(⚠ CPGND, pin 3, non raccorde dans ce netlist textuel — masse charge pump,
+ a relier a GND au schematic capture, cf. note NET 3V3_A plus haut.)
 
 
 ═══ PAM8406 — SORTIES HP ════════════════════════════════════════════════════
@@ -388,6 +395,28 @@ NET SAT_3V3:
   U20.VDD, U21.VDD, U21.VDDIO, U22.VDD, U23.VDD, U23.VDDIO,
   U24.VDD, U25.VDD (TMAG5273)
   C30-C35.+ (decouplage 100nF chaque)
+
+NET SAT_GND:
+  (⚠ absente de ce netlist avant 2026-09-11 — a relier : JST-SH pin 2,
+   U20.GND, U21.GND, U22.GND, U23.GND, U24.GND, U25.GND (pin2, TMAG5273),
+   C30-C35.-)
+
+(⚠ Pins verifiees 2026-09-11 contre datasheets officiels — a integrer au
+ schematic capture, non presentes dans ce netlist textuel :
+ - MTCH2120 (U20, QFN-20, Microchip DS40002613) : SCL=1, ADD_SEL=2 (→ GND),
+   GND=3, VDD=4, INT=11, RESET=19 (→ pull-up), SDA=20.
+ - TMAG5273 (U25, SOT-23-6, TI SLYS045C) : SCL=1, GND=2, GND(TEST)=3 (→ GND),
+   VCC=4, INT=5, SDA=6.
+ - MLX90614 (U24, TO-39, Melexis DOC#3901090614) : SCL/Vz=1, SDA/PWM=2, VDD=3,
+   VSS(GND)=4. Seulement 4 broches, pas d'adresse pin — cablage simple confirme.
+ - PN532/PN5321A3HN (U11, HVQFN-40, NXP PN532_C1) : SDA=28, SCL=27 (P50_SCL),
+   RSTPD_N=38 confirmes corrects. Mais l'alimentation reelle est plus
+   complexe qu'un simple "U11.VDD" generique : le chip est alimente par
+   VBAT(40) + PVDD(23) externes (2.7-5.5V) ; AVDD(8)/TVDD(5)/SVDD(37) sont
+   generes en interne (juste decouplage) ; DVDD(39) est une SORTIE de LDO
+   interne — ne JAMAIS la relier a 3V3_D externe. TESTEN(18) → GND. GND
+   reparti sur DVSS(1)/TVSS1(3)/TVSS2(7)/AVSS(11). A detailler avant
+   schematic capture.)
 
 
 ═══ FACE AVANT — ADS7830 + CONTROLES ANALOGIQUES (bus I2C sur JST) ══════════
