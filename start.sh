@@ -5,5 +5,6 @@ docker run -it --rm \
   -v ~/dev/blackbox:/workspaces/blackbox \
   -v ~/.ssh:/tmp/ssh_host:ro \
   -v ~/.claude:/home/dev/.claude \
+  -v ~/.claude-code-local:/home/dev/.local \
   -w /workspaces/blackbox \
   escapebox-dev
