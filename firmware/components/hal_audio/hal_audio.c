@@ -475,7 +475,7 @@ esp_err_t hal_audio_init(void)
     };
     ESP_ERROR_CHECK(i2c_master_bus_add_device(hal_i2c_bus_handle(), &dev_cfg, &s_dac));
 
-    // PCM5122 en mode I2C (MODE pins à GND) → config PLL complète obligatoire.
+    // PCM5122 en mode I2C (MODE1→GND, MODE2→3V3_A) → config PLL complète obligatoire.
     // BCLK = 44100×64 = 2,822,400 Hz. PLL cible = BCLK×16 = 45,158,400 Hz.
     // m6 : vérifier le premier accès I2C — si KO, le DAC est absent ou non alimenté.
     {

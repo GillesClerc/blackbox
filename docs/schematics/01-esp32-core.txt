@@ -38,13 +38,13 @@
   │  GPIO18 ─── WS    → ICS-43434                            │
   │  GPIO7  ─── SD    ← ICS-43434                            │
   │                                                           │
-  │  ── SPI2 E-ink Bouche (SSD1680) ─────                      │
-  │  GPIO11 ─── MOSI  → SSD1680 DIN                          │
-  │  GPIO12 ─── SCLK  → SSD1680 CLK                          │
-  │  GPIO10 ─── CS    → SSD1680 CS                            │
-  │  GPIO9  ─── DC    → SSD1680 DC                            │
-  │  GPIO8  ─── RST   → SSD1680 RST                          │
-  │  GPIO13 ─── BUSY  ← SSD1680 BUSY (active low)            │
+  │  ── SPI2 Display Bouche (TBD, pas e-ink) ──                 │
+  │  GPIO11 ─── MOSI  → display bouche DIN                    │
+  │  GPIO12 ─── SCLK  → display bouche CLK                    │
+  │  GPIO10 ─── CS    → display bouche CS                      │
+  │  GPIO9  ─── DC    → display bouche DC                      │
+  │  GPIO8  ─── RST   → display bouche RST                    │
+  │  GPIO13 ─── BUSY  ← display bouche BUSY (active low)      │
   │  GPIO14 ─── CS_R  → GC9A01 oeil droit (bus SPI3)         │
   │  GPIO15 ─── (réserve, libre)                              │
   │                                                           │

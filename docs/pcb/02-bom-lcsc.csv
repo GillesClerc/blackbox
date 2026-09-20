@@ -1,4 +1,4 @@
-Designator,MPN,Value,Footprint,LCSC Part#,Qty,Board,Notes
+Designator,MPN,Value,Footprint,LCSC Part #,Qty,Board,Notes
 U1,ESP32-S3-WROOM-1-N16R8,,ESP32-S3-WROOM-1,C2913202,1,Main,Module WiFi+BT 16MB flash 8MB PSRAM
 U2,PCM5122PW,,TSSOP-28,C1540085,1,Main,DAC audio stereo I2S+I2C
 U3,PAM8406DR,,SOP-16,C86270,1,Main,Ampli Class D 5W+5W stereo
@@ -9,36 +9,51 @@ U7,MT3608,,SOT-23-6,C84817,1,Main,Boost 3.7V->5V 2A
 U8,bq24075RGTR,,QFN-16,C15464,1,Main,Chargeur LiPo 1.5A + power path DPPM
 U9,DW01A,,SOT-23-6,C351410,1,Main,Protection batterie
 U10,FS8205,,TSSOP-8,C32254,1,Main,Dual MOSFET protection
-U11,PN5321A3HN/C106,,HVQFN-40,C28925,1,Main,NFC reader (equiv. PN532)
+U11,ST25DV04KC-IE6S3,,SO8,C3304276,1,Main,Tag NFC dynamique I2C+RF (remplace PN532, EOL — voir docs/datasheets/ST25DV04K.md)
 U12,USBLC6-2SC6,,SOT-23-6,C7519,1,Main,Protection ESD USB D+/D-
 "—",,GC9A01 module 1.3 rond,Module,—,2,Face avant,Yeux du personnage 240x240 SPI (modules achetes)
-"—",,SSD1680 e-ink module 2.9,Module,—,1,Face avant,Bouche du personnage 296x128 SPI (Waveshare 2.9 V2)
-J1,,USB-C 16pin SMD,USB-C-16P,—,1,Main,Connecteur USB-C femelle (chercher sur SnapEDA)
+"—",,TBD — type d'ecran bouche a definir ulterieurement (pas e-ink),Module,—,1,Face avant,Bouche du personnage — composant non choisi, SPI2 8 pins reserve (VCC/GND/MOSI/SCLK/CS/DC/RST/BUSY)
+J1,HOOYA USB-307HB-B-SU,,USB-C-24P SMD vertical,C309361,1,Main,Connecteur USB-C femelle 24 pins (fab. Dongguang Haoyu Electronics) — sur LCSC/JLCPCB, importable via easyeda2kicad ou plugin kicad-lcsc-manager (LCSC ID C309361). Pinout standard verifie sur datasheet fabricant 2026-09-20 (voir docs/pcb/01-netlist.txt) : VBUS=A4/A9/B4/B9, GND=A1/A12/B1/B12+shield, D+=A6+B6, D-=A7+B7, CC1=A5, CC2=B5, pins SS/SBU non utilisees (design USB2.0 only).
 "J3,J4,J5,J6",,Connecteur JST-SH 4pin,JST-SH-4P,—,4,Main,Bus I2C vers satellites
 J7,,Connecteur JST-SH 10pin,JST-SH-10P,—,1,Main,SPI3 vers 2x GC9A01 yeux
-J7b,,Connecteur JST-SH 8pin,JST-SH-8P,—,1,Main,SPI2 vers SSD1680 e-ink bouche
+J7b,,Connecteur JST-SH 8pin,JST-SH-8P,—,1,Main,SPI2 vers display bouche (type a definir ulterieurement, pas e-ink)
 J8,,Connecteur JST-SH 6pin,JST-SH-6P,—,1,Main,Toggles SW1/SW2 face avant + reserve GPIO3 (ex-ADC potentiometres - analogique migre sur ADS7830 I2C)
 J9,,Connecteur JST-PH 4pin,JST-PH-4P,—,1,Main,"WS2812 + reserve (PH 2mm 3A/contact - 32 LEDs = jusqu'a ~1.9A sur 5V, JST-SH 1A insuffisant)"
 J10,,Connecteur JST-PH 2pin,JST-PH-2P,—,1,Main,Batterie LiPo
 J11,,Slot microSD push-push,TF-PUSH,C91145,1,Main,Carte SD sur SPI2 partage (MISO=15 CS=47) - verifier ref LCSC avant commande
 L1,,Inductance 22uH,1210,—,1,Main,Pour MT3608 boost (22uH recommande datasheet)
-"C1,C2,C3,C4,C5,C6,C7,C8,C9,C10,C11,C12",,100nF 16V ceramique,0402,—,12,Main,Decouplage generique (ESP32/PN532/divers)
-"C1_AV,C2_DV,C3_CP,C_LDOO,C_EN",,100nF 16V ceramique,0402,—,5,Main,PCM5122 AVDD(pin8)/DVDD(pin28)/CPVDD(pin1)/LDOO(pin26) + filtre RC EN ESP32 (pins corriges 2026-09-11 vs datasheet TI SLAS763C — l'ancien netlist avait tous les numeros de pins PCM5122 faux)
+C1,,10uF 25V ceramique,0603,—,1,Main,Decouplage bulk ESP32-S3-WROOM-1 VDD (ref. schema Espressif DevKitC C1)
+"C2,C3,C6,C7,C8,C9,C10,C11,C12",,100nF 16V ceramique,0402,—,9,Main,Decouplage generique (C2=ESP32 HF pres VDD, ref. schema Espressif C2 ; reste divers)
+C5,,100nF 16V ceramique,0402,—,1,Main,Decouplage VCC ST25DV04KC-IE6S3 (pin8) au plus pres — datasheet ST DS10925 §3.1
+C4,,10nF 16V ceramique,0402,—,1,Main,Decouplage VCC ST25DV04KC-IE6S3 (pin8) au plus pres — datasheet ST DS10925 §3.1
+C_EN,,1uF 16V ceramique,0402,—,1,Main,Filtre RC sur EN (CHIP_PU) ESP32-S3 — ref. schema Espressif DevKitC C6, corrige 2026-09-20 (etait 100nF par erreur)
+"C1_AV,C2_DV,C3_CP,C_LDOO",,100nF 16V ceramique,0402,—,4,Main,PCM5122 AVDD(pin8)/DVDD(pin28)/CPVDD(pin1)/LDOO(pin26) (pins corriges 2026-09-11 vs datasheet TI SLAS763C — l'ancien netlist avait tous les numeros de pins PCM5122 faux)
 "C_D2,C_A2,C_B1",,10uF 10V ceramique,0805,—,3,Main,Sorties LDO U5/U6 + entree MT3608
 "C15,C16,C17",,10uF 16V ceramique,0805,—,3,Main,Bulk decouplage PCM5122 (AVDD/DVDD/CPVDD)
 "C19,C20",,2.2uF 25V ceramique,0603,—,2,Main,Charge pump PCM5122
-"C21,C22",,22nF 50V ceramique,0603,—,2,Main,Filtre RC sortie audio
+"C_PAM_HF1,C_PAM_HF2,C_PAM_HF3",,1uF 10V ceramique,0603,—,3,Main,Decouplage HF PAM8406 VDD/PVDDL/PVDDR (datasheet Diodes DS43342)
+C_PAM_BULK,,22uF 16V ceramique,0805,—,1,Main,Decouplage LF PAM8406 (datasheet recommande >=20uF)
+C_PAM_VREF,,1uF 10V ceramique,0603,—,1,Main,Bypass VREF PAM8406 (0.47-1.0uF recommande, meilleur THD/bruit)
+"C_PAM_INL,C_PAM_INR",,1uF 10V ceramique,0603,—,2,Main,Couplage AC entrees INL/INR PAM8406 (fc~8.8Hz avec RI=18k interne)
+"C21,C22",,2.2nF 50V ceramique NP0/C0G,0603,—,2,Main,Filtre RC sortie audio (valeurs recommandees datasheet TI SLAS763C Sec.8.3.5.2, fc~153kHz — NP0/C0G obligatoire pour la distorsion, pas X7R)
 C_IN,,4.7uF 10V ceramique,0603,—,1,Main,bq24075 IN pin13 decouplage (datasheet 4.7uF min)
 "C_D1,C_A1",,1uF 10V ceramique,0402,—,2,Main,Entrees LDO U5/U6
 C_B2,,22uF 16V ceramique,0805,—,1,Main,Sortie MT3608 boost (16V pour derating DC bias)
-"R1,R2",,100 ohm,0603,—,2,Main,Filtre RC sortie audio
+"R1,R2",,470 ohm,0603,—,2,Main,Filtre RC sortie audio (valeurs recommandees datasheet TI SLAS763C Sec.8.3.5.2, fc~153kHz)
 "R3,R4",,4.7k ohm,0402,—,2,Main,Pull-up I2C SDA/SCL
-"R5,R6,R7",,10k ohm,0402,—,3,Main,Pull-up XSMT (R5 vers 3V3_A) / EN ESP32 (R6) / RSTPD PN532 (R7 - ex-Hall retire)
+"R5,R6,R_SHDN,R_MUTE",,10k ohm,0402,—,4,Main,Pull-up XSMT (R5 vers 3V3_A) / EN ESP32 (R6) / SHDN# PAM8406 (toujours actif) / MUTE# PAM8406 vers 3V3_A (toujours actif, pull-up interne suffirait mais externe par coherence). R7 (ex-RSTPD PN532) retire — le ST25DV n'a pas de pin reset equivalente.
+R_MODE_D,,10k ohm,0402,—,1,Main,MODE PAM8406 vers 3V3_A = Class-D (option DNP par defaut — peuple pour Class-D). Paire XOR avec R_MODE_AB : un seul des deux doit etre peuple, jamais les deux (MODE ne peut pas flotter ni etre a un niveau intermediaire, datasheet Diodes DS43342)
+R_MODE_AB,,10k ohm,0402,—,1,Main,MODE PAM8406 vers GND = Class-AB (DNP par defaut, a peupler uniquement si on retire R_MODE_D pour basculer en Class-AB). Paire XOR avec R_MODE_D — voir note ci-dessus
+R_SD_PD,,100k ohm,0402,—,1,Main,Pull-down ligne I2S1_SD (ICS-43434) — decharge la ligne pendant le tristate du micro (datasheet InvenSense DS-000069 §Pin Function)
 R8,,330 ohm,0402,—,1,Main,Serie WS2812 data
 R_ILIM,,1.5k ohm,0402,—,1,Main,bq24075 ILIM pin12 (input current limit en mode RILIM EN2=H/EN1=L)
 "R_PG,R_CHG",,100k ohm,0402,—,2,Main,Pull-up debug PGOOD/CHG bq24075 (DNP par defaut - pads testpoint)
 R_ISET,,890 ohm,0402,—,1,Main,bq24075 ISET pin16 (charge current 1A)
 R_VCC,,100 ohm,0402,—,1,Main,DW01A VCC serie (protection)
+R_CS,,1k ohm,0402,—,1,Main,DW01A CS serie vers GND systeme (sense courant/detection charge)
+C_U9,,100nF 16V ceramique,0402,—,1,Main,Decouplage DW01A VCC/GND au plus pres du boitier
+"R_VBAT_H,R_VBAT_L",,1M ohm,0402,—,2,Main,Pont diviseur lecture VBAT -> ESP32 GPIO3/ADC1_CH2 (ratio 1:1, ~4uA de fuite) — voir note brownout docs/pcb/01-netlist.txt
+C_VBAT_SENSE,,100nF 16V ceramique,0402,—,1,Main,Filtrage bruit sur le noeud VBAT_SENSE avant l'ADC
 R_FB_H,,750k ohm,0402,—,1,Main,MT3608 feedback diviseur haut
 R_FB_L,,100k ohm,0402,—,1,Main,MT3608 feedback diviseur bas
 C_BAT,,4.7uF 10V ceramique,0603,—,1,Main,bq24075 BAT decouplage

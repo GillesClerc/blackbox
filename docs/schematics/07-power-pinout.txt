@@ -316,7 +316,7 @@
              └──┬──┘
                 │
               3.3V_D ──── ESP32-S3, ecrans, capteurs I2C,
-                          PN532, ICS-43434, pull-ups
+                          ST25DV, ICS-43434, pull-ups
 
   Dropout : ~250 mV a 600mA
   ⚠ VSYS min (batterie vide) = 3.0V → sortie peut chuter

@@ -3,7 +3,7 @@
 
 // Menu de démarrage « boutons + visage » (décision design 2026-06-09) :
 // navigation au keypad, le personnage répond par les yeux, les LEDs et des
-// bips (l'e-ink et les annonces vocales viendront avec les assets).
+// bips (le display bouche et les annonces vocales viendront avec les assets).
 //
 // Au boot, la box lance une invite de 4 s (double bip + LEDs douces). Sans
 // toucher → jeu direct (contrainte FSD : premier déballage sans setup).

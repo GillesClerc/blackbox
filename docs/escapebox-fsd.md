@@ -154,7 +154,7 @@ Scores et stats remontés à la prochaine synchro
 | 0x10 | VEML7700 | Lumière ambiante | Satellite capteurs |
 | 0x28 | MTCH2120 | Capacitif 12 canaux (keypad + zones touch) — cible PCB Phase 2 | Satellite capteurs |
 | 0x5A | MPR121 | Capacitif 12 canaux (breakout Phase 1, même rôle que MTCH2120) | Proto breadboard |
-| 0x24 | PN532 | Lecteur NFC (I2C mode — 0x24 en 7 bits, parfois noté 0x48 en 8 bits) | Main |
+| TBD | ST25DV04KC-IE6S3 | Tag NFC dynamique (adresse I2C à vérifier dans la register map ST25DV, non déterminée à ce stade) | Main |
 | 0x4C | PCM5122PW | DAC audio stéréo (I2C contrôle) | Main |
 | 0x5C | MLX90614 | Température IR (sans contact) — adresse usine 0x5A, reprogrammée en 0x5C via EEPROM (évite collision MPR121) | Satellite capteurs |
 | 0x6A | LSM6DSOXTR | Accéléromètre + gyroscope 6 axes + MLC | Satellite capteurs |
@@ -164,18 +164,18 @@ Scores et stats remontés à la prochaine synchro
 
 > **Composants retirés du Phase 1** : AS5600 (rotation magnétique), servos SG90, laser. Remplacés par potentiomètres rotatifs mécaniques + interactions software.
 
-**Bus SPI2** (e-ink bouche — IOMUX GPIO11/12 pour perf DMA) :
+**Bus SPI2** (display bouche, type à définir ultérieurement — pas e-ink — IOMUX GPIO11/12 pour perf DMA) :
 
 | GPIO | Signal | Composant |
 |---|---|---|
-| GPIO11 | MOSI | SSD1680 e-ink 2.9" |
-| GPIO12 | SCLK | SSD1680 e-ink 2.9" |
-| GPIO10 | CS | SSD1680 chip select |
-| GPIO9  | DC | SSD1680 data/command |
-| GPIO8  | RST | SSD1680 reset |
-| GPIO13 | BUSY | SSD1680 busy (active low, lecture seule) |
+| GPIO11 | MOSI | Display bouche (TBD) |
+| GPIO12 | SCLK | Display bouche (TBD) |
+| GPIO10 | CS | Display bouche (TBD) chip select |
+| GPIO9  | DC | Display bouche (TBD) data/command |
+| GPIO8  | RST | Display bouche (TBD) reset |
+| GPIO13 | BUSY | Display bouche (TBD) busy (active low, lecture seule) |
 
-> Écran e-ink 2.9" (296×128, SSD1680) en mode paysage, utilisé comme "bouche" du personnage. Partial refresh 0.3s pour affichage texte mot-à-mot. GPIO14-15 libérés (plus de XPT2046). Driver Espressif officiel : `esp_lcd_ssd1681` (compatible SSD1680).
+> Écran bouche : type à définir ultérieurement (pas e-ink). Utilisé comme "bouche" du personnage, affichage texte mot-à-mot. GPIO14-15 libérés (plus de XPT2046). Driver Espressif à choisir selon le composant retenu.
 
 **Bus SPI3** (yeux — 2× GC9A01 ronds) :
 
@@ -198,7 +198,7 @@ Scores et stats remontés à la prochaine synchro
 | GPIO5 | LRCLK | PCM5122PW |
 | GPIO6 | DOUT | PCM5122PW |
 
-> PCM5122PW en mode I2C (MODE pins à GND). PLL depuis BCK. I2S : 44100 Hz, 16-bit, 32-bit slots (BCLK = 2.82 MHz), Philips standard. Volume digital 0 dB par défaut (reg 0x3D/0x3E = 0x30). Sortie analogique OUTL/OUTR → filtre RC (100Ω + 22nF, fc≈72 kHz) → PAM8406. Voir `docs/datasheets/pcm5122-registers.md` pour la référence registres complète.
+> PCM5122PW en mode I2C (MODE1→GND, MODE2→3V3_A — vérifié datasheet TI SLAS763C §8.4.1.1, "MODE pins à GND" était imprécis, MODE1/MODE2 aux deux GND = mode Hardwired, pas I2C). ADR1/ADR2→GND → adresse 0x4C (confirmé `PCM5122_I2C_ADDR` dans `hal_audio.c`). SCK→GND (mode PLL 3-wire depuis BCK, §8.3.6.3). PLL depuis BCK. I2S : 44100 Hz, 16-bit, 32-bit slots (BCLK = 2.82 MHz), Philips standard. Volume digital 0 dB par défaut (reg 0x3D/0x3E = 0x30). Sortie analogique OUTL/OUTR → filtre RC (470Ω + 2.2nF NP0/C0G, fc≈153 kHz — valeurs recommandées datasheet TI §8.3.5.2) → PAM8406. Voir `docs/datasheets/pcm5122-registers.md` pour la référence registres complète.
 >
 > Le **PAM8406** (Class D 5W+5W stéréo) est purement analogique, pas de driver. SHDN tiré haut (toujours actif). Le mute se fait via le registre PCM5122 (0x03). Gain fixe 24 dB — les amplitudes sont contrôlées numériquement côté firmware (MP3_BG_VOLUME, registre volume digital).
 
@@ -218,27 +218,30 @@ Scores et stats remontés à la prochaine synchro
 |---|---|---|---|
 | GPIO1 | Toggle SW1 | E-Switch 100SP SPDT (face avant, via J8) | Input, pull-up interne |
 | GPIO2 | Toggle SW2 | E-Switch 100SP SPDT (face avant, via J8) | Input, pull-up interne |
-| GPIO3 | Réserve | (libre — analogique migré sur ADS7830 I2C) | ADC1_CH2 dispo si besoin |
+| GPIO3 | VBAT_SENSE | Pont diviseur lecture batterie | ADC1_CH2, plus libre (voir `docs/pcb/01-netlist.txt`) |
+| GPIO15 | SPI2_MISO | Carte microSD | Bus partagé avec le display bouche |
 | GPIO19 | USB D- | USB-C natif | — |
 | GPIO20 | USB D+ | USB-C natif | — |
 | GPIO45 | Bouton / reserve | Strapping pin (attention) | Input avec pull-up ext |
 | GPIO46 | Bouton / reserve | Input only | — |
-| GPIO47 | Réserve | (libre — Hall TMAG5273 migré sur I2C) | — |
+| GPIO47 | SPI2_CS_SD | Carte microSD (chip select) | Distinct du CS display bouche (GPIO10) |
 | GPIO48 | WS2812 DATA | Chaîne LEDs RGB | RMT driver |
 
 > Les boutons mécaniques peuvent être gérés via les 12 canaux du MTCH2120 (capacitif, fonctionne aussi avec boutons conducteurs) ou directement via GPIO45/46 pour des boutons poussoirs simples.
+>
+> **Budget GPIO saturé** : à ce stade, GPIO1-21 et GPIO38-48 sont tous alloués (plus aucune pin libre). GPIO0 réservé strapping/boot, GPIO26-37 indisponibles (flash/PSRAM octal), GPIO43-44 réservées UART0 debug.
 
 **Récapitulatif GPIO complet (WROOM-1-N16R8)** :
 
 ```
 GPIO 0      — (strapping boot, réservé)
 GPIO 1-2    — Toggles SW1/SW2 (face avant, via J8)
-GPIO 3      — (réserve, ADC1_CH2 dispo — analogique migré sur ADS7830 I2C)
+GPIO 3      — VBAT_SENSE (ADC1_CH2, pont diviseur lecture batterie)
 GPIO 4-6    — I2S0 audio out (PCM5122)
 GPIO 7      — I2S1 SD (ICS-43434 micro)
-GPIO 8-13   — SPI2 e-ink bouche (SSD1680 : CS/DC/RST/MOSI/SCLK/BUSY)
+GPIO 8-13   — SPI2 display bouche, TBD (CS/DC/RST/MOSI/SCLK/BUSY)
 GPIO 14     — CS œil droit (GC9A01 #2, bus SPI3)
-GPIO 15     — (réserve, libre — ex-XPT2046 IRQ)
+GPIO 15     — SPI2_MISO (carte microSD, bus partagé display bouche)
 GPIO 16     — I2S1 SCK (ICS-43434 micro)
 GPIO 17     — I2C SCL
 GPIO 18     — I2S1 WS (ICS-43434 micro)
@@ -248,8 +251,10 @@ GPIO 26-37  — ⛔ Flash/PSRAM (non disponible)
 GPIO 38-42  — SPI3 yeux (2× GC9A01 : MOSI/SCLK/CS_L/DC/RST partagés)
 GPIO 43-44  — UART0 debug
 GPIO 45-46  — Boutons / réserve
-GPIO 47     — (réserve, libre)
+GPIO 47     — SPI2_CS_SD (carte microSD)
 GPIO 48     — WS2812 LEDs
+
+⚠ Budget saturé : GPIO1-21 et 38-48 tous alloués, plus aucune pin libre.
 ```
 
 #### 2.2.2b Alimentation
@@ -273,10 +278,10 @@ bq24075 (TI) — chargeur 1.5A + power path DPPM
 
 | Face | Rôle principal | Composants |
 |---|---|---|
-| **Devant** | Visage du personnage | 2× GC9A01 1.3" ronds (yeux) + e-ink 2.9" SSD1680 (bouche), WS2812 rétro |
+| **Devant** | Visage du personnage | 2× GC9A01 1.3" ronds (yeux) + display bouche (TBD, pas e-ink), WS2812 rétro |
 | **Dessus** | Interactions principales | MTCH2120 keypad capacitif, potentiomètres, boutons |
 | **Droite** | Capteurs ambiance | VEML7700 lumière, BMP280 souffle |
-| **Gauche** | NFC + détection | PN532 (antenne derrière bois ≤3mm), TMAG5273 Hall I2C, WS2812 anneau |
+| **Gauche** | NFC | ST25DV04KC-IE6S3 (antenne derrière bois ≤3mm), TMAG5273 Hall I2C, WS2812 anneau |
 | **Arrière** | Capteurs + réserve | LSM6DSOXTR (orientation), MLX90614 IR temp |
 | **Dessous** | Technique | USB-C charge, interrupteur, HP (PAM8406 + haut-parleur) |
 
@@ -286,15 +291,15 @@ bq24075 (TI) — chargeur 1.5A + power path DPPM
 ```
 La face avant est un VISAGE :
   - 2× GC9A01 ronds = yeux expressifs (clignements, regard, émotions)
-  - 1× e-ink 2.9" = bouche (texte mot-à-mot, style Animal Crossing)
+  - 1× display bouche (TBD, pas e-ink) = bouche (texte mot-à-mot, style Animal Crossing)
   - WS2812 = halo lumineux ambiance autour du visage
 
-Le personnage parle : texte e-ink + syllabes audio AC synchronisées.
+Le personnage parle : texte à l'écran + syllabes audio AC synchronisées.
 Les yeux réagissent en temps réel aux capteurs et aux actions du joueur.
 Les énigmes sont "données" par le personnage (dialogue + feedback visuel).
 ```
 
-> **Note NFC téléphone :** L'interaction téléphone → PN532 (téléphone agit comme tag) est **impossible sur iPhone** (limitation hardware iOS, HCE restreint aux paiements).
+> **Note NFC téléphone :** le ST25DV est un tag pur (pas de mode lecteur) — la box ne peut lire ni un téléphone en émulation de tag, ni un badge externe. L'unique interaction NFC possible est **téléphone → lit la box** (URL/contenu NDEF stocké côté box), qui fonctionne nativement sur tout téléphone NFC y compris iPhone. L'ancienne limitation iOS (HCE restreint aux paiements, bloquait la lecture d'un téléphone par un lecteur PN532) ne s'applique plus : il n'y a plus de fonction lecteur du tout, dans aucune direction.
 
 #### 2.2.3 Architecture PCB — Main + Satellites
 
@@ -306,9 +311,9 @@ Composants embarqués :
 - PCM5122PW DAC + découplage (zone audio isolée)
 - PAM8406 Class D ampli + filtre RC sortie
 - ICS-43434 MEMS micro (trou PCB pour son)
-- PN532 NFC (antenne PCB intégrée ou FPC externe)
+- ST25DV04KC-IE6S3 NFC (antenne PCB, boucle à dessiner)
 - Connecteur USB-C (charge + USB CDC debug)
-- Connecteur JST-SH 6 pins pour e-ink 2.9" SSD1680 (SPI2 : MOSI, SCLK, CS, DC, RST, BUSY)
+- Connecteur JST-SH 8 pins pour display bouche, type à définir ultérieurement — pas e-ink (SPI2 : VCC, GND, MOSI, SCLK, CS, DC, RST, BUSY)
 - Connecteur batterie LiPo JST-PH 2 pins
 - 4× connecteurs JST-SH 4 pins (bus I2C : SDA, SCL, 3.3V, GND)
 - 1× connecteur JST-SH 10 pins (SPI3 + alim pour 2× GC9A01 : MOSI, SCLK, CS_L, CS_R, DC, RST, 3.3V, GND, +2 rsv)
@@ -336,7 +341,7 @@ Composants à câbler (pas forcément sur PCB dédié) :
 - Boutons mécaniques (via MTCH2120 ou GPIO direct)
 - WS2812 LEDs (chaîne série depuis GPIO48)
 - 2× GC9A01 1.3" ronds (SPI3 depuis main, CS séparés)
-- E-ink 2.9" SSD1680 (SPI2 depuis main)
+- Display bouche, type à définir ultérieurement — pas e-ink (SPI2 depuis main)
 - Haut-parleur (câbles depuis PAM8406 sur main)
 
 **Connectique backbone** :
@@ -344,7 +349,7 @@ Composants à câbler (pas forcément sur PCB dédié) :
 JST-SH (1.0mm pitch, verrouillable) pour les connecteurs signaux inter-PCB ; JST-PH (2.0mm, 3A/contact) pour la puissance (J9 LEDs, J10 batterie) :
 - 4 pins I2C : VCC(3.3V), GND, SDA, SCL
 - 10 pins SPI3 yeux : VCC(3.3V), GND, MOSI, SCLK, CS_L, CS_R, DC, RST, (rsv×2)
-- 6 pins SPI2 e-ink : VCC(3.3V), GND, MOSI, SCLK, CS, DC (RST+BUSY sur main)
+- 8 pins SPI2 display bouche (TBD) : VCC(3.3V), GND, MOSI, SCLK, CS, DC, RST, BUSY
 - 6 pins toggles (J8) : VCC(3.3V), GND, SW1, SW2, GPIO3(rsv), (rsv)
 - 4 pins LED (J9, JST-PH — jusqu'à ~1.9A sur 5V) : VCC(5V), GND, WS2812_DATA, (rsv)
 
@@ -375,7 +380,7 @@ JST-SH (1.0mm pitch, verrouillable) pour les connecteurs signaux inter-PCB ; JST
 │  │                                                          │    │
 │  │  scenario_engine (state machine, parse JSON)             │    │
 │  │  sensor_manager  (polling I2C 50ms, event queue)         │    │
-│  │  display_manager (esp_lcd : 2× GC9A01, SSD1680 e-ink)   │    │
+│  │  display_manager (esp_lcd : 2× GC9A01, display bouche TBD)│    │
 │  │  led_manager     (WS2812 via RMT ESP-IDF)               │    │
 │  │  servo_manager   (MCPWM ESP-IDF — Phase 2)               │    │
 │  └─────────────────────────────────────────────────────────┘    │
@@ -397,13 +402,13 @@ JST-SH (1.0mm pitch, verrouillable) pour les connecteurs signaux inter-PCB ; JST
 |---|---|
 | ESP-IDF v6.1 | Framework de base (FreeRTOS, drivers, HAL) |
 | LVGL | Non utilisé actuellement (rendu direct esp_lcd) — dépendance conservée pour usage futur éventuel |
-| esp_lcd | Drivers écrans (SPI : GC9A01 ×2, SSD1680 e-ink) |
+| esp_lcd | Drivers écrans (SPI : GC9A01 ×2, display bouche TBD) |
 | led_strip via RMT | WS2812 LEDs (driver natif ESP-IDF) |
 | MCPWM | Servos (driver natif ESP-IDF) |
 | cJSON | Parsing config / API (inclus ESP-IDF) |
 | minimp3 | Décodeur MP3 single-header — musique de fond en boucle, tâche FreeRTOS bg (stack 24 KB). ESP-ADF évalué en Phase 2+ uniquement si un vrai pipeline multi-format/streaming devient nécessaire. |
 | i2c_master (PCM5122) | Config DAC : PLL, volume, filtre, mute via registres I2C (addr 0x4C) |
-| i2c_master | MTCH2120 keypad, PN532 NFC, LSM6DSOXTR, TMAG5273 |
+| i2c_master | MTCH2120 keypad, ST25DV NFC, LSM6DSOXTR, TMAG5273 |
 | NimBLE (ESP-IDF) | Provisioning WiFi via BLE |
 | esp_https_ota | OTA HTTPS |
 | esp_http_client | Download scénarios HTTPS |
@@ -728,11 +733,11 @@ M2 → M3   : intégration complète + playtests
 **Hardware :**
 - [x] ESP32-S3-WROOM-1-N16R8 → DevKitC-1 validé sur breadboard
 - [x] 2× GC9A01 1.3" ronds (yeux, SPI3 partagé) → driver Espressif `esp_lcd_gc9a01` intégré, validé hardware (animation Uncanny Eyes fluide ~16 fps/œil, framebuf DMA full-frame, ISR `on_color_trans_done` + sémaphore par œil)
-- [ ] SSD1680 e-ink 2.9" (bouche, SPI2) → driver à intégrer (`esp_lcd_ssd1681`)
+- [ ] Display bouche (SPI2), type à définir ultérieurement (pas e-ink) → composant à choisir puis driver à intégrer
 - [x] Câbler PCM5122PW (I2S + I2C 0x4C) + PAM8406 + speakers 8Ω/5W → audio validé (PLL, filtre, MP3 bg)
 - [x] Câbler MPR121 breakout → keypad capacitif 12 canaux validé (I2C 0x5A)
 - [x] Câbler WS2812 → LEDs validées (RMT, GPIO48)
-- [ ] Câbler PN532 breakout → valider NFC
+- [ ] Câbler ST25DV04KC-IE6S3 → valider NFC (tag, écriture URL NDEF depuis l'ESP32)
 - [ ] Câbler MTCH2120 → valider keypad capacitif (Phase 2 PCB)
 - [ ] Câbler servo SG90 → valider compartiment (Phase 2)
 - [ ] Câbler LSM6DSOXTR, BMP280, VEML7700, TMAG5273 → valider I2C bus complet
@@ -745,12 +750,12 @@ M2 → M3   : intégration complète + playtests
 - [x] Driver audio PCM5122PW — I2S 32-bit slots + I2C PLL config, filtre ringing-less FIR, volume -6dB hw
 - [x] Musique de fond MP3 — minimp3 décodage tâche bg (24 KB stack), MP3 embarqué en flash
 - [x] Driver yeux 2× GC9A01 SPI3 partagé (CS_L=40, CS_R=14, MOSI=38, SCLK=39, DC=41, RST=42) — wrapper `components/display/eyes.[ch]` autour de `esp_lcd_gc9a01` v2.0.4, 240×240 RGB565 @ 40 MHz
-- [ ] Driver bouche e-ink SSD1680 (`esp_lcd_ssd1681`) — à intégrer
+- [ ] Driver bouche — display à définir ultérieurement (pas e-ink) — à intégrer
 - [x] MPR121 tactile capacitif 12 canaux — validé DevKitC-1 (I2C 0x5A, 100kHz, SDA=21/SCL=17)
 - [x] Driver LEDs WS2812B (RMT, GRB, show) — validé
 - [x] Drivers I2C (LSM6DSOXTR, TMAG5273, VEML7700, MTCH2120, MPR121) — écrits
 - [x] Outil YAML→JSON (tools/yaml2json.py avec validation)
-- [x] Driver NFC PN532 (écrit — validation hardware en attente)
+- [ ] Driver NFC ST25DV — composant changé (ex-PN532, protocole totalement différent : registres I2C/EEPROM au lieu du protocole de commande PN532), ancien driver `hal_nfc` obsolète, réécriture à faire
 - [x] Driver servos SG90 MCPWM (écrit — Phase 2)
 - [x] Système de fichiers SD SPI+FAT — validé sur cible (module 5V, SPI2 CS=47, monté sur /sdcard)
 - [x] App scénario principale (main.c) — scénario + ambient.mp3 chargés depuis SD (`/sdcard/scenarios/<dir>/`), fallback embarqué ; callbacks audio/led/eye_*, keypad MPR121, hold 2s pour simuler rfid/rotary/tilt
@@ -760,7 +765,7 @@ M2 → M3   : intégration complète + playtests
 - [x] Partitions OTA 16 MB (factory + ota_0 + ota_1 de 3 MB, storage LittleFS 6.9 MB, rollback activé) — validées sur cible
 - [x] PSRAM octal 8 MB activée (SPIRAM_MODE_OCT 80 MHz) — buffers scénario et MP3 en MALLOC_CAP_SPIRAM
 - [x] `ui_manager` v2 — animation yeux (Uncanny Eyes Adafruit MIT porté ESP-IDF) : 2× GC9A01, rendu 128×128 centré, mouvement autonome + clignements aléatoires, émotions HAPPY/SAD/SURPRISED/SLEEPY/ANGRY/CLOSED, regard L/R/U/D pilotable depuis le scénario JSON (`eye_blink`, `eye_emotion`, `eye_look`)
-- [ ] Driver bouche e-ink SSD1680 (`esp_lcd_ssd1681`) — à intégrer
+- [ ] Driver bouche — display à définir ultérieurement (pas e-ink) — à intégrer
 - [ ] `ui_manager` bouche : affichage texte mot-à-mot synchro audio
 
 **Web Platform :**
@@ -788,7 +793,7 @@ M2 → M3   : intégration complète + playtests
 
 **Étape 2 — Univers & direction artistique**
 - [ ] Thème principal, époque, lieux — assez précis pour guider les assets
-- [ ] Palette visuelle : couleurs dominantes pour les yeux GC9A01 (iris, sclérotique) + niveaux de gris pour la bouche e-ink, typographie narrative
+- [ ] Palette visuelle : couleurs dominantes pour les yeux GC9A01 (iris, sclérotique) + palette pour la bouche (display TBD), typographie narrative
 - [ ] Charte LED par état : couleur repos, tension, danger, victoire, indice
 - [ ] Ambiance sonore générale : style musical, effets attendus, voix narratrice (oui/non)
 - [ ] Moodboard ou références visuelles transmis au scénariste et à l'illustrateur
@@ -813,7 +818,7 @@ M2 → M3   : intégration complète + playtests
 
 **Étape 6 — Production des assets**
 - [ ] Animations yeux (2× GC9A01 1.3" ronds, 240×240) : émotions, regards, clignements — sprites RGB565 ou rendu procédural
-- [ ] Texte bouche (SSD1680 e-ink 2.9", 296×128) : font lisible, animation mot-à-mot synchro audio
+- [ ] Texte bouche (display TBD, pas e-ink) : font lisible, animation mot-à-mot synchro audio
 - [ ] Audio : narration intro/transitions/victoire (voix ou synthèse), musique d'ambiance, effets sonores
 - [ ] Programmation LED : séquences par état (repos, tension, indice, victoire) — testées sur la box
 - [ ] QR code de révélation : URL `escapebox.ch/v/{scenario}/{session}` + page web correspondante
@@ -1033,7 +1038,7 @@ Critères produit — go/no-go Phase 2 :
 | R-08 | WiFi instable (réseau domestique varié) | Synchro échoue | Moyen | Retry automatique, timeout généreux, feedback clair à l'utilisateur |
 | R-09 | Prix de vente trop élevé pour le marché | Ventes insuffisantes | Moyen | Valider la willingness-to-pay avec 50 early adopters avant la série |
 | R-10 | Bois / ardoise : variabilité matériau | Qualité inconstante | Faible | Fournisseur local certifié, gabarits précis, contrôle qualité entrée |
-| R-11 | iPhone ne peut pas émuler un tag NFC ISO14443A | Interaction téléphone→PN532 impossible sur iOS | Certain | Conception du flux de révélation sans NFC téléphone (voir §2.2.2b). Interaction téléphone→box via code clavier uniquement. NFC téléphone→box réservé Android si implémenté (COULD, Phase 3). |
+| R-11 | _(Résolu par changement de composant)_ Ex-limitation iOS (HCE) sur la lecture d'un téléphone par un lecteur NFC | _(obsolète)_ | _(obsolète)_ | Le composant NFC (ST25DV) n'a plus de fonction lecteur du tout — la box ne lit ni téléphone ni badge, dans aucune direction. Seule interaction possible : téléphone → lit la box. Le flux de révélation reste conçu sans dépendance NFC (voir §2.2.2b), interaction téléphone→box via code clavier uniquement. |
 | R-12 | NVS flash wear (scores écrits à chaque partie) | Corruption données persistantes après 2-3 ans usage intensif | Faible | Batcher les écritures NVS (accumuler N scores avant flush), utiliser un compteur de séquence. Monitorer la santé NVS en Phase 2. |
 | R-13 | Replay attack sur HMAC auth (challenge réutilisé ou généré côté client) | Usurpation d'identité box | Faible-Moyen | Challenge généré côté serveur via `GET /box/challenge`, valide 60s, usage unique (invalidé après première réponse valide). Voir §6.1. |
 
@@ -1045,7 +1050,7 @@ Critères produit — go/no-go Phase 2 :
 - Les joueurs ont accès à un réseau WiFi domestique pour la synchro (pas de 4G requise)
 - Le format YAML choisi est suffisamment expressif pour couvrir 90% des énigmes imaginables
 - Les testeurs Phase 1 sont représentatifs du marché cible final
-- **iPhone ne peut pas émuler un tag NFC** lisible par le PN532 (limitation hardware/OS confirmée, iOS 18.1 inclus — HCE restreint aux paiements/badges). Le flux compartiment → QR → code clavier est conçu pour fonctionner sur tous les appareils.
+- _(obsolète, cf. R-11)_ Le composant NFC (ST25DV) n'a plus de fonction lecteur — la box ne peut lire ni téléphone ni badge. Le flux compartiment → QR → code clavier reste conçu pour fonctionner sur tous les appareils, indépendamment du NFC.
 
 ### Dependencies
 
@@ -1224,9 +1229,9 @@ proxy.ts                            → Next 16 (ex-middleware.ts) : refresh ses
 **Face avant = personnage animé.** Pas de menu tactile on-device (l'ancien ILI9488 + XPT2046 a été retiré). La box affiche un visage piloté par le scénario :
 
 - **Yeux (2× GC9A01)** — `components/ui_manager/eyes_anim.c`, port C ESP-IDF du pipeline « Uncanny Eyes » Adafruit (MIT, Phil Burgess) via le fork GC9A01 de thelastoutpostworkshop. Rendu 128×128 centré dans 240×240, mouvement autonome (drift aléatoire + clignements) en mode IDLE. Actions JSON disponibles dans les scénarios : `eye_blink`, `eye_emotion {type: happy|sad|surprised|sleepy|angry|closed}`, `eye_look {direction: left|right|up|down|center}`. Asset embarqué : `defaultEye.h` (~156 KB flash).
-- **Bouche (SSD1680 e-ink)** — à implémenter. Affichage texte mot-à-mot synchro audio.
+- **Bouche (display TBD, pas e-ink)** — à implémenter. Affichage texte mot-à-mot synchro audio.
 
-**Navigation : boutons physiques + visage.** Le joueur navigue avec les touches capacitives (MPR121/MTCH2120) et les boutons GPIO45/46 ; le personnage répond par la bouche e-ink (texte), la voix (audio) et les yeux. La configuration avancée (compte, langue, renommage) est déportée sur la webapp.
+**Navigation : boutons physiques + visage.** Le joueur navigue avec les touches capacitives (MPR121/MTCH2120) et les boutons GPIO45/46 ; le personnage répond par la bouche (texte), la voix (audio) et les yeux. La configuration avancée (compte, langue, renommage) est déportée sur la webapp.
 
 **États de la box :**
 
@@ -1234,20 +1239,20 @@ proxy.ts                            → Next 16 (ex-middleware.ts) : refresh ses
 BOOT          → Yeux s'ouvrent + jingle (< 5s)
 MENU          → Personnage idle, sélection de scénario (voir 6.4.1)
 PLAYING       → Scénario en cours
-SYNC          → Texte progression sur la bouche e-ink + LEDs pulsées
+SYNC          → Texte progression sur la bouche + LEDs pulsées
 SETTINGS      → Réglages on-device minimaux (voir 6.4.2)
 TEST          → Mode Test capteurs (dev only, voir 6.4.3)
 CHARGING      → Indicateur de charge (LEDs + yeux SLEEPY si batterie faible)
-ERROR         → Message e-ink + QR code support
+ERROR         → Message bouche + QR code support
 ```
 
 #### 6.4.1 Accueil et lancement d'une partie (MENU)
 
-- **Idle** : le personnage vit (clignements, regards). La bouche e-ink affiche le nom du scénario sélectionné.
-- **Navigation** : touches capacitives ◀ / ▶ (ou boutons GPIO45/46) pour parcourir les scénarios installés. À chaque changement : titre sur la bouche e-ink + annonce vocale (titre, durée, difficulté), yeux qui réagissent.
+- **Idle** : le personnage vit (clignements, regards). La bouche affiche le nom du scénario sélectionné.
+- **Navigation** : touches capacitives ◀ / ▶ (ou boutons GPIO45/46) pour parcourir les scénarios installés. À chaque changement : titre sur la bouche + annonce vocale (titre, durée, difficulté), yeux qui réagissent.
 - **Lancement** : touche ✓ (appui long 1 s) → confirmation vocale « Commencer [titre] ? » → second appui ✓ pour démarrer.
 - **Raccourci NFC** : poser la carte NFC d'un scénario sur la box le lance directement (cohérent avec la vision « poser un objet NFC → elle s'allume »).
-- Si aucun scénario installé : le personnage invite vocalement à synchroniser (texte e-ink + QR vers la webapp).
+- Si aucun scénario installé : le personnage invite vocalement à synchroniser (texte à l'écran + QR vers la webapp).
 
 #### 6.4.2 Réglages on-device (minimaux)
 
@@ -1255,9 +1260,9 @@ Pas de menu de réglages écran : seules les actions indispensables sans réseau
 
 ```
 Volume              → potentiomètre rotatif dédié (lu via ADS7830 0x48) — registres I2C PCM5122 (0x4C) + amplitude soft
-Synchroniser        → touche ⟳ dédiée (ou combinaison) — état affiché sur la bouche e-ink
+Synchroniser        → touche ⟳ dédiée (ou combinaison) — état affiché sur la bouche
 Reconfigurer WiFi   → appui long 5 s sur ⟳ au boot → relance le provisioning BLE (§6.2)
-Infos box           → appui long 5 s sur ✓ → e-ink affiche version · box_uid · IP/RSSI · espace SD
+Infos box           → appui long 5 s sur ✓ → bouche affiche version · box_uid · IP/RSSI · espace SD
 Reset usine         → appui 10 s sur ⟳ + ✓ simultanés → confirmation vocale + appui ✓ → efface NVS
 Langue / renommage  → webapp uniquement (appliqués à la prochaine sync)
 ```
@@ -1268,7 +1273,7 @@ Les préférences (volume par défaut, langue) sont persistées en **NVS** via `
 
 **Déverrouillage (caché aux joueurs)** : depuis l'écran Infos box (§6.4.2), taper **7 fois rapidement** (< 3 s) sur la touche capacitive ✓. Confirmation vocale « Mode dev activé », flag persistant en NVS (`dev_mode=1`). Re-taper 7× le désactive.
 
-**Mode Test** affiche un dashboard temps réel (rafraîchi à la cadence du `sensor_manager`, ~50 ms) de **tous les capteurs/actionneurs**, paginé sur la bouche e-ink (navigation ◀ / ▶) et dupliqué sur UART, pour déboguer le hardware sans recompiler :
+**Mode Test** affiche un dashboard temps réel (rafraîchi à la cadence du `sensor_manager`, ~50 ms) de **tous les capteurs/actionneurs**, paginé sur la bouche (navigation ◀ / ▶) et dupliqué sur UART, pour déboguer le hardware sans recompiler :
 
 | Bloc | Données affichées | Phase (capteur) |
 |---|---|---|
@@ -1276,7 +1281,7 @@ Les préférences (volume par défaut, langue) sont persistées en **NVS** via `
 | Accéléro / gyro | x/y/z (g), tilt détecté, température | 1 (LSM6DSO) |
 | Luminosité ambiante | lux | 1 (VEML7700) |
 | Rotation plateau | angle brut 0–4095, vitesse | 2 (AS5600) |
-| NFC | UID de la dernière carte lue | 2 (PN532) |
+| NFC | état RF (champ détecté via poll I2C du registre `ITSTS_DYN`) | 2 (ST25DV) |
 | Souffle / pression | pression hPa, seuil détection | 2 (BMP280) |
 | Hall / aimant | état booléen | 2 |
 | Audio | état I2S, volume courant, flag sous-tension | 1 |
@@ -1329,11 +1334,11 @@ blackbox/
 │   │   └── CMakeLists.txt
 │   ├── components/
 │   │   ├── scenario/            # Moteur JSON + state machine
-│   │   ├── nfc/                 # Driver PN532
+│   │   ├── nfc/                 # Driver ST25DV (ex-PN532, à réécrire — protocole différent)
 │   │   ├── sensors/             # Drivers I2C : MPR121, LSM6DSOXTR, TMAG5273, VEML7700, MTCH2120, AS5600
 │   │   ├── display/             # eyes.c — 2× GC9A01 1.3" (SPI3 partagé, esp_lcd_gc9a01)
 │   │   ├── ui_manager/           # ui_face + eyes_anim (port Uncanny Eyes, data/defaultEye.h)
-│   │   ├── mouth/                # SSD1680 e-ink 2.9" — bouche (SPI2, esp_lcd_ssd1681) [TODO]
+│   │   ├── mouth/                # display bouche TBD, pas e-ink — bouche (SPI2) [TODO]
 │   │   ├── audio/               # I2S DMA + PCM5122PW (DAC) + PAM8406 (amp)
 │   │   ├── minimp3/             # Décodeur MP3 single-header
 │   │   ├── leds/                # WS2812 via RMT
@@ -1425,7 +1430,7 @@ python -m esptool --chip esp32s3 -p /dev/ttyACM0 -b 460800 \
 [BLE] Advertising as: EscapeBox-1234
 [BLE] Pairing code: X7K2PQ
 [EYES] 2x GC9A01 initialized - 240x240 @ 40MHz (CS_L=40, CS_R=14)
-[MOUTH] SSD1680 e-ink initialized - 296x128
+[MOUTH] Display bouche (TBD) initialized
 [STORAGE] SD card: 8.00 GB
 [SCENARIO] Found 1 scenario on SD: capitaine_verdier_v1
 [AUDIO] PCM5122 PLL locked - I2S 44100 Hz 16-bit
@@ -1514,7 +1519,7 @@ Si la box ne démarre plus après une OTA :
 
 ```
 1. Allumer la box (bouton ON/OFF ou sortir du deep sleep)
-2. MENU : le personnage annonce le scénario sélectionné (bouche e-ink + voix)
+2. MENU : le personnage annonce le scénario sélectionné (bouche + voix)
 3. Touches ◀ / ▶ pour naviguer → ✓ pour sélectionner (ou pose de la carte NFC du scénario)
 4. Confirmation vocale : "Commencer Le Trésor du Capitaine Verdier ?" → ✓
 5. La box charge le JSON depuis la SD → vérifie la signature
@@ -1583,12 +1588,12 @@ Ces 3 réponses sont liées à la session (`hints_used`, `duration_sec`, `score`
 ```
 [ ] Œil gauche GC9A01 (CS=40) s'affiche : mire couleur, pas d'artefact
 [ ] Œil droit GC9A01 (CS=14) s'affiche : mire couleur, pas d'artefact
-[ ] Bouche e-ink SSD1680 affiche une chaîne de texte en partial refresh < 0.5s
+[ ] Bouche (display TBD) affiche une chaîne de texte correctement
 [ ] Speaker gauche + droite produisent du son stéréo (MP3 lisible, pas de bruit parasite)
 [ ] Contrôle volume I2C fonctionnel (fade-in/fade-out propre)
 [ ] EQ DSP PCM5122 testée sur un scénario (pas de distorsion)
 [ ] Micro détecte un claquement de mains à 1 mètre
-[ ] PN532 lit un tag NTAG213 en < 500ms
+[ ] ESP32 écrit une URL NDEF sur le ST25DV via I2C, et un smartphone la lit correctement en tapant la box
 [ ] MPR121 keypad détecte les 12 touches avec < 1% faux positifs (MTCH2120 : même test en Phase 2 PCB)
 [ ] ADS7830 : valeur stable, pleine échelle sur les 8 canaux (SL1-SL4 + RV1-RV4)
 [ ] Toggles SW1/SW2 : niveaux propres sur GPIO1/2 (pull-up interne)
@@ -1665,7 +1670,7 @@ Ces 3 réponses sont liées à la session (`hints_used`, `duration_sec`, `score`
 | Son mono uniquement | ROUT non connecté au PAM8406 INR | Vérifier condensateurs de couplage LOUT/ROUT |
 | Bruit de fond / hiss | Masse analogique mal séparée | Séparer AGND (PCM5122) du PGND (PAM8406) sur le PCB |
 | Volume ne change pas | I2C addr incorrecte / registres mal configurés | Vérifier 0x4C sur bus I2C, relire registres 61 et 62 |
-| NFC ne lit pas | Mode I2C non sélectionné sur PN532 (jumper) | Souder le jumper I2C sur le module PN532 |
+| Téléphone ne lit pas le tag | Antenne mal accordée / boucle PCB mal dimensionnée | Vérifier la géométrie de la boucle antenne AC0/AC1, mesurer la résonance ~13.56MHz |
 | Touch erratique | Paroi trop épaisse / mauvais calibrage | Augmenter le pad cuivre / ajuster threshold firmware |
 | Servo bloqué | Courant insuffisant (5V rail) / mécanisme coincé | Vérifier MT3608 boost 5V, libérer mécaniquement |
 | LEDs éteintes | DATA sans résistance 330Ω / alimentation 5V | Ajouter résistance / vérifier rail 5V |
@@ -1699,7 +1704,7 @@ Ces 3 réponses sont liées à la session (`hints_used`, `duration_sec`, `score`
 | Composant | Référence | Datasheet |
 |---|---|---|
 | ESP32-S3-WROOM-1-N16R8 | LCSC C2913202 | https://datasheet.lcsc.com/lcsc/2207151200_Espressif-Systems-ESP32-S3-WROOM-1-N16R8_C2913202.pdf |
-| PN532 | LCSC C132449 | https://www.nxp.com/docs/en/user-guide/141520.pdf |
+| ST25DV04KC-IE6S3 | LCSC C3304276 | https://www.st.com/resource/en/datasheet/st25dv04k.pdf |
 | MTCH2120 | LCSC (chercher) | https://ww1.microchip.com/downloads/en/DeviceDoc/MTCH2120-Touch-Sensor-Controller-DS60001337B.pdf |
 | AS5600 | LCSC C79815 | https://ams.com/documents/20143/36005/AS5600_DS000365_5-00.pdf |
 | VEML7700 | LCSC C1850416 | https://www.vishay.com/docs/84286/veml7700.pdf |

@@ -8,7 +8,7 @@
 ═══ ALIMENTATIONS ════════════════════════════════════════════════════════════
 
 NET 5V_USB:
-  J1.VBUS, U8.IN, C_IN.+, U12.VBUS
+  J1.VBUS (4 pins physiques a relier ensemble : A4, A9, B4, B9), U8.IN, C_IN.+, U12.VBUS
 
 NET VSYS:
   U8.OUT (bq24075 power path output)
@@ -25,15 +25,16 @@ NET 3V3_D (digital):
   U5.VOUT, C_D2.+
   U1.3V3 (ESP32-S3 VDD)
   U4.VDD (ICS-43434)
-  U11.VDD (PN532)
+  U11.VCC (pin 8, ST25DV04KC-IE6S3), C_NFC1.+ (100nF), C_NFC2.+ (10nF, decouplage au plus pres)
   J3.VCC, J4.VCC, J5.VCC, J6.VCC (I2C satellites)
   J7.VCC (2x GC9A01 yeux)
-  J7b.VCC (SSD1680 e-ink bouche)
+  J7b.VCC (display bouche, TBD — pas e-ink)
   J8.VCC (toggles face avant + reserve)
   R3.1, R4.1 (pull-up I2C)
   R6.1 (pull-up EN)
-  R7.1 (pull-up RSTPD PN532)
   R_PG.1, R_CHG.1 (pull-up debug PGOOD/CHG, DNP par defaut)
+  (R7 n'est plus utilise — le ST25DV n'a pas de pin reset/power-down equivalente
+   au RSTPD du PN532. R7 retire du BOM.)
 
 NET 3V3_A (audio):
   U6.VOUT, C_A2.+
@@ -67,7 +68,8 @@ NET 5V:
 
 NET GND:
   (toutes les masses — plan continu, pas de split)
-  J1.GND, U1.GND, U2.GND, U3.GND, U4.GND, U5.GND, U6.GND,
+  J1.GND (4 pins physiques : A1, A12, B1, B12 + EMI plate/shield du connecteur),
+  U1.GND, U2.GND, U3.GND, U4.GND, U5.GND, U6.GND,
   U7.GND, U8.GND, U9.GND, U10.GND, U11.GND, U12.GND,
   J3.GND, J4.GND, J5.GND, J6.GND, J7.GND, J7b.GND, J8.GND,
   J9.GND, J10.GND,
@@ -80,19 +82,25 @@ NET I2C_SDA:
   U1.GPIO21
   R3.2 (pull-up 4.7k vers 3V3_D)
   U2.SDA (PCM5122 pin 11)
-  U11.SDA (PN532)
+  U11.SDA (pin 5, ST25DV04KC-IE6S3 — adresse I2C TBD, a verifier dans la register map)
   J3.SDA, J4.SDA, J5.SDA, J6.SDA (satellites)
 
 NET I2C_SCL:
   U1.GPIO17
   R4.2 (pull-up 4.7k vers 3V3_D)
   U2.SCL (PCM5122 pin 12)
-  U11.SCL (PN532)
+  U11.SCL (pin 6, ST25DV04KC-IE6S3)
   J3.SCL, J4.SCL, J5.SCL, J6.SCL (satellites)
 
-NET PN532_RSTPD:
-  U11.RSTPD
-  R7.2 (10k pull-up vers 3V3_D — PN532 toujours actif, pas de reset GPIO)
+NET NFC_ANTENNA:
+  U11.AC0 (pin 1), U11.AC1 (pin 3) -> boucle antenne PCB (a dessiner, capacite
+  de tuning 28.5pF deja interne au chip, pas de reseau d'adaptation externe
+  requis a priori — voir docs/datasheets/ST25DV04K.md)
+
+(U11.V_EH (pin 2) et U11.GPO (pin 7) : non connectes. GPO aurait normalement
+ besoin d'un pull-up >4.7k pour etre utilisable, mais decision projet :
+ detection du tap telephone par polling I2C du registre ITSTS_DYN plutot que
+ par interruption GPIO — budget GPIO ESP32-S3 sature, aucune pin libre.)
 
 
 ═══ BUS I2S0 — AUDIO SORTIE ═════════════════════════════════════════════════
@@ -125,35 +133,35 @@ NET I2S1_SD:
   U4.SD (ICS-43434)
 
 
-═══ BUS SPI2 — E-INK BOUCHE (SSD1680) + microSD (J11) ══════════════════════
+═══ BUS SPI2 — DISPLAY BOUCHE (type à définir, pas e-ink) + microSD (J11) ═══
 (bus partage : MOSI/SCLK communs, MISO utilise par la SD seule,
- CS distincts — e-ink GPIO10, SD GPIO47)
+ CS distincts — display bouche GPIO10, SD GPIO47)
 
 NET SPI2_MOSI:
   U1.GPIO11
-  J7b.MOSI (SSD1680 DIN)
-  J11.DI (microSD Data In — bus partage e-ink + SD)
+  J7b.MOSI (display bouche DIN)
+  J11.DI (microSD Data In — bus partage display + SD)
 
 NET SPI2_SCLK:
   U1.GPIO12
-  J7b.SCLK (SSD1680 CLK)
+  J7b.SCLK (display bouche CLK)
   J11.CLK (microSD clock — bus partage)
 
 NET SPI2_CS:
   U1.GPIO10
-  J7b.CS (SSD1680 CS)
+  J7b.CS (display bouche CS)
 
 NET SPI2_DC:
   U1.GPIO9
-  J7b.DC (SSD1680 DC)
+  J7b.DC (display bouche DC)
 
 NET SPI2_RST:
   U1.GPIO8
-  J7b.RST (SSD1680 RST)
+  J7b.RST (display bouche RST)
 
 NET SPI2_BUSY:
   U1.GPIO13
-  J7b.BUSY (SSD1680 BUSY, active low, lecture seule)
+  J7b.BUSY (display bouche BUSY, active low, lecture seule — a confirmer selon composant retenu)
 
 
 ═══ BUS SPI3 — YEUX (2x GC9A01) ════════════════════════════════════════════
@@ -195,9 +203,17 @@ NET SW2:
   U1.GPIO2
   J8.SW2 (toggle SPDT commun -> GPIO2, borne vers GND, pull-up interne ESP32)
 
-NET GPIO3_RSV:
-  U1.GPIO3 (ADC1_CH2, reserve)
-  J8.RSV (pin reserve)
+NET VBAT_SENSE:
+  U1.GPIO3 (ADC1_CH2 — ex-reserve, desormais dediee a la lecture batterie)
+  J8.RSV (meme fil, garde le nom de pin J8 pour compat connecteur)
+  R_VBAT_H.2, R_VBAT_L.2, C_VBAT_SENSE.1 (pont diviseur sur feuille Power)
+  (pont VBAT -> R_VBAT_H 1M -> VBAT_SENSE -> R_VBAT_L 1M -> GND, + C_VBAT_SENSE
+   100nF filtrage. Ratio 1:1 -> VBAT 3.0-4.2V lu comme 1.5-2.1V sur l'ADC.
+   Ajoute suite a l'audit brownout 2026-09-20 : le dropout LDO (~250mV) fait
+   decrocher le rail 3V3 bien avant le seuil de coupure DW01A (2.4V, filet de
+   securite cellule, pas indicateur "batterie faible") — necessite une
+   surveillance logicielle active de VBAT via cet ADC, seuils a definir cote
+   firmware.)
 
 
 ═══ GPIO DIVERS ═════════════════════════════════════════════════════════════
@@ -213,7 +229,7 @@ NET SPI2_MISO:
 
 NET SPI2_CS_SD:
   U1.GPIO47
-  J11.CS (microSD chip select — distinct du CS e-ink GPIO10)
+  J11.CS (microSD chip select — distinct du CS display bouche GPIO10)
 
 NET BTN1:
   U1.GPIO45
@@ -224,13 +240,15 @@ NET BTN2:
   (pull-up externe vers 3V3_D, input only)
 
 NET USB_DM:
-  J1.D-
+  J1.D- (2 pins physiques a relier ensemble : A7=Dn1, B7=Dn2 — connecteur
+  reversible, les deux paires miroir doivent etre courtcircuitees pour
+  fonctionner quelle que soit l'orientation du plug, design USB2.0 only)
   R11.1 (22R serie)
   R11.2 -> U12.IO1 (USBLC6-2SC6 protection ESD)
   U12.IO1 -> U1.GPIO19
 
 NET USB_DP:
-  J1.D+
+  J1.D+ (2 pins physiques a relier ensemble : A6=Dp1, B6=Dp2 — idem D-)
   R12.1 (22R serie)
   R12.2 -> U12.IO2 (USBLC6-2SC6 protection ESD)
   U12.IO2 -> U1.GPIO20
@@ -239,12 +257,18 @@ NET USB_ESD_VCC:
   U12.VBUS -> 5V_USB (reference clamping USBLC6-2SC6)
 
 NET USB_CC1:
-  J1.CC1
+  J1.CC1 (pin A5)
   R9.1 (5.1k, autre borne GND)
 
 NET USB_CC2:
-  J1.CC2
+  J1.CC2 (pin B5)
   R10.1 (5.1k, autre borne GND)
+
+(⚠ J1 = HOOYA/HAOYU USB-307HB-B-SU, connecteur USB-C SMD 24 pins verifie via
+ datasheet fabricant 2026-09-20. Pins SS non utilisees (design USB2.0 only,
+ pas de USB3) : A2/A3=SSTXp1/n1, A10/A11=SSRXn2/p2, B1... /B2/B3=SSTXp2/n2,
+ B10/B11=SSRXn1/p1 -> NC, ne pas router. SBU1(A8)/SBU2(B8) -> NC egalement,
+ pas utilises dans ce design.)
 
 
 ═══ PCM5122 — CONNEXIONS INTERNES ═══════════════════════════════════════════
@@ -409,14 +433,15 @@ NET SAT_GND:
    VCC=4, INT=5, SDA=6.
  - MLX90614 (U24, TO-39, Melexis DOC#3901090614) : SCL/Vz=1, SDA/PWM=2, VDD=3,
    VSS(GND)=4. Seulement 4 broches, pas d'adresse pin — cablage simple confirme.
- - PN532/PN5321A3HN (U11, HVQFN-40, NXP PN532_C1) : SDA=28, SCL=27 (P50_SCL),
-   RSTPD_N=38 confirmes corrects. Mais l'alimentation reelle est plus
-   complexe qu'un simple "U11.VDD" generique : le chip est alimente par
-   VBAT(40) + PVDD(23) externes (2.7-5.5V) ; AVDD(8)/TVDD(5)/SVDD(37) sont
-   generes en interne (juste decouplage) ; DVDD(39) est une SORTIE de LDO
-   interne — ne JAMAIS la relier a 3V3_D externe. TESTEN(18) → GND. GND
-   reparti sur DVSS(1)/TVSS1(3)/TVSS2(7)/AVSS(11). A detailler avant
-   schematic capture.)
+ - ST25DV04KC-IE6S3 (U11, SO8 — remplace le PN532, EOL/abandonne 2026-09-20,
+   use-case badge externe abandonne) : pinout confirme contre datasheet
+   officielle ST DS10925 Rev9 : AC0=1, V_EH=2 (NC), AC1=3, VSS=4 (GND), SDA=5,
+   SCL=6, GPO=7 (NC, polling I2C prefere a l'interrupt — budget GPIO sature),
+   VCC=8 (3V3_D, decouplage 10nF+100nF). Beaucoup plus simple que le PN532 :
+   pas de cristal, pas de reseau d'adaptation RF externe (capacite de tuning
+   28.5pF deja interne). Regulateur interne confirme empecher tout retour de
+   tension sur VCC quand alimente par RF seule (safe meme box eteinte). Voir
+   docs/datasheets/ST25DV04K.md pour le detail complet.)
 
 
 ═══ FACE AVANT — ADS7830 + CONTROLES ANALOGIQUES (bus I2C sur JST) ══════════
@@ -477,13 +502,14 @@ NET FP_CH7:  U26.CH7 (pin 8) -> RV4.2 (curseur pot rotatif 4)
 4. La zone audio (PCM5122 + LDO audio + filtre RC + PAM8406) doit
    etre isolee dans un coin du PCB, sans traces digitales en dessous.
 
-5. L'antenne PN532 (si PCB integre) necessite un keepout zone
-   sans cuivre sous l'antenne boucle.
+5. L'antenne ST25DV (boucle PCB, cf. NET NFC_ANTENNA) necessite une zone de
+   garde sans cuivre sous la boucle.
 
 6. Le micro ICS-43434 necessite un trou acoustique D1mm dans le PCB.
 
-7. Les deux GC9A01 et le SSD1680 sont des MODULES externes connectes
-   via JST-SH. Pas de composants ecran sur le PCB main.
+7. Les deux GC9A01 et le display bouche (type a definir, pas e-ink) sont
+   des MODULES externes connectes via JST-SH. Pas de composants ecran sur
+   le PCB main.
 
 
 ══════════════════════════════════════════════════════════════════════════════

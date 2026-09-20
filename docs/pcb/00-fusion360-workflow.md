@@ -43,7 +43,7 @@ télécharger en format "Eagle", et importer le .lbr dans Fusion 360 :
 | IMU 6 axes | LSM6DSOXTR | "LSM6DSOX" |
 | Lumière ambiante | VEML7700 | "VEML7700" |
 | Pression | BMP280 | "BMP280" |
-| NFC reader | PN532 | "PN532" |
+| NFC tag | ST25DV04KC-IE6S3 | "ST25DV04K" |
 | Température IR | MLX90614ESF-BAA | "MLX90614" |
 | Hall linéaire 3D | TMAG5273A2QDBVR | "TMAG5273" |
 | ESD USB | USBLC6-2SC6 | "USBLC6-2" |
@@ -66,7 +66,7 @@ Créer plusieurs feuilles dans le schéma pour la lisibilité :
 | 1 - Power | Alimentation : USB-C, bq24075, LiPo, LDOs, boost |
 | 2 - ESP32 | Module ESP32-S3 + découplage + reset + USB |
 | 3 - Audio | PCM5122 + filtre RC + PAM8406 + ICS-43434 |
-| 4 - Display | Connecteurs JST yeux (2× GC9A01) + e-ink bouche (SSD1680) |
+| 4 - Display | Connecteurs JST yeux (2× GC9A01) + display bouche (type à définir, pas e-ink) |
 | 5 - Sensors | Bus I2C + connecteurs JST satellites |
 | 6 - IO | WS2812, potentiomètres, boutons, Hall |
 

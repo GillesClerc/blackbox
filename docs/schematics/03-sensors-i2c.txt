@@ -1,6 +1,6 @@
 ══════════════════════════════════════════════════════════════════════════════
   ESCAPEBOX — SCHEMA DETAILLE : CAPTEURS I2C + NFC
-  Bus I2C partage — PCB Satellite Capteurs + PN532 sur Main
+  Bus I2C partage — PCB Satellite Capteurs + ST25DV NFC sur Main
 ══════════════════════════════════════════════════════════════════════════════
 
 
@@ -36,7 +36,7 @@
                     │   Sur PCB Main   │
                     │                  │
                     │  PCM5122 (0x4C)  │
-                    │  PN532   (0x24)  │
+                    │  ST25DV  (TBD)   │
                     └──────────────────┘
 
   Vitesse : 100 kHz (stable sur cables JST jusqu'a ~30cm)
@@ -246,45 +246,54 @@
 
 
   ┌─────────────────────────────────────────────────────────────────────────┐
-  │               PN532 — Lecteur NFC (sur PCB Main)                     │
+  │        ST25DV04KC-IE6S3 — Tag NFC dynamique (sur PCB Main)           │
   └─────────────────────────────────────────────────────────────────────────┘
 
-                          3.3V
+  Remplace le PN532 (EOL NXP, abandonne 2026-09-20). Ce n'est PAS un lecteur :
+  la box ne lit ni badge ni telephone. Seul sens possible : telephone tape la
+  box et lit un contenu NDEF (ex: URL) ecrit par l'ESP32 en I2C.
+
+                          3.3V_D
                            │
                   ┌────────┤
                   │     ┌──┴──┐
-                  │     │10µF │ (bulk)
+                  │     │100nF│ (C_NFC1)
                   │     └──┬──┘
                   │     ┌──┴──┐
-                  │     │100nF│
+                  │     │10nF │ (C_NFC2)
                   │     └──┬──┘
                   │        │
   ┌───────────────┴────────┴──────────────────────────────┐
-  │                       PN532                            │
+  │                    ST25DV04KC-IE6S3 (SO8)               │
   │                                                        │
-  │  VDD  ── 3.3V + decouplage                            │
-  │  GND  ── GND                                           │
-  │  SDA  ── I2C SDA                                       │
-  │  SCL  ── I2C SCL                                       │
-  │  I0   ── GND  ┐                                        │
-  │  I1   ── 3.3V ┘ → I2C mode (I0=0, I1=1)              │
-  │  RSTPD── 3.3V via 10kΩ (R7 — pas de reset GPIO)      │
-  │  IRQ  ── (non connecte ou GPIO libre)                  │
+  │  VCC (8) ── 3.3V_D + decouplage 100nF+10nF             │
+  │  VSS (4) ── GND                                        │
+  │  SDA (5) ── I2C SDA (bus partage)                      │
+  │  SCL (6) ── I2C SCL (bus partage)                      │
+  │  GPO (7) ── non connecte (detection tap par polling    │
+  │              I2C du registre ITSTS_DYN, pas d'IRQ —    │
+  │              budget GPIO ESP32-S3 sature)               │
+  │  V_EH(2) ── non connecte (non utilise)                 │
   │                                                        │
-  │  ANT1 ── antenne PCB ──┐ antenne boucle integree      │
-  │  ANT2 ── antenne PCB ──┘ sur le PCB main ou FPC ext.  │
+  │  AC0 (1) ── antenne PCB ──┐ boucle a dessiner,         │
+  │  AC1 (3) ── antenne PCB ──┘ capacite tuning 28.5pF     │
+  │                              deja interne au chip       │
   │                                                        │
   └────────────────────────────────────────────────────────┘
 
-  Note : le PN532 est sur le PCB main (pas sur satellite) car
-  l'antenne NFC doit etre pres de la face du cube et peut etre
-  realisee directement en cuivre sur le PCB (antenne boucle ~40mm).
+  Note : sur le PCB main (pas satellite) car l'antenne NFC doit etre
+  pres de la face du cube (face gauche, cf. FSD §2.2.2c) — antenne
+  boucle a dessiner en cuivre PCB.
 
-  Alternative : module PN532 breakout avec antenne FPC externe.
+  Alimentation : safe meme box eteinte (VCC=0V) — le chip s'auto-alimente
+  par le champ RF du telephone sans jamais renvoyer de tension sur VCC
+  externe (confirme datasheet ST DS10925 §2.2.1).
 
-  Adresse I2C : 0x24 (7 bits, fixe en I2C mode — 0x48 est la notation
-  8 bits ; le firmware ESP-IDF utilise 0x24).
-  Protocole : NXP PN532 I2C frame format (pas raw I2C registers).
+  Adresse I2C : TBD (device select code — a verifier dans la register
+  map ST25DV avant integration firmware, pas encore determinee).
+  Protocole : registres I2C/EEPROM ST25DV (pas de frame protocol comme
+  le PN532) — driver officiel ST25DV-driver (BSD-3) portable sur
+  i2c_master ESP-IDF. Voir docs/datasheets/ST25DV04K.md.
 
 
   ┌─────────────────────────────────────────────────────────────────────────┐

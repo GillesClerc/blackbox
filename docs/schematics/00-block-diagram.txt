@@ -18,7 +18,7 @@
   │  │              │   │   WROOM-1    │   │                          │  │
   │  │ bq24075 PP   │   │   N16R8      │   │  PCM5122 DAC (I2C+I2S)  │  │
   │  │ LiPo 3000mAh│   │              │   │       |                  │  │
-  │  │ AP2112K x2   │   │  16MB flash  │   │  100R+22nF filtre RC     │  │
+  │  │ AP2112K x2   │   │  16MB flash  │   │  470R+2.2nF filtre RC    │  │
   │  │ MT3608 boost │   │  8MB PSRAM   │   │       |                  │  │
   │  │              │   │              │   │  PAM8406 ampli 5W+5W     │  │
   │  │ 3.3V_D ──────┼───┤ VDD         │   │       |                  │  │
@@ -27,10 +27,10 @@
   │  └──────────────┘   │              │   └──────────────────────────┘  │
   │                     │              │                                  │
   │  ┌──────────────┐   │   I2C ───────┼───> JST-SH 4p x4 (satellites) │
-  │  │ PN532 NFC    │<──┤   bus        │                                 │
-  │  │ (I2C 0x48)   │   │              │   ┌──────────────────────────┐  │
-  │  │ antenne PCB  │   │   SPI2 ──────┼───┤ JST-SH 8p -> SSD1680    │  │
-  │  └──────────────┘   │   (8-13)     │   │ e-ink 2.9" (bouche)     │  │
+  │  │ ST25DV NFC   │<──┤   bus        │                                 │
+  │  │ (tag, I2C TBD│   │              │   ┌──────────────────────────┐  │
+  │  │ antenne PCB  │   │   SPI2 ──────┼───┤ JST-SH 8p -> DISPLAY      │  │
+  │  └──────────────┘   │   (8-13)     │   │ bouche (TBD, pas e-ink)     │  │
   │                     │              │   └──────────────────────────┘  │
   │  ┌──────────────┐   │   SPI3 ──────┼───> JST-SH 10p (2x GC9A01)   │
   │  │ ICS-43434    │<──┤   (38-42,14) │      yeux gauche + droit      │
@@ -68,15 +68,15 @@
   └───────────┘ └────────┘ └──────────┘ └────────┘ └──────────┘
                                 │
                          JST-SH 8p
-                         SPI2 e-ink
+                         SPI2 display
                                 │
                                 v
                          ┌──────────┐
-                         │ SSD1680  │
-                         │ e-ink    │
-                         │ 2.9"    │
-                         │ 296x128 │
-                         │ BOUCHE  │
+                         │ DISPLAY  │
+                         │ BOUCHE   │
+                         │ (TBD,   │
+                         │ pas     │
+                         │ e-ink)  │
                          └──────────┘
 
 
@@ -104,12 +104,12 @@
   │ GPIO18 ─┼─── I2S1_WS  ────> ICS-43434 WS
   │ GPIO7 ──┼─── I2S1_SD  <──── ICS-43434 SD (data in)
   │         │
-  │ GPIO11 ─┼─── SPI2_MOSI ──> SSD1680 DIN (e-ink bouche)
-  │ GPIO12 ─┼─── SPI2_SCLK ──> SSD1680 CLK
-  │ GPIO10 ─┼─── SPI2_CS   ──> SSD1680 CS
-  │ GPIO9 ──┼─── DC ──────────> SSD1680 DC
-  │ GPIO8 ──┼─── RST ─────────> SSD1680 RST
-  │ GPIO13 ─┼─── BUSY <──────── SSD1680 BUSY
+  │ GPIO11 ─┼─── SPI2_MOSI ──> display bouche DIN (TBD, pas e-ink)
+  │ GPIO12 ─┼─── SPI2_SCLK ──> display bouche CLK
+  │ GPIO10 ─┼─── SPI2_CS   ──> display bouche CS
+  │ GPIO9 ──┼─── DC ──────────> display bouche DC
+  │ GPIO8 ──┼─── RST ─────────> display bouche RST
+  │ GPIO13 ─┼─── BUSY <──────── display bouche BUSY
   │         │
   │ GPIO38 ─┼─── SPI3_MOSI ──> GC9A01 x2 SDA (partage)
   │ GPIO39 ─┼─── SPI3_SCLK ──> GC9A01 x2 SCL (partage)
@@ -182,10 +182,9 @@
      │    └──────────┘    └──────────┘        │
      │                                        │
      │         ┌────────────────┐             │
-     │         │  E-INK 2.9"   │             │
      │         │   "BOUCHE"    │             │
-     │         │  67 x 29 mm   │             │
-     │         │   SSD1680     │             │
+     │         │  DISPLAY TBD  │             │
+     │         │  (pas e-ink)  │             │
      │         │   SPI2        │             │
      │         └────────────────┘             │
      │                                        │

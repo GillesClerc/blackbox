@@ -65,8 +65,8 @@
     │      │      │     │                   │
     ▼      ▼      ▼     ▼                   ▼
   ESP32  GC9A01  I2C  PCM5122           WS2812
-  S3     x2+eink bus   DAC               LEDs
-         SSD1680 capt.
+  S3     x2+disp bus   DAC               LEDs
+         bouche capt.
 
 
   ┌─────────────────────────────────────────────────────────────────────────┐
@@ -128,28 +128,28 @@
   La sortie du PCM5122 est differentiee mais en mode "line out" classique :
 
                PCM5122                Filtre RC               Ampli / Jack
-            ┌──────────┐          (passe-bas ~72kHz)
+            ┌──────────┐          (passe-bas ~153kHz)
             │          │
-   OUTL ────┤ Pin 6    ├───┤ 100Ω ├───┬──────────────→ OUTL vers ampli
+   OUTL ────┤ Pin 6    ├───┤ 470Ω ├───┬──────────────→ OUTL vers ampli
             │          │              │                 (PAM8406 ou jack)
             │          │           ┌──┴──┐
-            │          │           │22nF │
-            │          │           │cer. │
+            │          │           │2.2nF│
+            │          │           │NP0  │
             │          │           └──┬──┘
             │          │              │
             │          │             GND
             │          │
-   OUTR ────┤ Pin 7    ├───┤ 100Ω ├───┬──────────────→ OUTR vers ampli
+   OUTR ────┤ Pin 7    ├───┤ 470Ω ├───┬──────────────→ OUTR vers ampli
             │          │              │
             │          │           ┌──┴──┐
-            │          │           │22nF │
-            │          │           │cer. │
+            │          │           │2.2nF│
+            │          │           │NP0  │
             │          │           └──┬──┘
             │          │              │
             │          │             GND
             └──────────┘
 
-  Calcul filtre : fc = 1 / (2π × 100Ω × 22nF) ≈ 72 kHz
+  Calcul filtre : fc = 1 / (2π × 470Ω × 2.2nF) ≈ 153 kHz (valeurs recommandees datasheet TI SLAS763C §8.3.5.2)
   Attenuation du bruit delta-sigma HF sans affecter la bande audio (20-20kHz)
 
 
@@ -193,11 +193,11 @@
   │  ║  ESP32-S3             ║     ║  AP2112K #2  ┌──────┐           ║   │
   │  ║  ┌──────┐             ║     ║  (LDO audio) │PCM5122│          ║   │
   │  ║  │      │ 2x GC9A01   ║     ║     ↓        │      │          ║   │
-  │  ║  │      │ + SSD1680   ║     ║  10µF+100nF  │ capas │          ║   │
+  │  ║  │      │ + disp bouche║    ║  10µF+100nF  │ capas │          ║   │
   │  ║  │      │ │      │    ║     ║  x3 paires   │decouplage       ║   │
   │  ║  └──────┘ └──────┘    ║     ║              └──────┘           ║   │
   │  ║                       ║     ║                                  ║   │
-  │  ║  Capteurs I2C         ║     ║  100Ω + 22nF    ┌──────┐       ║   │
+  │  ║  Capteurs I2C         ║     ║  470Ω + 2.2nF   ┌──────┐       ║   │
   │  ║  MPR121, VEML7700..   ║     ║  filtre sortie → │ Jack │       ║   │
   │  ║                       ║     ║                  │ audio│       ║   │
   │  ╚═══════════════════════╝     ║                  └──────┘       ║   │

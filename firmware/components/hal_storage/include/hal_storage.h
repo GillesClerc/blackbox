@@ -4,8 +4,8 @@
 #include <stddef.h>
 #include "esp_err.h"
 
-// SD card sur SPI2, bus partagé avec l'e-ink SSD1680 (MOSI=11, CLK=12 communs).
-// MISO=15 et CS=47 : 13 est le BUSY e-ink et 10 son CS (FSD §3.2.2, pins gelées).
+// SD card sur SPI2, bus partagé avec le display bouche (type à définir) (MOSI=11, CLK=12 communs).
+// MISO=15 et CS=47 : 13 est le BUSY display et 10 son CS (FSD §3.2.2, pins gelées).
 #define STORAGE_PIN_MOSI    11
 #define STORAGE_PIN_MISO    15
 #define STORAGE_PIN_CLK     12
