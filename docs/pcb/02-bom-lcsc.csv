@@ -9,7 +9,7 @@ U7,MT3608,,SOT-23-6,C84817,1,Main,Boost 3.7V->5V 2A
 U8,bq24075RGTR,,QFN-16,C15464,1,Main,Chargeur LiPo 1.5A + power path DPPM
 U9,DW01A,,SOT-23-6,C351410,1,Main,Protection batterie
 U10,FS8205,,TSSOP-8,C32254,1,Main,Dual MOSFET protection
-U11,ST25DV04KC-IE6S3,,SO8,C3304276,1,Main,Tag NFC dynamique I2C+RF (remplace PN532, EOL — voir docs/datasheets/ST25DV04K.md)
+U11,ST25DV04KC-IE6S3,,SO8,C3304276,1,Satellite Dessus,Tag NFC dynamique I2C+RF (remplace PN532, EOL — voir docs/datasheets/ST25DV04K.md). Deplace hors du Main (2026-09-21) — sheet nfc.kicad_sch a reutiliser tel quel comme base du satellite Dessus (voix+NFC).
 U12,USBLC6-2SC6,,SOT-23-6,C7519,1,Main,Protection ESD USB D+/D-
 "—",,GC9A01 module 1.3 rond,Module,—,2,Face avant,Yeux du personnage 240x240 SPI (modules achetes)
 "—",,TBD — type d'ecran bouche a definir ulterieurement (pas e-ink),Module,—,1,Face avant,Bouche du personnage — composant non choisi, SPI2 8 pins reserve (VCC/GND/MOSI/SCLK/CS/DC/RST/BUSY)
@@ -19,13 +19,17 @@ J7,,Connecteur JST-SH 10pin,JST-SH-10P,—,1,Main,SPI3 vers 2x GC9A01 yeux
 J7b,,Connecteur JST-SH 8pin,JST-SH-8P,—,1,Main,SPI2 vers display bouche (type a definir ulterieurement, pas e-ink)
 J8,,Connecteur JST-SH 6pin,JST-SH-6P,—,1,Main,Toggles SW1/SW2 face avant + reserve GPIO3 (ex-ADC potentiometres - analogique migre sur ADS7830 I2C)
 J9,,Connecteur JST-PH 4pin,JST-PH-4P,—,1,Main,"WS2812 + reserve (PH 2mm 3A/contact - 32 LEDs = jusqu'a ~1.9A sur 5V, JST-SH 1A insuffisant)"
-J10,,Connecteur JST-PH 2pin,JST-PH-2P,—,1,Main,Batterie LiPo
+J2,,Connecteur JST-PH 2pin,JST-PH-2P,—,1,Main,Batterie LiPo (etait note J10 par erreur — reference reelle du schema est J2)
 J11,,Slot microSD push-push,TF-PUSH,C91145,1,Main,Carte SD sur SPI2 partage (MISO=15 CS=47) - verifier ref LCSC avant commande
 L1,,Inductance 22uH,1210,—,1,Main,Pour MT3608 boost (22uH recommande datasheet)
 C1,,10uF 25V ceramique,0603,—,1,Main,Decouplage bulk ESP32-S3-WROOM-1 VDD (ref. schema Espressif DevKitC C1)
-"C2,C3,C6,C7,C8,C9,C10,C11,C12",,100nF 16V ceramique,0402,—,9,Main,Decouplage generique (C2=ESP32 HF pres VDD, ref. schema Espressif C2 ; reste divers)
-C5,,100nF 16V ceramique,0402,—,1,Main,Decouplage VCC ST25DV04KC-IE6S3 (pin8) au plus pres — datasheet ST DS10925 §3.1
-C4,,10nF 16V ceramique,0402,—,1,Main,Decouplage VCC ST25DV04KC-IE6S3 (pin8) au plus pres — datasheet ST DS10925 §3.1
+"C2,C3",,100nF 16V ceramique,0402,—,2,Main,Decouplage generique (C2=ESP32 HF pres VDD, ref. schema Espressif C2 ; C3=PCM5122 AVDD sheet Audio). C6-C12 retires (audit 2026-09-20 : reserve jamais placee, plus d'IC restant sur le main a decoupler)
+"FB1,FB2",,120R@100MHz ferrite,0603,—,2,Main,Filtre EMI sur SPI2_SCLK/SPI3_SCLK (ferrite serie, ajoute directement par l'utilisateur dans KiCad — empreinte corrigee lors de l'audit 2026-09-20, etait assignee sur un boitier CI SOIC-8 par erreur)
+"CC_SPI2_CLK,CC_SPI3_CLK",,10pF 50V ceramique NP0/C0G,0402,—,2,Main,Capa shunt vers GND du filtre EMI SPI2_SCLK/SPI3_SCLK (avec FB1/FB2 ci-dessus)
+C5,,100nF 16V ceramique,0402,—,1,Satellite Dessus,Decouplage VCC ST25DV04KC-IE6S3 (pin8) au plus pres — datasheet ST DS10925 §3.1 (sheet nfc.kicad_sch, projet PCB separe du Main — pas de conflit de reference avec le C4/C5 du Main ci-dessous, namespaces independants)
+C4,,10nF 16V ceramique,0402,—,1,Satellite Dessus,Decouplage VCC ST25DV04KC-IE6S3 (pin8) au plus pres — datasheet ST DS10925 §3.1 (sheet nfc.kicad_sch, projet PCB separe du Main)
+C4,,100nF 16V ceramique,0402,—,1,Main,Decouplage VDDIO LSM6DSOXTR (pin5) — datasheet ST DS12814 §7, C1/C2=100nF recommande (sheet imu.kicad_sch)
+C5,,100nF 16V ceramique,0402,—,1,Main,Decouplage VDD LSM6DSOXTR (pin8) — datasheet ST DS12814 §7, C1/C2=100nF recommande (sheet imu.kicad_sch)
 C_EN,,1uF 16V ceramique,0402,—,1,Main,Filtre RC sur EN (CHIP_PU) ESP32-S3 — ref. schema Espressif DevKitC C6, corrige 2026-09-20 (etait 100nF par erreur)
 "C1_AV,C2_DV,C3_CP,C_LDOO",,100nF 16V ceramique,0402,—,4,Main,PCM5122 AVDD(pin8)/DVDD(pin28)/CPVDD(pin1)/LDOO(pin26) (pins corriges 2026-09-11 vs datasheet TI SLAS763C — l'ancien netlist avait tous les numeros de pins PCM5122 faux)
 "C_D2,C_A2,C_B1",,10uF 10V ceramique,0805,—,3,Main,Sorties LDO U5/U6 + entree MT3608
@@ -45,7 +49,8 @@ C_B2,,22uF 16V ceramique,0805,—,1,Main,Sortie MT3608 boost (16V pour derating 
 R_MODE_D,,10k ohm,0402,—,1,Main,MODE PAM8406 vers 3V3_A = Class-D (option DNP par defaut — peuple pour Class-D). Paire XOR avec R_MODE_AB : un seul des deux doit etre peuple, jamais les deux (MODE ne peut pas flotter ni etre a un niveau intermediaire, datasheet Diodes DS43342)
 R_MODE_AB,,10k ohm,0402,—,1,Main,MODE PAM8406 vers GND = Class-AB (DNP par defaut, a peupler uniquement si on retire R_MODE_D pour basculer en Class-AB). Paire XOR avec R_MODE_D — voir note ci-dessus
 R_SD_PD,,100k ohm,0402,—,1,Main,Pull-down ligne I2S1_SD (ICS-43434) — decharge la ligne pendant le tristate du micro (datasheet InvenSense DS-000069 §Pin Function)
-R8,,330 ohm,0402,—,1,Main,Serie WS2812 data
+R8,,330 ohm,0402,—,1,Main,Serie WS2812 data — valeur non issue de la datasheet WS2812B (n'en parle pas) mais dans la plage recommandee Adafruit NeoPixel Uberguide (300-500 ohm)
+"LED2,LED3,LED4,LED5,LED6,LED7,LED8,LED9,LED10,LED11,LED12,LED13",WS2812B-B/T,,SMD5050-4P,C2761795,12,Main,Halo lumineux face Dessous (sous le Main) — chaine R8->LED2->LED3->...->LED13->J9 (continue vers le halo visage sur le satellite Devant). C114586 cite historiquement dans le FSD = meme puce Worldsemi mais absente de la lib d'assemblage du plugin KiCad utilise, C2761795 choisie a la place (importable)
 R_ILIM,,1.5k ohm,0402,—,1,Main,bq24075 ILIM pin12 (input current limit en mode RILIM EN2=H/EN1=L)
 "R_PG,R_CHG",,100k ohm,0402,—,2,Main,Pull-up debug PGOOD/CHG bq24075 (DNP par defaut - pads testpoint)
 R_ISET,,890 ohm,0402,—,1,Main,bq24075 ISET pin16 (charge current 1A)
@@ -63,7 +68,7 @@ R_TS,,10k ohm,0402,—,1,Main,bq24075 TS pin1 vers GND (pas de NTC - 10k fixe TS
 "R11,R12",,22 ohm,0402,—,2,Main,Serie USB D+/D-
 D1,,Diode Schottky SS14,SMA,—,1,Main,Protection MT3608
 U20,MTCH2120-I/MX,,QFN-20,—,1,Satellite,Touch capacitif 12ch (pas sur LCSC - DigiKey/Mouser)
-U21,LSM6DSOXTR,,LGA-14,C481766,1,Satellite,Accelerometre+gyro 6 axes + MLC
+U11,LSM6DSOXTR,,LGA-14,C481766,1,Main,Accelerometre+gyro 6 axes + MLC (IMU) — deplace du satellite capteurs vers Main (2026-09-21), aucune contrainte de position. Sheet imu.kicad_sch, mode I2C (SDO/SA0=GND -> addr 0x6A, SDx/SCx=GND, CS=3V3_D), pinout verifie datasheet ST DS12814
 U22,VEML7700-TT,,OPLGA,C1850416,1,Satellite,Capteur lumiere ambiante
 U23,BMP280,,LGA-8,C83291,1,Satellite,Pression / souffle
 U24,MLX90614ESF-BAA,,TO-39,—,1,Satellite,Temperature IR sans contact - variante 3V obligatoire (AAA=5V incompatible rail 3V3) - adresse usine 0x5A a reprogrammer en 0x5C (EEPROM) - verifier dispo LCSC/Mouser - pinout confirme (SCL/Vz=1 SDA/PWM=2 VDD=3 VSS=4)

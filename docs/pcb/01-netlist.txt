@@ -19,13 +19,17 @@ NET VSYS:
   (USB branche: ~4.4V / batterie: 3.0-4.2V)
 
 NET VBAT:
-  U8.BAT (bq24075), U9.VDD (DW01A), J10.+, C_BAT.+
+  U8.BAT (bq24075), U9.VDD (DW01A), J2.+, C_BAT.+
 
 NET 3V3_D (digital):
   U5.VOUT, C_D2.+
   U1.3V3 (ESP32-S3 VDD)
   U4.VDD (ICS-43434)
-  U11.VCC (pin 8, ST25DV04KC-IE6S3), C_NFC1.+ (100nF), C_NFC2.+ (10nF, decouplage au plus pres)
+  U11.VDDIO (pin 5, LSM6DSOXTR), U11.VDD (pin 8), U11.CS (pin 12, force mode I2C),
+  C4.+ (100nF, decouplage VDDIO), C5.+ (100nF, decouplage VDD) — sheet imu.kicad_sch,
+  IMU deplacee du satellite capteurs vers Main (2026-09-21), aucune contrainte de position
+  (le ST25DV NFC est parti sur le satellite face Dessus — sheet nfc.kicad_sch, projet
+  PCB separe, plus dans ce netlist Main)
   J3.VCC, J4.VCC, J5.VCC, J6.VCC (I2C satellites)
   J7.VCC (2x GC9A01 yeux)
   J7b.VCC (display bouche, TBD — pas e-ink)
@@ -72,7 +76,7 @@ NET GND:
   U1.GND, U2.GND, U3.GND, U4.GND, U5.GND, U6.GND,
   U7.GND, U8.GND, U9.GND, U10.GND, U11.GND, U12.GND,
   J3.GND, J4.GND, J5.GND, J6.GND, J7.GND, J7b.GND, J8.GND,
-  J9.GND, J10.GND,
+  J9.GND, J2.GND,
   tous condensateurs pin -, toutes resistances retour GND
 
 
@@ -82,25 +86,27 @@ NET I2C_SDA:
   U1.GPIO21
   R3.2 (pull-up 4.7k vers 3V3_D)
   U2.SDA (PCM5122 pin 11)
-  U11.SDA (pin 5, ST25DV04KC-IE6S3 — adresse I2C TBD, a verifier dans la register map)
+  U11.SDA (pin 14, LSM6DSOXTR)
   J3.SDA, J4.SDA, J5.SDA, J6.SDA (satellites)
 
 NET I2C_SCL:
   U1.GPIO17
   R4.2 (pull-up 4.7k vers 3V3_D)
   U2.SCL (PCM5122 pin 12)
-  U11.SCL (pin 6, ST25DV04KC-IE6S3)
+  U11.SCL (pin 13, LSM6DSOXTR)
   J3.SCL, J4.SCL, J5.SCL, J6.SCL (satellites)
 
-NET NFC_ANTENNA:
-  U11.AC0 (pin 1), U11.AC1 (pin 3) -> boucle antenne PCB (a dessiner, capacite
-  de tuning 28.5pF deja interne au chip, pas de reseau d'adaptation externe
-  requis a priori — voir docs/datasheets/ST25DV04K.md)
+NET GND (ajout U11 LSM6DSOXTR):
+  U11.SDO/SA0 (pin 1 — fixe l'adresse I2C a 0x6A), U11.SDx (pin 2, inutilise en
+  mode 1), U11.SCx (pin 3, inutilise en mode 1)
 
-(U11.V_EH (pin 2) et U11.GPO (pin 7) : non connectes. GPO aurait normalement
- besoin d'un pull-up >4.7k pour etre utilisable, mais decision projet :
- detection du tap telephone par polling I2C du registre ITSTS_DYN plutot que
- par interruption GPIO — budget GPIO ESP32-S3 sature, aucune pin libre.)
+(U11.INT1 (pin 4), U11.INT2 (pin 9), U11.OSC_AUX (pin 10), U11.SDO_AUX (pin 11) :
+ non connectes — pas de GPIO libre pour les interruptions, OSC_AUX/SDO_AUX a
+ laisser electriquement flottants en mode 1 par recommandation datasheet ST DS12814.
+ Pinout complet verifie sur la datasheet primaire, voir docs/datasheets/LSM6DSOX.pdf)
+
+(Le NET NFC_ANTENNA et le cablage ST25DV sont partis sur le satellite face Dessus,
+ projet PCB separe — plus dans ce netlist Main. Voir nfc.kicad_sch.)
 
 
 ═══ BUS I2S0 — AUDIO SORTIE ═════════════════════════════════════════════════
@@ -143,7 +149,7 @@ NET SPI2_MOSI:
   J11.DI (microSD Data In — bus partage display + SD)
 
 NET SPI2_SCLK:
-  U1.GPIO12
+  U1.GPIO12 -> FB1 (ferrite 120R@100MHz) -> CC_SPI2_CLK (10pF vers GND, filtre EMI)
   J7b.SCLK (display bouche CLK)
   J11.CLK (microSD clock — bus partage)
 
@@ -171,7 +177,7 @@ NET SPI3_MOSI:
   J7.MOSI (GC9A01 #1 SDA + GC9A01 #2 SDA, partage)
 
 NET SPI3_SCLK:
-  U1.GPIO39
+  U1.GPIO39 -> FB2 (ferrite 120R@100MHz) -> CC_SPI3_CLK (10pF vers GND, filtre EMI)
   J7.SCLK (GC9A01 #1 SCL + GC9A01 #2 SCL, partage)
 
 NET SPI3_CS_L:
@@ -220,8 +226,14 @@ NET VBAT_SENSE:
 
 NET WS2812_DATA:
   U1.GPIO48
-  R8.1 (330R serie)
-  R8.2 -> J9.DATA (premiere LED WS2812)
+  R8.1 (330R serie — valeur non issue de la datasheet WS2812B, dans la plage
+   recommandee Adafruit NeoPixel Uberguide 300-500R)
+  R8.2 -> LED2.DIN (chaine des 12 WS2812 montees sur Main, halo face Dessous) :
+   LED2.DOUT->LED3.DIN->LED4.DIN->LED5.DIN->LED6.DIN->LED7.DIN->LED8.DIN->
+   LED9.DIN->LED10.DIN->LED11.DIN->LED12.DIN->LED13.DIN
+   LED13.DOUT -> J9.DATA (continue vers le halo visage, satellite Devant)
+  (chaque LED : pin1 VDD->5V, pin3 VSS->GND — sheet connector.kicad_sch,
+   reference WS2812B-B/T LCSC C2761795, ajoutees 2026-09-21)
 
 NET SPI2_MISO:
   U1.GPIO15
@@ -230,6 +242,17 @@ NET SPI2_MISO:
 NET SPI2_CS_SD:
   U1.GPIO47
   J11.CS (microSD chip select — distinct du CS display bouche GPIO10)
+
+NET 3V3_D (ajout J11):
+  J11.VDD (pin 4, alimentation carte SD — absente du netlist jusqu'ici, trou
+   comble lors du cablage du sheet Connecteurs)
+
+NET GND (ajout J11):
+  J11.VSS (pin 6), J11.GND (pins 10,11,12,13 — masses mecaniques/blindage
+   du slot TF-01A)
+
+(J11 pins 1/DAT2, 8/DAT1, 9/CD non connectees — reserve SDIO et card-detect
+ non utilises, pas de GPIO libre pour le CD)
 
 NET BTN1:
   U1.GPIO45
@@ -373,13 +396,13 @@ NET BQ_CHG:
   R_CHG.2 (100k pull-up vers 3V3_D, DNP par defaut — testpoint debug sonde)
 
 NET BAT_PROT:
-  U9.VCC (pin 5) -> R_VCC 100R -> bq24075 BAT (pin 2,3) -> J10.+ (LiPo B+)
+  U9.VCC (pin 5) -> R_VCC 100R -> bq24075 BAT (pin 2,3) -> J2.+ (LiPo B+)
   U9.CS (pin 2) -> midpoint (jonction S1/S2 FS8205)
   U9.GND (pin 6) -> midpoint (idem, PAS le GND systeme)
   U9.OD (pin 1) -> U10.G1 (pin 4)
   U9.OC (pin 3) -> U10.G2 (pin 5)
   U9.TD (pin 4) -> NC (flottant)
-  U10.D12 (pin 1, pin 8) -> J10.- (LiPo B-) -> GND systeme
+  U10.D12 (pin 1, pin 8) -> J2.- (LiPo B-) -> GND systeme
   U10.S1 (pin 2, pin 3) -> midpoint
   U10.S2 (pin 6, pin 7) -> midpoint
 
@@ -394,12 +417,19 @@ NET ESP_EN:
 
 ═══ SATELLITE CAPTEURS (bus I2C sur JST) ════════════════════════════════════
 
+> ⚠ Section legacy (architecture 2-satellites pre-2026-09-21). Le decoupage
+> reel en PCB par face (Devant/Dessus/Cote1/Cote2/Cote3, voir FSD §2.2.3)
+> n'est pas encore fige. LSM6DSOXTR (ex-U21 ici) est CONFIRME deplace sur
+> Main (U11) — retire de cette section. VEML7700/BMP280/MLX90614 restent
+> prevus sur la face Cote3/Devant selon le nouveau decoupage FSD ; MTCH2120
+> et TMAG5273 idem sur Cote2/Cote3 — references U20/U22-U25 a reprendre
+> quand chaque satellite aura son propre projet KiCad (namespace independant).
+
 Sur le PCB satellite, les nets sont internes :
 
 NET SAT_I2C_SDA:
   J_SAT.SDA (JST-SH pin 3)
   U20.SDA (MTCH2120)
-  U21.SDA (LSM6DSOXTR)
   U22.SDA (VEML7700)
   U23.SDA (BMP280)
   U24.SDA (MLX90614)
@@ -408,7 +438,6 @@ NET SAT_I2C_SDA:
 NET SAT_I2C_SCL:
   J_SAT.SCL (JST-SH pin 4)
   U20.SCL (MTCH2120)
-  U21.SCL (LSM6DSOXTR)
   U22.SCL (VEML7700)
   U23.SCL (BMP280)
   U24.SCL (MLX90614)
@@ -416,13 +445,14 @@ NET SAT_I2C_SCL:
 
 NET SAT_3V3:
   J_SAT.VCC (JST-SH pin 1)
-  U20.VDD, U21.VDD, U21.VDDIO, U22.VDD, U23.VDD, U23.VDDIO,
+  U20.VDD, U22.VDD, U23.VDD, U23.VDDIO,
   U24.VDD, U25.VDD (TMAG5273)
-  C30-C35.+ (decouplage 100nF chaque)
+  C30-C35.+ (decouplage 100nF chaque — nombre a ajuster, 6 caps prevus pour
+  un IC de moins depuis le depart du LSM6DSOXTR)
 
 NET SAT_GND:
   (⚠ absente de ce netlist avant 2026-09-11 — a relier : JST-SH pin 2,
-   U20.GND, U21.GND, U22.GND, U23.GND, U24.GND, U25.GND (pin2, TMAG5273),
+   U20.GND, U22.GND, U23.GND, U24.GND, U25.GND (pin2, TMAG5273),
    C30-C35.-)
 
 (⚠ Pins verifiees 2026-09-11 contre datasheets officiels — a integrer au
@@ -433,15 +463,17 @@ NET SAT_GND:
    VCC=4, INT=5, SDA=6.
  - MLX90614 (U24, TO-39, Melexis DOC#3901090614) : SCL/Vz=1, SDA/PWM=2, VDD=3,
    VSS(GND)=4. Seulement 4 broches, pas d'adresse pin — cablage simple confirme.
- - ST25DV04KC-IE6S3 (U11, SO8 — remplace le PN532, EOL/abandonne 2026-09-20,
-   use-case badge externe abandonne) : pinout confirme contre datasheet
-   officielle ST DS10925 Rev9 : AC0=1, V_EH=2 (NC), AC1=3, VSS=4 (GND), SDA=5,
-   SCL=6, GPO=7 (NC, polling I2C prefere a l'interrupt — budget GPIO sature),
-   VCC=8 (3V3_D, decouplage 10nF+100nF). Beaucoup plus simple que le PN532 :
-   pas de cristal, pas de reseau d'adaptation RF externe (capacite de tuning
-   28.5pF deja interne). Regulateur interne confirme empecher tout retour de
-   tension sur VCC quand alimente par RF seule (safe meme box eteinte). Voir
-   docs/datasheets/ST25DV04K.md pour le detail complet.)
+
+Pinout ST25DV04KC-IE6S3 (SO8, remplace le PN532, EOL/abandonne 2026-09-20,
+use-case badge externe abandonne) — deplace sur le futur satellite face
+Dessus (sera U11 la-bas, namespace independant de Main) : pinout confirme
+contre datasheet officielle ST DS10925 Rev9 : AC0=1, V_EH=2 (NC), AC1=3,
+VSS=4 (GND), SDA=5, SCL=6, GPO=7 (NC, polling I2C prefere a l'interrupt —
+budget GPIO sature), VCC=8 (3V3_D, decouplage 10nF+100nF). Beaucoup plus
+simple que le PN532 : pas de cristal, pas de reseau d'adaptation RF externe
+(capacite de tuning 28.5pF deja interne). Regulateur interne confirme
+empecher tout retour de tension sur VCC quand alimente par RF seule (safe
+meme box eteinte). Voir docs/datasheets/ST25DV04K.md pour le detail complet.
 
 
 ═══ FACE AVANT — ADS7830 + CONTROLES ANALOGIQUES (bus I2C sur JST) ══════════
@@ -502,8 +534,8 @@ NET FP_CH7:  U26.CH7 (pin 8) -> RV4.2 (curseur pot rotatif 4)
 4. La zone audio (PCM5122 + LDO audio + filtre RC + PAM8406) doit
    etre isolee dans un coin du PCB, sans traces digitales en dessous.
 
-5. L'antenne ST25DV (boucle PCB, cf. NET NFC_ANTENNA) necessite une zone de
-   garde sans cuivre sous la boucle.
+5. (Note antenne ST25DV deplacee — s'applique au PCB satellite face Dessus,
+   plus au Main. Zone de garde sans cuivre sous la boucle a prevoir la-bas.)
 
 6. Le micro ICS-43434 necessite un trou acoustique D1mm dans le PCB.
 

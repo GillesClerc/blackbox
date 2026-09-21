@@ -278,14 +278,14 @@ bq24075 (TI) — chargeur 1.5A + power path DPPM
 
 | Face | Rôle principal | Composants |
 |---|---|---|
-| **Devant** | Visage du personnage | 2× GC9A01 1.3" ronds (yeux) + display bouche (TBD, pas e-ink), WS2812 rétro |
-| **Dessus** | Interactions principales | MTCH2120 keypad capacitif, potentiomètres, boutons |
-| **Droite** | Capteurs ambiance | VEML7700 lumière, BMP280 souffle |
-| **Gauche** | NFC | ST25DV04KC-IE6S3 (antenne derrière bois ≤3mm), TMAG5273 Hall I2C, WS2812 anneau |
-| **Arrière** | Capteurs + réserve | LSM6DSOXTR (orientation), MLX90614 IR temp |
-| **Dessous** | Technique | USB-C charge, interrupteur, HP (PAM8406 + haut-parleur) |
+| **Devant** | Visage du personnage | 2× GC9A01 1.3" ronds (yeux) + display bouche (TBD, pas e-ink) + WS2812 rétro + BMP280 souffle (souffler sur la bouche) + VEML7700 lumière (éclairer les yeux → réaction du personnage) |
+| **Dessus** | Voix + NFC | Haut-parleur (câblé depuis PAM8406 sur Main) + ST25DV04KC-IE6S3 NFC (tap téléphone) |
+| **Côté 1** | Panneau de contrôle | ADS7830 + 4 faders + 4 potentiomètres rotatifs, toggles SW1/SW2, boutons poussoir |
+| **Côté 2** | Accès technique + énigme | Port USB-C réel (charge + énigme "bonne clé USB avec le bon contenu"), interrupteur, zones tactiles MTCH2120 |
+| **Côté 3** | Zone magique | MLX90614 température IR sans contact + TMAG5273 Hall linéaire ("approche ta main" / "pose un objet") |
+| **Dessous** | Main (technique + lest) | ESP32-S3, alimentation, PCM5122+PAM8406, LSM6DSOXTR (IMU, soudé directement sur Main — aucune contrainte de position), batterie (lest, stabilise l'orientation de repos), WS2812 halo table |
 
-> Assignation indicative. Les capteurs sur satellite I2C peuvent être repositionnés librement tant qu'ils restent sur le bus backbone.
+> Répartition figée par face (2026-09-21). Le cube prend de fait une orientation de repos stable une fois assemblé (batterie + Main lestent le Dessous), même si géométriquement un cube n'a ni haut ni bas.
 
 **Concept "personnage" :**
 ```
@@ -293,61 +293,69 @@ La face avant est un VISAGE :
   - 2× GC9A01 ronds = yeux expressifs (clignements, regard, émotions)
   - 1× display bouche (TBD, pas e-ink) = bouche (texte mot-à-mot, style Animal Crossing)
   - WS2812 = halo lumineux ambiance autour du visage
+  - BMP280 = souffle sur la bouche (interaction directe avec le personnage)
+  - VEML7700 = éclairer les yeux déclenche une réaction (le personnage râle/réagit à la lumière)
 
-Le personnage parle : texte à l'écran + syllabes audio AC synchronisées.
+Le personnage parle : texte à l'écran + syllabes audio AC synchronisées, la voix
+sort du haut-parleur sur le Dessus (séparé physiquement de la bouche visuelle).
 Les yeux réagissent en temps réel aux capteurs et aux actions du joueur.
 Les énigmes sont "données" par le personnage (dialogue + feedback visuel).
 ```
 
+> **Énigme clé USB (Côté 2) :** le port USB-C réel du produit sert aussi de mécanique d'énigme — le joueur doit trouver/brancher une clé USB contenant un fichier précis (ex. texte avec une information donnée). Nécessite le mode USB host/OTG sur l'ESP32-S3 (distinct du mode device/CDC actuel utilisé pour le debug) — à instruire en Phase 2 firmware. Volontairement pas de mécanisme d'insertion factice à côté : réutiliser le port réel évite le risque d'un joueur qui force un objet non-USB dedans.
+
 > **Note NFC téléphone :** le ST25DV est un tag pur (pas de mode lecteur) — la box ne peut lire ni un téléphone en émulation de tag, ni un badge externe. L'unique interaction NFC possible est **téléphone → lit la box** (URL/contenu NDEF stocké côté box), qui fonctionne nativement sur tout téléphone NFC y compris iPhone. L'ancienne limitation iOS (HCE restreint aux paiements, bloquait la lecture d'un téléphone par un lecteur PN532) ne s'applique plus : il n'y a plus de fonction lecteur du tout, dans aucune direction.
 
-#### 2.2.3 Architecture PCB — Main + Satellites
+#### 2.2.3 Architecture PCB — Main + Satellites par face
 
-**PCB Main** (~100×100mm, 4 couches) :
+> **Statut (2026-09-21) :** répartition par face figée (§2.2.2c). Le nombre exact de PCB satellites (un par face ? regroupements ?) et le détail de la connectique inter-PCB restent **à trancher** — pressenti 6 PCB au total (Main + 5 faces), à confirmer une fois le Main terminé. Les listes ci-dessous décrivent quel composant va sur quelle face, pas encore le découpage définitif en cartes.
+
+**PCB Main — face Dessous** (~100×100mm, 4 couches) :
 
 Composants embarqués :
 - ESP32-S3-WROOM-1-N16R8 (soudé)
 - Alimentation complète : bq24075 (power path) + DW01A + FS8205, 2× AP2112K-3.3 (digital + audio), MT3608 boost
 - PCM5122PW DAC + découplage (zone audio isolée)
-- PAM8406 Class D ampli + filtre RC sortie
+- PAM8406 Class D ampli + filtre RC sortie (le haut-parleur lui-même est déporté sur la face Dessus, câblé depuis Main)
 - ICS-43434 MEMS micro (trou PCB pour son)
-- ST25DV04KC-IE6S3 NFC (antenne PCB, boucle à dessiner)
+- LSM6DSOXTR accéléromètre/gyro + MLC (IMU — soudé directement sur Main, aucune contrainte de position donc pas besoin de satellite dédié)
 - Connecteur USB-C (charge + USB CDC debug)
-- Connecteur JST-SH 8 pins pour display bouche, type à définir ultérieurement — pas e-ink (SPI2 : VCC, GND, MOSI, SCLK, CS, DC, RST, BUSY)
-- Connecteur batterie LiPo JST-PH 2 pins
-- 4× connecteurs JST-SH 4 pins (bus I2C : SDA, SCL, 3.3V, GND)
-- 1× connecteur JST-SH 10 pins (SPI3 + alim pour 2× GC9A01 : MOSI, SCLK, CS_L, CS_R, DC, RST, 3.3V, GND, +2 rsv)
-- 1× connecteur JST-SH 6 pins (ADC pots + 3.3V + GND)
-- 1× connecteur JST-SH 4 pins (WS2812 data + 5V + GND + signal Hall)
+- Connecteur batterie LiPo JST-PH 2 pins (J2)
+- Connecteurs JST-SH vers les faces satellites (nombre et pinout à finaliser — voir note de statut ci-dessus)
 
-**PCB Satellite Capteurs** (~30×50mm, 2 couches) :
+> **ST25DV04KC-IE6S3 (NFC) retiré du Main** — déplacé sur le satellite face Dessus (voir plus bas), car le tap téléphone doit être accessible sur la face Dessus alors que Main vit sur le Dessous. Le sheet KiCad `nfc.kicad_sch` déjà câblé cette session reste réutilisable tel quel comme point de départ du satellite Dessus, juste sorti du projet Main.
 
-Composants embarqués :
-- MTCH2120 capacitif 12 canaux (pads vers faces via FPC souple)
-- LSM6DSOXTR accéléromètre/gyro + MLC
-- VEML7700 capteur lumière (avec ouverture)
-- BMP280 pression/souffle (avec ouverture)
+**Satellite face Devant** — visage :
+- 2× GC9A01 1.3" ronds (yeux, SPI3 depuis Main)
+- Display bouche, type à définir ultérieurement — pas e-ink (SPI2 depuis Main)
+- WS2812 rétro (halo visage)
+- BMP280 pression/souffle (avec ouverture, près de la bouche)
+- VEML7700 capteur lumière (avec ouverture, déclenche une réaction du personnage)
+
+**Satellite face Dessus** — voix + NFC :
+- Haut-parleur (câblé depuis PAM8406 sur Main, pas d'électronique dédiée à part le driver acoustique)
+- ST25DV04KC-IE6S3 NFC (antenne PCB, boucle à dessiner — cf. `docs/datasheets/ST25DV04K.md`)
+
+**Satellite face Côté 1** — panneau de contrôle :
+- ADS7830 (ADC I2C 0x48) + 4 faders SL1-SL4 + 4 pots rotatifs RV1-RV4
+- Toggles SW1/SW2
+- Boutons poussoir
+
+**Satellite face Côté 2** — accès technique + énigme :
+- Port USB-C réel (charge + lecture clé USB, énigme narrative — nécessite USB host/OTG firmware, cf. §2.2.2c)
+- Interrupteur
+- MTCH2120 capacitif 12 canaux (zones tactiles, pads déportables via FPC)
+
+**Satellite face Côté 3** — zone magique :
 - MLX90614 IR température (avec fenêtre IR)
 - TMAG5273 Hall linéaire 3D I2C
-- Connecteur JST-SH 4 pins vers bus I2C main
 
-> Tous les capteurs partagent le même bus I2C. Adresses uniques confirmées (aucun conflit).
+> Tous les capteurs I2C (satellites + Main) partagent le même bus backbone. Adresses uniques confirmées (aucun conflit) : ADS7830 0x48, MTCH2120 0x28, MLX90614 0x5C, LSM6DSOXTR 0x6A, TMAG5273 0x35, BMP280 0x76, VEML7700 0x10, ST25DV adresse TBD (à vérifier register map).
 
-**PCB Satellite Interaction** (taille selon la face, 2 couches) :
+**Connectique backbone (existant, à réévaluer pour 5 faces au lieu de 4 connecteurs I2C actuels)** :
 
-Composants à câbler (pas forcément sur PCB dédié) :
-- 4 faders SL1-SL4 + 4 pots rotatifs RV1-RV4 → ADS7830 (ADC I2C 0x48 sur PCB face avant)
-- 2 toggles SW1/SW2 (vers GPIO1/2 main, via J8)
-- Boutons mécaniques (via MTCH2120 ou GPIO direct)
-- WS2812 LEDs (chaîne série depuis GPIO48)
-- 2× GC9A01 1.3" ronds (SPI3 depuis main, CS séparés)
-- Display bouche, type à définir ultérieurement — pas e-ink (SPI2 depuis main)
-- Haut-parleur (câbles depuis PAM8406 sur main)
-
-**Connectique backbone** :
-
-JST-SH (1.0mm pitch, verrouillable) pour les connecteurs signaux inter-PCB ; JST-PH (2.0mm, 3A/contact) pour la puissance (J9 LEDs, J10 batterie) :
-- 4 pins I2C : VCC(3.3V), GND, SDA, SCL
+JST-SH (1.0mm pitch, verrouillable) pour les connecteurs signaux inter-PCB ; JST-PH (2.0mm, 3A/contact) pour la puissance (J9 LEDs, J2 batterie) :
+- 4 pins I2C : VCC(3.3V), GND, SDA, SCL — **4 connecteurs actuellement câblés sur Main (J3-J6), potentiellement 5 nécessaires si chaque face satellite I2C (Devant, Dessus, Côté1, Côté2, Côté3) a son propre câble** — à trancher avec le découpage PCB final
 - 10 pins SPI3 yeux : VCC(3.3V), GND, MOSI, SCLK, CS_L, CS_R, DC, RST, (rsv×2)
 - 8 pins SPI2 display bouche (TBD) : VCC(3.3V), GND, MOSI, SCLK, CS, DC, RST, BUSY
 - 6 pins toggles (J8) : VCC(3.3V), GND, SW1, SW2, GPIO3(rsv), (rsv)
@@ -876,14 +884,56 @@ Critères produit — go/no-go Phase 2 :
 **Durée estimée :** 6-12 mois  
 **Objectif :** Avoir un produit physique propre prêt pour pré-vente
 
-**Hardware :**
-- [ ] Schématique EasyEDA complète (DevKit + tous capteurs)
-- [ ] PCB custom V1 commandé chez JLCPCB (5 exemplaires)
+**Hardware — PCB custom (outil : KiCad 10, pas EasyEDA — bascule décidée en cours de Phase 2) :**
+
+*PCB Main — face Dessous (~100×100mm, 4 couches) :*
+- [x] Sheet Power — bq24075 + DW01A/FS8205 + LDOs + boost + USB-C + VBAT_SENSE, câblé et audité
+- [x] Sheet ESP32 — module + découplage + reset + strapping + filtre EMI SPI2/SPI3_SCLK, câblé et audité
+- [x] Sheet Audio — PCM5122 + PAM8406 + ICS-43434, câblé et audité
+- [x] Empreintes des passifs assignées selon BOM sur les 5 sheets (plusieurs erreurs de copié-collé d'empreinte détectées et corrigées en cours de route — footprint d'un CI collée sur un passif voisin)
+- [x] Résoudre l'écart U12 → `USBLC6-2SC6` / `Package_TO_SOT_SMD:SOT-23-6` (LCSC C7519), schéma+BOM alignés
+- [x] Empreinte réelle assignée aux 4 points de test (TP_EN, TP_GPIO0, TP_I2CA, TP_I2CL) → `TestPoint:TestPoint_Pad_D1.5mm`
+- [x] Sortir le sheet NFC (ST25DV04KC-IE6S3) du projet Main — `nfc.kicad_sch` conservé tel quel comme base du futur projet satellite face Dessus
+- [x] Ajouter LSM6DSOXTR (IMU) sur Main — `imu.kicad_sch`, pinout vérifié datasheet ST DS12814, mode I2C adresse 0x6A, câblé et audité
+- [x] Ajouter 12× WS2812B-B/T (halo face Dessous) sur le sheet Connecteurs — chaîne R8→LED2→...→LED13→J9, un bug de câblage trouvé et corrigé au passage (fil direct R8→J9 en reliquat, label WS2812_DATA mal placé)
+- [x] BOM + netlist mis à jour (retrait NFC/ajout IMU/ajout LEDs) — U11 réutilisé pour le LSM6DSOXTR, C4/C5 réutilisés pour son découplage, ST25DV/C4/C5 basculés en ligne "Satellite Dessus"
+- [ ] Lancer l'ERC natif KiCad (Eeschema → Inspect → Electrical Rules Checker) en complément des audits de connectivité déjà faits par script
+- [ ] **Validation schéma main → étape de passage au PCB** (voir checklist dédiée ci-dessous)
+- [ ] Placement des composants sur le PCB (contrainte : zone audio isolée dans un coin, pas de trace digitale dessous)
+- [ ] Routage (plan de masse continu layer 2, I2S court/groupé/blindé, alimentation en priorité)
+- [ ] DRC KiCad (clearance 0.2mm, track 0.2-0.5mm, via 0.3/0.6mm — règles JLCPCB)
+- [ ] Export Gerbers + BOM + CPL
+- [ ] **Validation finale avant envoi JLCPCB** (voir checklist dédiée ci-dessous)
+
+*Satellites par face — pas commencés, découpage exact en PCB à confirmer (pressenti : un projet KiCad par face, cf. §2.2.3) :*
+- [ ] **Devant** (visage) : 2×GC9A01 + display bouche + WS2812 + BMP280 + VEML7700 — schéma + layout + Gerbers
+- [ ] **Dessus** (voix + NFC) : ST25DV04KC-IE6S3 (reprendre `nfc.kicad_sch` existant) + connecteur haut-parleur — schéma + dessin antenne NFC (boucle PCB, zone de garde) + layout + Gerbers
+- [ ] **Côté 1** (panneau de contrôle) : ADS7830 + faders/pots + toggles + boutons — schéma + layout + Gerbers
+- [ ] **Côté 2** (technique + énigme) : port USB-C + interrupteur + MTCH2120 — schéma + layout + Gerbers
+- [ ] **Côté 3** (zone magique) : MLX90614 + TMAG5273 — schéma + layout + Gerbers
+- [ ] Trancher le nombre réel de connecteurs I2C nécessaires sur Main (4 actuellement câblés J3-J6, potentiellement 5 avec Devant/Dessus/Côté1/Côté2/Côté3) et mettre à jour le sheet Connecteurs en conséquence
+
+*Commun à tous les PCB :*
 - [ ] Boîtier Lite : Fusion 360 → impression 3D → découpe laser MDF
 - [ ] Assemblage 30-50 boxes proto
 - [ ] Certification CE-RED initiée (3-4 mois, ~10k CHF)
 - [ ] Test autonomie batterie
 - [ ] Test fiabilité mécanique servos (1000 cycles)
+
+**Checklist de validation schéma → PCB (par PCB, avant de passer au layout) :**
+- [ ] Tous les sheets du PCB concerné audités (connectivité script + ERC KiCad natif), zéro warning non justifié
+- [ ] Toutes les empreintes assignées et vérifiées contre la BOM (aucun champ vide, aucune empreinte d'un autre composant par erreur)
+- [ ] BOM à jour : chaque référence du schéma a une ligne BOM correspondante et vice-versa (pas de désynchro de nom comme J2/J10 rencontré cette session)
+- [ ] Toutes les décisions de composant ouvertes tranchées (ex : variante U12, adresse I2C ST25DV si bloquant pour le hardware)
+
+**Checklist de validation avant envoi fabrication JLCPCB (par PCB) :**
+- [ ] DRC KiCad sans erreur (0 seulement, warnings documentés/justifiés)
+- [ ] Gerbers + drill files générés et visuellement inspectés (Gerber viewer) — couches, silkscreen lisible, pas de chevauchement
+- [ ] BOM export JLCPCB (`Comment, Designator, Footprint, LCSC Part#`) — toutes les lignes ont un LCSC Part# valide ou sont explicitement marquées DNP/hors-catalogue
+- [ ] CPL (Component Placement List) généré et cohérent avec le placement réel
+- [ ] Dimensions PCB confirmées (contour, épaisseur, nombre de couches) vs devis JLCPCB
+- [ ] Revue humaine finale du footprint 3D (KiCad 3D viewer) pour détecter les collisions mécaniques évidentes
+- [ ] Go/no-go explicite de l'utilisateur avant upload sur jlcpcb.com (poste irréversible/payant)
 
 **Firmware :**
 - [ ] WiFi provisioning via BLE (app-less, page web)
@@ -1717,7 +1767,7 @@ Ces 3 réponses sont liées à la session (`hints_used`, `duration_sec`, `score`
 | bq24075 | LCSC C15464 | https://www.ti.com/lit/ds/symlink/bq24075.pdf |
 | MT3608 | LCSC C84817 | https://datasheet.lcsc.com/lcsc/XI-AN-Aerosemi-Tech-MT3608_C84817.pdf |
 | AP2112K-3.3 | LCSC C51353 | https://datasheet.lcsc.com/lcsc/DIODES-AP2112K-3.3TRG1_C51353.pdf |
-| WS2812B | LCSC C114586 | https://datasheet.lcsc.com/lcsc/Worldsemi-WS2812B_C114586.pdf |
+| WS2812B-B/T | LCSC C2761795 | https://datasheet.lcsc.com/lcsc/Worldsemi-WS2812B_C114586.pdf (C114586 = même puce Worldsemi WS2812B, datasheet identique — C2761795 choisie car importable via le plugin KiCad utilisé, C114586 absente de son index) |
 | 2N7002 | LCSC C8545 | https://datasheet.lcsc.com/lcsc/Nexperia-2N7002_C8545.pdf |
 | TTP223-BA6 | LCSC C80757 | https://datasheet.lcsc.com/lcsc/1809301523_TONTEK-TTP223-BA6_C80757.pdf |
 
