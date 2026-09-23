@@ -1,4 +1,5 @@
 #include "scenario_engine.h"
+#include "scenario_validate.h"
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -87,10 +88,11 @@ int scenario_var_get_int(const char *name, int default_val) {
 // --- Helpers ---
 
 static cJSON *step_by_id(const char *id) {
+    if (!id) return NULL;
     cJSON *step;
     cJSON_ArrayForEach(step, s_steps) {
-        cJSON *sid = cJSON_GetObjectItem(step, "id");
-        if (sid && strcmp(sid->valuestring, id) == 0) return step;
+        const char *sid = cJSON_GetStringValue(cJSON_GetObjectItem(step, "id"));
+        if (sid && strcmp(sid, id) == 0) return step;
     }
     return NULL;
 }
@@ -155,7 +157,7 @@ static void run_actions(const cJSON *actions) {
     const cJSON *action;
     cJSON_ArrayForEach(action, actions) {
         const cJSON *param = action->child;
-        if (!param) continue;
+        if (!param || !param->string) continue;  // action non-objet (validée au chargement)
 
         // Built-ins (pas de handler externe nécessaire)
         if (strcmp(param->string, "set_var") == 0)  { builtin_set_var(param);  continue; }
@@ -198,11 +200,13 @@ static bool event_value_matches(const cJSON *step, const scenario_event_t *evt) 
     switch (evt->type) {
         case EVT_RFID_READ: {
             const cJSON *uid = cJSON_GetObjectItem(expect, "uid");
-            return !uid || strcmp(uid->valuestring, evt->str) == 0;
+            const char  *s   = cJSON_GetStringValue(uid);
+            return !uid || (s && strcmp(s, evt->str) == 0);
         }
         case EVT_KEYPAD_CODE: {
             const cJSON *code = cJSON_GetObjectItem(expect, "code");
-            return !code || strcmp(code->valuestring, evt->str) == 0;
+            const char  *s    = cJSON_GetStringValue(code);
+            return !code || (s && strcmp(s, evt->str) == 0);
         }
         case EVT_TOUCH: {
             const cJSON *ch = cJSON_GetObjectItem(expect, "channel");
@@ -234,7 +238,14 @@ static bool event_value_matches(const cJSON *step, const scenario_event_t *evt) 
 static void enter_step(const char *id) {
     cJSON *step = step_by_id(id);
     if (!step) {
-        ESP_LOGE(TAG, "step '%s' introuvable", id);
+        // Rester sur le step courant rejouerait ses actions en boucle
+        // (narrative) : on arrête le scénario. "end" sans step dédié = fin.
+        if (id && strcmp(id, "end") == 0) {
+            ESP_LOGI(TAG, "=== SCÉNARIO TERMINÉ ===");
+        } else {
+            ESP_LOGE(TAG, "step '%s' introuvable — scénario arrêté", id ? id : "(null)");
+        }
+        s_current = NULL;
         return;
     }
     s_current      = step;
@@ -408,13 +419,15 @@ esp_err_t scenario_engine_init(const char *json) {
         return ESP_ERR_INVALID_ARG;
     }
 
-    s_steps = cJSON_GetObjectItem(s_root, "steps");
-    if (!cJSON_IsArray(s_steps)) {
-        ESP_LOGE(TAG, "'steps' manquant ou invalide");
+    // Validation structurelle : un scénario mal typé (SD, package) est refusé
+    // ici plutôt que de crasher le moteur en cours de partie.
+    if (scenario_validate(s_root) != ESP_OK) {
+        ESP_LOGE(TAG, "scénario refusé (structure invalide)");
         cJSON_Delete(s_root);
         s_root = NULL;
         return ESP_ERR_INVALID_ARG;
     }
+    s_steps = cJSON_GetObjectItem(s_root, "steps");
 
     s_queue = xQueueCreate(EVENT_QUEUE_LEN, sizeof(scenario_event_t));
     if (!s_queue) return ESP_ERR_NO_MEM;

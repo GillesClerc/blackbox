@@ -135,6 +135,17 @@ def validate_step(step: dict, step_ids: set, idx: int):
         on = step.get("on")
         if on not in VALID_EVENT_TYPES:
             err(f"{ctx} : 'on' '{on}' invalide (valides: {VALID_EVENT_TYPES})")
+        expect = step.get("expect")
+        if expect is not None:
+            if not isinstance(expect, dict):
+                err(f"{ctx} : 'expect' doit être un objet")
+            else:
+                # Comparés comme chaînes par le firmware : `code: 7394` non
+                # quoté devient un nombre → refusé au chargement sur la box.
+                for k in ("uid", "code"):
+                    if k in expect and not isinstance(expect[k], str):
+                        err(f"{ctx} : expect.{k} doit être une chaîne "
+                            f"(mettre des guillemets : '{expect[k]}')")
         timeout = step.get("timeout_sec")
         if timeout is not None and (not isinstance(timeout, (int, float)) or timeout <= 0):
             err(f"{ctx} : timeout_sec invalide")
