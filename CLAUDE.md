@@ -5,8 +5,14 @@ Box physique d'escape game. Specs completes dans :
 - `docs/escapebox-vision.md` — vision produit
 - `docs/plans/web-implementation.md` — plan web platform
 - `docs/plans/firmware-cloud-client.md` — plan client cloud firmware (auth/sync/packages d'assets faits ; reste mixer audio, BLE, OTA)
-- `docs/audits/` — audits datés (constats, plan de correction, points restants). Dernier : `2026-09-23-audit.md`
-- `docs/datasheets/` — PDF officiels + synthese markdown par composant (pinout, registres, sequence d'init, exemple ESP-IDF, drivers existants). Consulter avant de coder un nouveau peripherique. Skill `/component-research <REF>` pour en ajouter un.
+- `docs/audits/` — audits datés (constats, plan de correction, points restants). Derniers : `2026-09-23-audit.md` (logiciel), `2026-09-23-hardware-db.md` (KiCad Main + DB)
+- `docs/datasheets/` — PDF officiels + synthese markdown par composant (pinout, registres, sequence d'init, exemple ESP-IDF, drivers existants). Skill `/component-research <REF>` pour en ajouter un.
+
+## Regle datasheets (obligatoire)
+- **Avant tout travail sur un composant** (code driver/HAL, schema KiCad, audit, revue, conseil, reponse a une question), **lire sa synthese `docs/datasheets/<composant>.md`**, et le PDF a cote pour tout point absent ou douteux de la synthese.
+- **Ne jamais donner un retour, une recommandation ou un chiffre sans l'avoir verifie dans la datasheet** (ni de memoire, ni sur une datasheet d'une autre variante — ex. WS2812B V5 ≠ WS2812B ancienne). Citer la source (section/table) dans le retour.
+- Composant sans synthese : telecharger le PDF officiel dans `docs/datasheets/` et creer le `.md` (template du skill component-research) **avant** de conclure. Toute valeur relevee dans un PDF et utile au projet est reportee dans la synthese.
+- Lire aussi `docs/escapebox-fsd.md` (spec, pinout, decisions) et `docs/escapebox-vision.md` pour le contexte produit.
 
 ## Environnement
 - ESP-IDF v6.1

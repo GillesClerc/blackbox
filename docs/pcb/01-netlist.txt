@@ -30,7 +30,8 @@ NET 3V3_D (digital):
   IMU deplacee du satellite capteurs vers Main (2026-09-21), aucune contrainte de position
   (le ST25DV NFC est parti sur le satellite face Dessus — sheet nfc.kicad_sch, projet
   PCB separe, plus dans ce netlist Main)
-  J3.VCC, J4.VCC, J5.VCC, J6.VCC (I2C satellites)
+  J3.VCC, J4.VCC, J5.VCC, J6.VCC (I2C satellites — pin 2, brochage Qwiic :
+   1 = GND, 2 = 3V3, 3 = SDA, 4 = SCL, depuis 2026-09-23)
   J7.VCC (2x GC9A01 yeux)
   J7b.VCC (display bouche, TBD — pas e-ink)
   J8.VCC (toggles face avant + reserve)
@@ -256,11 +257,15 @@ NET GND (ajout J11):
 
 NET BTN1:
   U1.GPIO45
-  (pull-up externe vers 3V3_D si utilise)
+  (⚠ STRAPPING VDD_SPI — JAMAIS de pull-up externe : GPIO45 = 1 au reset
+   → VDD_SPI 1,8 V → flash illisible. Flottante = pull-down interne = OK.
+   Bouton seulement actif haut (vers 3V3_D), relache au reset.
+   Ref. ESP32-S3 datasheet §3.2, docs/datasheets/ESP32-S3-datasheet.md)
 
 NET BTN2:
   U1.GPIO46
-  (pull-up externe vers 3V3_D, input only)
+  (strapping boot/ROM log — pas de pull-up externe ; flottante = 0 = OK.
+   Download mode exige GPIO0 = 0 ET GPIO46 = 0. Ref. ESP32-S3 datasheet §3.1)
 
 NET USB_DM:
   J1.D- (2 pins physiques a relier ensemble : A7=Dn1, B7=Dn2 — connecteur
@@ -444,14 +449,14 @@ NET SAT_I2C_SCL:
   U25.SCL (TMAG5273)
 
 NET SAT_3V3:
-  J_SAT.VCC (JST-SH pin 1)
+  J_SAT.VCC (JST-SH pin 2 — brochage Qwiic/STEMMA QT depuis 2026-09-23)
   U20.VDD, U22.VDD, U23.VDD, U23.VDDIO,
   U24.VDD, U25.VDD (TMAG5273)
   C30-C35.+ (decouplage 100nF chaque — nombre a ajuster, 6 caps prevus pour
   un IC de moins depuis le depart du LSM6DSOXTR)
 
 NET SAT_GND:
-  (⚠ absente de ce netlist avant 2026-09-11 — a relier : JST-SH pin 2,
+  (⚠ absente de ce netlist avant 2026-09-11 — a relier : JST-SH pin 1 (Qwiic),
    U20.GND, U22.GND, U23.GND, U24.GND, U25.GND (pin2, TMAG5273),
    C30-C35.-)
 
@@ -493,14 +498,14 @@ NET FP_I2C_SCL:
   U26.SCL (pin 14)
 
 NET FP_3V3:
-  J_FP.VCC (JST-SH pin 1)
+  J_FP.VCC (JST-SH pin 2 — Qwiic)
   U26.+VDD (pin 16), C_FP1.+ (100nF decouplage)
   U26.REFIN (pin 10), C_FP2.+ (1uF — ref externe ratiometrique)
   SL1.1, SL2.1, SL3.1, SL4.1 (faders, borne haute)
   RV1.1, RV2.1, RV3.1, RV4.1 (pots rotatifs, borne haute)
 
 NET FP_GND:
-  J_FP.GND (JST-SH pin 2)
+  J_FP.GND (JST-SH pin 1 — Qwiic)
   U26.GND (pin 9)
   U26.COM (pin 11, borne -IN commune single-ended)
   U26.A0 (pin 12), U26.A1 (pin 13) -> adresse 0x48

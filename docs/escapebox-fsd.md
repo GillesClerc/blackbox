@@ -222,8 +222,8 @@ Scores et stats remontés à la prochaine synchro
 | GPIO15 | SPI2_MISO | Carte microSD | Bus partagé avec le display bouche |
 | GPIO19 | USB D- | USB-C natif | — |
 | GPIO20 | USB D+ | USB-C natif | — |
-| GPIO45 | Bouton / reserve | Strapping pin (attention) | Input avec pull-up ext |
-| GPIO46 | Bouton / reserve | Input only | — |
+| GPIO45 | Bouton / reserve | Strapping VDD_SPI | **Jamais de pull-up externe** (1 au reset = flash 1,8 V → ne boote plus). Flottante OK ; bouton actif haut seulement. Cf. `docs/datasheets/ESP32-S3-datasheet.md` |
+| GPIO46 | Bouton / reserve | Strapping boot | Pas de pull-up externe (flottante = 0 = OK) |
 | GPIO47 | SPI2_CS_SD | Carte microSD (chip select) | Distinct du CS display bouche (GPIO10) |
 | GPIO48 | WS2812 DATA | Chaîne LEDs RGB | RMT driver |
 
@@ -355,7 +355,7 @@ Composants embarqués :
 **Connectique backbone (existant, à réévaluer pour 5 faces au lieu de 4 connecteurs I2C actuels)** :
 
 JST-SH (1.0mm pitch, verrouillable) pour les connecteurs signaux inter-PCB ; JST-PH (2.0mm, 3A/contact) pour la puissance (J9 LEDs, J2 batterie) :
-- 4 pins I2C : VCC(3.3V), GND, SDA, SCL — **4 connecteurs actuellement câblés sur Main (J3-J6), potentiellement 5 nécessaires si chaque face satellite I2C (Devant, Dessus, Côté1, Côté2, Côté3) a son propre câble** — à trancher avec le découpage PCB final
+- 4 pins I2C, **brochage Qwiic/STEMMA QT** : 1 = GND, 2 = VCC(3.3V), 3 = SDA, 4 = SCL (compatible breakouts Adafruit/SparkFun, changé le 2026-09-23) — **4 connecteurs actuellement câblés sur Main (J3-J6), potentiellement 5 nécessaires si chaque face satellite I2C (Devant, Dessus, Côté1, Côté2, Côté3) a son propre câble** — à trancher avec le découpage PCB final
 - 10 pins SPI3 yeux : VCC(3.3V), GND, MOSI, SCLK, CS_L, CS_R, DC, RST, (rsv×2)
 - 8 pins SPI2 display bouche (TBD) : VCC(3.3V), GND, MOSI, SCLK, CS, DC, RST, BUSY
 - 6 pins toggles (J8) : VCC(3.3V), GND, SW1, SW2, GPIO3(rsv), (rsv)
@@ -897,6 +897,8 @@ Critères produit — go/no-go Phase 2 :
 - [x] Ajouter LSM6DSOXTR (IMU) sur Main — `imu.kicad_sch`, pinout vérifié datasheet ST DS12814, mode I2C adresse 0x6A, câblé et audité
 - [x] Ajouter 12× WS2812B-B/T (halo face Dessous) sur le sheet Connecteurs — chaîne R8→LED2→...→LED13→J9, un bug de câblage trouvé et corrigé au passage (fil direct R8→J9 en reliquat, label WS2812_DATA mal placé)
 - [x] BOM + netlist mis à jour (retrait NFC/ajout IMU/ajout LEDs) — U11 réutilisé pour le LSM6DSOXTR, C4/C5 réutilisés pour son découplage, ST25DV/C4/C5 basculés en ligne "Satellite Dessus"
+- [ ] **Bouton marche/arrêt** (interrupteur face Côté 2) : couper les 3 régulateurs (EN de U5/U6/U7) + load switch sur le rail 5 V, charge USB préservée quand éteint — options et arbitrage dans `docs/audits/2026-09-23-hardware-db.md` §Alimentation
+- [ ] Corrections de l'audit hardware 2026-09-23 (`docs/audits/2026-09-23-hardware-db.md`) : C20 PCM5122, connecteur haut-parleur + ferrites, 100 nF ICS-43434, pull-ups SD, J3-J6 Qwiic (patch fourni), rail 5 V / diode D1, charge LiPo (TMR/NTC), AP2112 thermique
 - [ ] Lancer l'ERC natif KiCad (Eeschema → Inspect → Electrical Rules Checker) en complément des audits de connectivité déjà faits par script
 - [ ] **Validation schéma main → étape de passage au PCB** (voir checklist dédiée ci-dessous)
 - [ ] Placement des composants sur le PCB (contrainte : zone audio isolée dans un coin, pas de trace digitale dessous)
@@ -1767,7 +1769,7 @@ Ces 3 réponses sont liées à la session (`hints_used`, `duration_sec`, `score`
 | bq24075 | LCSC C15464 | https://www.ti.com/lit/ds/symlink/bq24075.pdf |
 | MT3608 | LCSC C84817 | https://datasheet.lcsc.com/lcsc/XI-AN-Aerosemi-Tech-MT3608_C84817.pdf |
 | AP2112K-3.3 | LCSC C51353 | https://datasheet.lcsc.com/lcsc/DIODES-AP2112K-3.3TRG1_C51353.pdf |
-| WS2812B-B/T | LCSC C2761795 | https://datasheet.lcsc.com/lcsc/Worldsemi-WS2812B_C114586.pdf (C114586 = même puce Worldsemi WS2812B, datasheet identique — C2761795 choisie car importable via le plugin KiCad utilisé, C114586 absente de son index) |
+| WS2812B-B/T | LCSC C2761795 | Datasheet **WS2812B V5** propre à C2761795 : `docs/datasheets/WS2812B-B.pdf` / `.md` (⚠ ≠ ancienne WS2812B C114586 : V_IH 2,7 V et timings T0H/T1L différents) |
 | 2N7002 | LCSC C8545 | https://datasheet.lcsc.com/lcsc/Nexperia-2N7002_C8545.pdf |
 | TTP223-BA6 | LCSC C80757 | https://datasheet.lcsc.com/lcsc/1809301523_TONTEK-TTP223-BA6_C80757.pdf |
 
