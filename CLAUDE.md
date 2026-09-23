@@ -5,7 +5,7 @@ Box physique d'escape game. Specs completes dans :
 - `docs/escapebox-vision.md` — vision produit
 - `docs/plans/web-implementation.md` — plan web platform
 - `docs/plans/firmware-cloud-client.md` — plan client cloud firmware (auth/sync/packages d'assets faits ; reste mixer audio, BLE, OTA)
-- `docs/audits/` — audits datés (constats, plan de correction, points restants). Derniers : `2026-09-23-audit.md` (logiciel), `2026-09-23-hardware-db.md` (KiCad Main + DB)
+- `docs/audits/` — audits datés (constats, plan de correction, points restants). Derniers : `2026-09-23-audit.md` (logiciel), `2026-09-23-hardware-db.md` (KiCad Main + DB). **Synthese vivante : `docs/audits/RESTE-A-FAIRE.md`** (a cocher au fil de l'eau)
 - `docs/datasheets/` — PDF officiels + synthese markdown par composant (pinout, registres, sequence d'init, exemple ESP-IDF, drivers existants). Skill `/component-research <REF>` pour en ajouter un.
 
 ## Regle datasheets (obligatoire)
