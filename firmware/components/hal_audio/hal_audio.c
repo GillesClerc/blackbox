@@ -483,6 +483,13 @@ esp_err_t hal_audio_init(void)
         if (probe != ESP_OK) {
             ESP_LOGE(TAG, "PCM5122 inaccessible (0x%02X): %s — init audio abandonnée",
                      PCM5122_I2C_ADDR, esp_err_to_name(probe));
+            // Libère proprement : l'API reste appelable et sans effet (s_dac
+            // NULL, mixer non démarré) — la box tourne sans son.
+            i2c_master_bus_rm_device(s_dac);
+            s_dac = NULL;
+            i2s_channel_disable(s_tx);
+            i2s_del_channel(s_tx);
+            s_tx = NULL;
             return probe;
         }
     }

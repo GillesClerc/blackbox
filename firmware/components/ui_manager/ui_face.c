@@ -105,6 +105,7 @@ esp_err_t ui_face_init(void)
 esp_err_t ui_face_start(void)
 {
     if (s_started) return ESP_OK;
+    if (!s_mutex) return ESP_ERR_INVALID_STATE;  // ui_face_init non fait
     // M2 : stack 8192 — draw_eye + split() récursif + overhead FreeRTOS dépassaient 6144.
     BaseType_t ok = xTaskCreatePinnedToCore(eye_task, "eye_task",
                                             8192, NULL, 4, NULL, 1);
@@ -115,6 +116,7 @@ esp_err_t ui_face_start(void)
 
 void ui_face_set_emotion(ui_face_emotion_t e)
 {
+    if (!s_mutex) return;  // visage non initialisé (écran absent)
     if (xSemaphoreTake(s_mutex, pdMS_TO_TICKS(MUTEX_TIMEOUT_MS)) != pdTRUE) {
         s_mutex_timeout_count++;
         ESP_LOGW(TAG, "set_emotion: mutex timeout #%lu", (unsigned long)s_mutex_timeout_count);
@@ -127,6 +129,7 @@ void ui_face_set_emotion(ui_face_emotion_t e)
 
 void ui_face_look(ui_face_direction_t dir)
 {
+    if (!s_mutex) return;  // visage non initialisé (écran absent)
     if (xSemaphoreTake(s_mutex, pdMS_TO_TICKS(MUTEX_TIMEOUT_MS)) != pdTRUE) {
         s_mutex_timeout_count++;
         ESP_LOGW(TAG, "look: mutex timeout #%lu", (unsigned long)s_mutex_timeout_count);
@@ -164,6 +167,7 @@ void ui_face_look(ui_face_direction_t dir)
 
 void ui_face_blink(void)
 {
+    if (!s_mutex) return;  // visage non initialisé (écran absent)
     if (xSemaphoreTake(s_mutex, pdMS_TO_TICKS(MUTEX_TIMEOUT_MS)) != pdTRUE) {
         s_mutex_timeout_count++;
         ESP_LOGW(TAG, "blink: mutex timeout #%lu", (unsigned long)s_mutex_timeout_count);

@@ -422,8 +422,16 @@ void app_main(void)
     s_flash_queue = xQueueCreate(4, sizeof(flash_cmd_t));
     xTaskCreatePinnedToCore(flash_task, "flash", 2048, NULL, 3, NULL, 0);
 
-    ESP_ERROR_CHECK(hal_display_init());
-    hal_display_fill_all(EYE_BLACK);
+    // Écran et DAC optionnels : un périphérique absent ou mal câblé ne doit
+    // pas provoquer un abort → reboot en boucle. Sans écran, ui_face n'est
+    // pas démarré (ses API deviennent sans effet).
+    esp_err_t disp_err = hal_display_init();
+    if (disp_err == ESP_OK) {
+        hal_display_fill_all(EYE_BLACK);
+    } else {
+        ESP_LOGE(TAG, "écran indisponible (%s) — la box continue sans yeux",
+                 esp_err_to_name(disp_err));
+    }
     ESP_ERROR_CHECK(config_manager_init());
 
     // Identifiants box (provisionnés par tools/provision_box.py). Non bloquant :
@@ -432,13 +440,20 @@ void app_main(void)
         ESP_LOGW(TAG, "box non provisionnée — lancer tools/provision_box.py");
     }
 
-    ESP_ERROR_CHECK(ui_face_init());
-    ESP_ERROR_CHECK(ui_face_start());
+    if (disp_err == ESP_OK) {
+        ESP_ERROR_CHECK(ui_face_init());
+        ESP_ERROR_CHECK(ui_face_start());
+    }
 
     // I2C + audio
     ESP_ERROR_CHECK(hal_i2c_bus_init());
-    ESP_ERROR_CHECK(hal_audio_init());
-    hal_audio_set_volume(config_get_volume());
+    esp_err_t audio_err = hal_audio_init();
+    if (audio_err == ESP_OK) {
+        hal_audio_set_volume(config_get_volume());
+    } else {
+        ESP_LOGE(TAG, "audio indisponible (%s) — la box continue sans son",
+                 esp_err_to_name(audio_err));
+    }
 
     // Carte SD optionnelle : scénario + assets si présente, sinon embarqué.
     if (hal_storage_init() != ESP_OK) {
@@ -500,7 +515,9 @@ void app_main(void)
     // Touch input task — m1 : pinner sur core 0 (eye_task sur core 1, I2C sur core 0).
     xTaskCreatePinnedToCore(touch_task, "touch", 4096, NULL, 5, NULL, 0);
 
-    ESP_LOGI(TAG, "EscapeBox ready — yeux GC9A01 animés, scenario engine actif");
+    ESP_LOGI(TAG, "EscapeBox ready — yeux %s, audio %s, scenario engine actif",
+             disp_err == ESP_OK ? "OK" : "ABSENTS",
+             audio_err == ESP_OK ? "OK" : "ABSENT");
 
     ESP_LOGI(TAG, "heap interne libre avant réseau : %u octets",
              (unsigned)heap_caps_get_free_size(MALLOC_CAP_INTERNAL));

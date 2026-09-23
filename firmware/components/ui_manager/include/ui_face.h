@@ -25,6 +25,8 @@ typedef enum {
 esp_err_t ui_face_init(void);
 esp_err_t ui_face_start(void);
 
+// Les fonctions ci-dessous sont sans effet si ui_face_init() n'a pas été
+// appelé (écran absent) : les appelants n'ont pas à le vérifier.
 void ui_face_set_emotion(ui_face_emotion_t e);
 void ui_face_look(ui_face_direction_t dir);
 void ui_face_blink(void);
