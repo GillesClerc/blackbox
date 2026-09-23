@@ -7,6 +7,8 @@
 **Référence officielle** : LSM6DSOXTR (suffixe `TR` = tape & reel ; puce identique au LSM6DSOX cut-tape)
 **Datasheet source** : https://www.st.com/resource/en/datasheet/lsm6dsox.pdf
 
+> Fichiers liés : `LSM6DSOX.pdf` est une **copie identique** de `LSM6DSOXTR.pdf` (même md5) ; `LSM6DSOXTR-adafruit-guide.pdf` = guide Adafruit du breakout LSM6DSOX/ISM330DHC/LSM6DSO32 (brochage breakout, câblage I2C/SPI, exemples Arduino/CircuitPython) — référence de proto, pas une datasheet.
+
 ## Vue d'ensemble
 
 IMU iNEMO 6 axes à très basse consommation (0,55 mA en mode combo haute performance). Combine accéléromètre 16 bits (±2/4/8/16 g) et gyroscope 16 bits (±125/250/500/1000/2000 dps). Embarque un **Machine Learning Core (MLC)** programmable (8 arbres de décision, 16 inputs), un **Finite State Machine (FSM)** (16 machines pour reconnaissance de mouvements custom), un **Sensor Hub** I²C maître pour 4 capteurs externes, une **FIFO de 9 KB** avec compression, pedometer/tap/free-fall/wakeup hardware, et interfaces I²C, SPI, MIPI I3C. Production massive : automobile, wearables, drones, gaming, AR/VR.
