@@ -2,7 +2,10 @@
 
 Doit rester rigoureusement aligné sur web/lib/box-auth.ts :
   box_secret = HKDF-SHA256(master, salt="", info="escapebox:<box_uid>", 32)
-  challenge_response = HMAC-SHA256(box_secret, "<box_uid>:<challenge>").hex()
+  challenge_response = HMAC-SHA256(box_secret,
+                                   "<purpose>:<box_uid>:<challenge>").hex()
+  purpose ∈ {"auth", "register"} — séparation de domaine : une preuve
+  d'appairage (signée via BLE, canal non authentifié) ne vaut pas auth cloud.
 
 Le master (BOX_MASTER_SECRET) n'est jamais embarqué ni commité.
 """
@@ -34,11 +37,21 @@ def box_secret(master: str, box_uid: str) -> bytes:
     )
 
 
-def box_hmac(master: str, box_uid: str, challenge: str) -> str:
-    """Réponse HMAC au challenge, en hex (ce que la box renvoie à /api/box/auth)."""
+PURPOSES = ("auth", "register")
+
+
+def box_hmac(master: str, box_uid: str, challenge: str,
+             purpose: str = "auth") -> str:
+    """Réponse HMAC au challenge, en hex.
+
+    purpose="auth" : ce que la box renvoie à /api/box/auth ;
+    purpose="register" : preuve de possession pour /api/box/register.
+    """
+    if purpose not in PURPOSES:
+        raise ValueError(f"purpose invalide : {purpose}")
     secret = box_secret(master, box_uid)
     return hmac.new(
-        secret, f"{box_uid}:{challenge}".encode(), hashlib.sha256
+        secret, f"{purpose}:{box_uid}:{challenge}".encode(), hashlib.sha256
     ).hexdigest()
 
 

@@ -12,9 +12,10 @@
 // Flux serveur (cf. web/app/api/box/) :
 //   1. GET  /api/box/challenge?box_uid=<uid>      -> challenge (nonce)
 //   2. POST /api/box/auth  { box_uid, challenge,
-//        challenge_response = hal_box_auth_sign(challenge) }  -> JWT 2h
+//        challenge_response = hal_box_auth_sign(AUTH, challenge) }  -> JWT 2h
 //   3. GET  /api/box/sync  (Authorization: Bearer <JWT>)
-// Les étapes réseau nécessitent un stack WiFi/HTTP (pas encore implémenté).
+// Appairage (web /devices/add, via BLE) : POST /api/box/register avec
+// hal_box_auth_sign(REGISTER, challenge).
 
 // Longueur de la réponse HMAC-SHA256 en hex (sans le terminateur).
 #define HAL_BOX_AUTH_SIG_HEX_LEN 64
@@ -31,8 +32,18 @@ bool hal_box_auth_is_provisioned(void);
 // box_uid (ex: "ESP32S3-A1B2-C3D4"), ou NULL si non provisionnée.
 const char *hal_box_auth_uid(void);
 
-// Calcule challenge_response = HMAC-SHA256(secret, "<box_uid>:<challenge>"),
+// Usage d'une signature — séparation de domaine : une signature obtenue pour
+// l'appairage (BLE, sans authentification) ne vaut jamais comme preuve d'auth
+// cloud, et inversement. Aligné sur web/lib/box-auth.ts et tools/box_crypto.py.
+typedef enum {
+    HAL_BOX_AUTH_PURPOSE_AUTH,      // "auth"     — /api/box/auth (JWT box)
+    HAL_BOX_AUTH_PURPOSE_REGISTER,  // "register" — /api/box/register (appairage)
+} hal_box_auth_purpose_t;
+
+// Calcule challenge_response =
+//   HMAC-SHA256(secret, "<purpose>:<box_uid>:<challenge>"),
 // écrit en hex minuscule terminé par '\0' dans out_hex.
 // out_len doit valoir au moins HAL_BOX_AUTH_SIG_HEX_LEN + 1 (65).
 // Retourne ESP_ERR_INVALID_STATE si non provisionnée.
-esp_err_t hal_box_auth_sign(const char *challenge, char *out_hex, size_t out_len);
+esp_err_t hal_box_auth_sign(hal_box_auth_purpose_t purpose, const char *challenge,
+                            char *out_hex, size_t out_len);

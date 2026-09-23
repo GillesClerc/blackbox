@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: "challenge invalide ou expiré" }, { status: 401 });
   }
 
-  if (!verifyBoxHmac(boxUid, challenge, response)) {
+  if (!verifyBoxHmac("auth", boxUid, challenge, response)) {
     return Response.json({ error: "signature invalide" }, { status: 401 });
   }
 

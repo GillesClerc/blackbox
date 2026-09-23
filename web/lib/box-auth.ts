@@ -45,13 +45,21 @@ export function newChallenge(): string {
   return randomBytes(32).toString("hex");
 }
 
+// Usage d'une signature — séparation de domaine : la box signe
+// "<purpose>:<box_uid>:<challenge>". Le canal BLE (non authentifié) ne signe
+// que des preuves "register" ; une telle preuve ne peut donc jamais servir à
+// obtenir un JWT via /api/box/auth ("auth"). Aligné sur hal_box_auth (firmware)
+// et tools/box_crypto.py.
+export type BoxSigPurpose = "auth" | "register";
+
 export function verifyBoxHmac(
+  purpose: BoxSigPurpose,
   boxUid: string,
   challenge: string,
   hmac: string
 ): boolean {
   const expected = createHmac("sha256", boxSecret(boxUid))
-    .update(`${boxUid}:${challenge}`)
+    .update(`${purpose}:${boxUid}:${challenge}`)
     .digest("hex");
   const a = Buffer.from(expected);
   const b = Buffer.from(hmac);

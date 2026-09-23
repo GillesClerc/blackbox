@@ -12,8 +12,9 @@ const MAX_DEVICES = 3;
 // POST /api/box/register { box_uid, name?, challenge, challenge_response }
 // Auth : utilisateur Supabase connecté (cookie de session). Option B (preuve
 // de possession) : la box a signé le challenge via BLE pendant l'appairage
-// (hal_box_auth_sign) — impossible de revendiquer un UID qu'on n'a pas en
-// main. Même mécanique anti-replay que /api/box/auth (nonce consommé).
+// (hal_box_auth_sign, purpose "register") — impossible de revendiquer un UID
+// qu'on n'a pas en main. Même mécanique anti-replay que /api/box/auth (nonce
+// consommé) ; la signature "register" n'est pas acceptée par /api/box/auth.
 export async function POST(request: NextRequest) {
   let body: {
     box_uid?: string;
@@ -62,7 +63,7 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: "challenge invalide ou expiré" }, { status: 401 });
   }
 
-  if (!verifyBoxHmac(boxUid, challenge, response)) {
+  if (!verifyBoxHmac("register", boxUid, challenge, response)) {
     return Response.json({ error: "preuve de possession invalide" }, { status: 401 });
   }
 

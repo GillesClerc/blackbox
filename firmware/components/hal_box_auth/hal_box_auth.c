@@ -61,16 +61,27 @@ const char *hal_box_auth_uid(void)
     return s_provisioned ? s_uid : NULL;
 }
 
-esp_err_t hal_box_auth_sign(const char *challenge, char *out_hex, size_t out_len)
+static const char *purpose_str(hal_box_auth_purpose_t purpose)
+{
+    switch (purpose) {
+    case HAL_BOX_AUTH_PURPOSE_AUTH:     return "auth";
+    case HAL_BOX_AUTH_PURPOSE_REGISTER: return "register";
+    default:                            return NULL;
+    }
+}
+
+esp_err_t hal_box_auth_sign(hal_box_auth_purpose_t purpose, const char *challenge,
+                            char *out_hex, size_t out_len)
 {
     if (!s_provisioned) return ESP_ERR_INVALID_STATE;
-    if (!challenge || !out_hex || out_len < HAL_BOX_AUTH_SIG_HEX_LEN + 1) {
+    const char *pstr = purpose_str(purpose);
+    if (!pstr || !challenge || !out_hex || out_len < HAL_BOX_AUTH_SIG_HEX_LEN + 1) {
         return ESP_ERR_INVALID_ARG;
     }
 
-    // Message signé : "<box_uid>:<challenge>" (identique au serveur).
-    char msg[UID_MAX + 1 + 128];
-    int n = snprintf(msg, sizeof(msg), "%s:%s", s_uid, challenge);
+    // Message signé : "<purpose>:<box_uid>:<challenge>" (identique au serveur).
+    char msg[16 + UID_MAX + 1 + 128];
+    int n = snprintf(msg, sizeof(msg), "%s:%s:%s", pstr, s_uid, challenge);
     if (n < 0 || (size_t)n >= sizeof(msg)) return ESP_ERR_INVALID_ARG;
 
     // mbedTLS 4 (ESP-IDF v6.1) : l'API md.h HMAC est devenue privée, on passe

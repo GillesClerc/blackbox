@@ -619,7 +619,7 @@ static esp_err_t do_auth(void)
     cJSON_Delete(root);
 
     char sig[HAL_BOX_AUTH_SIG_HEX_LEN + 1];
-    err = hal_box_auth_sign(challenge, sig, sizeof(sig));
+    err = hal_box_auth_sign(HAL_BOX_AUTH_PURPOSE_AUTH, challenge, sig, sizeof(sig));
     if (err != ESP_OK) {
         ESP_LOGW(TAG, "signature du challenge : %s", esp_err_to_name(err));
         return err;

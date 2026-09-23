@@ -138,9 +138,12 @@ static int gatt_access(uint16_t conn_handle, uint16_t attr_handle,
             char challenge[CHALLENGE_MAX + 1];
             int  rc = write_flat(ctxt->om, challenge, CHALLENGE_MAX);
             if (rc != 0) return rc;
-            // HMAC PSA : rapide, peut rester dans le host task.
-            if (hal_box_auth_sign(challenge, s_response,
-                                  sizeof(s_response)) != ESP_OK) {
+            // HMAC PSA : rapide, peut rester dans le host task. Ce canal n'est
+            // pas authentifié : il ne signe QUE des preuves d'appairage
+            // (purpose "register"), jamais des challenges d'auth cloud — sinon
+            // n'importe qui à portée BLE obtiendrait un JWT au nom de la box.
+            if (hal_box_auth_sign(HAL_BOX_AUTH_PURPOSE_REGISTER, challenge,
+                                  s_response, sizeof(s_response)) != ESP_OK) {
                 ESP_LOGW(TAG, "signature challenge impossible (box non provisionnée ?)");
                 return BLE_ATT_ERR_UNLIKELY;
             }

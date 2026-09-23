@@ -10,7 +10,7 @@ extern "C" {
 // Task dédiée (core 0, prio 3) qui parle à l'API web (CONFIG_ESCAPEBOX_API_URL,
 // surchargeable par la clé NVS "cloud/api_url" pour tester en local) :
 //   1. GET  /api/box/challenge   → nonce
-//   2. POST /api/box/auth        → JWT 2h (signature via hal_box_auth_sign)
+//   2. POST /api/box/auth        → JWT 2h (hal_box_auth_sign, purpose AUTH)
 //   3. GET  /api/box/sync        → scénarios installés + firmware_update
 // Le JWT vit en RAM et est renouvelé automatiquement (expiration ou 401).
 // L'horloge système est réglée depuis server_time à chaque auth (pas de SNTP).

@@ -5,7 +5,7 @@ Reproduit la crypto du firmware sans rien embarquer : le secret par box est
 dérivé du master serveur via HKDF-SHA256, exactement comme web/lib/box-auth.ts.
 
   box_secret = HKDF-SHA256(master, salt="", info="escapebox:<box_uid>", 32)
-  challenge_response = HMAC-SHA256(box_secret, "<box_uid>:<challenge>").hex()
+  challenge_response = HMAC-SHA256(box_secret, "auth:<box_uid>:<challenge>").hex()
 
 Usage:
   BOX_MASTER_SECRET=<hex> python3 tools/test_box_api.py \
@@ -77,6 +77,23 @@ def main() -> int:
     if status != 200 or "token" not in body:
         return 1
     token = body["token"]
+
+    # 2b) Séparation de domaine : une preuve d'appairage ("register", ce que
+    # le canal BLE accepte de signer) doit être REFUSÉE par /api/box/auth.
+    q = urllib.parse.urlencode({"box_uid": uid})
+    status, body = http_json("GET", f"{base}/api/box/challenge?{q}")
+    if status != 200 or "challenge" not in body:
+        print(f"[auth/register-proof] challenge KO {status} {body}")
+        return 1
+    status, body = http_json("POST", f"{base}/api/box/auth", {
+        "box_uid": uid,
+        "challenge": body["challenge"],
+        "challenge_response": box_hmac(master, uid, body["challenge"],
+                                       purpose="register"),
+    })
+    print(f"[auth/register-proof] {status} {body} (401 attendu)")
+    if status != 401:
+        return 1
 
     # 3) GET sync (Bearer JWT box)
     q = urllib.parse.urlencode({"firmware_version": args.firmware})
