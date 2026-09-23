@@ -33,6 +33,7 @@ Box physique d'escape game. Specs completes dans :
 ## Notes USB / Docker
 - /dev/ttyACM0 expose via usbipd (WSL2 → container --privileged)
 - Si non accessible : `docker exec -u root $(docker ps -q --filter ancestor=escapebox-dev) chmod 666 /dev/ttyACM0`
+- Box absente du container (`/sys/bus/usb` inexistant) : cote Windows `usbipd list` → la DevKitC = « USB-Enhanced-SERIAL CH343 » (1a86:55d3), le BUSID change d'une session a l'autre ; `usbipd attach --wsl --busid <BUSID>` (etat doit passer a Attached), puis depuis WSL `docker exec -u root <container> sh -c "mknod /dev/ttyACM0 c 166 0; chmod 666 /dev/ttyACM0"`
 
 ## Git
 - Remote : git@github.com:GillesClerc/blackbox.git
