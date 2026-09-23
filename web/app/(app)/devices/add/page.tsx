@@ -3,8 +3,10 @@
 import { useCallback, useRef, useState } from "react";
 
 // Appairage d'une box via Web Bluetooth (Chrome desktop/Android — pas iOS).
-// Flux : connexion BLE → lecture box_uid → challenge serveur signé par la box
-// (preuve de possession, option B) → envoi du WiFi → enregistrement.
+// Flux : connexion BLE → lecture box_uid → envoi du WiFi → challenge serveur
+// signé par la box (preuve de possession, option B) → enregistrement.
+// La preuve est demandée JUSTE avant /register : le challenge expire en 60 s,
+// et la saisie du WiFi + la connexion de la box peuvent dépasser ce délai.
 // UUIDs alignés sur firmware/components/ble_prov (base e5c4000X-…).
 const SVC_UUID = "e5c40001-5c25-4b10-8f46-6b9c30ac7a11";
 const CHR = {
@@ -21,6 +23,27 @@ type Step = "idle" | "connecting" | "wifi" | "joining" | "registering" | "done";
 const enc = new TextEncoder();
 const dec = new TextDecoder();
 
+// Preuve de possession : la box signe (purpose "register") un nonce
+// fraîchement émis par le serveur, via la caractéristique BLE challenge.
+async function signPossessionProof(
+  svc: BluetoothRemoteGATTService,
+  uid: string
+): Promise<{ challenge: string; response: string }> {
+  const chal = await fetch(
+    `/api/box/challenge?box_uid=${encodeURIComponent(uid)}`
+  ).then((r) => r.json());
+  if (!chal.challenge) throw new Error("challenge serveur indisponible");
+
+  const chalChr = await svc.getCharacteristic(CHR.challenge);
+  await chalChr.writeValue(enc.encode(chal.challenge));
+  const respChr = await svc.getCharacteristic(CHR.response);
+  const response = dec.decode(await respChr.readValue());
+  if (!/^[0-9a-f]{64}$/.test(response)) {
+    throw new Error("la box n'a pas signé le challenge");
+  }
+  return { challenge: chal.challenge, response };
+}
+
 export default function AddDevicePage() {
   const [step, setStep] = useState<Step>("idle");
   const [error, setError] = useState<string | null>(null);
@@ -29,9 +52,8 @@ export default function AddDevicePage() {
   const [password, setPassword] = useState("");
   const [boxName, setBoxName] = useState("EscapeBox");
 
-  // Références BLE + preuve, conservées entre les étapes.
+  // Service BLE, conservé entre les étapes.
   const svcRef = useRef<BluetoothRemoteGATTService | null>(null);
-  const proofRef = useRef<{ challenge: string; response: string } | null>(null);
 
   const supported =
     typeof navigator !== "undefined" && "bluetooth" in navigator;
@@ -56,22 +78,6 @@ export default function AddDevicePage() {
         );
       }
       setBoxUid(uid);
-
-      // Preuve de possession : la box signe un nonce fraîchement émis.
-      const chal = await fetch(
-        `/api/box/challenge?box_uid=${encodeURIComponent(uid)}`
-      ).then((r) => r.json());
-      if (!chal.challenge) throw new Error("challenge serveur indisponible");
-
-      const chalChr = await svc.getCharacteristic(CHR.challenge);
-      await chalChr.writeValue(enc.encode(chal.challenge));
-      const respChr = await svc.getCharacteristic(CHR.response);
-      const response = dec.decode(await respChr.readValue());
-      if (!/^[0-9a-f]{64}$/.test(response)) {
-        throw new Error("la box n'a pas signé le challenge");
-      }
-      proofRef.current = { challenge: chal.challenge, response };
-
       setStep("wifi");
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -128,9 +134,9 @@ export default function AddDevicePage() {
       });
       void result;
 
-      // WiFi OK → enregistrement avec la preuve signée plus tôt.
+      // WiFi OK → preuve fraîche (challenge valable 60 s) puis enregistrement.
       setStep("registering");
-      const proof = proofRef.current!;
+      const proof = await signPossessionProof(svc, boxUid);
       const reg = await fetch("/api/box/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -166,9 +172,10 @@ export default function AddDevicePage() {
         Ajouter une box
       </h1>
       <p className="mt-2 max-w-md text-sm text-muted-foreground">
-        Maintenez une touche du clavier de la box pendant son démarrage pour
-        ouvrir la fenêtre d&apos;appairage (5 minutes), puis connectez-vous en
-        Bluetooth ci-dessous.
+        Au démarrage de la box, touchez le clavier pendant l&apos;invite pour
+        ouvrir son menu, choisissez « Appairage » (5 minutes), puis
+        connectez-vous en Bluetooth ci-dessous. Une box neuve (sans WiFi)
+        l&apos;ouvre d&apos;elle-même au démarrage.
       </p>
 
       {!supported && (
@@ -193,7 +200,7 @@ export default function AddDevicePage() {
 
         {step === "connecting" && (
           <p className="text-sm text-muted-foreground">
-            Connexion à la box et vérification de possession…
+            Connexion à la box…
           </p>
         )}
 
