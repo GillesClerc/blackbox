@@ -41,7 +41,7 @@ Tag NFC dynamique (NFC Forum Type 5 / ISO 15693) avec EEPROM 4-Kbit (512 octets 
 
 ## Interface
 
-- **I2C** : adresse par défaut définie par device select code (voir doc registre — user memory à 0xA6/0x53 selon mode ; à vérifier dans le firmware au moment de coder le driver, pas figé ici)
+- **I2C** : device select code `1010 E2 1 1` (identifiant 1010b + E2) → **0x53** (E2 = 0 : mémoire utilisateur + registres dynamiques + mailbox) et **0x57** (E2 = 1 : registres de configuration système) — vérifié datasheet 2026-09-23 (tableau « Device select code »)
 - **RF** : ISO/IEC 15693, NFC Forum Type 5, lu nativement par les smartphones (Android natif ; iOS lit les tags Type 5 en natif depuis iOS 13 sans app tierce)
 
 ## Confirmation importante — sécurité électrique

@@ -1,10 +1,13 @@
-# Audit hardware (KiCad Main) + schéma DB — 2026-09-23 · révision 2
+# Audit hardware (KiCad Main) + schéma DB — 2026-09-23 · révision 2.1
 
 > **Révision 2 (même jour)** : chaque constat est désormais **vérifié dans la datasheet**
 > (synthèses `docs/datasheets/*.md`, source citée entre crochets). La révision 1 contenait
 > des erreurs faute de vérification : H1 (GPIO45/46) déclassé, H6 (niveau WS2812) retiré,
 > H11 (courants LEDs) recalculé, découplage SD retiré (non sourcé). Règle ajoutée à
 > CLAUDE.md : aucun retour sans vérification datasheet.
+>
+> **Révision 2.1** : datasheets BMP280, TMAG5273, MLX90614 (fournies) + MTCH2120, MPR121,
+> GC9A01A (téléchargées) → section « Satellites et bus I2C » ajoutée, H5 complété.
 
 ## Méthode
 
@@ -15,9 +18,11 @@
 - Datasheets relues : ESP32-S3, WROOM-1, AP2112, MT3608, SS14, bq24075, DW01A, FS8205,
   USBLC6-2, PCM5122, PAM8406, ICS-43434, WS2812B V5, LSM6DSOX, TF-01A (plan seul) +
   doc ESP-IDF (`sd_pullup_requirements.rst`, `sdspi_share.rst`). FSD et vision relus.
-- **Datasheets absentes** (constats correspondants non conclus) : modules GC9A01, carte
-  microSD (SD Physical Layer), écran bouche (TBD), MTCH2120, MPR121, BMP280, MLX90614,
-  TMAG5273, connecteurs JST.
+  Rév. 2.1 : BMP280, TMAG5273, MLX90614, MTCH2120, MPR121, GC9A01A (puce driver), ST25DV
+  (adresses).
+- **Datasheets encore absentes** (constats correspondants non conclus) : **module** écran
+  rond GC9A01 (rétroéclairage, régulateur éventuel), carte microSD (SD Physical Layer,
+  consommation), écran bouche (TBD), connecteurs JST. (USB-C J1 : plan mécanique seul.)
 
 **Pinout firmware ↔ schéma : cohérent** (I2S0 4/5/6, I2S1 16/18/7, SPI3 38/39/40/14/41/42,
 SD 11/15/12/47, I2C 21/17, WS2812 48, LSM6DSOX 0x6A, PCM5122 0x4C). GPIO35-37 libres (PSRAM
@@ -106,6 +111,11 @@ mesurer le rendement réel du MT3608 au proto.
 - Thermique : θJA = **184 °C/W** en SOT-23-5 [AP2112]. Sous USB, VSYS ≈ 4,7-5,0 V
   (V_DO(IN-OUT) 300 mV typ à 1 A [bq24075]) : à 250 mA moyens → 0,4 W → +74 °C ; à
   400 mA → 0,64 W → +118 °C (coupure à 160 °C), en boîtier fermé.
+- Tensions minimales des charges du rail (rév. 2.1) : ESP32-S3 ≥ 3,0 V [ESP32-S3 §5.2],
+  **MTCH2120 ≥ 3,0 V (reset par BOD en dessous)** [MTCH2120 §3.15], GC9A01A VCI/IOVCC
+  **≤ 3,3 V** [GC9A01A tableau 44]. Sur batterie basse, 3V3_D = VBAT − dropout, et le
+  satellite perd encore la chute du câble → le MTCH2120 décroche le premier. Il faut une
+  **extinction firmware sur VBAT basse** (VBAT_SENSE, seuil à fixer ~3,4-3,5 V).
 → Correctif minimal : **AP2112 en SOT-89-5** (même famille, θJA 120 °C/W), avec du cuivre
 autour. Sinon un buck. Mesurer le courant moyen réel au proto.
 
@@ -163,6 +173,64 @@ L'interrupteur est déjà prévu sur la face Côté 2 (FSD §2.2.3). Options :
 donc EN bas laisse passer VIN → L → D1 → 5 V ≈ VBAT − V_F, et les WS2812 restent
 alimentées (conséquence de la topologie [MT3608 pinout/typique]). Avec 3V3_A coupé, les
 pull-ups de MUTE/SHDN/MODE tombent à 0 V : le PAM8406 passe en shutdown (< 1 µA) [PAM8406]. OK.
+
+---
+
+## Satellites et bus I2C (rév. 2.1)
+
+Les satellites n'ont pas encore de schéma KiCad : l'audit porte sur la netlist documentée
+(`docs/pcb/01-netlist.txt`), le FSD et le firmware.
+
+### S1 🟠 — MTCH2120 : adresse et protocole faux dans le FSD et le firmware
+- Adresse : ADD_SEL = 0 → **0x20**, 1 → 0x21 [MTCH2120 tableau 3-3]. Le FSD et
+  `hal_touch/mtch2120.h` disent **0x28** → le composant ne serait jamais détecté (le HAL
+  basculerait sur le MPR121 ou ne trouverait rien).
+- Protocole : **adressage mémoire sur 16 bits** [MTCH2120 §3.14.2-3.14.3] ; état des
+  boutons BTNSTA à l'offset **0x0102** (12 bits + 4 lumps), identifiant DEVID = 0x0B à
+  0x0000 [§4.2.2, §4.2.7]. `mtch2120.c` lit des registres 8 bits 0x00/0x01 → à réécrire.
+  L'ordre des octets de l'offset reste à confirmer (figure 3-5 ou driver Microchip) avant de coder.
+- FSD et netlist documentée corrigés (0x20). Le correctif firmware n'est pas appliqué :
+  je le propose, à valider.
+
+### S2 🟠 — MLX90614 : variante 3 V obligatoire
+Axx = 4,5-5,5 V, Bxx/Dxx = 2,6-3,6 V [MLX90614 §3.2]. Le satellite est en 3V3 → **commander
+une Bxx** (ex. MLX90614ESF-BCC, FOV 35°) ; vérifier la référence LCSC C58661 du FSD.
+100 nF au plus près de VDD/VSS [§5.7].
+
+### S3 🟡 — Bus I2C : 100 kHz max et capacité à surveiller
+- SMBus du MLX90614 : **10-100 kHz** [MLX90614 §3.2] → tout le bus à 100 kHz (le firmware y
+  est déjà). Les autres composants acceptent plus (TMAG5273 1 MHz, MTCH2120 400 kHz, BMP280 3,4 MHz).
+- Temps de montée ≤ 1000 ns à 100 kHz et charge ≤ 400 pF [MTCH2120 caractéristiques I2C ;
+  BMP280 C_b 400 pF]. Avec les pull-ups de 4,7 kΩ du Main : t_R ≈ 0,85 × R × C → **C ≤ ~250 pF**
+  pour tout le bus (5 câbles de satellites + ~12 composants). À mesurer à l'oscilloscope au proto ;
+  sinon pull-ups de 2,2 kΩ (C ≤ ~530 pF, reste plafonné à 400 pF, ~1,5 mA de courant de sink).
+- Adresses vérifiées, **aucun conflit en Phase 2** : 0x10 VEML7700, 0x20 MTCH2120, 0x35
+  TMAG5273A1, 0x48 ADS7830, 0x4C PCM5122, 0x53/0x57 ST25DV, 0x5A MLX90614, 0x6A LSM6DSOX,
+  0x76 BMP280. En Phase 1, MPR121 et MLX90614 sont tous deux en 0x5A → reprogrammer le MLX
+  (0x5C) seulement dans ce cas.
+
+### S4 🟡 — BMP280 : broches d'interface non spécifiées
+La netlist met VDD et VDDIO sur SAT_3V3 mais ne dit rien de CSB ni de SDO. Il faut
+**CSB directement sur VDDIO** (CSB vu bas au démarrage → interface verrouillée en SPI)
+et **SDO → GND** (0x76), plus 100 nF sur VDD et VDDIO [BMP280 §5.1, §6.3, tableau 29].
+Ripple VDD ≤ 50 mVpp ; trou d'évent orienté vers l'ouverture de la face.
+
+### S5 🟡 — TMAG5273 : variante et INT
+Brochage conforme [TMAG5273 tableau 4-1]. L'adresse 0x35 impose une **variante A**
+(A1 ±40/80 mT recommandée pour un petit aimant) [tableau 6-2]. INT non routée → la relier
+à GND et mettre MASK_INTB = 1 dans le firmware. ≥ 0,01 µF sur VCC [§7.4].
+
+### S6 🟡 — Écrans GC9A01 (puce driver)
+SPI en écriture jusqu'à 100 MHz (t_scycw ≥ 10 ns) → 40/80 MHz OK ; VCI et IOVCC ≤ 3,3 V
+[GC9A01A tableau 44]. Rétroéclairage (courant, pilotage) et régulateur éventuel : **fiche du
+module requise**.
+
+### S7 🟡 — Énigme « clé USB » (mode host) : pas prévue par le hardware actuel
+En mode host, c'est la box qui doit fournir le VBUS de la clé. Or J1 est câblé en device :
+CC1/CC2 à 5,1 kΩ vers GND, VBUS vers l'entrée du bq24075 (`USB-307HB-B-SU.md`). Le
+FSD §2.2.2c prévoit cette énigme sur le même port. Il faudra un commutateur VBUS 5 V
+côté source, une gestion des CC et une protection contre la réinjection dans le chargeur.
+C'est un choix de conception à trancher avant le routage du satellite Côté 2.
 
 ---
 

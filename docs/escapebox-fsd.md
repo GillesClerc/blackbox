@@ -152,14 +152,14 @@ Scores et stats remontés à la prochaine synchro
 | Adresse | Composant | Fonction | PCB |
 |---|---|---|---|
 | 0x10 | VEML7700 | Lumière ambiante | Satellite capteurs |
-| 0x28 | MTCH2120 | Capacitif 12 canaux (keypad + zones touch) — cible PCB Phase 2 | Satellite capteurs |
+| 0x20 | MTCH2120 | Capacitif 12 canaux (keypad + zones touch) — cible PCB Phase 2. **ADD_SEL = GND → 0x20** (0x21 si VDD), vérifié datasheet DS40002613 ; adressage mémoire 16 bits | Satellite capteurs |
 | 0x5A | MPR121 | Capacitif 12 canaux (breakout Phase 1, même rôle que MTCH2120) | Proto breadboard |
-| TBD | ST25DV04KC-IE6S3 | Tag NFC dynamique (adresse I2C à vérifier dans la register map ST25DV, non déterminée à ce stade) | Main |
+| 0x53 / 0x57 | ST25DV04KC-IE6S3 | Tag NFC dynamique — 0x53 mémoire utilisateur/registres dynamiques, 0x57 configuration système (vérifié datasheet) | Satellite Dessus |
 | 0x4C | PCM5122PW | DAC audio stéréo (I2C contrôle) | Main |
-| 0x5C | MLX90614 | Température IR (sans contact) — adresse usine 0x5A, reprogrammée en 0x5C via EEPROM (évite collision MPR121) | Satellite capteurs |
+| 0x5A | MLX90614 | Température IR (sans contact) — **variante 3 V obligatoire (MLX90614Bxx)** ; adresse usine 0x5A, à reprogrammer en 0x5C (EEPROM) seulement si le MPR121 (Phase 1) est sur le même bus. SMBus ≤ 100 kHz | Satellite capteurs |
 | 0x6A | LSM6DSOXTR | Accéléromètre + gyroscope 6 axes + MLC | Satellite capteurs |
-| 0x35 | TMAG5273 | Hall linéaire 3D (distance/angle aimant) | Satellite capteurs |
-| 0x76 | BMP280 | Pression / détection souffle | Satellite capteurs |
+| 0x35 | TMAG5273 | Hall linéaire 3D (distance/angle aimant) — **variante A1 à commander** (0x35, ±40/80 mT ; B/C/D = 0x22/0x78/0x44) | Satellite capteurs |
+| 0x76 | BMP280 | Pression / détection souffle — SDO = GND (0x76), **CSB relié directement à VDDIO** (sinon verrouillage en SPI) | Satellite capteurs |
 | 0x48 | ADS7830 | ADC 8 canaux 8 bits — 4 faders SL1-SL4 + 4 pots RV1-RV4 (ratiométrique, REFIN=3V3) | Face avant |
 
 > **Composants retirés du Phase 1** : AS5600 (rotation magnétique), servos SG90, laser. Remplacés par potentiomètres rotatifs mécaniques + interactions software.
@@ -200,7 +200,7 @@ Scores et stats remontés à la prochaine synchro
 
 > PCM5122PW en mode I2C (MODE1→GND, MODE2→3V3_A — vérifié datasheet TI SLAS763C §8.4.1.1, "MODE pins à GND" était imprécis, MODE1/MODE2 aux deux GND = mode Hardwired, pas I2C). ADR1/ADR2→GND → adresse 0x4C (confirmé `PCM5122_I2C_ADDR` dans `hal_audio.c`). SCK→GND (mode PLL 3-wire depuis BCK, §8.3.6.3). PLL depuis BCK. I2S : 44100 Hz, 16-bit, 32-bit slots (BCLK = 2.82 MHz), Philips standard. Volume digital 0 dB par défaut (reg 0x3D/0x3E = 0x30). Sortie analogique OUTL/OUTR → filtre RC (470Ω + 2.2nF NP0/C0G, fc≈153 kHz — valeurs recommandées datasheet TI §8.3.5.2) → PAM8406. Voir `docs/datasheets/pcm5122-registers.md` pour la référence registres complète.
 >
-> Le **PAM8406** (Class D 5W+5W stéréo) est purement analogique, pas de driver. SHDN tiré haut (toujours actif). Le mute se fait via le registre PCM5122 (0x03). Gain fixe 24 dB — les amplitudes sont contrôlées numériquement côté firmware (MP3_BG_VOLUME, registre volume digital).
+> Le **PAM8406** (classe D, stéréo) est purement analogique, pas de driver. Puissance réelle sous 5 V (datasheet DS43342) : 3,14 W/canal sur 4 Ω (THD 10 %), 1,8 W sur 8 Ω — les « 5 W » ne valent que sur 2 Ω. SHDN et MUTE tirés haut (toujours actif), MODE haut = classe D. Le mute se fait via le registre PCM5122 (0x03). **Gain fixe 24 dB** : le DAC sort 2,1 Vrms à 0 dB, l'ampli écrête au-delà d'environ −20 dB de volume numérique (la datasheet avertit qu'un écrêtage peut l'endommager) → **plafonner le volume numérique vers −20 dB** (à implémenter dans `hal_audio_set_volume`). Sorties haut-parleur : connecteur + ferrites à ajouter (audit 2026-09-23).
 
 **Bus I2S1** (audio entrée — micro MEMS) :
 
@@ -250,7 +250,7 @@ GPIO 21     — I2C SDA
 GPIO 26-37  — ⛔ Flash/PSRAM (non disponible)
 GPIO 38-42  — SPI3 yeux (2× GC9A01 : MOSI/SCLK/CS_L/DC/RST partagés)
 GPIO 43-44  — UART0 debug
-GPIO 45-46  — Boutons / réserve
+GPIO 45-46  — Boutons / réserve (strapping : flottantes OK, JAMAIS de pull-up externe sur 45)
 GPIO 47     — SPI2_CS_SD (carte microSD)
 GPIO 48     — WS2812 LEDs
 
@@ -264,13 +264,20 @@ USB-C (5V, 2A max)
     ↓
 bq24075 (TI) — chargeur 1.5A + power path DPPM
     ├── BAT → DW01A + FS8205 → LiPo 3.7V 3000mAh
-    └── OUT (VSYS : ~4.4V sur USB, ~VBAT sur batterie)
+    └── OUT (VSYS : ≈ VIN USB − 0,3 V sur secteur (5,5 V max régulés), ≈ VBAT sur batterie)
          ├── AP2112K-3.3 #1 → 3.3V_D (digital : ESP32, écrans, capteurs I2C, micro)
          ├── AP2112K-3.3 #2 → 3.3V_A (audio : PCM5122, zone isolée)
          └── MT3608 boost → 5V (WS2812 LEDs)
 ```
 
 > **Power path (DPPM)** : le système est alimenté en priorité par l'USB, le surplus charge la batterie. La box peut rester branchée sans user la batterie. **Deux LDOs séparés** pour isoler le bruit digital du chemin audio. GND unique continu (PAS de split). Voir `docs/schematics/06-power-audio.txt` pour le schéma détaillé.
+>
+> **Paramètres vérifiés datasheets (audit 2026-09-23, `docs/audits/2026-09-23-hardware-db.md`)** :
+> - Charge : 1 A (R_ISET 890 Ω), entrée limitée à 1,07 A (R_ILIM 1,5 kΩ, mode EN2 = H / EN1 = L). **À modifier** : timers de sécurité réactivés (R_TMR 56 kΩ → 5,6-9,3 h au lieu de TMR → GND) et NTC 10 kΩ de batterie sur TS (fenêtre 0-50 °C) au lieu de la résistance fixe.
+> - Protection DW01A + FS8205 : surcharge 4,30 V, décharge profonde 2,40 V, **surintensité ≈ 1,6-3,2 A** → plafond du courant crête total.
+> - 3V3_D (AP2112K) : 600 mA garantis, l'ESP32 en exige ≥ 0,5 A ; risque thermique sous USB en SOT-23-5 (θJA 184 °C/W) → SOT-89-5 recommandé. Charges du rail : ESP32 ≥ 3,0 V, MTCH2120 ≥ 3,0 V, GC9A01A ≤ 3,3 V → **extinction firmware sur VBAT basse** (~3,4-3,5 V).
+> - Rail 5 V (MT3608, 5,0-5,2 V) : 12 WS2812B = 432 mA en blanc (+ 7,2 mA au repos), PAM8406 jusqu'à ~1,15-1,44 A sur 4 Ω → **D1 SS14 (1 A) sous-dimensionnée → SS34** ; plafonds firmware de luminosité et de volume.
+> - **Marche/arrêt** (interrupteur face Côté 2) : option recommandée = couper les EN des 3 régulateurs + load switch P-MOS sur le 5 V (la charge USB reste possible éteinte, ~10-15 µA) ; alternative simple = SYSOFF (mais pas de charge quand éteint).
 
 #### 2.2.2c Assignation des faces — Cube 150×150×150mm *(dimension à valider au proto boîtier — la vision mentionne 120mm)*
 
@@ -350,7 +357,7 @@ Composants embarqués :
 - MLX90614 IR température (avec fenêtre IR)
 - TMAG5273 Hall linéaire 3D I2C
 
-> Tous les capteurs I2C (satellites + Main) partagent le même bus backbone. Adresses uniques confirmées (aucun conflit) : ADS7830 0x48, MTCH2120 0x28, MLX90614 0x5C, LSM6DSOXTR 0x6A, TMAG5273 0x35, BMP280 0x76, VEML7700 0x10, ST25DV adresse TBD (à vérifier register map).
+> Tous les capteurs I2C (satellites + Main) partagent le même bus backbone. Adresses vérifiées datasheets (2026-09-23), aucun conflit en Phase 2 : VEML7700 0x10, MTCH2120 0x20, TMAG5273A1 0x35, ADS7830 0x48, PCM5122 0x4C, ST25DV 0x53 + 0x57, MLX90614 0x5A, LSM6DSOX 0x6A, BMP280 0x76 (MPR121 0x5A en Phase 1 : conflit avec le MLX90614 si les deux cohabitent). **Bus limité à 100 kHz par le MLX90614.**
 
 **Connectique backbone (existant, à réévaluer pour 5 faces au lieu de 4 connecteurs I2C actuels)** :
 
@@ -359,7 +366,7 @@ JST-SH (1.0mm pitch, verrouillable) pour les connecteurs signaux inter-PCB ; JST
 - 10 pins SPI3 yeux : VCC(3.3V), GND, MOSI, SCLK, CS_L, CS_R, DC, RST, (rsv×2)
 - 8 pins SPI2 display bouche (TBD) : VCC(3.3V), GND, MOSI, SCLK, CS, DC, RST, BUSY
 - 6 pins toggles (J8) : VCC(3.3V), GND, SW1, SW2, GPIO3(rsv), (rsv)
-- 4 pins LED (J9, JST-PH — jusqu'à ~1.9A sur 5V) : VCC(5V), GND, WS2812_DATA, (rsv)
+- 4 pins LED (J9, JST-PH) : VCC(5V), GND, WS2812_DATA, (rsv) — ⚠ l'objectif initial de ~1,9 A n'est pas tenable depuis le boost MT3608 sur batterie (≈ 3,1 A côté batterie, au-delà du seuil DW01A) : à redimensionner (audit 2026-09-23)
 
 **Boîtier** :
 - Phase proto : Imprimé en 3D (PLA/PETG)
@@ -761,15 +768,22 @@ M2 → M3   : intégration complète + playtests
 - [ ] Driver bouche — display à définir ultérieurement (pas e-ink) — à intégrer
 - [x] MPR121 tactile capacitif 12 canaux — validé DevKitC-1 (I2C 0x5A, 100kHz, SDA=21/SCL=17)
 - [x] Driver LEDs WS2812B (RMT, GRB, show) — validé
-- [x] Drivers I2C (LSM6DSOXTR, TMAG5273, VEML7700, MTCH2120, MPR121) — écrits
+- [x] Drivers I2C (LSM6DSOXTR, TMAG5273, VEML7700, MTCH2120, MPR121) — écrits (⚠ MTCH2120 à réécrire, voir ci-dessous)
 - [x] Outil YAML→JSON (tools/yaml2json.py avec validation)
 - [ ] Driver NFC ST25DV — composant changé (ex-PN532, protocole totalement différent : registres I2C/EEPROM au lieu du protocole de commande PN532), ancien driver `hal_nfc` obsolète, réécriture à faire
 - [x] Driver servos SG90 MCPWM (écrit — Phase 2)
 - [x] Système de fichiers SD SPI+FAT — validé sur cible (module 5V, SPI2 CS=47, monté sur /sdcard)
 - [x] App scénario principale (main.c) — scénario + ambient.mp3 chargés depuis SD (`/sdcard/scenarios/<dir>/`), fallback embarqué ; callbacks audio/led/eye_*, keypad MPR121, hold 2s pour simuler rfid/rotary/tilt
-- [x] `hal_box_auth` — creds box en NVS (`box_creds`) + signature challenge HMAC-SHA256 via PSA crypto (mbedTLS 4). Provisionné par `tools/provision_box.py`
+- [x] `hal_box_auth` — creds box dans la partition dédiée `box_nvs` (namespace `box_creds`, migration auto) + signature HMAC-SHA256 `"<purpose>:<uid>:<challenge>"` via PSA crypto (mbedTLS 4). Provisionné par `tools/provision_box.py`
 - [x] `hal_wifi` — STA, creds WiFi en NVS (`wifi_creds`, provisionnés par `provision_box.py --wifi-ssid/--wifi-pass`), connexion validée sur cible + smoke-test HTTPS OK (bundle CA Mozilla, GET box.agill.es status 200). Réseau dans une tâche dédiée core 0 (pile TLS 8 KB)
-- [ ] `box_sync` — flux challenge→auth→sync vers l'API box (réutilise `hal_box_auth_sign` + `hal_wifi`) — **prochaine étape firmware**
+- [x] `cloud_client` — flux challenge→auth→sync + packages de scénarios sur SD, validé sur cible (voir `docs/plans/firmware-cloud-client.md`)
+- [ ] **Corrections issues des datasheets (audit 2026-09-23)** :
+  - [ ] `mtch2120` : adresse 0x20 (pas 0x28) + adressage mémoire 16 bits (DEVID 0x0000 = 0x0B, BTNSTA 0x0102)
+  - [ ] `hal_leds` : timings WS2812B V5 (bit0 = 0,3/0,9 µs, bit1 = 0,8/0,6 µs) + 12 LEDs au lieu de 1
+  - [ ] `hal_audio_set_volume` : plafond vers −20 dB (écrêtage du PAM8406 à gain fixe 24 dB)
+  - [ ] Extinction propre sur VBAT basse (VBAT_SENSE, seuil ~3,4-3,5 V)
+  - [ ] SPI2 partagé : monter la SD avant tout échange avec l'écran bouche (CS écran maintenu haut)
+  - [ ] TMAG5273 : MASK_INTB = 1 si INT reliée à GND ; MLX90614 : lectures SMBus avec PEC, bus ≤ 100 kHz
 - [x] Partitions OTA 16 MB (factory + ota_0 + ota_1 de 3 MB, storage LittleFS 6.9 MB, rollback activé) — validées sur cible
 - [x] PSRAM octal 8 MB activée (SPIRAM_MODE_OCT 80 MHz) — buffers scénario et MP3 en MALLOC_CAP_SPIRAM
 - [x] `ui_manager` v2 — animation yeux (Uncanny Eyes Adafruit MIT porté ESP-IDF) : 2× GC9A01, rendu 128×128 centré, mouvement autonome + clignements aléatoires, émotions HAPPY/SAD/SURPRISED/SLEEPY/ANGRY/CLOSED, regard L/R/U/D pilotable depuis le scénario JSON (`eye_blink`, `eye_emotion`, `eye_look`)
@@ -1429,29 +1443,20 @@ CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
 CONFIG_LOG_DEFAULT_LEVEL_INFO=y
 ```
 
-**Partition table custom — état actuel (Phase 1)** : flash configurée à 8 MB, partition app unique de 7.9 MB (gros MP3 embarqués, pas d'OTA) :
+**Partition table custom — état actuel (validé sur cible, 16 MB, OTA + rollback)** — source de vérité : `firmware/partitions.csv` :
 
 ```csv
-# partitions.csv — actuel (flash configurée 8 MB)
-# Name,   Type, SubType, Offset,   Size
-nvs,      data, nvs,     0x9000,   0x6000
-factory,  app,  factory, 0x10000,  0x7F0000   # 7.9 MB app
-```
-
-**Cible Phase 2 (OTA, 16 MB exploités)** — à appliquer quand l'OTA arrive (FW-04). Table de référence maintenue dans le skill `esp32-escapebox-expert` (`assets/partitions.csv`) :
-
-```csv
-# partitions.csv — cible Phase 2 (N16R8, 16 MB)
 # Name,    Type, SubType,  Offset,   Size
-nvs,       data, nvs,      0x9000,   0x6000
+nvs,       data, nvs,      0x9000,   0x6000     # NVS applicative (config, WiFi, scénario actif)
 otadata,   data, ota,      0xF000,   0x2000
 nvs_keys,  data, nvs_keys, 0x11000,  0x1000     # clés NVS encryption (prod)
+box_nvs,   data, nvs,      0x12000,  0x6000     # identité box (box_creds) — jamais effacée
 factory,   app,  factory,  0x20000,  0x300000   # 3 MB — image de secours (reflash USB only)
-ota_0,     app,  ota_0,    0x320000, 0x300000   # 3 MB — slot OTA actif
-ota_1,     app,  ota_1,    0x620000, 0x300000   # 3 MB — slot OTA inactif
-storage,   data, littlefs, 0x920000, 0x6E0000   # ~6.9 MB LittleFS (assets MP3 + scénarios)
+ota_0,     app,  ota_0,    0x320000, 0x300000   # 3 MB — slot OTA
+ota_1,     app,  ota_1,    0x620000, 0x300000   # 3 MB — slot OTA
+storage,   data, littlefs, 0x920000, 0x6E0000   # ~6.9 MB LittleFS
 ```
-> La migration (FW-04) implique : `CONFIG_ESPTOOLPY_FLASHSIZE_16MB=y`, `CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE=y` (rollback validé par self-test boot via `esp_ota_mark_app_valid_cancel_rollback()`), et le déplacement des assets MP3 de la partition app vers LittleFS. La partition `factory` sert d'image de secours : jamais mise à jour par OTA, restaurable si les deux slots OTA sont corrompus.
+> Reste pour l'OTA (FW-04) : `CONFIG_ESPTOOLPY_FLASHSIZE_16MB=y`, `CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE=y` (rollback validé par self-test boot via `esp_ota_mark_app_valid_cancel_rollback()`), et le déplacement des assets MP3 de la partition app vers LittleFS. La partition `factory` sert d'image de secours : jamais mise à jour par OTA, restaurable si les deux slots OTA sont corrompus.
 
 #### 7.1.4 Premier flash (USB)
 
@@ -1657,6 +1662,11 @@ Ces 3 réponses sont liées à la session (`hints_used`, `duration_sec`, `score`
 [ ] USB-C : programmation ET charge fonctionnels simultanément
 [ ] Carte SD : lecture / écriture à > 1 MB/s
 [ ] Batterie : tient 90 minutes sous charge normale
+[ ] I2C : temps de montée SDA/SCL ≤ 1000 ns à 100 kHz avec tous les satellites branchés (oscilloscope)
+[ ] Audio : pas d'écrêtage au volume max plafonné (−20 dB numérique), haut-parleur branché
+[ ] Charge crête : LEDs blanc 100 % + audio max sans coupure DW01A ni chute du rail 5 V
+[ ] Thermique : AP2112 3V3_D et bq24075 sous USB + charge, boîtier fermé
+[ ] Marche/arrêt : consommation éteinte ≤ 20 µA, charge USB fonctionnelle éteinte
 [ ] OTA WiFi : mise à jour firmware complète sans intervention physique
 ```
 
@@ -1717,7 +1727,7 @@ Ces 3 réponses sont liées à la session (`hints_used`, `duration_sec`, `score`
 | Symptôme | Causes possibles | Solution |
 |---|---|---|
 | Box ne démarre pas | Batterie déchargée / câble USB charge-only | Charger 30 min / changer câble |
-| Écran blanc | SPI mal câblé / CS/DC inversés | Vérifier GPIO 37/38, tester avec sketch minimal |
+| Écran blanc | SPI mal câblé / CS/DC inversés | Vérifier SPI3 : MOSI 38, SCLK 39, CS_L 40, CS_R 14, DC 41, RST 42 (GPIO35-37 = PSRAM, jamais utilisables) ; tester avec sketch minimal |
 | Pas de son | PCM5122 XSMT pin flottant / PAM8406 SHDN actif | Vérifier XSMT → 3.3V, SHDN → VDD |
 | Son mono uniquement | ROUT non connecté au PAM8406 INR | Vérifier condensateurs de couplage LOUT/ROUT |
 | Bruit de fond / hiss | Masse analogique mal séparée | Séparer AGND (PCM5122) du PGND (PAM8406) sur le PCB |
@@ -1753,22 +1763,32 @@ Ces 3 réponses sont liées à la session (`hints_used`, `duration_sec`, `score`
 
 ### 10.1 Références matérielles
 
+> **Source de vérité : `docs/datasheets/`** — un PDF officiel + une synthèse `.md` par composant, à lire avant tout travail sur le composant (règle CLAUDE.md). Liens ci-dessous = sources d'origine.
+
 | Composant | Référence | Datasheet |
 |---|---|---|
 | ESP32-S3-WROOM-1-N16R8 | LCSC C2913202 | https://datasheet.lcsc.com/lcsc/2207151200_Espressif-Systems-ESP32-S3-WROOM-1-N16R8_C2913202.pdf |
 | ST25DV04KC-IE6S3 | LCSC C3304276 | https://www.st.com/resource/en/datasheet/st25dv04k.pdf |
-| MTCH2120 | LCSC (chercher) | https://ww1.microchip.com/downloads/en/DeviceDoc/MTCH2120-Touch-Sensor-Controller-DS60001337B.pdf |
-| AS5600 | LCSC C79815 | https://ams.com/documents/20143/36005/AS5600_DS000365_5-00.pdf |
+| MTCH2120 | LCSC (chercher) | https://ww1.microchip.com/downloads/aemDocuments/documents/MCU08/ProductDocuments/DataSheets/MTCH2120-12CH-CapacitiveTouchControl-DataSheet-DS40002613.pdf (DS40002613E, adresse 0x20/0x21) |
+| ~~AS5600~~ (retiré) | LCSC C79815 | https://ams.com/documents/20143/36005/AS5600_DS000365_5-00.pdf |
 | VEML7700 | LCSC C1850416 | https://www.vishay.com/docs/84286/veml7700.pdf |
 | BMP280 | LCSC C83291 | https://www.bosch-sensortec.com/media/boschsensortec/downloads/datasheets/bst-bmp280-ds001.pdf |
 | LSM6DSOXTR | LCSC C481766 | https://www.st.com/resource/en/datasheet/lsm6dsox.pdf |
-| MLX90614 | LCSC C58661 | https://www.melexis.com/en/documents/documentation/datasheets/datasheet-mlx90614 |
-| PCM5122PW | LCSC C14969 | https://www.ti.com/lit/ds/symlink/pcm5122.pdf |
-| PAM8406 | LCSC C89689 | https://www.diodes.com/assets/Datasheets/PAM8406.pdf |
-| ICS-43434 | LCSC (chercher) | https://invensense.tdk.com/wp-content/uploads/2016/02/DS-000069-ICS-43434-v1.2.pdf |
+| MLX90614 (**variante Bxx 3 V**) | LCSC C58661 (variante à vérifier) | https://www.melexis.com/en/documents/documentation/datasheets/datasheet-mlx90614 |
+| PCM5122PW | LCSC C1540085 (BOM) | https://www.ti.com/lit/ds/symlink/pcm5122.pdf |
+| PAM8406DR | LCSC C86270 (BOM) | https://www.diodes.com/assets/Datasheets/PAM8406.pdf |
+| ICS-43434 | LCSC C5656610 (BOM) | https://invensense.tdk.com/wp-content/uploads/2016/02/DS-000069-ICS-43434-v1.2.pdf |
 | bq24075 | LCSC C15464 | https://www.ti.com/lit/ds/symlink/bq24075.pdf |
+| DW01A | — | https://hmsemi.com/downfile/DW01A.PDF |
+| FS8205(A) | LCSC C32254 | https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/1811081616_Fortune-Semicon-FS8205A_C32254.pdf |
+| USBLC6-2SC6 | LCSC C7519 | https://www.st.com/resource/en/datasheet/usblc6-2.pdf |
+| SS14 (→ SS34 recommandé) | — | https://www.vishay.com/docs/88746/ss12.pdf |
+| TMAG5273 (**variante A1**, 0x35) | — | https://www.ti.com/lit/ds/symlink/tmag5273.pdf |
+| MPR121 (Phase 1) | — | https://cdn-shop.adafruit.com/datasheets/MPR121.pdf |
+| GC9A01A (puce driver des yeux) | — | https://github.com/fbiego/dt78/blob/master/datasheets/GC9A01A.pdf (fiche du **module** écran encore absente) |
+| TF-01A (slot microSD) | LCSC C91145 | plan mécanique LCSC (pull-ups 10 kΩ exigées côté hôte, cf. ESP-IDF) |
 | MT3608 | LCSC C84817 | https://datasheet.lcsc.com/lcsc/XI-AN-Aerosemi-Tech-MT3608_C84817.pdf |
-| AP2112K-3.3 | LCSC C51353 | https://datasheet.lcsc.com/lcsc/DIODES-AP2112K-3.3TRG1_C51353.pdf |
+| AP2112K-3.3 | LCSC C51118 (BOM ; variante SOT-89-5 recommandée, cf. audit) | https://datasheet.lcsc.com/lcsc/DIODES-AP2112K-3.3TRG1_C51353.pdf |
 | WS2812B-B/T | LCSC C2761795 | Datasheet **WS2812B V5** propre à C2761795 : `docs/datasheets/WS2812B-B.pdf` / `.md` (⚠ ≠ ancienne WS2812B C114586 : V_IH 2,7 V et timings T0H/T1L différents) |
 | 2N7002 | LCSC C8545 | https://datasheet.lcsc.com/lcsc/Nexperia-2N7002_C8545.pdf |
 | TTP223-BA6 | LCSC C80757 | https://datasheet.lcsc.com/lcsc/1809301523_TONTEK-TTP223-BA6_C80757.pdf |
