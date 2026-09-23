@@ -3,7 +3,8 @@
 
 Le secret n'est jamais embarqué dans le firmware ni commité. Cet outil, exécuté
 une fois par box sur le poste de Gilles, le dérive du BOX_MASTER_SECRET serveur
-et le pousse dans la partition NVS (namespace "box_creds") que lit hal_box_auth.
+et le pousse dans la partition NVS dédiée "box_nvs" (namespace "box_creds")
+que lit hal_box_auth.
 
   box_uid    = ESP32S3-XXXX-XXXX  (depuis la MAC eFuse, lue par esptool)
   box_secret = HKDF-SHA256(BOX_MASTER_SECRET, "escapebox:<box_uid>", 32)
@@ -11,13 +12,16 @@ et le pousse dans la partition NVS (namespace "box_creds") que lit hal_box_auth.
 Usage typique (dry-run, ne touche pas la box) :
   BOX_MASTER_SECRET=<hex> python3 tools/provision_box.py --port /dev/ttyACM0
 
-Pour écrire réellement la NVS de la box :
+Pour écrire réellement l'identité de la box :
   BOX_MASTER_SECRET=<hex> python3 tools/provision_box.py --port /dev/ttyACM0 --flash
 
-⚠ --flash réécrit toute la partition nvs (0x9000) : les autres namespaces
-  (config volume/luminosité, futurs identifiants WiFi) sont effacés. À faire au
-  premier provisioning, avant toute config. Ensuite, enregistre le box_uid
-  affiché sur ton compte (POST /api/box/register ou Supabase Studio).
+--flash n'écrit QUE la partition box_nvs : la NVS applicative (volume,
+scénario actif, WiFi) est préservée. Prérequis : la table de partitions
+flashée sur la box contient box_nvs (flash complet une fois, cf. CLAUDE.md).
+Ensuite, appaire la box depuis /devices/add (preuve de possession BLE).
+
+--wifi-ssid/--wifi-pass (optionnel, dev) : écrit en plus une image de la NVS
+applicative ne contenant que wifi_creds — ⚠ efface volume/scénario actif.
 """
 import argparse
 import os
@@ -34,17 +38,17 @@ PARTITIONS_CSV = os.path.join(REPO, "firmware", "partitions.csv")
 MAC_RE = re.compile(r"([0-9a-fA-F]{2}(?::[0-9a-fA-F]{2}){5})")
 
 
-def nvs_partition_offset_size() -> tuple[int, int]:
-    """Lit l'offset et la taille de la partition nvs depuis partitions.csv."""
+def partition_offset_size(name: str) -> tuple[int, int]:
+    """Lit l'offset et la taille d'une partition depuis partitions.csv."""
     with open(PARTITIONS_CSV) as f:
         for line in f:
             line = line.strip()
             if line.startswith("#") or not line:
                 continue
             cols = [c.strip() for c in line.split(",")]
-            if len(cols) >= 5 and cols[0] == "nvs":
+            if len(cols) >= 5 and cols[0] == name:
                 return int(cols[3], 0), int(cols[4], 0)
-    return 0x9000, 0x6000  # défauts table OTA EscapeBox
+    sys.exit(f"ERREUR : partition '{name}' absente de {PARTITIONS_CSV}")
 
 
 def find_nvs_gen() -> str:
@@ -73,21 +77,7 @@ def read_mac(port: str) -> bytes:
     return bytes(int(b, 16) for b in macs[0].split(":"))
 
 
-def make_nvs_bin(box_uid: str, secret: bytes, size: int, out_bin: str,
-                 wifi_ssid: str | None = None,
-                 wifi_pass: str | None = None) -> None:
-    csv = (
-        "key,type,encoding,value\n"
-        "box_creds,namespace,,\n"
-        f"box_uid,data,string,{box_uid}\n"
-        f"box_secret,data,hex2bin,{secret.hex()}\n"
-    )
-    if wifi_ssid:
-        # Identifiants WiFi lus par hal_wifi (namespace distinct).
-        csv += "wifi_creds,namespace,,\n"
-        csv += f"ssid,data,string,{wifi_ssid}\n"
-        if wifi_pass:
-            csv += f"pass,data,string,{wifi_pass}\n"
+def gen_nvs_bin(csv: str, size: int, out_bin: str) -> None:
     with tempfile.NamedTemporaryFile("w", suffix=".csv", delete=False) as f:
         f.write(csv)
         csv_path = f.name
@@ -103,13 +93,35 @@ def make_nvs_bin(box_uid: str, secret: bytes, size: int, out_bin: str,
         os.unlink(csv_path)
 
 
+def creds_csv(box_uid: str, secret: bytes) -> str:
+    """Image box_nvs : identité de la box (namespace box_creds)."""
+    return (
+        "key,type,encoding,value\n"
+        "box_creds,namespace,,\n"
+        f"box_uid,data,string,{box_uid}\n"
+        f"box_secret,data,hex2bin,{secret.hex()}\n"
+    )
+
+
+def wifi_csv(wifi_ssid: str, wifi_pass: str | None) -> str:
+    """Image NVS applicative : identifiants WiFi lus par hal_wifi."""
+    csv = (
+        "key,type,encoding,value\n"
+        "wifi_creds,namespace,,\n"
+        f"ssid,data,string,{wifi_ssid}\n"
+    )
+    if wifi_pass:
+        csv += f"pass,data,string,{wifi_pass}\n"
+    return csv
+
+
 def flash_nvs(port: str, offset: int, out_bin: str) -> None:
     r = subprocess.run(
         [sys.executable, "-m", "esptool", "--chip", "esp32s3", "-p", port,
          "write_flash", hex(offset), out_bin],
     )
     if r.returncode != 0:
-        sys.exit("ERREUR : flash de la partition nvs échoué")
+        sys.exit(f"ERREUR : flash de la partition @ {hex(offset)} échoué")
 
 
 def main() -> int:
@@ -151,30 +163,45 @@ def main() -> int:
         print(f"box_secret     : {secret[:2].hex()}…{secret[-2:].hex()} "
               "(32 octets, --show-secret pour le voir)")
 
-    offset, size = nvs_partition_offset_size()
-    with tempfile.NamedTemporaryFile(suffix=".bin", delete=False) as f:
-        out_bin = f.name
+    box_off, box_size = partition_offset_size("box_nvs")
+    images: list[tuple[str, int, str]] = []  # (libellé, offset, fichier)
     try:
-        make_nvs_bin(box_uid, secret, size, out_bin,
-                     args.wifi_ssid, args.wifi_pass)
+        with tempfile.NamedTemporaryFile(suffix=".bin", delete=False) as f:
+            creds_bin = f.name
+        gen_nvs_bin(creds_csv(box_uid, secret), box_size, creds_bin)
+        images.append(("box_nvs", box_off, creds_bin))
+        print(f"image box_nvs  : {os.path.getsize(creds_bin)} octets "
+              f"(@ {hex(box_off)}, taille {hex(box_size)})")
+
         if args.wifi_ssid:
+            nvs_off, nvs_size = partition_offset_size("nvs")
+            with tempfile.NamedTemporaryFile(suffix=".bin", delete=False) as f:
+                wifi_bin = f.name
+            gen_nvs_bin(wifi_csv(args.wifi_ssid, args.wifi_pass), nvs_size,
+                        wifi_bin)
+            images.append(("nvs (wifi_creds)", nvs_off, wifi_bin))
             print(f"WiFi SSID      : {args.wifi_ssid}"
-                  f"{' (réseau ouvert)' if not args.wifi_pass else ''}")
-        print(f"image NVS      : {os.path.getsize(out_bin)} octets "
-              f"(partition nvs @ {hex(offset)}, taille {hex(size)})")
+                  f"{' (réseau ouvert)' if not args.wifi_pass else ''}"
+                  f" → nvs @ {hex(nvs_off)}")
 
         if args.flash:
-            print("⚠ écriture de la partition nvs (efface les autres namespaces)…")
-            flash_nvs(args.port, offset, out_bin)
+            for label, off, path in images:
+                if label.startswith("nvs"):
+                    print("⚠ écriture de la NVS applicative (efface volume, "
+                          "scénario actif…)")
+                print(f"écriture {label} @ {hex(off)}…")
+                flash_nvs(args.port, off, path)
             print("✓ box provisionnée. Redémarre-la : le log doit afficher "
                   f"« box provisionnée: {box_uid} ».")
-            print(f"→ enregistre maintenant {box_uid} sur ton compte "
-                  "(POST /api/box/register ou Supabase Studio).")
+            print("  (si « table de partitions sans box_nvs » : faire le flash "
+                  "complet du CLAUDE.md puis relancer cet outil)")
+            print(f"→ appaire maintenant {box_uid} depuis /devices/add.")
         else:
             print("\nDRY-RUN : rien n'a été écrit sur la box. "
                   "Relance avec --flash pour provisionner.")
     finally:
-        os.unlink(out_bin)
+        for _, _, path in images:
+            os.unlink(path)
     return 0
 
 

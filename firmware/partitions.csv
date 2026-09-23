@@ -1,9 +1,13 @@
 # EscapeBox — table OTA-ready, ESP32-S3-WROOM-1-N16R8 (flash 16 MB)
 # Requiert CONFIG_ESPTOOLPY_FLASHSIZE_16MB=y et CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE=y
+# box_nvs : identité de la box (box_creds) isolée de la NVS applicative — un
+# nvs_flash_erase() de config_manager ne peut plus effacer le secret.
+# Écrite par tools/provision_box.py, lue par hal_box_auth. Jamais effacée.
 # Name,    Type, SubType,  Offset,   Size,     Flags
 nvs,       data, nvs,      0x9000,   0x6000,
 otadata,   data, ota,      0xF000,   0x2000,
 nvs_keys,  data, nvs_keys, 0x11000,  0x1000,
+box_nvs,   data, nvs,      0x12000,  0x6000,
 factory,   app,  factory,  0x20000,  0x300000,
 ota_0,     app,  ota_0,    0x320000, 0x300000,
 ota_1,     app,  ota_1,    0x620000, 0x300000,

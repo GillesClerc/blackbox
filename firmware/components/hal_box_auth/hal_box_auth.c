@@ -1,11 +1,13 @@
 #include "hal_box_auth.h"
 #include <string.h>
 #include "nvs.h"
+#include "nvs_flash.h"
 #include "esp_log.h"
 #include "psa/crypto.h"
 
 #define TAG "box_auth"
 
+#define BOX_NVS_PART   "box_nvs"     // partition dédiée (partitions.csv)
 #define NVS_NAMESPACE  "box_creds"
 #define KEY_UID        "box_uid"
 #define KEY_SECRET     "box_secret"
@@ -17,37 +19,97 @@ static char    s_uid[UID_MAX + 1];
 static uint8_t s_secret[SECRET_LEN];
 static bool    s_provisioned;
 
+// Lit uid + secret depuis un handle ouvert sur le namespace box_creds.
+static esp_err_t read_creds(nvs_handle_t nvs)
+{
+    size_t uid_len = sizeof(s_uid);
+    esp_err_t err = nvs_get_str(nvs, KEY_UID, s_uid, &uid_len);
+    if (err != ESP_OK) return err;
+    size_t secret_len = sizeof(s_secret);
+    err = nvs_get_blob(nvs, KEY_SECRET, s_secret, &secret_len);
+    if (err != ESP_OK) return err;
+    return secret_len == SECRET_LEN ? ESP_OK : ESP_ERR_NVS_INVALID_LENGTH;
+}
+
+static esp_err_t read_creds_from(const char *part)
+{
+    nvs_handle_t nvs;
+    esp_err_t err = part
+        ? nvs_open_from_partition(part, NVS_NAMESPACE, NVS_READONLY, &nvs)
+        : nvs_open(NVS_NAMESPACE, NVS_READONLY, &nvs);
+    if (err != ESP_OK) return err;
+    err = read_creds(nvs);
+    nvs_close(nvs);
+    return err;
+}
+
+// Copie les identifiants (déjà chargés en RAM) dans box_nvs.
+static esp_err_t write_creds_to_box_nvs(void)
+{
+    nvs_handle_t nvs;
+    esp_err_t err = nvs_open_from_partition(BOX_NVS_PART, NVS_NAMESPACE,
+                                            NVS_READWRITE, &nvs);
+    if (err != ESP_OK) return err;
+    err = nvs_set_str(nvs, KEY_UID, s_uid);
+    if (err == ESP_OK) err = nvs_set_blob(nvs, KEY_SECRET, s_secret, SECRET_LEN);
+    if (err == ESP_OK) err = nvs_commit(nvs);
+    nvs_close(nvs);
+    return err;
+}
+
+// Identité lue dans la partition dédiée box_nvs, que rien n'efface (le
+// nvs_flash_erase() de config_manager ne touche que la NVS applicative).
+// Migration : une box provisionnée avant box_nvs a ses identifiants dans le
+// namespace box_creds de la NVS applicative → recopiés une fois dans box_nvs.
+// Ancienne table de partitions (box_nvs absente) → lecture legacy + warning.
 esp_err_t hal_box_auth_init(void)
 {
     s_provisioned = false;
 
-    nvs_handle_t nvs;
-    esp_err_t err = nvs_open(NVS_NAMESPACE, NVS_READONLY, &nvs);
+    esp_err_t part_err = nvs_flash_init_partition(BOX_NVS_PART);
+    if (part_err == ESP_OK && read_creds_from(BOX_NVS_PART) == ESP_OK) {
+        s_provisioned = true;
+        ESP_LOGI(TAG, "box provisionnée: %s", s_uid);
+        return ESP_OK;
+    }
+
+    // Pas (encore) d'identité dans box_nvs : ancien emplacement ?
+    esp_err_t err = read_creds_from(NULL);
     if (err != ESP_OK) {
-        ESP_LOGW(TAG, "namespace '%s' absent: %s", NVS_NAMESPACE,
+        if (part_err != ESP_OK && part_err != ESP_ERR_NOT_FOUND) {
+            ESP_LOGE(TAG, "partition %s illisible (%s) — non effacée",
+                     BOX_NVS_PART, esp_err_to_name(part_err));
+        }
+        ESP_LOGW(TAG, "identifiants absents (%s) — lancer tools/provision_box.py",
                  esp_err_to_name(err));
         return ESP_ERR_NVS_NOT_FOUND;
     }
-
-    size_t uid_len = sizeof(s_uid);
-    err = nvs_get_str(nvs, KEY_UID, s_uid, &uid_len);
-    if (err != ESP_OK) {
-        ESP_LOGW(TAG, "box_uid absent: %s", esp_err_to_name(err));
-        nvs_close(nvs);
-        return ESP_ERR_NVS_NOT_FOUND;
-    }
-
-    size_t secret_len = sizeof(s_secret);
-    err = nvs_get_blob(nvs, KEY_SECRET, s_secret, &secret_len);
-    nvs_close(nvs);
-    if (err != ESP_OK || secret_len != SECRET_LEN) {
-        ESP_LOGW(TAG, "box_secret invalide (%s, len=%u)",
-                 esp_err_to_name(err), (unsigned)secret_len);
-        return ESP_ERR_NVS_NOT_FOUND;
-    }
-
     s_provisioned = true;
-    ESP_LOGI(TAG, "box provisionnée: %s", s_uid);
+
+    if (part_err == ESP_ERR_NOT_FOUND) {
+        ESP_LOGW(TAG, "box provisionnée: %s — ⚠ table de partitions sans %s : "
+                 "identité exposée à un effacement NVS, reflasher la table",
+                 s_uid, BOX_NVS_PART);
+        return ESP_OK;
+    }
+    if (part_err == ESP_ERR_NVS_NO_FREE_PAGES ||
+        part_err == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+        // box_nvs illisible mais une copie des identifiants existe en RAM :
+        // seul cas où l'effacer est sans perte.
+        ESP_LOGW(TAG, "%s illisible (%s) — réinitialisée pour migration",
+                 BOX_NVS_PART, esp_err_to_name(part_err));
+        if (nvs_flash_erase_partition(BOX_NVS_PART) == ESP_OK) {
+            part_err = nvs_flash_init_partition(BOX_NVS_PART);
+        }
+    }
+    if (part_err == ESP_OK && (err = write_creds_to_box_nvs()) == ESP_OK) {
+        ESP_LOGI(TAG, "box provisionnée: %s (identité migrée vers %s)",
+                 s_uid, BOX_NVS_PART);
+    } else {
+        ESP_LOGW(TAG, "box provisionnée: %s — migration vers %s échouée (%s)",
+                 s_uid, BOX_NVS_PART,
+                 esp_err_to_name(part_err != ESP_OK ? part_err : err));
+    }
     return ESP_OK;
 }
 
