@@ -31,6 +31,8 @@
 
 ## Notes spécifiques projet
 
+- **2026-09-27 : J1 déplacé sur le satellite Côté 2** (port USB-C latéral), avec U12 (USBLC6) et R9/R10 (CC 5,1 kΩ). Relié à la Main par J14 (JST-PH 6 : VBUS, GND, D−, D+, GND, 5V_HOST).
+
 - Côté 2 : port de charge et de debug, et futur mécanisme d'énigme « clé USB » (mode
   host/OTG, FSD §2.2.2c). ⚠ En mode host, la box devra fournir le VBUS de la clé : les
   5,1 kΩ sur CC (mode device) et l'alimentation actuelle ne le permettent pas → à concevoir

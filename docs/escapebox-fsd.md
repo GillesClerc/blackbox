@@ -243,12 +243,12 @@ Scores et stats remontés à la prochaine synchro
 | GPIO15 | SPI2_MISO | Carte microSD | Bus partagé avec le display bouche |
 | GPIO19 | USB D- | USB-C natif | — |
 | GPIO20 | USB D+ | USB-C natif | — |
-| GPIO45 | BTN1 (réserve) | Strapping VDD_SPI | **Jamais de pull-up externe** (1 au reset = flash 1,8 V → ne boote plus). Flottante OK ; bouton actif haut seulement. Cf. `docs/datasheets/ESP32-S3-datasheet.md`. **Non routé vers un connecteur** (décision ouverte : J8.5/J8.6 libres) |
-| GPIO46 | BTN2 (réserve) | Strapping boot | Pas de pull-up externe (flottante = 0 = OK). Non routé, idem |
+| GPIO45 | BTN1 | Bouton poussoir Côté 1 (via J8.5) | Strapping VDD_SPI : **jamais de pull-up externe** (1 au reset = flash 1,8 V → ne boote plus). Pull-down externe **R23 10 kΩ** ; bouton **actif haut** (vers 3V3_D), à ne pas tenir enfoncé au démarrage. Cf. `docs/datasheets/ESP32-S3-datasheet.md` |
+| GPIO46 | BTN2 | Bouton poussoir Côté 1 (via J8.6) | Strapping boot : pas de pull-up externe ; pull-down **R24 10 kΩ**, bouton actif haut |
 | GPIO47 | SPI2_CS_SD | Carte microSD (chip select) | Distinct du CS display bouche (GPIO10) |
 | GPIO48 | WS2812 DATA | Chaîne LEDs RGB | RMT driver |
 
-> Les boutons mécaniques peuvent être gérés via les 12 canaux du MTCH2120 (capacitif, fonctionne aussi avec boutons conducteurs) ou directement via GPIO45/46 pour des boutons poussoirs simples — à condition de les router (voir ci-dessus).
+> Deux boutons poussoirs mécaniques (Côté 1) sont câblés sur GPIO45/46 via J8 ; d'autres boutons peuvent passer par les 12 canaux du MTCH2120 (capacitif, fonctionne aussi avec boutons conducteurs).
 >
 > **Budget GPIO saturé** : à ce stade, GPIO1-21 et GPIO38-48 sont tous alloués (plus aucune pin libre). GPIO0 réservé strapping/boot, GPIO26-37 indisponibles (flash/PSRAM octal), GPIO43-44 réservées UART0 debug.
 
@@ -271,7 +271,7 @@ GPIO 21     — I2C SDA
 GPIO 26-37  — ⛔ Flash/PSRAM (non disponible)
 GPIO 38-42  — SPI3 yeux (2× GC9A01 : MOSI/SCLK/CS_L/DC/RST partagés)
 GPIO 43-44  — UART0 debug
-GPIO 45-46  — BTN1/BTN2, réserve non routée (strapping : flottantes OK, JAMAIS de pull-up externe sur 45)
+GPIO 45-46  — BTN1/BTN2, boutons Côté 1 via J8.5/J8.6 (pull-down 10 kΩ, actifs hauts, JAMAIS de pull-up sur 45)
 GPIO 47     — SPI2_CS_SD (carte microSD)
 GPIO 48     — WS2812 LEDs
 
@@ -281,7 +281,7 @@ GPIO 48     — WS2812 LEDs
 #### 2.2.2b Alimentation
 
 ```
-USB-C J1 (5 V, CC 5,1 kΩ = sink) ── USBLC6 (ESD D+/D−/VBUS)
+USB-C J1 (satellite Côté 2 : CC 5,1 kΩ = sink, USBLC6) ── câble ── J14 (Main)
     ↓ 5V_USB
 bq24075 (U8) — chargeur 1 A + power path DPPM, entrée limitée à 1,07 A (R_ILIM)
     ├── BAT → cellule Li-ion 18650 3400-3500 mAh (J2 : BAT+, BAT−, NTC, retour NTC sur GND)
@@ -347,7 +347,7 @@ Les énigmes sont "données" par le personnage (dialogue + feedback visuel).
 
 > **Énigme clé USB (Côté 2) :** le port USB-C réel du produit sert aussi de mécanique d'énigme — le joueur doit trouver/brancher une clé USB contenant un fichier précis (ex. texte avec une information donnée). Nécessite le mode USB host/OTG sur l'ESP32-S3 (distinct du mode device/CDC actuel utilisé pour le debug) — à instruire en Phase 2 firmware. Volontairement pas de mécanisme d'insertion factice à côté : réutiliser le port réel évite le risque d'un joueur qui force un objet non-USB dedans.
 >
-> ⚠ **À trancher avant le placement** : le connecteur USB-C (J1, vertical) est aujourd'hui soudé sur la Main, donc en face **Dessous**, pas sur Côté 2 (rallonge panneau, port en face Dessous, ou Main orientée pour que J1 affleure un côté). Et le mode host exige que la box **fournisse le VBUS** de la clé, ce que le câblage actuel (CC en 5,1 kΩ = sink, VBUS vers le chargeur) ne permet pas.
+> **Décision du 2026-09-27** : le port USB-C **J1 est déporté sur le satellite Côté 2**, avec sa protection USBLC6 et ses résistances CC (5,1 kΩ). La Main reçoit **J14** (JST-PH 6 broches : VBUS, GND, D−, D+, GND, 5V_HOST) ; les résistances série 22 Ω (R11/R12) restent au pied de l'ESP32. USB Full-Speed (12 Mbit/s) : 15-20 cm de câble interne conviennent. **Mode hôte (énigme de la clé) : place réservée, non câblée** — J14.6 `5V_HOST` peut recevoir le rail 5 V par R22 (0 Ω, DNP) ; resteront à concevoir sur le satellite la commutation et la limitation du VBUS vers la clé, la protection contre la réinjection dans le chargeur et la gestion des CC (source), plus une commande (pas de GPIO libre : expander I2C sur le satellite). En mode hôte, la console USB est perdue (prévoir les pastilles UART).
 
 > **Note NFC téléphone :** le ST25DV est un tag pur (pas de mode lecteur) — la box ne peut lire ni un téléphone en émulation de tag, ni un badge externe. L'unique interaction NFC possible est **téléphone → lit la box** (URL/contenu NDEF stocké côté box), qui fonctionne nativement sur tout téléphone NFC y compris iPhone. L'ancienne limitation iOS (HCE restreint aux paiements, bloquait la lecture d'un téléphone par un lecteur PN532) ne s'applique plus : il n'y a plus de fonction lecteur du tout, dans aucune direction.
 
@@ -366,7 +366,7 @@ Composants embarqués :
 - LSM6DSOXTR accéléromètre/gyro + MLC (IMU — soudé directement sur Main, aucune contrainte de position donc pas besoin de satellite dédié)
 - 12 × WS2812B-B (halo face Dessous)
 - Slot microSD (J11)
-- Connecteur USB-C J1 (charge + USB CDC debug)
+- J14 (JST-PH 6) : liaison USB vers le port USB-C du satellite Côté 2 (charge + USB CDC debug) ; R22 (DNP) = réserve du mode hôte
 - Connecteur batterie J2 JST-PH 4 broches (BAT+, BAT−, NTC, retour NTC sur GND)
 - Connecteurs JST vers les faces satellites (voir « Connectique backbone » ci-dessous)
 - 26 points de test (liste et valeurs attendues : `docs/pcb/03-validation-qualite.md`)
@@ -390,7 +390,7 @@ Composants embarqués :
 - Boutons poussoir
 
 **Satellite face Côté 2** — accès technique + énigme :
-- Port USB-C réel (charge + lecture clé USB, énigme narrative — nécessite USB host/OTG firmware, cf. §2.2.2c)
+- Port USB-C réel J1 + USBLC6 + CC 5,1 kΩ (déplacés depuis la Main le 2026-09-27), relié à J14 ; lecture de clé USB (énigme) : place réservée, circuit hôte à concevoir
 - Interrupteur
 - MTCH2120 capacitif 12 canaux (zones tactiles, pads déportables via FPC)
 
@@ -409,13 +409,13 @@ JST-SH (1,0 mm, verrouillable) pour les signaux inter-PCB ; JST-PH (2,0 mm) pour
 | J3-J6, J13 | JST-SH 4 | **Qwiic/STEMMA QT** : 1 = GND, 2 = 3V3_D, 3 = SDA, 4 = SCL | satellites I2C — **5 connecteurs, un par face I2C** (Devant, Dessus, Côté 1, Côté 2, Côté 3 ; J13 ajouté le 2026-09-27) |
 | J7 | JST-SH 10 | 3V3_D, GND, MOSI, SCLK, CS_L, CS_R, DC, RST, NC, NC | yeux (SPI3) |
 | J7b | JST-SH 8 | 3V3_D, GND, MOSI, SCLK, CS, DC, RST, BUSY | bouche (SPI2) |
-| J8 | JST-SH 6 | 3V3_D, GND, SW1, SW2, NC, NC | Côté 1 (toggles) — broches 5-6 libres (candidates pour BTN1/BTN2) |
+| J8 | JST-SH 6 | 3V3_D, GND, SW1, SW2, BTN1, BTN2 | Côté 1 (toggles + 2 boutons poussoirs actifs hauts, pull-down 10 kΩ sur la Main) |
 | J9 | JST-PH 4 | 5V, GND, DATA (sortie de LED13), NC | halo visage (Devant), suite de la chaîne WS2812 — pas de budget de courant fixé : le plafond firmware de luminosité borne l'ensemble |
 | J10 | JST-PH 4 | L+, L−, R+, R− (sorties en pont, via FB3-FB6) | haut-parleur (Dessus) |
 | J11 | slot microSD TF-01A | — | carte SD |
 | J12 | JST-SH 2 | VSYS, EN_SYS | interrupteur marche/arrêt SW3 (Côté 2) |
 | J2 | JST-PH 4 | BAT+, BAT−, NTC, retour NTC (GND) | cellule 18650 (harnais 4 fils, voir §2.2.2b) |
-| J1 | USB-C 24 broches | USB 2.0 seul, CC 5,1 kΩ | charge + USB CDC |
+| J14 | JST-PH 6 | VBUS (5V_USB), GND, D−, D+, GND, 5V_HOST | satellite Côté 2 (port USB-C J1 + USBLC6 + CC) |
 
 **Boîtier** :
 - Phase proto : Imprimé en 3D (PLA/PETG)
@@ -943,7 +943,7 @@ Critères produit — go/no-go Phase 2 :
 - [x] **Bouton marche/arrêt** (option B) : EN_SYS sur les EN de U5/U6/U7 + load switch Q1/Q2 sur le rail 5 V, charge USB préservée quand éteint (2026-09-27)
 - [x] Corrections de l'audit hardware 2026-09-23 : C20 PCM5122, J10 + ferrites FB3-FB6, pull-ups SD, J3-J6 Qwiic, D1 SS34, R_TMR + NTC, U5 en SO-8 (2026-09-27, vérifiées sur la netlist)
 - [x] ERC natif KiCad lancé, 53 erreurs traitées (2026-09-27) — à relancer après chaque modification
-- [ ] **Validation schéma main → étape de passage au PCB** : restent les points de `docs/audits/RESTE-A-FAIRE.md` §0 (BTN1/BTN2, emplacement USB-C)
+- [ ] **Validation schéma main → étape de passage au PCB** : restent les points de `docs/audits/RESTE-A-FAIRE.md` §0 (aucun point bloquant ; placement de l'antenne)
 - [ ] Placement des composants sur le PCB (contrainte : zone audio isolée dans un coin, pas de trace digitale dessous)
 - [ ] Routage (plan de masse continu layer 2, I2S court/groupé/blindé, alimentation en priorité)
 - [ ] DRC KiCad (clearance 0.2mm, track 0.2-0.5mm, via 0.3/0.6mm — règles JLCPCB)
@@ -1305,7 +1305,7 @@ proxy.ts                            → Next 16 (ex-middleware.ts) : refresh ses
 - **Yeux (2× GC9A01)** — `components/ui_manager/eyes_anim.c`, port C ESP-IDF du pipeline « Uncanny Eyes » Adafruit (MIT, Phil Burgess) via le fork GC9A01 de thelastoutpostworkshop. Rendu 128×128 centré dans 240×240, mouvement autonome (drift aléatoire + clignements) en mode IDLE. Actions JSON disponibles dans les scénarios : `eye_blink`, `eye_emotion {type: happy|sad|surprised|sleepy|angry|closed}`, `eye_look {direction: left|right|up|down|center}`. Asset embarqué : `defaultEye.h` (~156 KB flash).
 - **Bouche (display TBD, pas e-ink)** — à implémenter. Affichage texte mot-à-mot synchro audio.
 
-**Navigation : boutons physiques + visage.** Le joueur navigue avec les touches capacitives (MPR121/MTCH2120) — et les boutons GPIO45/46 si on les route (décision ouverte, §2.2.2) ; le personnage répond par la bouche (texte), la voix (audio) et les yeux. La configuration avancée (compte, langue, renommage) est déportée sur la webapp.
+**Navigation : boutons physiques + visage.** Le joueur navigue avec les touches capacitives (MPR121/MTCH2120) — et les deux boutons poussoirs GPIO45/46 du Côté 1 ; le personnage répond par la bouche (texte), la voix (audio) et les yeux. La configuration avancée (compte, langue, renommage) est déportée sur la webapp.
 
 > **Implémenté aujourd'hui** (`firmware/main/boot_menu.c`) : au boot, invite de 4 s (double bip + LEDs douces) ; sans appui → jeu direct (premier déballage sans setup). Un appui → menu au keypad : ◀ = touche 4, ▶ = touche 6, ✓ = touche 11 ; items JOUER, SCÉNARIO (✓ = suivant, persisté en NVS) et APPAIRAGE (fenêtre BLE de 5 min) ; sortie par ✓ sur JOUER ou après 30 s. Le reste de cette section est la **cible**.
 

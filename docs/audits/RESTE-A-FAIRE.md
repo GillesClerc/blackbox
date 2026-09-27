@@ -26,16 +26,16 @@
 - [x] 🤖 **J13 : 5ᵉ connecteur I2C** (H5, 27/09), JST-SH 4 en Qwiic, feuille `connector`.
 - [x] 🤖 **Deux bouts de fil pendants supprimés** de la feuille `power` (+ leurs jonctions
   devenues inutiles) — `kicad_netlist.py --check` : aucun fil mal raccordé.
+- [x] 🤖 **BTN1/BTN2 routés** (H4, décision du 27/09) — J8.5/J8.6 vers Côté 1, pull-down
+  **R23/R24 10 kΩ**, boutons actifs hauts, jamais de pull-up sur GPIO45.
+- [x] 🤖 **USB-C sur le satellite Côté 2** (H6, décision du 27/09) — J1, U12 (USBLC6) et
+  R9/R10 (CC) retirés de la Main (BOM : « Satellite Cote 2 ») ; **J14** JST-PH 6 broches
+  (VBUS, GND, D−, D+, GND, 5V_HOST) ; R11/R12 22 Ω restent au pied de l'ESP32 ;
+  **R22 0 Ω DNP** réserve le 5 V pour un futur mode hôte.
 - [ ] 🧑 **Dans KiCad** : recharger les feuilles `power` et `connector` (Fichier → Revenir)
   **avant toute sauvegarde**, relancer l'ERC, puis « Mettre à jour le PCB depuis le
-  schéma » (F8) : L1 (5 × 5), J2 (4 broches), J13 (nouveau). Ensuite, commiter la
-  sauvegarde KiCad du 27/09.
-- [ ] 🤝 **BTN1/BTN2 (GPIO45/46)** (H4) — boutons physiques sur Côté 1 via J8.5/J8.6
-  (actifs hauts, pull-down externe autorisée, **jamais de pull-up sur GPIO45**) ou réserve
-  avec pastille. En attente de la décision de Gilles.
-- [ ] 🤝 **Port USB-C sur un satellite latéral** (H6) — décision de principe : pas en face
-  Dessous. Options en cours de discussion (satellite Côté 2 relié à la Main, ou rallonge
-  panneau).
+  schéma » (F8) : L1 (5 × 5), J2 (4 broches), J13, J14, R22-R24 nouveaux ; J1 et U12
+  disparaissent du PCB Main. Ensuite, commiter la sauvegarde KiCad du 27/09.
 - [ ] 🧑 Placement : **antenne en bord de carte**, opposée à la cellule, sans cuivre dessous ;
   15 mm de dégagement en boîtier (H7).
 
@@ -79,8 +79,14 @@
 - [ ] 🧑 **TMAG5273A1** (0x35) ; INT → GND (+ MASK_INTB côté firmware) ; ≥ 10 nF sur VCC.
 - [ ] 🧑 **BMP280** : CSB **directement** sur VDDIO, SDO → GND (0x76), 100 nF sur VDD et VDDIO.
 - [ ] 🧑 Brochage **Qwiic** sur chaque satellite (1 = GND, 2 = 3V3, 3 = SDA, 4 = SCL).
-- [ ] 🤝 **Énigme « clé USB »** : le mode host exige de fournir le VBUS → à concevoir ou
-  abandonner, lié à H6.
+- [ ] 🧑 **Satellite Côté 2** : J1 USB-C + USBLC6 **au plus près du port** + CC 5,1 kΩ,
+  connecteur vers J14 (JST-PH 6, fils de section adaptée à ~1,1 A sur VBUS, D+/D− torsadés),
+  interrupteur SW3 (J12), MTCH2120 (I2C).
+- [ ] 🤝 **Énigme « clé USB » (mode hôte) — place réservée, pas câblée** : sur le satellite,
+  commutateur de VBUS limité en courant alimenté par `5V_HOST` (R22 à monter), protection
+  contre la réinjection dans le chargeur, CC côté source, commande par expander I2C (plus de
+  GPIO libre). Côté firmware : bascule USB-Serial-JTAG ↔ OTG hôte (console USB perdue en
+  mode hôte).
 - [ ] 🧑 Satellite Dessus : antenne NFC ST25DV (boucle, zone de garde) ; reprendre `nfc.kicad_sch`.
 - [ ] 🧑 Au proto : **temps de montée du bus I2C** ≤ 1000 ns à 100 kHz (≤ ~250 pF avec
   4,7 kΩ) ; passer en 2,2 kΩ si besoin.
@@ -102,7 +108,8 @@ Adaptation au hardware actuel :
 - [ ] **Drivers à écrire** : LSM6DSOX sur la Main (brancher `hal_imu`, fin de l'inclinaison
   simulée), TMAG5273 (MASK_INTB), MLX90614 (SMBus + PEC), BMP280, ADS7830, ST25DV
   (remplace `hal_nfc` PN532), micro ICS-43434, écran bouche (quand il sera choisi).
-- [ ] Boutons GPIO45/46 (F6) — selon la décision H4.
+- [ ] **Boutons GPIO45/46** (F6) — lire BTN1/BTN2 (actifs hauts, pull-down externe) ; ne
+  jamais exiger d'appui au démarrage (strapping).
 - [ ] **PCM5122 : lire le verrouillage PLL au registre 4, bit 4 (0 = verrouillé)** (F7) —
   le code lit le registre réservé 0x05 ; compléter `pcm5122-registers.md`.
 - [ ] `yaml2json.py` : ajouter `eye_blink`/`eye_emotion`/`eye_look`, retirer `servo` (F8).

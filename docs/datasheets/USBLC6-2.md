@@ -45,6 +45,8 @@ Placer le composant **aussi près que possible de la source de perturbation**
 
 ## Notes spécifiques projet
 
+- **2026-09-27 : U12 déplacé sur le satellite Côté 2**, à placer au plus près de J1 (USB-C) — la protection doit être à l'entrée du câble, pas sur la Main.
+
 - **U12** : I/O1 (1, 6) = USB_DM, I/O2 (3, 4) = USB_DP, VBUS (5) = 5V_USB, GND (2) → conforme ✓.
 - Placé après les résistances série R11/R12 (côté ESP32) : au layout, le rapprocher du
   connecteur J1 conformément à la recommandation.
