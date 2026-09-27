@@ -39,8 +39,10 @@
 - [x] 🤖 **Validation schéma Main + Côté 2** (27/09, `2026-09-27-validation-main-cote2.md`) :
   0 fil mal raccordé, 0 court-circuit entre rails ; no_connect ajoutés sur `power` (U5 2-4, U6.4, U9 TD ;
   celui de U10 D12 retiré à tort puis remis) → **recharger `power`** avant l'ERC.
-- [ ] 🤝 **Pastilles UART0** (TP_TXD0 / TP_RXD0 sur les pins 37/36 du module) : prévues par le
-  FSD pour le mode hôte USB et le mode Test, absentes du schéma — à décider.
+- [x] 🤖 **Pastilles UART0** TP_TXD0 / TP_RXD0 (nets UART0_TX / UART0_RX, pins 37/36 du
+  module) posées le 27/09 → recharger `esp32` puis F8.
+- [ ] 🤝 **SW3 : choisir un interrupteur plus haut de gamme** (à accrochage, contacts bas niveau),
+  câblé en direct sur J12.
 - [ ] 🧑 Câble J14 ↔ Côté 2 J2 **broche à broche** (vérifier au montage) ; courant nominal
   d'un contact JST-PH (~1,1 A sur VBUS) à vérifier sur la datasheet JST.
 - [ ] 🧑 Placement : **antenne en bord de carte**, opposée à la cellule, sans cuivre dessous ;
@@ -90,7 +92,7 @@ Projets KiCad créés le 2026-09-27 : `hardware/devant/`, `dessus/`, `cote1/`, `
 - [x] 🤖 **Côté 2 — partie USB dessinée** : J1 USB-C, U1 USBLC6 (sur les lignes brutes, côté
   connecteur), R1/R2 CC 5,1 kΩ, J2 vers J14 de la Main — netlist vérifiée.
 - [ ] 🤝 Dessin face par face (🤖 schéma + vérification netlist, 🧑 mise en page + ERC) :
-  Côté 2 (SW3 ; USB + tactile dessinés), Côté 3 (TMAG5273 seul), Côté 1 (ADS7830, faders, pots,
+  Côté 2 (USB + tactile dessinés ; SW3 en câble direct sur J12), Côté 3 (TMAG5273 seul), Côté 1 (ADS7830, faders, pots,
   toggles, boutons), Dessus (ST25DV + antenne, base `hardware/main/.history/nfc.kicad_sch`),
   Devant (écrans, BMP280, VEML7700 — bloqué par la fiche du module GC9A01 et le choix de
   l'écran bouche).
@@ -120,7 +122,7 @@ Projets KiCad créés le 2026-09-27 : `hardware/devant/`, `dessus/`, `cote1/`, `
 - [ ] 🧑 Brochage **Qwiic** sur chaque satellite (1 = GND, 2 = 3V3, 3 = SDA, 4 = SCL).
 - [ ] 🧑 **Satellite Côté 2** : J1 USB-C + USBLC6 **au plus près du port** + CC 5,1 kΩ,
   connecteur vers J14 (JST-PH 6, fils de section adaptée à ~1,1 A sur VBUS, D+/D− torsadés),
-  interrupteur SW3 (J12) à ajouter ; CAP1298 dessiné.
+  CAP1298 dessiné ; SW3 câblé en direct sur J12 (hors satellite).
 - [ ] 🤝 **Énigme « clé USB » (mode hôte) — place réservée, pas câblée** : sur le satellite,
   commutateur de VBUS limité en courant alimenté par `5V_HOST` (R22 à monter), protection
   contre la réinjection dans le chargeur, CC côté source, commande par expander I2C (plus de

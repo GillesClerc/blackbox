@@ -73,7 +73,7 @@ J14,,Connecteur JST-PH 6pin,JST-PH-6P,—,1,Main,"Liaison USB vers le satellite 
 R22,,0 ohm (DNP),0603,—,1,Main,Reserve mode hote USB : relie le rail 5V a J14.6 pour alimenter une cle. NON MONTEE
 "R23,R24",,10k ohm,0402,—,2,Main,"Pull-down BTN1/BTN2 (GPIO45/46, strapping) vers J8.5/J8.6 — boutons actifs hauts, JAMAIS de pull-up"
 J12,,Connecteur JST-SH 2pin,JST-SH-2P,—,1,Main,Interrupteur marche/arret (face Cote 2)
-SW3,,Interrupteur SPDT E-Switch 100 (contacts or),Toggle,—,1,Cote 2,Marche/arret — ne commute que EN_SYS (~50 uA)
+SW3,,"Interrupteur marche/arret a accrochage (modele a choisir, plus haut de gamme que l E-Switch 100)",Toggle,—,1,Cote 2,"Face Cote 2, cable DIRECT vers J12 de la Main (VSYS, EN_SYS), hors satellite — ne commute que EN_SYS (~50 uA) : contacts pour bas niveau (or) obligatoires"
 —,,Cellule 18650 3400-3500mAh (LG MJ1 / Samsung 35E / Panasonic NCR18650B),18650,—,1,Batterie,Cellule nue — protection assuree par DW01A+FS8205 sur la carte
 —,,NTC 10k B3950 a coller sur la cellule,axial/CMS,—,1,Batterie,Surveillance thermique de charge (bq24075 TS) — fenetre 0-50 C
 —,,Support 18650 ou cellule a languettes,—,—,1,Batterie,Jamais de soudure au fer sur une cellule
@@ -96,4 +96,4 @@ R_CS,,1k ohm,0402,—,1,Main,DW01A : resistance de detection (application typiqu
 C1,,10uF 16V ceramique,0603,—,1,Main,Reservoir 3V3_D au pied du module ESP32-S3
 "TP_VBUS1,TP_VSYS1,TP_VBAT1,TP_3V3D1,TP_3V3A1,TP_5VB1,TP_5V1,TP_GND1,TP_GND2,TP_GND3",,Point de test alimentation,TestPoint_Pad_D1.5mm,—,10,Main,Rails et masses — voir docs/pcb/03-validation-qualite.md
 "TP_ISET1,TP_CHG1,TP_FB1,TP_TS1,TP_ENSYS1,TP_GATE1",,Point de test diagnostic,TestPoint_Pad_D1.5mm,—,6,Main,"Courant de charge, etat chargeur, boucle du boost, NTC, marche/arret, load switch"
-"TP_SCLK2,TP_SCLK3,TP_I2SBCK,TP_I2SLRCK,TP_AUDIOL,TP_WS2812",,Point de test signaux,TestPoint_Pad_D1.5mm,—,6,Main,"Fronts des horloges SPI, I2S, sortie DAC, data LED"
+"TP_SCLK2,TP_SCLK3,TP_I2SBCK,TP_I2SLRCK,TP_AUDIOL,TP_WS2812,TP_TXD0,TP_RXD0",,Point de test signaux,TestPoint_Pad_D1.5mm,—,8,Main,"Fronts des horloges SPI, I2S, sortie DAC, data LED, console UART0 (TX/RX, adaptateur USB-serie 3,3 V)"

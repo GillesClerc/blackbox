@@ -1526,14 +1526,6 @@
 		(uuid "629258cf-8bef-49da-bbe8-0a70f500bcdc")
 	)
 	(no_connect
-		(at 161.29 69.85)
-		(uuid "ad868b5c-1a3a-4a58-abff-fb1fabda4cea")
-	)
-	(no_connect
-		(at 161.29 67.31)
-		(uuid "d32d85a5-92e8-4c51-bdfe-95a2303e655e")
-	)
-	(no_connect
 		(at 161.29 90.17)
 		(uuid "f5885851-578b-4381-9e29-6646ccb2badb")
 	)
@@ -4345,5 +4337,199 @@
 				)
 			)
 		)
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 166.37 67.31 270)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "d3d75751-40ba-46bd-b9e2-2b618164b8cd")
+		(property "Reference" "TP_TXD0"
+			(at 168.91 66.04 270)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "TestPoint"
+			(at 168.91 68.58 270)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.5mm"
+			(at 166.37 67.31 270)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 166.37 67.31 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Console UART0 : TX de la box (pin 37 du module) — adaptateur USB-serie 3,3 V"
+			(at 166.37 67.31 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "993312ee-226c-4d48-9dc9-b1c61af7e73d")
+		)
+		(instances
+			(project "blackbox"
+				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/14cfff57-6a31-4c05-af76-83111480b025"
+					(reference "TP_TXD0")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 161.29 67.31) (xy 166.37 67.31)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "8a8671e8-c2b5-49a1-b321-95ae16c77ad5")
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 166.37 69.85 270)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "ab5ea1c4-b3e1-49ac-b51e-8c5cd455e574")
+		(property "Reference" "TP_RXD0"
+			(at 168.91 68.58 270)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "TestPoint"
+			(at 168.91 71.11999999999999 270)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.5mm"
+			(at 166.37 69.85 270)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 166.37 69.85 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Console UART0 : RX de la box (pin 36 du module) — adaptateur USB-serie 3,3 V"
+			(at 166.37 69.85 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "b9b4b6ba-5c63-43dd-8a6b-cf742e8ca74b")
+		)
+		(instances
+			(project "blackbox"
+				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/14cfff57-6a31-4c05-af76-83111480b025"
+					(reference "TP_RXD0")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 161.29 69.85) (xy 166.37 69.85)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3eef87bc-887f-45f9-a95f-332313121ed6")
+	)
+	(label "UART0_TX"
+		(at 162.56 67.31 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "dd2eec9b-cacd-498e-88dc-e14848b8bae7")
+	)
+	(label "UART0_RX"
+		(at 162.56 69.85 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "713c0954-555a-438c-9f65-0f7dd96dd696")
 	)
 )

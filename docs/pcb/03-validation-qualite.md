@@ -67,6 +67,8 @@ masse longue en fil volant rend inexploitable toute mesure de signal rapide.
 | `TP_SCLK3` | `SPI3_SCLK` | idem, côté yeux (40 MHz, 80 visés) |
 | `TP_WS2812` | `WS2812_DATA` | vérifier le signal LED après R8 |
 | `TP_AUDIO_L` | `AUDIO_L` | sortie du DAC **après** le filtre RC, avant l'ampli : isole le PCM5122 du PAM8406 |
+| `TP_TXD0` | `UART0_TX` | console série (TX de la box, pin 37 du module) — ajouté le 2026-09-27 pour le mode hôte USB et le mode Test |
+| `TP_RXD0` | `UART0_RX` | console série (RX de la box, pin 36) — adaptateur USB-série **3,3 V**, masse sur un `TP_GND` |
 
 ### 2.4 Déjà au schéma
 
@@ -82,7 +84,7 @@ Trois nets utiles n'avaient aucun nom et ont été nommés à cette occasion —
 aussi la lisibilité du PCB : **`BQ_ISET`** (courant de charge), **`BQ_CHG`** (état du
 chargeur), **`BOOST_FB`** (boucle de régulation du MT3608).
 
-Avec les 4 existants, la carte compte **26 points de test**. Total en BOM : 3 lignes
+Avec les 4 existants, la carte compte **26 points de test**, **28** avec `TP_TXD0` / `TP_RXD0` (2026-09-27). Total en BOM : 3 lignes
 groupées, empreinte `TestPoint:TestPoint_Pad_D1.5mm`.
 
 ### 2.6 Règles de pose (pour le routage)

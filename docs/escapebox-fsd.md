@@ -355,7 +355,7 @@ Les énigmes sont "données" par le personnage (dialogue + feedback visuel).
 
 > **Énigme clé USB (Côté 2) :** le port USB-C réel du produit sert aussi de mécanique d'énigme — le joueur doit trouver/brancher une clé USB contenant un fichier précis (ex. texte avec une information donnée). Nécessite le mode USB host/OTG sur l'ESP32-S3 (distinct du mode device/CDC actuel utilisé pour le debug) — à instruire en Phase 2 firmware. Volontairement pas de mécanisme d'insertion factice à côté : réutiliser le port réel évite le risque d'un joueur qui force un objet non-USB dedans.
 >
-> **Décision du 2026-09-27** : le port USB-C **J1 est déporté sur le satellite Côté 2**, avec sa protection USBLC6 et ses résistances CC (5,1 kΩ). La Main reçoit **J14** (JST-PH 6 broches : VBUS, GND, D−, D+, GND, 5V_HOST) ; les résistances série 22 Ω (R11/R12) restent au pied de l'ESP32. USB Full-Speed (12 Mbit/s) : 15-20 cm de câble interne conviennent. **Mode hôte (énigme de la clé) : place réservée, non câblée** — J14.6 `5V_HOST` peut recevoir le rail 5 V par R22 (0 Ω, DNP) ; resteront à concevoir sur le satellite la commutation et la limitation du VBUS vers la clé, la protection contre la réinjection dans le chargeur et la gestion des CC (source), plus une commande (pas de GPIO libre : expander I2C sur le satellite). En mode hôte, la console USB est perdue (prévoir les pastilles UART).
+> **Décision du 2026-09-27** : le port USB-C **J1 est déporté sur le satellite Côté 2**, avec sa protection USBLC6 et ses résistances CC (5,1 kΩ). La Main reçoit **J14** (JST-PH 6 broches : VBUS, GND, D−, D+, GND, 5V_HOST) ; les résistances série 22 Ω (R11/R12) restent au pied de l'ESP32. USB Full-Speed (12 Mbit/s) : 15-20 cm de câble interne conviennent. **Mode hôte (énigme de la clé) : place réservée, non câblée** — J14.6 `5V_HOST` peut recevoir le rail 5 V par R22 (0 Ω, DNP) ; resteront à concevoir sur le satellite la commutation et la limitation du VBUS vers la clé, la protection contre la réinjection dans le chargeur et la gestion des CC (source), plus une commande (pas de GPIO libre : expander I2C sur le satellite). En mode hôte, la console USB est perdue : console de secours sur les pastilles `TP_TXD0` / `TP_RXD0` (UART0, posées le 2026-09-27).
 
 > **Note NFC téléphone :** le ST25DV est un tag pur (pas de mode lecteur) — la box ne peut lire ni un téléphone en émulation de tag, ni un badge externe. L'unique interaction NFC possible est **téléphone → lit la box** (URL/contenu NDEF stocké côté box), qui fonctionne nativement sur tout téléphone NFC y compris iPhone. L'ancienne limitation iOS (HCE restreint aux paiements, bloquait la lecture d'un téléphone par un lecteur PN532) ne s'applique plus : il n'y a plus de fonction lecteur du tout, dans aucune direction.
 
@@ -377,7 +377,7 @@ Composants embarqués :
 - J14 (JST-PH 6) : liaison USB vers le port USB-C du satellite Côté 2 (charge + USB CDC debug) ; R22 (DNP) = réserve du mode hôte
 - Connecteur batterie J2 JST-PH 4 broches (BAT+, BAT−, NTC, retour NTC sur GND)
 - Connecteurs JST vers les faces satellites (voir « Connectique backbone » ci-dessous)
-- 26 points de test (liste et valeurs attendues : `docs/pcb/03-validation-qualite.md`)
+- 28 points de test, dont la console UART0 `TP_TXD0` / `TP_RXD0` (liste et valeurs attendues : `docs/pcb/03-validation-qualite.md`)
 
 > **ST25DV04KC-IE6S3 (NFC) retiré du Main** — déplacé sur le satellite face Dessus (voir plus bas), car le tap téléphone doit être accessible sur la face Dessus alors que Main vit sur le Dessous. Le sheet KiCad `nfc.kicad_sch` reste réutilisable tel quel comme point de départ du satellite Dessus.
 
@@ -422,7 +422,7 @@ JST-SH (1,0 mm, verrouillable) pour les signaux inter-PCB ; JST-PH (2,0 mm) pour
 | J9 | JST-PH 4 | 5V, GND, DATA (sortie de LED13), NC | halo visage (Devant), suite de la chaîne WS2812 — pas de budget de courant fixé : le plafond firmware de luminosité borne l'ensemble |
 | J10 | JST-PH 4 | L+, L−, R+, R− (sorties en pont, via FB3-FB6) | haut-parleur (Dessus) |
 | J11 | slot microSD TF-01A | — | carte SD |
-| J12 | JST-SH 2 | VSYS, EN_SYS | interrupteur marche/arrêt SW3 (Côté 2) |
+| J12 | JST-SH 2 | VSYS, EN_SYS | interrupteur marche/arrêt SW3 (face Côté 2, câble direct, hors satellite) |
 | J2 | JST-PH 4 | BAT+, BAT−, NTC, retour NTC (GND) | cellule 18650 (harnais 4 fils, voir §2.2.2b) |
 | J14 | JST-PH 6 | VBUS (5V_USB), GND, D−, D+, GND, 5V_HOST | satellite Côté 2 (port USB-C J1 + USBLC6 + CC) |
 
@@ -944,7 +944,7 @@ Critères produit — go/no-go Phase 2 :
 - [x] Sheet Audio — PCM5122 + PAM8406 + ICS-43434, câblé et audité
 - [x] Empreintes des passifs assignées selon BOM sur les 5 sheets (plusieurs erreurs de copié-collé d'empreinte détectées et corrigées en cours de route — footprint d'un CI collée sur un passif voisin)
 - [x] Résoudre l'écart U12 → `USBLC6-2SC6` / `Package_TO_SOT_SMD:SOT-23-6` (LCSC C7519), schéma+BOM alignés
-- [x] 26 points de test posés (`TestPoint_Pad_D1.5mm`) — liste dans `docs/pcb/03-validation-qualite.md`
+- [x] 28 points de test posés (dont UART0, 2026-09-27) (`TestPoint_Pad_D1.5mm`) — liste dans `docs/pcb/03-validation-qualite.md`
 - [x] Sortir le sheet NFC (ST25DV04KC-IE6S3) du projet Main — `nfc.kicad_sch` conservé tel quel comme base du futur projet satellite face Dessus
 - [x] Ajouter LSM6DSOXTR (IMU) sur Main — `imu.kicad_sch`, pinout vérifié datasheet ST DS12814, mode I2C adresse 0x6A, câblé et audité
 - [x] Ajouter 12× WS2812B-B/T (halo face Dessous) sur le sheet Connecteurs — chaîne R8→LED2→...→LED13→J9, un bug de câblage trouvé et corrigé au passage (fil direct R8→J9 en reliquat, label WS2812_DATA mal placé)
@@ -963,7 +963,7 @@ Critères produit — go/no-go Phase 2 :
 - [ ] **Devant** (visage) : 2×GC9A01 + display bouche + WS2812 + BMP280 + VEML7700 — schéma + layout + Gerbers
 - [ ] **Dessus** (voix + NFC) : ST25DV04KC-IE6S3 (reprendre `nfc.kicad_sch` existant) + connecteur haut-parleur — schéma + dessin antenne NFC (boucle PCB, zone de garde) + layout + Gerbers
 - [ ] **Côté 1** (panneau de contrôle) : ADS7830 + faders/pots + toggles + boutons — schéma + layout + Gerbers
-- [ ] **Côté 2** (technique + énigme) : port USB-C + interrupteur + CAP1298 — schéma (USB + tactile dessinés le 2026-09-27, reste SW3) + layout + Gerbers
+- [ ] **Côté 2** (technique + énigme) : port USB-C + interrupteur + CAP1298 — schéma (USB + tactile dessinés le 2026-09-27 ; SW3 câblé en direct sur J12, hors satellite) + layout + Gerbers
 - [ ] **Côté 3** (zone magique) : TMAG5273 seul — schéma + layout + Gerbers
 - [x] 5 connecteurs I2C sur Main (J3-J6 + J13), un par face satellite (2026-09-27)
 
