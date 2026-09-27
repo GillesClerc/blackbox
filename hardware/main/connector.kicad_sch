@@ -2077,7 +2077,7 @@
 	)
 	(wire
 		(pts
-			(xy 96.52 165.1) (xy 87.52 165.1)
+			(xy 96.52 165.1) (xy 87.63 165.1)
 		)
 		(stroke
 			(width 0)
@@ -2247,7 +2247,7 @@
 	)
 	(wire
 		(pts
-			(xy 96.52 152.4) (xy 87.52 152.4)
+			(xy 96.52 152.4) (xy 87.63 152.4)
 		)
 		(stroke
 			(width 0)
@@ -2397,7 +2397,7 @@
 	)
 	(wire
 		(pts
-			(xy 96.52 154.94) (xy 87.52 154.94)
+			(xy 96.52 154.94) (xy 87.63 154.94)
 		)
 		(stroke
 			(width 0)
@@ -2597,7 +2597,7 @@
 	)
 	(wire
 		(pts
-			(xy 96.52 157.48) (xy 87.52 157.48)
+			(xy 96.52 157.48) (xy 87.63 157.48)
 		)
 		(stroke
 			(width 0)
@@ -2657,7 +2657,7 @@
 	)
 	(wire
 		(pts
-			(xy 96.52 149.86) (xy 87.52 149.86)
+			(xy 96.52 149.86) (xy 87.63 149.86)
 		)
 		(stroke
 			(width 0)
@@ -2737,7 +2737,7 @@
 	)
 	(wire
 		(pts
-			(xy 96.52 162.56) (xy 87.52 162.56)
+			(xy 96.52 162.56) (xy 87.63 162.56)
 		)
 		(stroke
 			(width 0)
@@ -3183,7 +3183,7 @@
 	)
 	(global_label "SPI2_SCLK"
 		(shape input)
-		(at 87.52 165.1 180)
+		(at 87.63 165.1 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3807,7 +3807,7 @@
 	)
 	(global_label "SPI2_MOSI"
 		(shape input)
-		(at 87.52 162.56 180)
+		(at 87.63 162.56 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -4047,7 +4047,7 @@
 	)
 	(global_label "SPI2_CS_SD"
 		(shape input)
-		(at 87.52 157.48 180)
+		(at 87.63 157.48 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -4167,7 +4167,7 @@
 	)
 	(global_label "SD_DAT2"
 		(shape input)
-		(at 87.52 154.94 180)
+		(at 87.63 154.94 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -4551,7 +4551,7 @@
 	)
 	(global_label "SPI2_MISO"
 		(shape input)
-		(at 87.52 149.86 180)
+		(at 87.63 149.86 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -4575,7 +4575,7 @@
 	)
 	(global_label "SD_DAT1"
 		(shape input)
-		(at 87.52 152.4 180)
+		(at 87.63 152.4 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
