@@ -284,7 +284,7 @@ GPIO 48     — WS2812 LEDs
 USB-C J1 (5 V, CC 5,1 kΩ = sink) ── USBLC6 (ESD D+/D−/VBUS)
     ↓ 5V_USB
 bq24075 (U8) — chargeur 1 A + power path DPPM, entrée limitée à 1,07 A (R_ILIM)
-    ├── BAT → cellule Li-ion 18650 3400-3500 mAh (J2 : BAT+, BAT−, NTC)
+    ├── BAT → cellule Li-ion 18650 3400-3500 mAh (J2 : BAT+, BAT−, NTC, retour NTC sur GND)
     │         protection DW01A (U9) + FS8205 (U10) sur le négatif (VBAT−)
     └── OUT = VSYS (≈ VIN USB − dropout sur secteur, 5,5 V max régulés ; ≈ VBAT sur batterie)
          │   interrupteur marche/arrêt SW3 (Côté 2, via J12) → EN_SYS (R20 100 k pull-down)
@@ -310,7 +310,7 @@ bq24075 (U8) — chargeur 1 A + power path DPPM, entrée limitée à 1,07 A (R_I
 >   moyens), charge en ~4 h — compatible avec R_ISET et R_TMR tels quels. Protection assurée
 >   par le DW01A + FS8205 de la carte, donc **cellule nue** possible. NTC 10 kΩ à coller sur
 >   la cellule. Jamais de soudure au fer sur une cellule : languettes ou support.
-> - ⚠ **NTC** : sur J2 à 3 broches, son retour se fait sur BAT− (négatif de la cellule, **avant** le FS8205), alors que la TS mesure par rapport à GND. La chute des MOSFET (56-74 mV à 1 A) décale la coupure en surchauffe d'environ +7 °C → **J2 à passer en 4 broches** (retour NTC sur GND), audit 2026-09-27 H2.
+> - **NTC** : J2 en **4 broches** (2026-09-27) — le retour de la NTC va sur **GND** (J2.4) et non sur BAT− : la TS mesure par rapport à VSS, et BAT− en est séparé par les MOSFET du FS8205 (56-74 mV à 1 A, soit ≈ +7 °C d'erreur sur la coupure en surchauffe). Harnais de cellule à 4 fils.
 > - Protection DW01A + FS8205 : surcharge 4,30 V, décharge profonde 2,40 V, **surintensité ≈ 1,6-3,2 A** → plafond du courant crête total (plafonds firmware de luminosité et de volume, mesure au proto).
 > - 3V3_D : **U5 = AP2112M-3.3 en SO-8** (θJA 114 °C/W au lieu de 184 °C/W en SOT-25), 600 mA garantis, l'ESP32 en exige ≥ 0,5 A ; plan de cuivre sous U5 au layout. Charges du rail : ESP32 ≥ 3,0 V, MTCH2120 ≥ 3,0 V, GC9A01A ≤ 3,3 V → **extinction firmware sur VBAT basse** (~3,4-3,5 V).
 > - Rail 5 V (MT3608, 5,0-5,2 V) : 12 WS2812B = 432 mA en blanc (+ 7,2 mA au repos), PAM8406 ≈ 0,4 A par canal au maximum sur le haut-parleur 8 Ω, plus le halo externe sur J9 (pas de budget fixé : c'est le plafond firmware de luminosité qui borne l'ensemble). **D1 = SS34** (3 A). **L1 = Sunlord SWPA5040S6R8MT** (6,8 µH ±20 %, Isat 2,9 A, 5 × 5 mm ; crête calculée ≈ 1,9 A — `docs/datasheets/SWPA5040S.md`).
@@ -367,7 +367,7 @@ Composants embarqués :
 - 12 × WS2812B-B (halo face Dessous)
 - Slot microSD (J11)
 - Connecteur USB-C J1 (charge + USB CDC debug)
-- Connecteur batterie J2 JST-PH 3 broches (BAT+, BAT−, NTC) — à passer en 4 broches (retour NTC sur GND)
+- Connecteur batterie J2 JST-PH 4 broches (BAT+, BAT−, NTC, retour NTC sur GND)
 - Connecteurs JST vers les faces satellites (voir « Connectique backbone » ci-dessous)
 - 26 points de test (liste et valeurs attendues : `docs/pcb/03-validation-qualite.md`)
 
@@ -406,7 +406,7 @@ JST-SH (1,0 mm, verrouillable) pour les signaux inter-PCB ; JST-PH (2,0 mm) pour
 
 | Réf. | Type | Brochage | Vers |
 |---|---|---|---|
-| J3-J6 | JST-SH 4 | **Qwiic/STEMMA QT** : 1 = GND, 2 = 3V3_D, 3 = SDA, 4 = SCL | satellites I2C — **4 connecteurs pour 5 faces I2C** (Devant, Dessus, Côté 1, Côté 2, Côté 3) : 5ᵉ connecteur ou chaînage à trancher avant le placement |
+| J3-J6, J13 | JST-SH 4 | **Qwiic/STEMMA QT** : 1 = GND, 2 = 3V3_D, 3 = SDA, 4 = SCL | satellites I2C — **5 connecteurs, un par face I2C** (Devant, Dessus, Côté 1, Côté 2, Côté 3 ; J13 ajouté le 2026-09-27) |
 | J7 | JST-SH 10 | 3V3_D, GND, MOSI, SCLK, CS_L, CS_R, DC, RST, NC, NC | yeux (SPI3) |
 | J7b | JST-SH 8 | 3V3_D, GND, MOSI, SCLK, CS, DC, RST, BUSY | bouche (SPI2) |
 | J8 | JST-SH 6 | 3V3_D, GND, SW1, SW2, NC, NC | Côté 1 (toggles) — broches 5-6 libres (candidates pour BTN1/BTN2) |
@@ -414,7 +414,7 @@ JST-SH (1,0 mm, verrouillable) pour les signaux inter-PCB ; JST-PH (2,0 mm) pour
 | J10 | JST-PH 4 | L+, L−, R+, R− (sorties en pont, via FB3-FB6) | haut-parleur (Dessus) |
 | J11 | slot microSD TF-01A | — | carte SD |
 | J12 | JST-SH 2 | VSYS, EN_SYS | interrupteur marche/arrêt SW3 (Côté 2) |
-| J2 | JST-PH 3 | BAT+, BAT−, NTC | cellule 18650 (→ 4 broches, voir §2.2.2b) |
+| J2 | JST-PH 4 | BAT+, BAT−, NTC, retour NTC (GND) | cellule 18650 (harnais 4 fils, voir §2.2.2b) |
 | J1 | USB-C 24 broches | USB 2.0 seul, CC 5,1 kΩ | charge + USB CDC |
 
 **Boîtier** :
@@ -943,7 +943,7 @@ Critères produit — go/no-go Phase 2 :
 - [x] **Bouton marche/arrêt** (option B) : EN_SYS sur les EN de U5/U6/U7 + load switch Q1/Q2 sur le rail 5 V, charge USB préservée quand éteint (2026-09-27)
 - [x] Corrections de l'audit hardware 2026-09-23 : C20 PCM5122, J10 + ferrites FB3-FB6, pull-ups SD, J3-J6 Qwiic, D1 SS34, R_TMR + NTC, U5 en SO-8 (2026-09-27, vérifiées sur la netlist)
 - [x] ERC natif KiCad lancé, 53 erreurs traitées (2026-09-27) — à relancer après chaque modification
-- [ ] **Validation schéma main → étape de passage au PCB** : restent les points de `docs/audits/RESTE-A-FAIRE.md` §0 (empreinte de L1, J2 à 4 broches, brochage FS8205, BTN1/BTN2, 5ᵉ connecteur I2C, emplacement USB-C)
+- [ ] **Validation schéma main → étape de passage au PCB** : restent les points de `docs/audits/RESTE-A-FAIRE.md` §0 (BTN1/BTN2, emplacement USB-C)
 - [ ] Placement des composants sur le PCB (contrainte : zone audio isolée dans un coin, pas de trace digitale dessous)
 - [ ] Routage (plan de masse continu layer 2, I2S court/groupé/blindé, alimentation en priorité)
 - [ ] DRC KiCad (clearance 0.2mm, track 0.2-0.5mm, via 0.3/0.6mm — règles JLCPCB)
@@ -956,7 +956,7 @@ Critères produit — go/no-go Phase 2 :
 - [ ] **Côté 1** (panneau de contrôle) : ADS7830 + faders/pots + toggles + boutons — schéma + layout + Gerbers
 - [ ] **Côté 2** (technique + énigme) : port USB-C + interrupteur + MTCH2120 — schéma + layout + Gerbers
 - [ ] **Côté 3** (zone magique) : MLX90614 + TMAG5273 — schéma + layout + Gerbers
-- [ ] Trancher le nombre réel de connecteurs I2C nécessaires sur Main (4 actuellement câblés J3-J6, potentiellement 5 avec Devant/Dessus/Côté1/Côté2/Côté3) et mettre à jour le sheet Connecteurs en conséquence
+- [x] 5 connecteurs I2C sur Main (J3-J6 + J13), un par face satellite (2026-09-27)
 
 *Commun à tous les PCB :*
 - [ ] Boîtier Lite : Fusion 360 → impression 3D → découpe laser MDF
@@ -1665,7 +1665,7 @@ Ces 3 réponses sont liées à la session (`hints_used`, `duration_sec`, `score`
 [ ] Charge crête : LEDs blanc 100 % + audio max + WiFi TX, batterie basse, sans coupure DW01A ni chute du rail 5 V
 [ ] Rail 5 V ≤ 5,3 V (max absolu WS2812) sur USB, avec plusieurs chargeurs
 [ ] Charge sur un port PC 500 mA : comportement acceptable (limite d'entrée à 1,07 A)
-[ ] NTC : charge suspendue au-delà du seuil chaud (vérifier après passage de J2 en 4 broches)
+[ ] NTC : charge suspendue au-delà du seuil chaud (J2 en 4 broches, retour NTC sur GND)
 [ ] Thermique : AP2112 3V3_D et bq24075 sous USB + charge, boîtier fermé
 [ ] Marche/arrêt : consommation éteinte ≤ 20 µA, charge USB fonctionnelle éteinte
 [ ] OTA WiFi : mise à jour firmware complète sans intervention physique
@@ -1734,9 +1734,9 @@ Ces 3 réponses sont liées à la session (`hints_used`, `duration_sec`, `score`
 | Volume ne change pas | I2C addr incorrecte / registres mal configurés | Vérifier 0x4C sur bus I2C, relire registres 61 et 62 |
 | Téléphone ne lit pas le tag | Antenne mal accordée / boucle PCB mal dimensionnée | Vérifier la géométrie de la boucle antenne AC0/AC1, mesurer la résonance ~13.56MHz |
 | Touch erratique | Paroi trop épaisse / mauvais calibrage | Augmenter le pad cuivre / ajuster threshold firmware |
-| Box qui redémarre sur un pic (LEDs, son fort) | Surintensité DW01A (1,6-3,2 A) ou rail 5 V effondré | Baisser les plafonds de luminosité et de volume ; mesurer TP_VBAT / TP_5V |
-| Box qui ne s'allume pas sur batterie | Interrupteur / EN_SYS, ou cellule en décharge profonde (DW01A < 2,4 V) | Vérifier TP_ENSYS, TP_GATE et TP_VBAT ; recharger par USB (relâchement du DW01A vers 3,0 V) |
-| LEDs éteintes ou couleurs fausses | Rail 5 V coupé (Q1) / timings hors spec V5 | Vérifier TP_5V et TP_WS2812 ; timings RMT conformes à `WS2812B-B.md` |
+| Box qui redémarre sur un pic (LEDs, son fort) | Surintensité DW01A (1,6-3,2 A) ou rail 5 V effondré | Baisser les plafonds de luminosité et de volume ; mesurer TP_VBAT1 / TP_5V1 |
+| Box qui ne s'allume pas sur batterie | Interrupteur / EN_SYS, ou cellule en décharge profonde (DW01A < 2,4 V) | Vérifier TP_ENSYS1, TP_GATE1 et TP_VBAT1 ; recharger par USB (relâchement du DW01A vers 3,0 V) |
+| LEDs éteintes ou couleurs fausses | Rail 5 V coupé (Q1) / timings hors spec V5 | Vérifier TP_5V1 et TP_WS2812 ; timings RMT conformes à `WS2812B-B.md` |
 
 ### 9.2 Firmware
 

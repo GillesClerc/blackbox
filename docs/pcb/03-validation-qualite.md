@@ -29,16 +29,16 @@ Sans eux, aucun bring-up sérieux n'est possible.
 
 | Repère | Net | Pourquoi | Valeur attendue |
 |---|---|---|---|
-| `TP_VBUS` | `5V_USB` | présence de l'alimentation USB | 5,0 V ±5 % |
-| `TP_VSYS` | `VSYS` | sortie du power path bq24075 | ≈ 4,7-5,0 V sur USB ; ≈ V_BAT sur batterie |
-| `TP_VBAT` | `VBAT` | tension cellule, avant protection | 3,0-4,2 V |
-| `TP_3V3D` | `3V3_D` | rail numérique | 3,3 V ±1,5 % (précision AP2112) |
-| `TP_3V3A` | `3V3_A` | rail audio | 3,3 V ±1,5 % |
-| `TP_5VB` | `5V_BOOST` | sortie du boost, **avant** le load switch | 5,0-5,2 V (0,6 × (1+750k/100k), MT3608) |
-| `TP_5V` | `5V` | rail 5 V, **après** le load switch | idem − ~50 mV de chute dans Q1 |
+| `TP_VBUS1` | `5V_USB` | présence de l'alimentation USB | 5,0 V ±5 % |
+| `TP_VSYS1` | `VSYS` | sortie du power path bq24075 | ≈ 4,7-5,0 V sur USB ; ≈ V_BAT sur batterie |
+| `TP_VBAT1` | `VBAT` | tension cellule, avant protection | 3,0-4,2 V |
+| `TP_3V3D1` | `3V3_D` | rail numérique | 3,3 V ±1,5 % (précision AP2112) |
+| `TP_3V3A1` | `3V3_A` | rail audio | 3,3 V ±1,5 % |
+| `TP_5VB1` | `5V_BOOST` | sortie du boost, **avant** le load switch | 5,0-5,2 V (0,6 × (1+750k/100k), MT3608) |
+| `TP_5V1` | `5V` | rail 5 V, **après** le load switch | idem − ~50 mV de chute dans Q1 |
 | `TP_GND1..3` | `GND` | retours de mesure | — |
 
-**Le couple `TP_5VB` / `TP_5V` est le plus rentable de la liste** : il isole en une mesure
+**Le couple `TP_5VB1` / `TP_5V1` est le plus rentable de la liste** : il isole en une mesure
 le boost du load switch. Tension présente en amont et absente en aval = Q1 ou sa commande ;
 absente des deux côtés = MT3608, L1 ou D1.
 
@@ -50,12 +50,12 @@ masse longue en fil volant rend inexploitable toute mesure de signal rapide.
 
 | Repère | Net (schéma) | Ce qu'il permet |
 |---|---|---|
-| `TP_ISET` | `U8.ISET` / `R_ISET` | **mesurer le courant de charge sans couper une piste** — la tension sur ISET reflète le courant réel (bq24075, `bq24075.md`) |
-| `TP_TS` | `BAT_TS` | vérifier la NTC : ≈ **0,75 V à 25 °C** (10 kΩ × la source interne de 75 µA) ; hors plage = charge suspendue sans symptôme |
-| `TP_ENSYS` | `EN_SYS` | état de l'interrupteur marche/arrêt vu par la carte |
-| `TP_GATE` | `GATE_5V` | grille de Q1 : ≈ 0 V box allumée, ≈ V_5V_BOOST éteinte |
-| `TP_FB` | `U7.FB` | boucle de régulation du boost : **0,6 V** attendu ; toute autre valeur = R_FB_H/R_FB_L ou MT3608 |
-| `TP_CHG` | `U8.CHG` | état de charge (open-drain, pull-up 100 kΩ déjà présent). Clignotement 2 Hz = **défaut de timer** |
+| `TP_ISET1` | `U8.ISET` / `R_ISET` | **mesurer le courant de charge sans couper une piste** — la tension sur ISET reflète le courant réel (bq24075, `bq24075.md`) |
+| `TP_TS1` | `BAT_TS` | vérifier la NTC : ≈ **0,75 V à 25 °C** (10 kΩ × la source interne de 75 µA) ; hors plage = charge suspendue sans symptôme |
+| `TP_ENSYS1` | `EN_SYS` | état de l'interrupteur marche/arrêt vu par la carte |
+| `TP_GATE1` | `GATE_5V` | grille de Q1 : ≈ 0 V box allumée, ≈ V_5V_BOOST éteinte |
+| `TP_FB1` | `U7.FB` | boucle de régulation du boost : **0,6 V** attendu ; toute autre valeur = R_FB_H/R_FB_L ou MT3608 |
+| `TP_CHG1` | `U8.CHG` | état de charge (open-drain, pull-up 100 kΩ déjà présent). Clignotement 2 Hz = **défaut de timer** |
 
 ### 2.3 Utiles — signaux
 
@@ -123,22 +123,22 @@ groupées, empreinte `TestPoint:TestPoint_Pad_D1.5mm`.
 > Alimenter **par USB uniquement**, batterie débranchée, courant limité à **100 mA** d'abord.
 
 - [ ] Courant à vide < ____ mA — **au-delà, couper immédiatement**
-- [ ] `TP_VSYS` = ____ V
-- [ ] `TP_3V3D` = 3,3 V ±1,5 % → ____ V
-- [ ] `TP_3V3A` = 3,3 V ±1,5 % → ____ V
-- [ ] `TP_FB` = 0,6 V → ____ V
-- [ ] `TP_5VB` = 5,0-5,2 V → ____ V
-- [ ] `TP_5V` ≈ `TP_5VB` − 50 mV → ____ V
+- [ ] `TP_VSYS1` = ____ V
+- [ ] `TP_3V3D1` = 3,3 V ±1,5 % → ____ V
+- [ ] `TP_3V3A1` = 3,3 V ±1,5 % → ____ V
+- [ ] `TP_FB1` = 0,6 V → ____ V
+- [ ] `TP_5VB1` = 5,0-5,2 V → ____ V
+- [ ] `TP_5V1` ≈ `TP_5VB1` − 50 mV → ____ V
 - [ ] Interrupteur sur arrêt : **tous les rails à 0 V** sauf `VSYS` (la charge doit rester possible)
 - [ ] Aucun composant anormalement chaud (contrôle au doigt puis caméra thermique si dispo)
 
 ### Phase 3 — Charge de la batterie
 
 - [ ] Cellule branchée (ou alimentation réglée à 3,7 V, limitée à 1,5 A)
-- [ ] `TP_CHG` bas = charge en cours ; **clignotement 2 Hz = défaut de timer**
-- [ ] `TP_ISET` = ____ V → courant de charge déduit = ____ A (cible ≈ 1 A)
-- [ ] `TP_TS` ≈ 0,75 V à 25 °C → ____ V (hors plage : la charge est suspendue silencieusement)
-- [ ] Basculer sur batterie seule : tous les rails tiennent, `TP_VSYS` ≈ `TP_VBAT`
+- [ ] `TP_CHG1` bas = charge en cours ; **clignotement 2 Hz = défaut de timer**
+- [ ] `TP_ISET1` = ____ V → courant de charge déduit = ____ A (cible ≈ 1 A)
+- [ ] `TP_TS1` ≈ 0,75 V à 25 °C → ____ V (hors plage : la charge est suspendue silencieusement)
+- [ ] Basculer sur batterie seule : tous les rails tiennent, `TP_VSYS1` ≈ `TP_VBAT1`
 
 ### Phase 4 — Firmware et auto-test
 

@@ -12,31 +12,32 @@
 
 ## 0. Avant de router la carte Main — maintenant
 
-- [x] 🤖 **L1 = Sunlord SWPA5040S6R8MT, C36411** (H1, validé le 27/09) — schéma modifié
-  (valeur `6.8u`, champs MPN/LCSC), empreinte `lcsc_footprints:L_Sunlord_SWPA5040S`
-  dessinée d'après le catalogue (pastilles 1,4 × 4,2 mm, écart 2,3 mm, sans modèle 3D),
-  BOM à jour. 🧑 Reste : recharger la feuille `power` dans KiCad, puis « Mettre à jour le
-  PCB depuis le schéma » (F8).
-- [x] 🤖 **C_B1 (entrée du MT3608) : 10 µF → 22 µF 16 V 0805** (27/09) — la datasheet
-  recommande 22 µF céramique en entrée **et** en sortie (« Capacitor Selection »). Schéma
-  et BOM modifiés, même empreinte.
-- [ ] 🧑 **J2 en 4 broches** (H2) — BAT+, BAT−, NTC, **retour NTC sur GND** : aujourd'hui la
-  NTC revient sur `VBAT-`, ce qui décale la coupure en surchauffe d'environ +7 °C à 1 A et
-  la supprime pendant la récupération d'une décharge profonde.
-- [ ] 🧑 **FS8205 (U10) : confirmer le brochage SOT-23-6 à l'œil** dans le PDF (H3) — il a
-  été déduit, jamais lu. Vérifier aussi sur LCSC que C32254 est bien en SOT-23-6.
-- [ ] 🤝 **BTN1/BTN2 (GPIO45/46)** (H4) — les router vers J8.5/J8.6 (Côté 1 : boutons
-  actifs hauts, pull-down externe autorisée, **jamais de pull-up sur GPIO45**) ou les
-  laisser en réserve avec une pastille.
-- [ ] 🤝 **5ᵉ connecteur I2C ou chaînage** (H5) — 5 faces satellites en I2C pour 4
-  connecteurs J3-J6.
-- [ ] 🤝 **Emplacement du port USB-C** (H6) — le FSD le place sur Côté 2, mais J1
-  (vertical) est sur la Main, en face Dessous.
+- [x] 🤖 **L1 = Sunlord SWPA5040S6R8MT, C36411** (H1, validé le 27/09) — valeur `6.8u`,
+  champs MPN/LCSC, empreinte **importée par LCSC manager**
+  (`C36411_IND-SMD_L5_0-W5_0_SWPA5040S`, avec modèle 3D ; pastilles identiques au catalogue
+  Sunlord, 1,4 × 4,2 mm à ±1,85 mm). ⚠ Sa zone d'encombrement colle au corps (5 × 5 mm) :
+  garder un peu d'air au placement.
+- [x] 🤖 **C_B1 (entrée du MT3608) : 10 µF → 22 µF 16 V 0805** (27/09) — recommandé par la
+  datasheet (« Capacitor Selection »).
+- [x] 🤖 **J2 en JST-PH 4 broches** (H2, 27/09) — 1 BAT+, 2 BAT−, 3 NTC, **4 retour NTC sur
+  GND**. Harnais de cellule à 4 fils.
+- [x] ✅ **FS8205 (U10) : brochage confirmé** (H3, 27/09) sur la datasheet §4 (capture de
+  Gilles) — le schéma est conforme.
+- [x] 🤖 **J13 : 5ᵉ connecteur I2C** (H5, 27/09), JST-SH 4 en Qwiic, feuille `connector`.
+- [x] 🤖 **Deux bouts de fil pendants supprimés** de la feuille `power` (+ leurs jonctions
+  devenues inutiles) — `kicad_netlist.py --check` : aucun fil mal raccordé.
+- [ ] 🧑 **Dans KiCad** : recharger les feuilles `power` et `connector` (Fichier → Revenir)
+  **avant toute sauvegarde**, relancer l'ERC, puis « Mettre à jour le PCB depuis le
+  schéma » (F8) : L1 (5 × 5), J2 (4 broches), J13 (nouveau). Ensuite, commiter la
+  sauvegarde KiCad du 27/09.
+- [ ] 🤝 **BTN1/BTN2 (GPIO45/46)** (H4) — boutons physiques sur Côté 1 via J8.5/J8.6
+  (actifs hauts, pull-down externe autorisée, **jamais de pull-up sur GPIO45**) ou réserve
+  avec pastille. En attente de la décision de Gilles.
+- [ ] 🤝 **Port USB-C sur un satellite latéral** (H6) — décision de principe : pas en face
+  Dessous. Options en cours de discussion (satellite Côté 2 relié à la Main, ou rallonge
+  panneau).
 - [ ] 🧑 Placement : **antenne en bord de carte**, opposée à la cellule, sans cuivre dessous ;
   15 mm de dégagement en boîtier (H7).
-- [ ] 🧑 Nettoyer les **deux bouts de fil pendants** de la feuille `power` (sur `C_U9` et
-  sur le corps de `R_CS`), relancer l'ERC, puis **commiter la sauvegarde KiCad** du
-  27/09 (annotation des TP en `TP_xxx1`).
 
 ## 1. Carte Main — pendant le layout
 

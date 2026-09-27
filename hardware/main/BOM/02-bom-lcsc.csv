@@ -14,12 +14,12 @@ U12,USBLC6-2SC6,,SOT-23-6,C7519,1,Main,Protection ESD USB D+/D-
 "—",,GC9A01 module 1.3 rond,Module,—,2,Face avant,Yeux du personnage 240x240 SPI (modules achetes)
 "—",,SSD1680 e-ink module 2.9,Module,—,1,Face avant,Bouche du personnage 296x128 SPI (Waveshare 2.9 V2)
 J1,HOOYA USB-307HB-B-SU,,USB-C-24P SMD vertical,C309361,1,Main,Connecteur USB-C femelle 24 pins (fab. Dongguang Haoyu Electronics) — sur LCSC/JLCPCB, importable via easyeda2kicad ou plugin kicad-lcsc-manager (LCSC ID C309361). Pinout standard verifie sur datasheet fabricant 2026-09-20 (voir docs/pcb/01-netlist.txt) : VBUS=A4/A9/B4/B9, GND=A1/A12/B1/B12+shield, D+=A6+B6, D-=A7+B7, CC1=A5, CC2=B5, pins SS/SBU non utilisees (design USB2.0 only).
-"J3,J4,J5,J6",,Connecteur JST-SH 4pin,JST-SH-4P,—,4,Main,Bus I2C vers satellites
+"J3,J4,J5,J6,J13",,Connecteur JST-SH 4pin,JST-SH-4P,—,5,Main,Bus I2C vers satellites (brochage Qwiic ; J13 ajoute le 2026-09-27 : 5 faces satellites en I2C)
 J7,,Connecteur JST-SH 10pin,JST-SH-10P,—,1,Main,SPI3 vers 2x GC9A01 yeux
 J7b,,Connecteur JST-SH 8pin,JST-SH-8P,—,1,Main,SPI2 vers SSD1680 e-ink bouche
 J8,,Connecteur JST-SH 6pin,JST-SH-6P,—,1,Main,Toggles SW1/SW2 face avant + reserve GPIO3 (ex-ADC potentiometres - analogique migre sur ADS7830 I2C)
 J9,,Connecteur JST-PH 4pin,JST-PH-4P,—,1,Main,"WS2812 + reserve (PH 2mm choisi pour 32 LEDs = ~1.9A ; en pratique le budget batterie ne laisse que ~8-10 LEDs externes, cf. audit A5 — au-dela, alimenter la bande separement et n'utiliser que DATA+GND)"
-J2,,Connecteur batterie JST-PH 3pin (BAT+/BAT-/NTC),JST-PH-3P,—,1,Main,Cellule 18650 + NTC collee (etait un 2pin LiPo avant le 2026-09-27)
+J2,,Connecteur batterie JST-PH 4pin (BAT+/BAT-/NTC/retour NTC),JST-PH-4P,—,1,Main,"Cellule 18650 + NTC collee, harnais 4 fils : le retour NTC va sur GND (VSS du bq24075), pas sur BAT- (audit 2026-09-27 H2)"
 J10,,Connecteur haut-parleur JST-PH 4pin,JST-PH-4P,—,1,Main,"Sorties en pont L+/L-/R+/R- via ferrites FB3-FB6 — aucune masse commune, ne jamais relier les - entre elles ni a GND"
 J11,,Slot microSD push-push,TF-PUSH,C91145,1,Main,Carte SD sur SPI2 partage (MISO=15 CS=47) - verifier ref LCSC avant commande
 L1,Sunlord SWPA5040S6R8MT,6.8uH,SMD 5x5x4mm,C36411,1,Main,"Inductance boost MT3608 : 6,8 uH +-20 %, Isat 2,9 A, Irms 2,5 A, DCR 56 mOhm max (decision 2026-09-27, docs/datasheets/SWPA5040S.md) — remplace le 22uH 1210"
@@ -87,6 +87,6 @@ R_CS,,1k ohm,0402,—,1,Main,DW01A : resistance de detection (application typiqu
 "TP_EN,TP_GPIO0,TP_I2CA,TP_I2CL",,Point de test,TestPoint_Pad_D1.5mm,—,4,Main,Pastilles de test (EN, GPIO0, I2C SDA/SCL)
 "C_CLK2,C_CLK3",,10pF (DNP),0402,—,2,Main,Provision CEM sur les horloges SPI — non montees
 C1,,10uF 16V ceramique,0603,—,1,Main,Reservoir 3V3_D au pied du module ESP32-S3
-"TP_VBUS,TP_VSYS,TP_VBAT,TP_3V3D,TP_3V3A,TP_5VB,TP_5V,TP_GND1,TP_GND2,TP_GND3",,Point de test alimentation,TestPoint_Pad_D1.5mm,—,10,Main,Rails et masses — voir docs/pcb/03-validation-qualite.md
-"TP_ISET,TP_CHG,TP_FB,TP_TS,TP_ENSYS,TP_GATE",,Point de test diagnostic,TestPoint_Pad_D1.5mm,—,6,Main,Courant de charge, etat chargeur, boucle du boost, NTC, marche/arret, load switch
+"TP_VBUS1,TP_VSYS1,TP_VBAT1,TP_3V3D1,TP_3V3A1,TP_5VB1,TP_5V1,TP_GND1,TP_GND2,TP_GND3",,Point de test alimentation,TestPoint_Pad_D1.5mm,—,10,Main,Rails et masses — voir docs/pcb/03-validation-qualite.md
+"TP_ISET1,TP_CHG1,TP_FB1,TP_TS1,TP_ENSYS1,TP_GATE1",,Point de test diagnostic,TestPoint_Pad_D1.5mm,—,6,Main,Courant de charge, etat chargeur, boucle du boost, NTC, marche/arret, load switch
 "TP_SCLK2,TP_SCLK3,TP_I2SBCK,TP_I2SLRCK,TP_AUDIOL,TP_WS2812",,Point de test signaux,TestPoint_Pad_D1.5mm,—,6,Main,Fronts des horloges SPI, I2S, sortie DAC, data LED
