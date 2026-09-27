@@ -41,7 +41,7 @@
   celui de U10 D12 retiré à tort puis remis) → **recharger `power`** avant l'ERC.
 - [x] 🤖 **Pastilles UART0** TP_TXD0 / TP_RXD0 (nets UART0_TX / UART0_RX, pins 37/36 du
   module) posées le 27/09 → recharger `esp32` puis F8.
-- [ ] 🤝 **SW3 : choisir un interrupteur plus haut de gamme** (à accrochage, contacts bas niveau),
+- [x] 🤝 **SW3 = E-Switch série 100 en façade** (27/09 : bouton anti-vandale jugé trop cher),
   câblé en direct sur J12.
 - [ ] 🧑 Câble J14 ↔ Côté 2 J2 **broche à broche** (vérifier au montage) ; courant nominal
   d'un contact JST-PH (~1,1 A sur VBUS) à vérifier sur la datasheet JST.
@@ -83,7 +83,8 @@
 - [ ] 🤝 Archiver `docs/schematics/*.txt` (schémas ASCII d'avant KiCad : ILI9488, PN532, AS5600…).
 - [ ] 🧑 Champs LCSC manquants (~100 références) — **au moment de la commande**, décision du
   27/09 (appariement automatique JLCPCB des passifs courants).
-- [ ] 🧑 E-Switch SW1/SW2/SW3 en finition **or**.
+- [ ] 🧑 E-Switch SW1/SW2/SW3 en finition **or** : confirmer la lettre du code de commande
+  (illisible à l'extraction du PDF ; `100SP1T1B4M1QE` de la BOM non vérifié).
 
 ## 3. Satellites (à la conception)
 

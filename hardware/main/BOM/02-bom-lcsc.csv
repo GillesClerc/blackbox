@@ -73,7 +73,7 @@ J14,,Connecteur JST-PH 6pin,JST-PH-6P,—,1,Main,"Liaison USB vers le satellite 
 R22,,0 ohm (DNP),0603,—,1,Main,Reserve mode hote USB : relie le rail 5V a J14.6 pour alimenter une cle. NON MONTEE
 "R23,R24",,10k ohm,0402,—,2,Main,"Pull-down BTN1/BTN2 (GPIO45/46, strapping) vers J8.5/J8.6 — boutons actifs hauts, JAMAIS de pull-up"
 J12,,Connecteur JST-SH 2pin,JST-SH-2P,—,1,Main,Interrupteur marche/arret (face Cote 2)
-SW3,,"Interrupteur marche/arret a accrochage (modele a choisir, plus haut de gamme que l E-Switch 100)",Toggle,—,1,Cote 2,"Face Cote 2, cable DIRECT vers J12 de la Main (VSYS, EN_SYS), hors satellite — ne commute que EN_SYS (~50 uA) : contacts pour bas niveau (or) obligatoires"
+SW3,"E-Switch serie 100 SP1 (On-On), finition or",Interrupteur a levier marche/arret,Toggle-100SP-panel,—,1,Cote 2,"Monte en facade Cote 2 (decision 2026-09-27 : on garde l E-Switch, bouton anti-vandale trop cher), cable DIRECT vers J12 de la Main (VSYS, EN_SYS), hors satellite. Ne commute que EN_SYS (~50 uA) -> contacts OR obligatoires ; code de commande exact (finition or) a confirmer, comme SW1/SW2 - docs/datasheets/E-Switch-100-series-toggle.md"
 —,,Cellule 18650 3400-3500mAh (LG MJ1 / Samsung 35E / Panasonic NCR18650B),18650,—,1,Batterie,Cellule nue — protection assuree par DW01A+FS8205 sur la carte
 —,,NTC 10k B3950 a coller sur la cellule,axial/CMS,—,1,Batterie,Surveillance thermique de charge (bq24075 TS) — fenetre 0-50 C
 —,,Support 18650 ou cellule a languettes,—,—,1,Batterie,Jamais de soudure au fer sur une cellule
