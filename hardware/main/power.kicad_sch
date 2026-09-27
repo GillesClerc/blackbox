@@ -13521,7 +13521,7 @@
 				)
 			)
 		)
-		(property "Value" "100k"
+		(property "Value" "2k2"
 			(at 165.608 69.596 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -13553,7 +13553,7 @@
 				)
 			)
 		)
-		(property "Description" "Pull-down EN_SYS : coupe les rails si J12 est ouvert ou debranche"
+		(property "Description" "Pull-down EN_SYS : coupe les rails si J12 est ouvert ou debranche. 2,2 k (2026-09-27) : ~1,5-2,5 mA dans le contact argent de SW3 (E-Switch RR1) quand la box est allumee"
 			(at 161.29 67.31 0)
 			(hide yes)
 			(show_name no)

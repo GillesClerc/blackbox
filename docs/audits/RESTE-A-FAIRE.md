@@ -43,9 +43,8 @@
   module) posées le 27/09 → recharger `esp32` puis F8.
 - [x] 🤝 **SW3 = E-Switch RR111C1921** (27/09 : bascule ronde de façade Ø 20 mm, non lumineuse),
   câblée en direct sur J12 par cosses faston 4,8 mm.
-- [ ] 🤝 **SW3 : contacts argent pour ~50 µA** (R20 100 kΩ) — la datasheet RR1 ne donne pas de
-  courant minimal. Option : baisser R20 (ex. 2,2 kΩ → ~1,5-2,5 mA quand la box est allumée,
-  rien éteinte) pour garder le contact « propre ». À décider.
+- [x] 🤝 **SW3 : contacts argent** → **R20 = 2,2 kΩ** (27/09, au lieu de 100 kΩ) : ~1,5-2,5 mA
+  dans le contact box allumée, rien éteinte → recharger `power` puis F8.
 - [ ] 🧑 Câble J14 ↔ Côté 2 J2 **broche à broche** (vérifier au montage) ; courant nominal
   d'un contact JST-PH (~1,1 A sur VBUS) à vérifier sur la datasheet JST.
 - [ ] 🧑 Placement : **antenne en bord de carte**, opposée à la cellule, sans cuivre dessous ;

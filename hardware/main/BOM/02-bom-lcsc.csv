@@ -68,7 +68,8 @@ C_FP2,,1uF 10V ceramique,0402,—,1,Face avant,ADS7830 REFIN (ref externe ratiom
 "SW1,SW2",E-Switch 100SP1T1B4M1QE,,Toggle-100SP-12mm-bushing,—,2,Face avant,Toggle SPDT ON-ON panel 12mm (a sourcer DigiKey/Mouser - non LCSC) - datasheet docs/datasheets/E-Switch-100-series-toggle.pdf
 Q1,AO3401A,MOSFET P AO3401A -30V -4A,SOT-23,C15127,1,Main,Load switch rail 5V (marche/arret)
 Q2,2N7002,MOSFET N 2N7002,SOT-23,C8545,1,Main,Inverseur de commande du load switch
-"R20,R21",,100k 1%,0402,—,2,Main,Pull-down EN_SYS + grille-source Q1
+R20,,2.2k 1%,0402,—,1,Main,"Pull-down EN_SYS. 2,2 k (et non 100 k) depuis le 2026-09-27 : courant de contact ~1,5 mA (VSYS 3,4 V) a 2,5 mA (5,5 V) dans SW3 (contacts argent E-Switch RR1), uniquement box allumee ; 14 mW max"
+R21,,100k 1%,0402,—,1,Main,Grille-source Q1 (load switch)
 J14,,Connecteur JST-PH 6pin,JST-PH-6P,—,1,Main,"Liaison USB vers le satellite Cote 2 : 1 VBUS (5V_USB, ~1,1 A), 2 GND, 3 D-, 4 D+, 5 GND, 6 5V_HOST (reserve mode hote)"
 R22,,0 ohm (DNP),0603,—,1,Main,Reserve mode hote USB : relie le rail 5V a J14.6 pour alimenter une cle. NON MONTEE
 "R23,R24",,10k ohm,0402,—,2,Main,"Pull-down BTN1/BTN2 (GPIO45/46, strapping) vers J8.5/J8.6 — boutons actifs hauts, JAMAIS de pull-up"

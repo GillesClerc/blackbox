@@ -295,7 +295,7 @@ bq24075 (U8) — chargeur 1 A + power path DPPM, entrée limitée à 1,07 A (R_I
     ├── BAT → cellule Li-ion 18650 3400-3500 mAh (J2 : BAT+, BAT−, NTC, retour NTC sur GND)
     │         protection DW01A (U9) + FS8205 (U10) sur le négatif (VBAT−)
     └── OUT = VSYS (≈ VIN USB − dropout sur secteur, 5,5 V max régulés ; ≈ VBAT sur batterie)
-         │   interrupteur marche/arrêt SW3 (Côté 2, via J12) → EN_SYS (R20 100 k pull-down)
+         │   interrupteur marche/arrêt SW3 (Côté 2, via J12) → EN_SYS (R20 2,2 k pull-down : courant de contact pour SW3, 27/09)
          ├── AP2112M-3.3 SO-8 (U5)  [EN_SYS] → 3V3_D (ESP32, SD, écrans, IMU, satellites)
          ├── AP2112K-3.3 SOT-25 (U6)[EN_SYS] → 3V3_A (PCM5122, ICS-43434)
          └── MT3608 boost (U7)      [EN_SYS] → 5V_BOOST (5,1 V) → D1 SS34

@@ -42,10 +42,11 @@ La datasheet la liste telle quelle : « RR111C1921 — 1P Off-On, Black Body, Re
 
 ## Notes projet
 
-- SW3 ne commute que `EN_SYS` : environ **50 µA** à travers R20 (pull-down 100 kΩ). La
+- SW3 ne commute que `EN_SYS`. Avec R20 = 100 kΩ, il n'y passait que ~50 µA. La
   datasheet ne donne **aucun courant minimal** et les contacts sont en **argent**, conçus
   pour des charges de puissance → risque de mauvais contact à très bas courant (oxydation) :
-  voir la décision sur R20 dans le RESTE-A-FAIRE.
+  **R20 ramenée à 2,2 kΩ le 2026-09-27** → ~1,5 mA (VSYS 3,4 V) à ~2,5 mA (5,5 V) dans le contact
+  quand la box est allumée, rien quand elle est éteinte (interrupteur ouvert) ; 14 mW max dans R20.
 - **Pas de voyant fiable avec les versions lumineuses** : lampe de 6 V minimum, alors que VSYS
   varie d'environ 3,4 V (batterie basse) à 5,5 V (USB branché) — voyant éteint ou très faible.
 - Raccordement : deux cosses faston 4,8 mm → câble vers J12 (JST-SH 2 broches) de la Main.
