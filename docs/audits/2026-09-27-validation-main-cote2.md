@@ -101,7 +101,7 @@ exigée par une datasheet** est juste atteinte en nominal :
 
 | Réf. | Actuel | Rail | Exigence datasheet | Proposition |
 |---|---|---|---|---|
-| C_IN | ~~4,7 µF 10 V 0603~~ → **4,7 µF 25 V X7R 0805 (C354262), fait le 27/09** | 5V_USB (4,35-6,4 V en service, 28 V destruction) | bq24075 : 1-10 µF | 25 V : marge contre un chargeur défectueux ou une surtension au branchement (X7R 25 V inexistant en 0603 chez JLCPCB) |
+| C_IN | ~~4,7 µF 10 V 0603~~ → **4,7 µF 25 V X5R 0603, Samsung CL10A475KA8NQNC (C69335), fait le 27/09** | 5V_USB (4,35-6,4 V en service, 28 V destruction) | bq24075 : 1-10 µF | 25 V : marge contre un chargeur défectueux ou une surtension au branchement ; X5R (−55/+85 °C) suffisant, empreinte 0603 conservée |
 | C_BAT | 4,7 µF 10 V 0603 | VBAT ≤ 4,2 V | bq24075 : 4,7-47 µF | 10 µF 10 V 0805 (reste ≥ 4,7 µF effectif) |
 | C_OUT | 4,7 µF 10 V 0603 | VSYS ≤ 5,5 V | bq24075 : 4,7-47 µF | 10 µF 16 V 0805 |
 | C_D1, C_A1 | 1 µF 10 V 0402 | VSYS ≤ 5,5 V | AP2112 : 1 µF céramique min | 1 µF 16 V 0603 (ou 2,2 µF 10 V 0603) |
