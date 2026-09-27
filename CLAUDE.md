@@ -20,7 +20,10 @@ Box physique d'escape game. Specs completes dans :
 - Flash 16 MB — partitions OTA (factory + ota_0 + ota_1 de 3 MB, storage LittleFS 6.9 MB), rollback active ; `box_nvs` (0x12000, 24 Ko) = identite box isolee de la NVS applicative (jamais effacee)
 - PSRAM octal 8 MB activee (CONFIG_SPIRAM_MODE_OCT)
 - Carte SD sur SPI2 (CS=47, module 5V), montee FAT sur /sdcard — scenario + ambient.mp3 charges depuis SD, fallback embarque
-- Container Docker : escapebox-dev (voir Dockerfile + start.sh)
+- Container Docker, deux points d'entree equivalents (meme Dockerfile, user `dev`, memes montages `~/.claude`, `~/.claude-code-local`, `~/.ssh`) :
+  - terminal WSL : `./start.sh` (image `escapebox-dev`, lance claude directement)
+  - VS Code : « Reopen in Container » (`.devcontainer/`, construit le meme Dockerfile ; port 3000 forwarde). Apres modif du Dockerfile/entrypoint : « Rebuild Container » + `docker build -t escapebox-dev .` pour start.sh
+  - Env IDF (`idf.py`, esptool, pyserial) charge par `~/.bashrc` de dev
 
 ## Commandes
 - Build : `idf.py build` (depuis firmware/)
@@ -32,8 +35,8 @@ Box physique d'escape game. Specs completes dans :
 
 ## Notes USB / Docker
 - /dev/ttyACM0 expose via usbipd (WSL2 → container --privileged)
-- Si non accessible : `docker exec -u root $(docker ps -q --filter ancestor=escapebox-dev) chmod 666 /dev/ttyACM0`
-- Box absente du container (`/sys/bus/usb` inexistant) : cote Windows `usbipd list` → la DevKitC = « USB-Enhanced-SERIAL CH343 » (1a86:55d3), le BUSID change d'une session a l'autre ; `usbipd attach --wsl --busid <BUSID>` (etat doit passer a Attached), puis depuis WSL `docker exec -u root <container> sh -c "mknod /dev/ttyACM0 c 166 0; chmod 666 /dev/ttyACM0"`
+- Si non accessible (ou box attachee apres le demarrage du container) : `sudo tty-nodes.sh` depuis le container (cree/chmod les nodes ttyACM*/ttyUSB* ; sudo sans mot de passe limite a ce script)
+- Box absente du container (`/sys/bus/usb` inexistant) : cote Windows `usbipd list` → la DevKitC = « USB-Enhanced-SERIAL CH343 » (1a86:55d3), le BUSID change d'une session a l'autre ; `usbipd attach --wsl --busid <BUSID>` (etat doit passer a Attached), puis dans le container `sudo tty-nodes.sh`
 
 ## Git
 - Remote : git@github.com:GillesClerc/blackbox.git

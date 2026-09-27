@@ -1,19 +1,33 @@
+// Meme environnement que ./start.sh : meme Dockerfile, memes montages, meme
+// utilisateur `dev`, meme entrypoint (ESCAPEBOX_DEVCONTAINER le garde vivant au
+// lieu de lancer claude). Les deux modes partagent ~/.claude (sessions, memoire)
+// et ~/.claude-code-local, et peuvent tourner en meme temps.
 {
   "name": "Blackbox ESP32",
-  "image": "espressif/idf:latest",
-  "runArgs": [
-    "--privileged"
-  ],
+  "build": {
+    "dockerfile": "../Dockerfile",
+    "context": ".."
+  },
+  "runArgs": ["--privileged"],
+  "overrideCommand": false,
+  "containerEnv": {
+    "ESCAPEBOX_DEVCONTAINER": "1"
+  },
+  "initializeCommand": "mkdir -p \"$HOME/.claude\" \"$HOME/.claude-code-local\"",
   "mounts": [
-    "source=${localEnv:HOME}/.ssh,target=/root/.ssh,type=bind,readonly",
-    "source=${localEnv:HOME}/.gitconfig,target=/root/.gitconfig,type=bind,readonly"
+    "source=${localEnv:HOME}/.ssh,target=/tmp/ssh_host,type=bind,readonly",
+    "source=${localEnv:HOME}/.claude,target=/home/dev/.claude,type=bind",
+    "source=${localEnv:HOME}/.claude-code-local,target=/home/dev/.local,type=bind"
   ],
-  "postCreateCommand": "apt-get update -q && apt-get install -y -q usbutils curl && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && apt-get install -y nodejs && npm install -g @anthropic-ai/claude-code",
-  "remoteUser": "root",
+  "workspaceFolder": "/workspaces/blackbox",
+  "remoteUser": "dev",
+  "updateRemoteUserUID": false,
+  "forwardPorts": [3000],
   "customizations": {
     "vscode": {
       "extensions": [
-        "espressif.esp-idf-extension"
+        "espressif.esp-idf-extension",
+        "anthropic.claude-code"
       ]
     }
   }
