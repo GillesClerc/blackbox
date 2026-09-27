@@ -12,10 +12,11 @@
 
 ## 0. Avant de router la carte Main — maintenant
 
-- [ ] 🧑 **L1 dans KiCad** (H1) — **choix validé le 27/09 : Sunlord SWPA5040S6R8MT,
-  C36411** (6,8 µH ±20 %, Isat 2,9 A, 5 × 5 × 4 mm ; `docs/datasheets/SWPA5040S.md`).
-  Reste à mettre la valeur `6.8u` et l'empreinte 5 × 5 (import LCSC C36411, ou pastilles
-  1,4 × 4,2 mm écartées de 2,3 mm) à la place du 1210. BOM déjà à jour.
+- [x] 🤖 **L1 = Sunlord SWPA5040S6R8MT, C36411** (H1, validé le 27/09) — schéma modifié
+  (valeur `6.8u`, champs MPN/LCSC), empreinte `lcsc_footprints:L_Sunlord_SWPA5040S`
+  dessinée d'après le catalogue (pastilles 1,4 × 4,2 mm, écart 2,3 mm, sans modèle 3D),
+  BOM à jour. 🧑 Reste : recharger la feuille `power` dans KiCad, puis « Mettre à jour le
+  PCB depuis le schéma » (F8).
 - [ ] 🧑 **C_B1 (entrée du MT3608) : 10 µF → 22 µF** — la datasheet recommande 22 µF
   céramique en entrée **et** en sortie (« Capacitor Selection ») ; C_B2 fait déjà 22 µF.
 - [ ] 🧑 **J2 en 4 broches** (H2) — BAT+, BAT−, NTC, **retour NTC sur GND** : aujourd'hui la
