@@ -60,7 +60,10 @@
   un chiffre critique, ouvrir la fiche MDD depuis la page LCSC.
 - [ ] 🧑 **Objectif de 1,9 A sur J9 à revoir** (indépendant de la diode) : sur batterie,
   cela ferait ~3,1 A côté cellule, au-delà du seuil de coupure DW01A (1,6-3,2 A).
-- [ ] 🧑 **3V3_D** : AP2112 en **SOT-89-5** (θJA 120 au lieu de 184 °C/W) + cuivre autour.
+- [x] 🤖 **3V3_D** : U5 passé en **SO-8** (`AP2112M-3.3TRG1`, LCSC C5290219, θJA 114 °C/W)
+  le 2026-09-27 — meilleur que le SOT-89-5 envisagé, et disponible chez LCSC. U6 reste en
+  SOT-25. Symbole créé dans la bibliothèque projet (absent de la bibliothèque KiCad).
+  🧑 Reste à faire au layout : **plan de cuivre généreux** sous et autour de U5.
 
 ### 🟡 Faible
 - [ ] 🧑 LSM6DSOX : ajouter **10 µF** sur VDD.

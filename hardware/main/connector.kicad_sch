@@ -1880,6 +1880,12 @@
 		)
 	)
 	(junction
+		(at 195.58 135.89)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "13769f6f-8bb8-4cc9-861f-70086ef5f2be")
+	)
+	(junction
 		(at 118.11 175.26)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -1890,6 +1896,24 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "6752be0b-8f74-492e-b5ab-4402ad53010f")
+	)
+	(junction
+		(at 203.2 135.89)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "921a3105-c30d-4748-b4a2-a77eb62d185b")
+	)
+	(junction
+		(at 187.96 135.89)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "9ef9dd5c-a152-4781-a219-2be82c482d44")
+	)
+	(junction
+		(at 180.34 135.89)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "a0d23d3d-5038-4813-85bb-7de9c7cc5628")
 	)
 	(wire
 		(pts
@@ -2223,6 +2247,16 @@
 	)
 	(wire
 		(pts
+			(xy 96.52 152.4) (xy 87.52 152.4)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "4d87fc82-9f05-41c4-8851-75435a87244c")
+	)
+	(wire
+		(pts
 			(xy 116.84 175.26) (xy 118.11 175.26)
 		)
 		(stroke
@@ -2363,6 +2397,16 @@
 	)
 	(wire
 		(pts
+			(xy 96.52 154.94) (xy 87.52 154.94)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "86eeb584-6bc2-4107-9fe3-9036902fb329")
+	)
+	(wire
+		(pts
 			(xy 36.83 48.26) (xy 27.83 48.26)
 		)
 		(stroke
@@ -2470,6 +2514,16 @@
 			(type default)
 		)
 		(uuid "af78dea8-bcfa-4916-b008-3ab50ee05687")
+	)
+	(wire
+		(pts
+			(xy 172.72 135.89) (xy 210.82 135.89)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b021bf81-e424-488f-97ce-c89799c8a6c1")
 	)
 	(wire
 		(pts
@@ -2972,6 +3026,30 @@
 		(uuid "11bd5fe1-2614-4691-9a2b-9d81349966f1")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 40.7391 48.26 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+	)
+	(global_label "SD_DAT2"
+		(shape input)
+		(at 210.82 143.51 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "150a6989-4ad5-48ef-bfc1-f199c0a103cd")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 210.82 154.478 90)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3679,6 +3757,30 @@
 			)
 		)
 	)
+	(global_label "SPI2_MISO"
+		(shape input)
+		(at 195.58 143.51 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "827c8802-4b76-4fb9-93e5-1beb50c8e059")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 195.58 156.3528 90)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+	)
 	(global_label "5V"
 		(shape input)
 		(at 176.53 91.44 90)
@@ -3812,6 +3914,30 @@
 		(uuid "915df24f-d5a3-498e-b952-9fcf9207ca55")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 80.1091 33.02 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+	)
+	(global_label "SPI2_CS_SD"
+		(shape input)
+		(at 180.34 143.51 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "941ffdf6-4d5f-4a61-a047-366c3ff4077e")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 180.34 157.6832 90)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4039,6 +4165,30 @@
 			)
 		)
 	)
+	(global_label "SD_DAT2"
+		(shape input)
+		(at 87.52 154.94 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "afe7dc2f-4195-4b62-aaaa-65b1d31aaa9a")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 76.09 154.94 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+	)
 	(global_label "5V"
 		(shape input)
 		(at 209.55 106.68 90)
@@ -4100,6 +4250,30 @@
 		(uuid "b77a8c7d-cebb-4c4c-ad0d-cbdf0f44818e")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at -15.1409 15.24 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+	)
+	(global_label "SD_DAT1"
+		(shape input)
+		(at 203.2 143.51 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "bee3f94a-aaf8-4f16-8ca6-44e4b5902904")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 203.2 154.478 90)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4303,6 +4477,54 @@
 			)
 		)
 	)
+	(global_label "SPI2_MOSI"
+		(shape input)
+		(at 187.96 143.51 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "d61de578-9955-4fc9-8a8b-be86585746ca")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 187.96 156.3528 90)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+	)
+	(global_label "3V3_D"
+		(shape input)
+		(at 172.72 135.89 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "d6332443-ac27-48b5-a9d3-b3440a905070")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 161.29 135.89 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+	)
 	(global_label "3V3_D"
 		(shape input)
 		(at 189.12 29.21 180)
@@ -4340,6 +4562,30 @@
 		(uuid "d8d4c64d-95ac-4a95-b4b6-63f42f45a5a9")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 40.7391 48.26 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+	)
+	(global_label "SD_DAT1"
+		(shape input)
+		(at 87.52 152.4 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "db3d4566-b296-4f96-9712-a64321e82ae8")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 76.09 152.4 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4951,6 +5197,164 @@
 		)
 	)
 	(symbol
+		(lib_id "Device:R")
+		(at 210.82 139.7 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "15922f0f-d8f0-41b3-bb28-1f03a8741c82")
+		(property "Reference" "R19"
+			(at 214.122 137.922 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "10k"
+			(at 214.376 141.478 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
+			(at 210.82 139.7 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 210.82 139.7 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Pull-up carte SD DAT2 (ESP-IDF : 10 kOhm max, y compris sur les lignes non utilisees)"
+			(at 210.82 139.7 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "8d10ab60-4a3f-471e-99e4-82df51183819")
+		)
+		(pin "2"
+			(uuid "bd0afa74-ef7c-453f-81a9-ca169c52c238")
+		)
+		(instances
+			(project "blackbox"
+				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/51b01d3e-87dc-456c-a96b-c77ebbca5dc9"
+					(reference "R19")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 180.34 139.7 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "16d27081-ece1-4d6a-9241-231dc7f60f3d")
+		(property "Reference" "R15"
+			(at 183.642 138.43 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "10k"
+			(at 183.388 141.224 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
+			(at 180.34 139.7 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 180.34 139.7 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Pull-up carte SD CS/DAT3 (ESP-IDF : 10 kOhm max, y compris sur les lignes non utilisees)"
+			(at 180.34 139.7 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "d30a8562-6425-4e3d-9c2b-43adcda945ad")
+		)
+		(pin "2"
+			(uuid "eef8223d-ac3f-4c38-b259-4ef31105211c")
+		)
+		(instances
+			(project "blackbox"
+				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/51b01d3e-87dc-456c-a96b-c77ebbca5dc9"
+					(reference "R15")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Connector_Generic:Conn_01x06")
 		(at 96.52 52.07 0)
 		(unit 1)
@@ -5038,6 +5442,164 @@
 			(project "blackbox"
 				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/51b01d3e-87dc-456c-a96b-c77ebbca5dc9"
 					(reference "J8")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 187.96 139.7 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "1fad95ba-7774-442b-bef4-66ea6dfbf3a7")
+		(property "Reference" "R16"
+			(at 191.262 137.922 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "10k"
+			(at 191.008 140.716 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
+			(at 187.96 139.7 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 187.96 139.7 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Pull-up carte SD CMD/DI (ESP-IDF : 10 kOhm max, y compris sur les lignes non utilisees)"
+			(at 187.96 139.7 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "61e2e9ab-1de1-45be-b230-da395c1eb629")
+		)
+		(pin "2"
+			(uuid "bdb43bb8-1b03-4378-9d2e-a4f689611461")
+		)
+		(instances
+			(project "blackbox"
+				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/51b01d3e-87dc-456c-a96b-c77ebbca5dc9"
+					(reference "R16")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 203.2 139.7 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "206d5804-c3d8-45a8-8f89-e72e6c0cecd9")
+		(property "Reference" "R18"
+			(at 206.248 137.922 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "10k"
+			(at 206.502 141.478 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
+			(at 203.2 139.7 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 203.2 139.7 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Pull-up carte SD DAT1 (ESP-IDF : 10 kOhm max, y compris sur les lignes non utilisees)"
+			(at 203.2 139.7 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "de26bac1-3b73-4564-a81e-5d7d1e85a3f9")
+		)
+		(pin "2"
+			(uuid "1a8d6a3a-fa2b-4249-ab39-19e480442007")
+		)
+		(instances
+			(project "blackbox"
+				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/51b01d3e-87dc-456c-a96b-c77ebbca5dc9"
+					(reference "R18")
 					(unit 1)
 				)
 			)
@@ -6551,6 +7113,85 @@
 		)
 	)
 	(symbol
+		(lib_id "Device:R")
+		(at 195.58 139.7 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "d28b9fa9-9a2f-477c-9ee5-12e1b8023148")
+		(property "Reference" "R17"
+			(at 198.628 137.922 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "10k"
+			(at 198.628 140.97 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
+			(at 195.58 139.7 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 195.58 139.7 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Pull-up carte SD DAT0/DO (ESP-IDF : 10 kOhm max, y compris sur les lignes non utilisees)"
+			(at 195.58 139.7 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "e877ddc6-c6d2-4eec-9cd4-a1e8151e113f")
+		)
+		(pin "2"
+			(uuid "c628fe8f-290e-48f9-a8b1-f2e94e1329e4")
+		)
+		(instances
+			(project "blackbox"
+				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/51b01d3e-87dc-456c-a96b-c77ebbca5dc9"
+					(reference "R17")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "lcsc_imported:WS2812B-B/W")
 		(at 222.25 93.98 0)
 		(unit 1)
@@ -6762,650 +7403,6 @@
 					(reference "LED12")
 					(unit 1)
 				)
-			)
-		)
-	)
-
-	(wire
-		(pts
-			(xy 96.52 152.4) (xy 87.52 152.4)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "4d87fc82-9f05-41c4-8851-75435a87244c")
-	)
-	(global_label "SD_DAT1"
-		(shape input)
-		(at 87.52 152.4 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "db3d4566-b296-4f96-9712-a64321e82ae8")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 76.09 152.4 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-	)
-
-	(wire
-		(pts
-			(xy 96.52 154.94) (xy 87.52 154.94)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "86eeb584-6bc2-4107-9fe3-9036902fb329")
-	)
-	(global_label "SD_DAT2"
-		(shape input)
-		(at 87.52 154.94 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "afe7dc2f-4195-4b62-aaaa-65b1d31aaa9a")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 76.09 154.94 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-	)
-
-	(wire
-		(pts
-			(xy 172.72 135.89) (xy 210.82 135.89)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "b021bf81-e424-488f-97ce-c89799c8a6c1")
-	)
-	(global_label "3V3_D"
-		(shape input)
-		(at 172.72 135.89 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "d6332443-ac27-48b5-a9d3-b3440a905070")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 161.29 135.89 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-	)
-	(junction
-		(at 180.34 135.89)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "a0d23d3d-5038-4813-85bb-7de9c7cc5628")
-	)
-	(junction
-		(at 187.96 135.89)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "9ef9dd5c-a152-4781-a219-2be82c482d44")
-	)
-	(junction
-		(at 195.58 135.89)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "13769f6f-8bb8-4cc9-861f-70086ef5f2be")
-	)
-	(junction
-		(at 203.2 135.89)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "921a3105-c30d-4748-b4a2-a77eb62d185b")
-	)
-	(symbol
-		(lib_id "Device:R")
-		(at 180.34 139.7 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "16d27081-ece1-4d6a-9241-231dc7f60f3d")
-		(property "Reference" "R15"
-			(at 182.88 138.42999999999998 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "10k"
-			(at 182.88 140.97 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
-			(at 180.34 139.7 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 180.34 139.7 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "Pull-up carte SD CS/DAT3 (ESP-IDF : 10 kOhm max, y compris sur les lignes non utilisees)"
-			(at 180.34 139.7 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "d30a8562-6425-4e3d-9c2b-43adcda945ad")
-		)
-		(pin "2"
-			(uuid "eef8223d-ac3f-4c38-b259-4ef31105211c")
-		)
-		(instances
-			(project "blackbox"
-				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/51b01d3e-87dc-456c-a96b-c77ebbca5dc9"
-					(reference "R15")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(global_label "SPI2_CS_SD"
-		(shape input)
-		(at 180.34 143.51 270)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "941ffdf6-4d5f-4a61-a047-366c3ff4077e")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 191.77 143.51 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:R")
-		(at 187.96 139.7 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "1fad95ba-7774-442b-bef4-66ea6dfbf3a7")
-		(property "Reference" "R16"
-			(at 190.5 138.42999999999998 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "10k"
-			(at 190.5 140.97 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
-			(at 187.96 139.7 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 187.96 139.7 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "Pull-up carte SD CMD/DI (ESP-IDF : 10 kOhm max, y compris sur les lignes non utilisees)"
-			(at 187.96 139.7 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "61e2e9ab-1de1-45be-b230-da395c1eb629")
-		)
-		(pin "2"
-			(uuid "bdb43bb8-1b03-4378-9d2e-a4f689611461")
-		)
-		(instances
-			(project "blackbox"
-				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/51b01d3e-87dc-456c-a96b-c77ebbca5dc9"
-					(reference "R16")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(global_label "SPI2_MOSI"
-		(shape input)
-		(at 187.96 143.51 270)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "d61de578-9955-4fc9-8a8b-be86585746ca")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 199.39000000000001 143.51 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:R")
-		(at 195.58 139.7 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "d28b9fa9-9a2f-477c-9ee5-12e1b8023148")
-		(property "Reference" "R17"
-			(at 198.12 138.42999999999998 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "10k"
-			(at 198.12 140.97 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
-			(at 195.58 139.7 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 195.58 139.7 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "Pull-up carte SD DAT0/DO (ESP-IDF : 10 kOhm max, y compris sur les lignes non utilisees)"
-			(at 195.58 139.7 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "e877ddc6-c6d2-4eec-9cd4-a1e8151e113f")
-		)
-		(pin "2"
-			(uuid "c628fe8f-290e-48f9-a8b1-f2e94e1329e4")
-		)
-		(instances
-			(project "blackbox"
-				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/51b01d3e-87dc-456c-a96b-c77ebbca5dc9"
-					(reference "R17")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(global_label "SPI2_MISO"
-		(shape input)
-		(at 195.58 143.51 270)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "827c8802-4b76-4fb9-93e5-1beb50c8e059")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 207.01000000000002 143.51 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:R")
-		(at 203.2 139.7 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "206d5804-c3d8-45a8-8f89-e72e6c0cecd9")
-		(property "Reference" "R18"
-			(at 205.73999999999998 138.42999999999998 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "10k"
-			(at 205.73999999999998 140.97 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
-			(at 203.2 139.7 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 203.2 139.7 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "Pull-up carte SD DAT1 (ESP-IDF : 10 kOhm max, y compris sur les lignes non utilisees)"
-			(at 203.2 139.7 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "de26bac1-3b73-4564-a81e-5d7d1e85a3f9")
-		)
-		(pin "2"
-			(uuid "1a8d6a3a-fa2b-4249-ab39-19e480442007")
-		)
-		(instances
-			(project "blackbox"
-				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/51b01d3e-87dc-456c-a96b-c77ebbca5dc9"
-					(reference "R18")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(global_label "SD_DAT1"
-		(shape input)
-		(at 203.2 143.51 270)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "bee3f94a-aaf8-4f16-8ca6-44e4b5902904")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 214.63 143.51 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:R")
-		(at 210.82 139.7 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "15922f0f-d8f0-41b3-bb28-1f03a8741c82")
-		(property "Reference" "R19"
-			(at 213.35999999999999 138.42999999999998 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "10k"
-			(at 213.35999999999999 140.97 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
-			(at 210.82 139.7 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 210.82 139.7 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "Pull-up carte SD DAT2 (ESP-IDF : 10 kOhm max, y compris sur les lignes non utilisees)"
-			(at 210.82 139.7 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "8d10ab60-4a3f-471e-99e4-82df51183819")
-		)
-		(pin "2"
-			(uuid "bd0afa74-ef7c-453f-81a9-ca169c52c238")
-		)
-		(instances
-			(project "blackbox"
-				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/51b01d3e-87dc-456c-a96b-c77ebbca5dc9"
-					(reference "R19")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(global_label "SD_DAT2"
-		(shape input)
-		(at 210.82 143.51 270)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "150a6989-4ad5-48ef-bfc1-f199c0a103cd")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 222.25 143.51 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
 			)
 		)
 	)

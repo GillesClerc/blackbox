@@ -22,7 +22,8 @@ NET VBAT:
   U8.BAT (bq24075), U9.VDD (DW01A), J2.+, C_BAT.+
 
 NET 3V3_D (digital):
-  U5.VOUT, C_D2.+
+  U5.VOUT (pin 1 — AP2112M en SO-8 depuis le 2026-09-27, cf. brochage
+   dans docs/datasheets/AP2112.md ; U5.GND = pins 6 ET 7), C_D2.+
   U1.3V3 (ESP32-S3 VDD)
   U4.VDD (ICS-43434)
   U11.VDDIO (pin 5, LSM6DSOXTR), U11.VDD (pin 8), U11.CS (pin 12, force mode I2C),
