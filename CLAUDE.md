@@ -3,6 +3,7 @@
 Box physique d'escape game. Specs completes dans :
 - `docs/escapebox-fsd.md` — hardware, phases, composants, architecture
 - `docs/escapebox-vision.md` — vision produit
+- `hardware/` — projets KiCad : `main/` (carte Main, BOM de reference dans `main/BOM/`) + un satellite par face (`devant/`, `dessus/`, `cote1/`, `cote2/`, `cote3/`, bibliotheques partagees `main/libs/`). Pas de kicad-cli : edition par script (`tools/kicad_edit.py`), verification par `tools/kicad_netlist.py`
 - `docs/plans/web-implementation.md` — plan web platform
 - `docs/plans/firmware-cloud-client.md` — plan client cloud firmware (auth/sync/packages d'assets faits ; reste mixer audio, BLE, OTA)
 - `docs/audits/` — audits datés (constats, plan de correction, points restants). Dernier : `2026-09-27-audit.md` (audit complet hardware + logiciel + docs) ; avant : `2026-09-23-audit.md` (logiciel), `2026-09-23-hardware-db.md` (KiCad Main + DB). **Synthese vivante : `docs/audits/RESTE-A-FAIRE.md`** (a cocher au fil de l'eau)

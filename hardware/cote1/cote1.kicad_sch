@@ -1,0 +1,26 @@
+(kicad_sch
+	(version 20260306)
+	(generator "eeschema")
+	(generator_version "10.0")
+	(uuid "97be5cf8-783b-4fc3-a9f2-e4a3096a1479")
+	(paper "A4")
+	(lib_symbols
+	)
+	(text "SATELLITE COTE 1 — panneau de controle (FSD §2.2.2c / §2.2.3)\n\n- Liaison J8 Main (JST-SH 6 : 3V3_D, GND, SW1, SW2, BTN1, BTN2).\n- SW1/SW2 : toggles E-Switch 100 (finition or), commun -> GND, pull-up interne ESP32.\n- BTN1/BTN2 : boutons poussoirs ACTIFS HAUTS vers 3V3_D ; pull-down 10 k deja sur la Main (R23/R24).\n   JAMAIS de pull-up (GPIO45 = strapping VDD_SPI) ; ne pas tenir appuye au demarrage.\n- ADS7830 (0x48) : 4 faders Bourns PTA6043 (SL1-SL4) + 4 pots PDB181 (RV1-RV4) en ratiometrique, REFIN = 3V3,\n   100 nF VDD + 1 uF REFIN (ADS7830.md, Bourns-*.md).\n- Connecteur I2C Qwiic vers un des J3-J6/J13 de la Main : 1 = GND, 2 = 3V3_D, 3 = SDA, 4 = SCL\n(JST-SH 4 broches, cable standard Qwiic). Bus a 100 kHz max (MLX90614). Pas de pull-up sur le satellite\n(4,7 k deja sur la Main)."
+		(exclude_from_sim no)
+		(at 20.32 142.24 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left top)
+		)
+		(uuid "6f8ed94e-88fb-4e91-b5e2-3106f322dd63")
+	)
+	(sheet_instances
+		(path "/"
+			(page "1")
+		)
+	)
+	(embedded_fonts no)
+)

@@ -1,0 +1,26 @@
+(kicad_sch
+	(version 20260306)
+	(generator "eeschema")
+	(generator_version "10.0")
+	(uuid "2685845b-3fb3-4b81-8460-9db0633bbf5e")
+	(paper "A4")
+	(lib_symbols
+	)
+	(text "SATELLITE DESSUS — voix + NFC (FSD §2.2.2c / §2.2.3)\n\n- Haut-parleur PUI AS04008PO-2-R 8 ohms : relie a J10 Main broches 1-2 (canal L, sorties en pont via FB3/FB4 : jamais de masse commune).\n   Canal R (J10.3-4) disponible pour un second HP. Pas forcement de PCB : fils + joint mousse.\n- ST25DV04KC-IE6S3 (tag NFC, 0x53 / 0x57) + antenne boucle PCB 13,56 MHz (AC0/AC1), zone de garde.\n   Base existante : hardware/main/.history/nfc.kicad_sch (feuille retiree de la Main le 21/09). ST25DV04K.md.\n- Connecteur I2C Qwiic vers un des J3-J6/J13 de la Main : 1 = GND, 2 = 3V3_D, 3 = SDA, 4 = SCL\n(JST-SH 4 broches, cable standard Qwiic). Bus a 100 kHz max (MLX90614). Pas de pull-up sur le satellite\n(4,7 k deja sur la Main)."
+		(exclude_from_sim no)
+		(at 20.32 142.24 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left top)
+		)
+		(uuid "3d447e89-20c7-4f3d-b49d-9d602b7a866d")
+	)
+	(sheet_instances
+		(path "/"
+			(page "1")
+		)
+	)
+	(embedded_fonts no)
+)

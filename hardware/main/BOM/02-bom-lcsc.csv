@@ -10,10 +10,10 @@ U8,bq24075RGTR,,QFN-16,C15464,1,Main,Chargeur LiPo 1.5A + power path DPPM
 U9,DW01A,,SOT-23-6,C351410,1,Main,Protection batterie
 U10,FS8205,,TSSOP-8,C32254,1,Main,Dual MOSFET protection
 U11,PN5321A3HN/C106,,HVQFN-40,C28925,1,Main,NFC reader (equiv. PN532)
-U12,USBLC6-2SC6,,SOT-23-6,C7519,1,Satellite Cote 2,[Deplace de la Main vers le satellite Cote 2 le 2026-09-27 : port USB-C lateral.] Au plus pres de J1. Protection ESD USB D+/D-
+COTE2-U1,USBLC6-2SC6,,SOT-23-6,C7519,1,Satellite Cote 2,"[Satellite Cote 2, projet hardware/cote2/ (ex-U12 de la Main, deplace le 2026-09-27).] Au plus pres de J1. Protection ESD USB D+/D-"
 "—",,GC9A01 module 1.3 rond,Module,—,2,Face avant,Yeux du personnage 240x240 SPI (modules achetes)
 "—",,SSD1680 e-ink module 2.9,Module,—,1,Face avant,Bouche du personnage 296x128 SPI (Waveshare 2.9 V2)
-J1,HOOYA USB-307HB-B-SU,,USB-C-24P SMD vertical,C309361,1,Satellite Cote 2,[Deplace de la Main vers le satellite Cote 2 le 2026-09-27 : port USB-C lateral.] Connecteur USB-C femelle 24 pins (fab. Dongguang Haoyu Electronics) — sur LCSC/JLCPCB, importable via easyeda2kicad ou plugin kicad-lcsc-manager (LCSC ID C309361). Pinout standard verifie sur datasheet fabricant 2026-09-20 (voir docs/pcb/01-netlist.txt) : VBUS=A4/A9/B4/B9, GND=A1/A12/B1/B12+shield, D+=A6+B6, D-=A7+B7, CC1=A5, CC2=B5, pins SS/SBU non utilisees (design USB2.0 only).
+COTE2-J1,HOOYA USB-307HB-B-SU,,USB-C-24P SMD vertical,C309361,1,Satellite Cote 2,"[Satellite Cote 2, projet hardware/cote2/ (ex-J1 de la Main, deplace le 2026-09-27).] Connecteur USB-C femelle 24 pins (fab. Dongguang Haoyu Electronics) — sur LCSC/JLCPCB, importable via easyeda2kicad ou plugin kicad-lcsc-manager (LCSC ID C309361). Pinout standard verifie sur datasheet fabricant 2026-09-20 (voir docs/pcb/01-netlist.txt) : VBUS=A4/A9/B4/B9, GND=A1/A12/B1/B12+shield, D+=A6+B6, D-=A7+B7, CC1=A5, CC2=B5, pins SS/SBU non utilisees (design USB2.0 only)."
 "J3,J4,J5,J6,J13",,Connecteur JST-SH 4pin,JST-SH-4P,—,5,Main,Bus I2C vers satellites (brochage Qwiic ; J13 ajoute le 2026-09-27 : 5 faces satellites en I2C)
 J7,,Connecteur JST-SH 10pin,JST-SH-10P,—,1,Main,SPI3 vers 2x GC9A01 yeux
 J7b,,Connecteur JST-SH 8pin,JST-SH-8P,—,1,Main,SPI2 vers SSD1680 e-ink bouche
@@ -23,7 +23,7 @@ J2,,Connecteur batterie JST-PH 4pin (BAT+/BAT-/NTC/retour NTC),JST-PH-4P,—,1,M
 J10,,Connecteur haut-parleur JST-PH 4pin,JST-PH-4P,—,1,Main,"Sorties en pont L+/L-/R+/R- via ferrites FB3-FB6 — aucune masse commune, ne jamais relier les - entre elles ni a GND"
 J11,,Slot microSD push-push,TF-PUSH,C91145,1,Main,Carte SD sur SPI2 partage (MISO=15 CS=47) - verifier ref LCSC avant commande
 L1,Sunlord SWPA5040S6R8MT,6.8uH,SMD 5x5x4mm,C36411,1,Main,"Inductance boost MT3608 : 6,8 uH +-20 %, Isat 2,9 A, Irms 2,5 A, DCR 56 mOhm max (decision 2026-09-27, docs/datasheets/SWPA5040S.md) — remplace le 22uH 1210"
-"C2,C3,C4,C5",,100nF 16V ceramique,0402,—,4,Main,Decouplage generique (ESP32 C2, micro C3, IMU C4/C5)
+"C2,C3,C4,C5",,100nF 16V ceramique,0402,—,4,Main,"Decouplage generique (ESP32 C2, micro C3, IMU C4/C5)"
 "C_AVDD,C_DVDD,C_CPVDD,C_LDOO,C_EN",,100nF 16V ceramique,0402,—,5,Main,PCM5122 AVDD(pin8)/DVDD(pin28)/CPVDD(pin1)/LDOO(pin26) + filtre RC EN ESP32 (pins corriges 2026-09-11 vs datasheet TI SLAS763C — l'ancien netlist avait tous les numeros de pins PCM5122 faux)
 "C_D2,C_A2",,10uF 10V ceramique,0805,—,2,Main,Sorties LDO U5/U6
 C_B1,,22uF 16V ceramique,0805,—,1,Main,"Entree MT3608 (VSYS) — 22 uF recommandes par la datasheet MT3608, Capacitor Selection ; 16V pour le derating DC bias, comme C_B2"
@@ -45,8 +45,9 @@ R_FB_H,,750k ohm,0402,—,1,Main,MT3608 feedback diviseur haut
 R_FB_L,,100k ohm,0402,—,1,Main,MT3608 feedback diviseur bas
 C_BAT,,4.7uF 10V ceramique,0603,—,1,Main,bq24075 BAT decouplage
 C_OUT,,4.7uF 10V ceramique,0603,—,1,Main,bq24075 OUT decouplage
-R_TS,,10k ohm (DNP),0402,—,1,Main,DNP — remplacee par la NTC de la cellule sur J2.3. Monter l'une OU l'autre, jamais les deux
-"R9,R10",,5.1k ohm,0402,—,2,Satellite Cote 2,[Deplace de la Main vers le satellite Cote 2 le 2026-09-27 : port USB-C lateral.] Au pied de J1. USB-C CC1/CC2
+R_TS,,10k ohm (DNP),0402,—,1,Main,"DNP — remplacee par la NTC de la cellule sur J2.3. Monter l'une OU l'autre, jamais les deux"
+"COTE2-R1,COTE2-R2",,5.1k ohm,0402,—,2,Satellite Cote 2,"[Satellite Cote 2, projet hardware/cote2/ (ex-R9,R10 de la Main, deplace le 2026-09-27).] Au pied de J1. USB-C CC1/CC2"
+COTE2-J2,,Connecteur JST-PH 6pin,JST-PH-6P,—,1,Satellite Cote 2,"Liaison vers J14 de la Main (VBUS, GND, D-, D+, GND, 5V_HOST)"
 "R11,R12",,22 ohm,0402,—,2,Main,Serie USB D+/D-
 D1,C8678,Diode Schottky SS34 (3A),SMA,—,1,Main,Protection MT3608 (SS14 1A insuffisant — audit A5)
 U20,MTCH2120-I/MX,,QFN-20,—,1,Satellite,Touch capacitif 12ch (pas sur LCSC - DigiKey/Mouser)
@@ -87,9 +88,9 @@ R_MODE_AB,,10k ohm (DNP),0402,—,1,Main,Alternative classe AB (MODE vers GND) �
 R_SD_PD,,100k ohm,0402,—,1,Main,Pull-down SD du micro ICS-43434 (datasheet)
 R_CS,,1k ohm,0402,—,1,Main,DW01A : resistance de detection (application typique)
 "R_VBAT_H,R_VBAT_L",,1M ohm 1%,0402,—,2,Main,Pont diviseur VBAT_SENSE 1:1
-"TP_EN,TP_GPIO0,TP_I2CA,TP_I2CL",,Point de test,TestPoint_Pad_D1.5mm,—,4,Main,Pastilles de test (EN, GPIO0, I2C SDA/SCL)
+"TP_EN,TP_GPIO0,TP_I2CA,TP_I2CL",,Point de test,TestPoint_Pad_D1.5mm,—,4,Main,"Pastilles de test (EN, GPIO0, I2C SDA/SCL)"
 "C_CLK2,C_CLK3",,10pF (DNP),0402,—,2,Main,Provision CEM sur les horloges SPI — non montees
 C1,,10uF 16V ceramique,0603,—,1,Main,Reservoir 3V3_D au pied du module ESP32-S3
 "TP_VBUS1,TP_VSYS1,TP_VBAT1,TP_3V3D1,TP_3V3A1,TP_5VB1,TP_5V1,TP_GND1,TP_GND2,TP_GND3",,Point de test alimentation,TestPoint_Pad_D1.5mm,—,10,Main,Rails et masses — voir docs/pcb/03-validation-qualite.md
-"TP_ISET1,TP_CHG1,TP_FB1,TP_TS1,TP_ENSYS1,TP_GATE1",,Point de test diagnostic,TestPoint_Pad_D1.5mm,—,6,Main,Courant de charge, etat chargeur, boucle du boost, NTC, marche/arret, load switch
-"TP_SCLK2,TP_SCLK3,TP_I2SBCK,TP_I2SLRCK,TP_AUDIOL,TP_WS2812",,Point de test signaux,TestPoint_Pad_D1.5mm,—,6,Main,Fronts des horloges SPI, I2S, sortie DAC, data LED
+"TP_ISET1,TP_CHG1,TP_FB1,TP_TS1,TP_ENSYS1,TP_GATE1",,Point de test diagnostic,TestPoint_Pad_D1.5mm,—,6,Main,"Courant de charge, etat chargeur, boucle du boost, NTC, marche/arret, load switch"
+"TP_SCLK2,TP_SCLK3,TP_I2SBCK,TP_I2SLRCK,TP_AUDIOL,TP_WS2812",,Point de test signaux,TestPoint_Pad_D1.5mm,—,6,Main,"Fronts des horloges SPI, I2S, sortie DAC, data LED"

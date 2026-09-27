@@ -353,7 +353,7 @@ Les énigmes sont "données" par le personnage (dialogue + feedback visuel).
 
 #### 2.2.3 Architecture PCB — Main + Satellites par face
 
-> **Statut (2026-09-21) :** répartition par face figée (§2.2.2c). Le nombre exact de PCB satellites (un par face ? regroupements ?) et le détail de la connectique inter-PCB restent **à trancher** — pressenti 6 PCB au total (Main + 5 faces), à confirmer une fois le Main terminé. Les listes ci-dessous décrivent quel composant va sur quelle face, pas encore le découpage définitif en cartes.
+> **Statut (2026-09-27) :** **6 PCB — Main + un satellite par face**, chacun son projet KiCad : `hardware/main/`, `hardware/devant/`, `hardware/dessus/`, `hardware/cote1/`, `hardware/cote2/`, `hardware/cote3/`. Les satellites partagent les bibliothèques de la Main (`hardware/main/libs/`). Chaque feuille porte un cartouche de spécification (composants, liaison vers la Main, contraintes datasheet). **Côté 2** est dessiné pour sa partie USB (J1, USBLC6, CC, liaison J14) ; les autres sont vides à ce stade.
 
 **PCB Main — face Dessous** (~100×100mm, 4 couches) :
 
@@ -950,7 +950,7 @@ Critères produit — go/no-go Phase 2 :
 - [ ] Export Gerbers + BOM + CPL
 - [ ] **Validation finale avant envoi JLCPCB** (voir checklist dédiée ci-dessous)
 
-*Satellites par face — pas commencés, découpage exact en PCB à confirmer (pressenti : un projet KiCad par face, cf. §2.2.3) :*
+*Satellites par face — un projet KiCad par face créé le 2026-09-27 (`hardware/<face>/`), à dessiner :*
 - [ ] **Devant** (visage) : 2×GC9A01 + display bouche + WS2812 + BMP280 + VEML7700 — schéma + layout + Gerbers
 - [ ] **Dessus** (voix + NFC) : ST25DV04KC-IE6S3 (reprendre `nfc.kicad_sch` existant) + connecteur haut-parleur — schéma + dessin antenne NFC (boucle PCB, zone de garde) + layout + Gerbers
 - [ ] **Côté 1** (panneau de contrôle) : ADS7830 + faders/pots + toggles + boutons — schéma + layout + Gerbers

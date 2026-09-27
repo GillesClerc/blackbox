@@ -75,6 +75,22 @@
 
 ## 3. Satellites (à la conception)
 
+Projets KiCad créés le 2026-09-27 : `hardware/devant/`, `dessus/`, `cote1/`, `cote2/`, `cote3/`
+(bibliothèques partagées avec la Main, cartouche de spécification sur chaque feuille).
+- [x] 🤖 **Côté 2 — partie USB dessinée** : J1 USB-C, U1 USBLC6 (sur les lignes brutes, côté
+  connecteur), R1/R2 CC 5,1 kΩ, J2 vers J14 de la Main — netlist vérifiée.
+- [ ] 🤝 Dessin face par face (🤖 schéma + vérification netlist, 🧑 mise en page + ERC) :
+  Côté 2 (MTCH2120, SW3), Côté 3 (MLX90614, TMAG5273), Côté 1 (ADS7830, faders, pots,
+  toggles, boutons), Dessus (ST25DV + antenne, base `hardware/main/.history/nfc.kicad_sch`),
+  Devant (écrans, BMP280, VEML7700 — bloqué par la fiche du module GC9A01 et le choix de
+  l'écran bouche).
+- [ ] 🧑 Symboles manquants : **MLX90614** et **MTCH2120** (absents de la bibliothèque) —
+  import LCSC manager si disponibles, sinon je les crée depuis la datasheet.
+- [ ] 🤝 Modèles 3D des satellites : les empreintes LCSC pointent vers
+  `${KIPRJMOD}/libs/lcsc/3dmodels`, donc introuvables depuis `hardware/<face>/` → déplacer
+  les bibliothèques dans `hardware/libs/` (variable de chemin commune) le jour où l'on veut
+  la 3D des satellites.
+
 - [ ] 🧑 **MLX90614 variante Bxx (3 V)** — vérifier la référence LCSC C58661 ; 100 nF sur VDD.
 - [ ] 🧑 **TMAG5273A1** (0x35) ; INT → GND (+ MASK_INTB côté firmware) ; ≥ 10 nF sur VCC.
 - [ ] 🧑 **BMP280** : CSB **directement** sur VDDIO, SDO → GND (0x76), 100 nF sur VDD et VDDIO.
