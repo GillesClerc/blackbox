@@ -68,7 +68,9 @@
   🧑 Reste à faire au layout : **plan de cuivre généreux** sous et autour de U5.
 
 ### 🟡 Faible
-- [ ] 🧑 LSM6DSOX : ajouter **10 µF** sur VDD.
+- [x] ❌ **LSM6DSOX 10 µF : constat erroné** (2026-09-27) — la datasheet ST ne demande que
+  100 nF sur VDD et 100 nF sur VDDIO (figure 24), déjà présents (C4/C5). Le « 10 µF » venait
+  d'une affirmation non sourcée de notre synthèse. Rien à faire.
 - [ ] 🧑 USBLC6 au plus près de J1 (layout).
 - [ ] 🧑 Champs LCSC manquants (passifs, U1, U2, U5-U10, U12).
 - [ ] 🧑 E-Switch SW1/SW2 en finition **or**.
@@ -130,6 +132,20 @@
 - [x] ✅ Ferrites de sortie audio : **Murata BLM21PG** (`docs/datasheets/BLM21PG.md`).
 - [ ] 🧑 Écran bouche (pas encore choisi) ; carte microSD (consommation).
 - [x] ✅ SS34 (`SS34.md`), AO3401A (`AO3401A.md`), 2N7002 (`2N7002.md`) — récupérées.
+
+## 6b. Validation et contrôle qualité (nouveau, 2026-09-27)
+
+Document : **`docs/pcb/03-validation-qualite.md`** (squelette).
+
+- [ ] 🤝 **Valider la liste des points de test** — ils doivent être posés **avant le
+  routage**, on ne les ajoute pas après coup. 8 obligatoires (rails + masses), 6 de
+  diagnostic, 6 de signaux, 4 déjà au schéma.
+- [ ] 🤖 Ajouter les symboles `TestPoint` retenus au schéma, une fois la liste validée.
+- [ ] 🧑 Au routage : sérigraphier le nom de chaque pastille, les grouper face Dessous,
+  prévoir au moins une masse acceptant une pince.
+- [ ] 🤖 **Auto-test firmware** (scan I2C, SD, écrans, audio en boucle acoustique, LEDs,
+  IMU, ADC) — remplace l'essentiel des mesures manuelles de la phase 4.
+- [ ] 🧑 Relever les valeurs de référence sur la première carte saine.
 
 ## 7. Divers
 

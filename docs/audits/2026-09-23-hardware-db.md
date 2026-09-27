@@ -256,9 +256,11 @@ C'est un choix de conception à trancher avant le routage du satellite Côté 2.
   reset », esptool) avec VDD ≤ 3,3 V pendant la programmation [ESP32-S3 §5.2].
 - **USBLC6** : brochage conforme (I/O1 = 1/6, I/O2 = 3/4, VBUS = 5) ; au layout, la placer
   au plus près du connecteur [USBLC6-2 §2.3].
-- **LSM6DSOX** : INT1/INT2 non routées (pas de réveil sur mouvement sans polling) ; ST
-  demande ≥ 100 nF + 10 µF sur VDD, 100 nF sur VDDIO (`LSM6DSOXTR.md`) : seuls C4/C5
-  (100 nF) sont présents → ajouter 10 µF sur VDD.
+- **LSM6DSOX** : INT1/INT2 non routées (pas de réveil sur mouvement sans polling).
+  ~~ST demande ≥ 100 nF + 10 µF sur VDD~~ → ❌ **constat erroné, corrigé le 2026-09-27** :
+  la datasheet ST (figure 24) ne demande que **100 nF sur VDD et 100 nF sur VDDIO**, ce que
+  C4/C5 fournissent déjà. Le « 10 µF » venait d'une affirmation non sourcée de notre propre
+  synthèse, pas de ST. Rien à ajouter.
 - **Rétroéclairage GC9A01 non pilotable** (J7 pins 9/10 NC) : à confirmer avec la
   datasheet du module (absente).
 - **VBAT_SENSE sur J8.5** : nœud ADC haute impédance (1 MΩ / 1 MΩ) sorti dans un câble

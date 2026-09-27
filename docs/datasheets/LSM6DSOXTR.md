@@ -41,7 +41,16 @@ LGA-14, vue de dessous (cf. section "Pin description" du PDF datasheet pour la d
 | 13 | INT2 | OUT | Interruption programmable 2 |
 | 14 | RES / OCS_AUX2 | — | Réservé / signaux aux |
 
-> ⚠️ La numérotation et le nom exact des pads dépendent de la marque LGA — vérifier la section "Pin description" et "Package information" du PDF datasheet local avant routage. Toutes les broches d'alimentation et de masse doivent être découplées (≥100 nF + 10 µF VDD, 100 nF VDDIO).
+> ⚠️ La numérotation et le nom exact des pads dépendent de la marque LGA — vérifier la section "Pin description" et "Package information" du PDF datasheet local avant routage.
+>
+> **Découplage exigé (vérifié 2026-09-27, figure 24 « LSM6DSOX electrical connections in
+> Mode 1 ») : 100 nF sur VDD (C1) et 100 nF sur VDDIO (C2). C'est tout.** La note de pied
+> de la table de brochage dit également « Recommended 100 nF filter capacitor ».
+> ❌ Une version antérieure de cette fiche affirmait « ≥100 nF **+ 10 µF** sur VDD » : cette
+> valeur **n'apparaît nulle part dans la datasheet** et a été retirée. L'audit 2026-09-23
+> l'avait reprise de bonne foi. Le schéma (C4 et C5, 100 nF) est donc **déjà conforme** ;
+> un 10 µF supplémentaire serait redondant avec les réservoirs du rail 3V3_D
+> (C_D2 en sortie de LDO, C1 au pied du module ESP32).
 
 ## Paramètres électriques
 
