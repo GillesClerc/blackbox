@@ -6,7 +6,7 @@
 	(paper "A4")
 	(lib_symbols
 	)
-	(text "SATELLITE COTE 3 — zone magique (FSD §2.2.2c / §2.2.3)\n\n- \"Approche ta main\" (proximite) EN SUSPENS : le CAP1298 de Cote 2 prend l unique adresse 0x28 des CAP12xx.\n   MLX90614 retire du produit le 2026-09-27 (cout, bus bride a 100 kHz).\n- TMAG5273A1 (0x35, +-40/80 mT) : INT -> GND (MASK_INTB cote firmware), >= 10 nF sur VCC. La bibliotheque contient\n   le symbole A2 : meme brochage, changer la valeur/MPN en A1. TMAG5273.md.\n- Connecteur I2C Qwiic vers un des J3-J6/J13 de la Main : 1 = GND, 2 = 3V3_D, 3 = SDA, 4 = SCL\n(JST-SH 4 broches, cable standard Qwiic). Bus a 100 kHz. Pas de pull-up sur le satellite\n(4,7 k deja sur la Main)."
+	(text "SATELLITE COTE 3 — zone magique (FSD §2.2.2c / §2.2.3)\n\n- Face dediee au seul capteur d aimant (decision 2026-09-27) : \"approche ta main\" est sur Cote 2 (CAP1298),\n   MLX90614 retire du produit.\n- TMAG5273A1 (0x35, +-40/80 mT) : INT -> GND (MASK_INTB cote firmware), >= 10 nF sur VCC. La bibliotheque contient\n   le symbole A2 : meme brochage, changer la valeur/MPN en A1. TMAG5273.md.\n- Connecteur I2C Qwiic vers un des J3-J6/J13 de la Main : 1 = GND, 2 = 3V3_D, 3 = SDA, 4 = SCL\n(JST-SH 4 broches, cable standard Qwiic). Bus a 100 kHz. Pas de pull-up sur le satellite\n(4,7 k deja sur la Main)."
 		(exclude_from_sim no)
 		(at 20.32 142.24 0)
 		(effects

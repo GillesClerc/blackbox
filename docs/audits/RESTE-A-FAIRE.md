@@ -64,8 +64,8 @@
 - [x] 🤖 **Une seule BOM** : `docs/pcb/02-bom-lcsc.csv` supprimée (2026-09-27).
 - [ ] 🧑 **FS8205 (U10) : C32254 à 0 en stock chez JLCPCB** (27/09). Équivalents SOT-23-6 en
   stock : FS8205A TECH PUBLIC C2830320 (55 501), FS8205A FUXINSEMI C908265 (22 508), 8205A
-  JSMSEMI C2762931… — **brochage à confirmer sur leur datasheet** (dessin non lisible à
-  l'extraction) avant de changer la référence.
+  JSMSEMI C2762931… — **décision Gilles (27/09) : garder C32254 et attendre le retour du
+  stock** ; revérifier au moment de la commande.
 - [ ] 🤖 `check_bom.py` : comparer aussi la **MPN** et les valeurs des **lignes à
   plusieurs références** (il n'a vu ni U11 ni le filtre audio).
 - [ ] 🤖 `docs/pcb/01-netlist.txt` : régénérer depuis `kicad_netlist.py` (ou l'archiver) —
@@ -83,7 +83,7 @@ Projets KiCad créés le 2026-09-27 : `hardware/devant/`, `dessus/`, `cote1/`, `
 - [x] 🤖 **Côté 2 — partie USB dessinée** : J1 USB-C, U1 USBLC6 (sur les lignes brutes, côté
   connecteur), R1/R2 CC 5,1 kΩ, J2 vers J14 de la Main — netlist vérifiée.
 - [ ] 🤝 Dessin face par face (🤖 schéma + vérification netlist, 🧑 mise en page + ERC) :
-  Côté 2 (CAP1298, SW3), Côté 3 (TMAG5273), Côté 1 (ADS7830, faders, pots,
+  Côté 2 (SW3 ; USB + tactile dessinés), Côté 3 (TMAG5273 seul), Côté 1 (ADS7830, faders, pots,
   toggles, boutons), Dessus (ST25DV + antenne, base `hardware/main/.history/nfc.kicad_sch`),
   Devant (écrans, BMP280, VEML7700 — bloqué par la fiche du module GC9A01 et le choix de
   l'écran bouche).
@@ -95,10 +95,14 @@ Projets KiCad créés le 2026-09-27 : `hardware/devant/`, `dessus/`, `cote1/`, `
   et disponible. Écartés : MTCH2120 (0 stock), MPR121 (fin de vie), CAP1214, SC12B, deux
   CAP12xx (0x28 fixe commune), MCU dédié (second firmware). Comparatif : synthèses
   CAP1298/CAP1296/SC12B/AT42QT2120/ATtiny1616 dans `docs/datasheets/`.
-- [ ] 🧑 Importer le symbole et l'empreinte **CAP1298-1-SL-TR (C2652072)** par LCSC manager ;
-  supprimer si tu veux les imports MLX90614 / MTCH2120 (non commités).
-- [ ] 🤝 **« Approche ta main » (Côté 3) en suspens** : pas de second CAP12xx possible
-  (0x28). Options : une entrée du CAP1298 de Côté 2 en proximité, multiplexeur I2C, ou abandon.
+- [x] 🧑 CAP1298-1-SL-TR (C2652072) importé ; imports MLX90614 / MTCH2120 supprimés (27/09).
+- [x] 🤝 **« Approche ta main » sur Côté 2** (27/09) : CAP1298 = 6 touches (CS1-4, CS6, CS7) +
+  proximité CS8 gardée par SG (CS5) ; **Côté 3 = TMAG5273 seul**.
+- [x] 🤖 **Côté 2 — partie tactile dessinée** (27/09) : U2 CAP1298, C1/C2 (100 nF + 1 µF),
+  J3 Qwiic, électrodes E1-E8 (symboles TestPoint provisoires, hors BOM) — netlist vérifiée.
+- [ ] 🧑 Côté 2 au layout : dessiner les électrodes en cuivre (6 touches, grande électrode de
+  proximité E7 entourée de l'anneau de garde E8) — règles de dessin à prendre dans le guide
+  Microchip des capteurs capacitifs (à télécharger et synthétiser avant le layout).
 - [ ] 🤝 Modèles 3D des satellites : les empreintes LCSC pointent vers
   `${KIPRJMOD}/libs/lcsc/3dmodels`, donc introuvables depuis `hardware/<face>/` → déplacer
   les bibliothèques dans `hardware/libs/` (variable de chemin commune) le jour où l'on veut
@@ -109,7 +113,7 @@ Projets KiCad créés le 2026-09-27 : `hardware/devant/`, `dessus/`, `cote1/`, `
 - [ ] 🧑 Brochage **Qwiic** sur chaque satellite (1 = GND, 2 = 3V3, 3 = SDA, 4 = SCL).
 - [ ] 🧑 **Satellite Côté 2** : J1 USB-C + USBLC6 **au plus près du port** + CC 5,1 kΩ,
   connecteur vers J14 (JST-PH 6, fils de section adaptée à ~1,1 A sur VBUS, D+/D− torsadés),
-  interrupteur SW3 (J12), CAP1298 (I2C 0x28, ALERT# à GND, 100 nF).
+  interrupteur SW3 (J12) à ajouter ; CAP1298 dessiné.
 - [ ] 🤝 **Énigme « clé USB » (mode hôte) — place réservée, pas câblée** : sur le satellite,
   commutateur de VBUS limité en courant alimenté par `5V_HOST` (R22 à monter), protection
   contre la réinjection dans le chargeur, CC côté source, commande par expander I2C (plus de

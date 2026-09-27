@@ -18,8 +18,9 @@
 > - **0.3 (2026-09-27, suite)** — **contrôleur tactile de Côté 2 = CAP1298** (Microchip, 8 canaux,
 >   SOIC-14, 1,61 $, en stock JLCPCB) à la place du MTCH2120 (aucun stock JLCPCB). Écartés : MPR121
 >   (fin de vie), CAP1214 (introuvable), SC12B, deux CAP12xx (adresse fixe 0x28 commune), MCU
->   dédié (ATtiny1616 : second firmware). Clavier ramené à 8 touches (7 + garde). Proximité de
->   Côté 3 en suspens (pas de second CAP12xx possible).
+>   dédié (ATtiny1616 : second firmware). Répartition : **6 touches + proximité « approche ta
+>   main » gardée par SG**, électrodes en cuivre sur le PCB du satellite. « Approche ta main »
+>   passe donc sur **Côté 2** ; **Côté 3 ne garde que le TMAG5273** (pose d'un aimant).
 > - 0.2 (2026-09-23) — corrections issues des datasheets (audit hardware + DB).
 > - 0.1 (mai 2026) — première version.
 >
@@ -175,7 +176,7 @@ Scores et stats remontés à la prochaine synchro
 | Adresse | Composant | Fonction | PCB |
 |---|---|---|---|
 | 0x10 | VEML7700 | Lumière ambiante | Satellite Devant |
-| 0x28 | CAP1298 | Capacitif 8 canaux (clavier + zones touch ; CS5 = garde SG si utilisée → 7 touches) — cible PCB Phase 2. **Adresse fixe 0x28** [CAP1298 §3.2.2] : un seul CAP12xx sur le bus. ALERT# non remontée (Qwiic 4 fils) → scrutation | Satellite Côté 2 |
+| 0x28 | CAP1298 | Capacitif 8 canaux : 6 touches (CS1-CS4, CS6, CS7) + proximité « approche ta main » (CS8) gardée par SG (CS5) — cible PCB Phase 2. **Adresse fixe 0x28** [CAP1298 §3.2.2] : un seul CAP12xx sur le bus. ALERT# non remontée (Qwiic 4 fils) → scrutation | Satellite Côté 2 |
 | 0x5A | MPR121 | Capacitif 12 canaux (breakout Phase 1, même rôle que le CAP1298 ; fin de vie depuis 2019) | Proto breadboard |
 | 0x53 / 0x57 | ST25DV04KC-IE6S3 | Tag NFC dynamique — 0x53 mémoire utilisateur/registres dynamiques, 0x57 configuration système (vérifié datasheet) | Satellite Dessus |
 | 0x4C | PCM5122PW | DAC audio stéréo (I2C contrôle) | Main |
@@ -255,7 +256,7 @@ Scores et stats remontés à la prochaine synchro
 | GPIO47 | SPI2_CS_SD | Carte microSD (chip select) | Distinct du CS display bouche (GPIO10) |
 | GPIO48 | WS2812 DATA | Chaîne LEDs RGB | RMT driver |
 
-> Deux boutons poussoirs mécaniques (Côté 1) sont câblés sur GPIO45/46 via J8 ; d'autres boutons peuvent passer par les 8 canaux du CAP1298 (capacitif, fonctionne aussi avec boutons conducteurs).
+> Deux boutons poussoirs mécaniques (Côté 1) sont câblés sur GPIO45/46 via J8 ; d'autres boutons peuvent passer par les 6 touches du CAP1298 (capacitif, fonctionne aussi avec boutons conducteurs).
 >
 > **Budget GPIO saturé** : à ce stade, GPIO1-21 et GPIO38-48 sont tous alloués (plus aucune pin libre). GPIO0 réservé strapping/boot, GPIO26-37 indisponibles (flash/PSRAM octal), GPIO43-44 réservées UART0 debug.
 
@@ -331,8 +332,8 @@ bq24075 (U8) — chargeur 1 A + power path DPPM, entrée limitée à 1,07 A (R_I
 | **Devant** | Visage du personnage | 2× GC9A01 1.3" ronds (yeux) + display bouche (TBD, pas e-ink) + WS2812 rétro + BMP280 souffle (souffler sur la bouche) + VEML7700 lumière (éclairer les yeux → réaction du personnage) |
 | **Dessus** | Voix + NFC | Haut-parleur (câblé depuis PAM8406 sur Main) + ST25DV04KC-IE6S3 NFC (tap téléphone) |
 | **Côté 1** | Panneau de contrôle | ADS7830 + 4 faders + 4 potentiomètres rotatifs, toggles SW1/SW2, boutons poussoir |
-| **Côté 2** | Accès technique + énigme | Port USB-C réel (charge + énigme "bonne clé USB avec le bon contenu"), interrupteur, clavier tactile CAP1298 (8 touches) |
-| **Côté 3** | Zone magique | TMAG5273 Hall linéaire ("pose un objet") ; "approche ta main" (proximité) en suspens — MLX90614 retiré le 2026-09-27 |
+| **Côté 2** | Accès technique + énigme | Port USB-C réel (charge + énigme "bonne clé USB avec le bon contenu"), interrupteur, clavier tactile CAP1298 (6 touches) + proximité "approche ta main" |
+| **Côté 3** | Zone magique | TMAG5273 Hall linéaire seul ("pose un objet" aimanté) — MLX90614 retiré, proximité déplacée sur Côté 2 (2026-09-27) |
 | **Dessous** | Main (technique + lest) | ESP32-S3, alimentation, PCM5122+PAM8406, LSM6DSOXTR (IMU, soudé directement sur Main — aucune contrainte de position), batterie (lest, stabilise l'orientation de repos), WS2812 halo table |
 
 > Répartition figée par face (2026-09-21). Le cube prend de fait une orientation de repos stable une fois assemblé (batterie + Main lestent le Dessous), même si géométriquement un cube n'a ni haut ni bas.
@@ -399,11 +400,11 @@ Composants embarqués :
 **Satellite face Côté 2** — accès technique + énigme :
 - Port USB-C réel J1 + USBLC6 + CC 5,1 kΩ (déplacés depuis la Main le 2026-09-27), relié à J14 ; lecture de clé USB (énigme) : place réservée, circuit hôte à concevoir
 - Interrupteur
-- CAP1298 capacitif 8 canaux (clavier / zones tactiles, pads déportables via FPC) — SOIC-14, LCSC C2652072 ; remplace le MTCH2120 le 2026-09-27
+- CAP1298 capacitif (SOIC-14, LCSC C2652072 ; remplace le MTCH2120 le 2026-09-27) : 6 touches + grande électrode de proximité « approche ta main » entourée de l'anneau de garde SG ; électrodes en cuivre sur le PCB du satellite (schéma dessiné le 2026-09-27)
 
 **Satellite face Côté 3** — zone magique :
 - TMAG5273 Hall linéaire 3D I2C
-- « Approche ta main » : électrode de proximité **en suspens** (le CAP1298 prend l'unique adresse 0x28 des CAP12xx : pas de second contrôleur possible ; options : une entrée du CAP1298 de Côté 2 en proximité, un multiplexeur I2C, ou abandon)
+- (« Approche ta main » déplacé sur Côté 2 le 2026-09-27 : un seul CAP12xx possible sur le bus)
 - ~~MLX90614~~ (retiré le 2026-09-27 : coût, et bus I2C bridé à 100 kHz)
 
 > Tous les capteurs I2C (satellites + Main) partagent le même bus backbone. Adresses vérifiées datasheets (2026-09-23), aucun conflit en Phase 2 : VEML7700 0x10, CAP1298 0x28 (fixe : un seul CAP12xx), TMAG5273A1 0x35, ADS7830 0x48, PCM5122 0x4C, ST25DV 0x53 + 0x57, LSM6DSOX 0x6A, BMP280 0x76 (MPR121 0x5A en Phase 1). Bus à 100 kHz aujourd'hui ; le MLX90614, qui imposait cette limite, est retiré — monter à 400 kHz demande de vérifier chaque datasheet et la capacité du bus avec les câbles.
@@ -962,8 +963,8 @@ Critères produit — go/no-go Phase 2 :
 - [ ] **Devant** (visage) : 2×GC9A01 + display bouche + WS2812 + BMP280 + VEML7700 — schéma + layout + Gerbers
 - [ ] **Dessus** (voix + NFC) : ST25DV04KC-IE6S3 (reprendre `nfc.kicad_sch` existant) + connecteur haut-parleur — schéma + dessin antenne NFC (boucle PCB, zone de garde) + layout + Gerbers
 - [ ] **Côté 1** (panneau de contrôle) : ADS7830 + faders/pots + toggles + boutons — schéma + layout + Gerbers
-- [ ] **Côté 2** (technique + énigme) : port USB-C + interrupteur + CAP1298 — schéma + layout + Gerbers
-- [ ] **Côté 3** (zone magique) : TMAG5273 (+ proximité si retenue) — schéma + layout + Gerbers
+- [ ] **Côté 2** (technique + énigme) : port USB-C + interrupteur + CAP1298 — schéma (USB + tactile dessinés le 2026-09-27, reste SW3) + layout + Gerbers
+- [ ] **Côté 3** (zone magique) : TMAG5273 seul — schéma + layout + Gerbers
 - [x] 5 connecteurs I2C sur Main (J3-J6 + J13), un par face satellite (2026-09-27)
 
 *Commun à tous les PCB :*
@@ -1656,13 +1657,13 @@ Ces 3 réponses sont liées à la session (`hints_used`, `duration_sec`, `score`
 [ ] EQ DSP PCM5122 testée sur un scénario (pas de distorsion)
 [ ] Micro détecte un claquement de mains à 1 mètre
 [ ] ESP32 écrit une URL NDEF sur le ST25DV via I2C, et un smartphone la lit correctement en tapant la box
-[ ] MPR121 keypad détecte les 12 touches avec < 1% faux positifs (CAP1298 : même test sur ses 8 touches en Phase 2 PCB)
+[ ] MPR121 keypad détecte les 12 touches avec < 1% faux positifs (CAP1298 : même test sur ses 6 touches en Phase 2 PCB)
 [ ] ADS7830 : valeur stable, pleine échelle sur les 8 canaux (SL1-SL4 + RV1-RV4)
 [ ] Toggles SW1/SW2 : niveaux propres sur GPIO1/2 (pull-up interne)
 [ ] LSM6DSOXTR détecte une inclinaison de 15° minimum
 [ ] BMP280 détecte un souffle buccal à 5 cm
 [ ] VEML7700 distingue pièce éclairée / pièce sombre
-[ ] Proximité « approche ta main » détecte une main approchée (si retenue)
+[ ] Proximité « approche ta main » (Côté 2, CAP1298 CS8) détecte une main approchée
 [ ] WS2812 : toute la chaîne répond, couleurs correctes
 [ ] USB-C : programmation ET charge fonctionnels simultanément
 [ ] Carte SD : lecture / écriture à > 1 MB/s

@@ -17352,7 +17352,13 @@
   )
 
 
-(symbol "MLX90614"
+
+
+
+
+
+
+(symbol "CAP1298-1-SL-TR"
     (exclude_from_sim no)
     (in_bom yes)
     (on_board yes)
@@ -17362,282 +17368,34 @@
         (font (size 1.27 1.27))
       )
     )
-    (property "Value" "MLX90614"
+    (property "Value" "CAP1298-1-SL-TR"
       (at 0 -2.54 0)
       (effects
         (font (size 1.27 1.27))
       )
     )
-    (property "Footprint" "lcsc_footprints:C2837265_TO-39_4P-BD10_2-P2_54-PD0_5-TR"
+    (property "Footprint" "lcsc_footprints:C2652072_SOIC-14_L8_7-W3_9-P1_27-LS6_0-BL"
       (at 0 -10.16 0)
       (effects
         (font (size 1.27 1.27))
         (hide yes)
       )
     )
-    (property "Datasheet" "None"
+    (property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2106080303_Microchip-Tech-CAP1298-1-SL-TR_C2652072.pdf"
       (at -2.286 0.127 0)
       (effects
         (font (size 1.27 1.27))
         (hide yes)
       )
     )
-    (property "Description" "MLX90614"
+    (property "Description" "CAP1298-1-SL-TR"
       (at 0 0 0)
       (effects
         (font (size 1.27 1.27))
         (hide yes)
       )
     )
-    (property "LCSC" "C2837265"
-      (at 0 0 0)
-      (effects
-        (font (size 1.27 1.27))
-        (hide yes)
-      )
-    )
-    (property "Manufacturer" "null"
-      (at 0 0 0)
-      (effects
-        (font (size 1.27 1.27))
-        (hide yes)
-      )
-    )
-    (symbol "MLX90614_1_1"
-      (rectangle
-        (start -10.16002032004064 3.81000762001524)
-        (end 10.16002032004064 -3.81000762001524)
-        (stroke (width 0) (type default) (color 0 0 0 0))
-        (fill (type background))
-      )
-      (circle
-        (center -8.89001778003556 2.54000508001016)
-        (radius 0.381000762001524)
-        (stroke (width 0) (type default) (color 0 0 0 0))
-        (fill (type background))
-      )
-      (pin unspecified line
-        (at -12.7 1.27 0)
-        (length 2.54)
-        (name "SCL/VZ"
-          (effects
-            (font (size 1 1))
-          )
-        )
-        (number "1"
-          (effects
-            (font (size 1 1))
-          )
-        )
-      )
-      (pin unspecified line
-        (at -12.7 -1.27 0)
-        (length 2.54)
-        (name "SDA/PWM"
-          (effects
-            (font (size 1 1))
-          )
-        )
-        (number "2"
-          (effects
-            (font (size 1 1))
-          )
-        )
-      )
-      (pin unspecified line
-        (at 12.7 -1.27 180)
-        (length 2.54)
-        (name "VDD"
-          (effects
-            (font (size 1 1))
-          )
-        )
-        (number "3"
-          (effects
-            (font (size 1 1))
-          )
-        )
-      )
-      (pin unspecified line
-        (at 12.7 1.27 180)
-        (length 2.54)
-        (name "VSS"
-          (effects
-            (font (size 1 1))
-          )
-        )
-        (number "4"
-          (effects
-            (font (size 1 1))
-          )
-        )
-      )
-    )
-  )
-
-
-(symbol "MLX90614"
-    (exclude_from_sim no)
-    (in_bom yes)
-    (on_board yes)
-    (property "Reference" "U"
-      (at 0 1.27 0)
-      (effects
-        (font (size 1.27 1.27))
-      )
-    )
-    (property "Value" "MLX90614"
-      (at 0 -2.54 0)
-      (effects
-        (font (size 1.27 1.27))
-      )
-    )
-    (property "Footprint" "lcsc_footprints:C2837265_TO-39_4P-BD10_2-P2_54-PD0_5-TR"
-      (at 0 -10.16 0)
-      (effects
-        (font (size 1.27 1.27))
-        (hide yes)
-      )
-    )
-    (property "Datasheet" "None"
-      (at -2.286 0.127 0)
-      (effects
-        (font (size 1.27 1.27))
-        (hide yes)
-      )
-    )
-    (property "Description" "MLX90614"
-      (at 0 0 0)
-      (effects
-        (font (size 1.27 1.27))
-        (hide yes)
-      )
-    )
-    (property "LCSC" "C2837265"
-      (at 0 0 0)
-      (effects
-        (font (size 1.27 1.27))
-        (hide yes)
-      )
-    )
-    (property "Manufacturer" "null"
-      (at 0 0 0)
-      (effects
-        (font (size 1.27 1.27))
-        (hide yes)
-      )
-    )
-    (symbol "MLX90614_1_1"
-      (rectangle
-        (start -10.16002032004064 3.81000762001524)
-        (end 10.16002032004064 -3.81000762001524)
-        (stroke (width 0) (type default) (color 0 0 0 0))
-        (fill (type background))
-      )
-      (circle
-        (center -8.89001778003556 2.54000508001016)
-        (radius 0.381000762001524)
-        (stroke (width 0) (type default) (color 0 0 0 0))
-        (fill (type background))
-      )
-      (pin unspecified line
-        (at -12.7 1.27 0)
-        (length 2.54)
-        (name "SCL/VZ"
-          (effects
-            (font (size 1 1))
-          )
-        )
-        (number "1"
-          (effects
-            (font (size 1 1))
-          )
-        )
-      )
-      (pin unspecified line
-        (at -12.7 -1.27 0)
-        (length 2.54)
-        (name "SDA/PWM"
-          (effects
-            (font (size 1 1))
-          )
-        )
-        (number "2"
-          (effects
-            (font (size 1 1))
-          )
-        )
-      )
-      (pin unspecified line
-        (at 12.7 -1.27 180)
-        (length 2.54)
-        (name "VDD"
-          (effects
-            (font (size 1 1))
-          )
-        )
-        (number "3"
-          (effects
-            (font (size 1 1))
-          )
-        )
-      )
-      (pin unspecified line
-        (at 12.7 1.27 180)
-        (length 2.54)
-        (name "VSS"
-          (effects
-            (font (size 1 1))
-          )
-        )
-        (number "4"
-          (effects
-            (font (size 1 1))
-          )
-        )
-      )
-    )
-  )
-
-
-(symbol "MTCH2120-V{slash}REB"
-    (exclude_from_sim no)
-    (in_bom yes)
-    (on_board yes)
-    (property "Reference" "U"
-      (at 0 1.27 0)
-      (effects
-        (font (size 1.27 1.27))
-      )
-    )
-    (property "Value" "MTCH2120-V/REB"
-      (at 0 -2.54 0)
-      (effects
-        (font (size 1.27 1.27))
-      )
-    )
-    (property "Footprint" "lcsc_footprints:C45606479_VQFN-20_L3_0-W3_0-P0_40-TL-EP"
-      (at 0 -10.16 0)
-      (effects
-        (font (size 1.27 1.27))
-        (hide yes)
-      )
-    )
-    (property "Datasheet" "None"
-      (at -2.286 0.127 0)
-      (effects
-        (font (size 1.27 1.27))
-        (hide yes)
-      )
-    )
-    (property "Description" "MTCH2120-V/REB"
-      (at 0 0 0)
-      (effects
-        (font (size 1.27 1.27))
-        (hide yes)
-      )
-    )
-    (property "LCSC" "C45606479"
+    (property "LCSC" "C2652072"
       (at 0 0 0)
       (effects
         (font (size 1.27 1.27))
@@ -17651,23 +17409,23 @@
         (hide yes)
       )
     )
-    (symbol "MTCH2120-V{slash}REB_1_1"
+    (symbol "CAP1298-1-SL-TR_1_1"
       (rectangle
-        (start -29.21005842011684 15.24003048006096)
-        (end 29.21005842011684 -13.97002794005588)
+        (start -11.430022860045721 10.16002032004064)
+        (end 11.430022860045721 -10.16002032004064)
         (stroke (width 0) (type default) (color 0 0 0 0))
         (fill (type background))
       )
       (circle
-        (center -27.94005588011176 12.700025400050801)
+        (center -10.16002032004064 8.89001778003556)
         (radius 0.381000762001524)
         (stroke (width 0) (type default) (color 0 0 0 0))
         (fill (type background))
       )
       (pin unspecified line
-        (at -31.75 11.43 0)
+        (at -13.97 7.62 0)
         (length 2.54)
-        (name "SCL"
+        (name "CS2"
           (effects
             (font (size 1 1))
           )
@@ -17679,9 +17437,9 @@
         )
       )
       (pin unspecified line
-        (at -31.75 8.89 0)
+        (at -13.97 5.08 0)
         (length 2.54)
-        (name "ADD_SEL"
+        (name "CS1"
           (effects
             (font (size 1 1))
           )
@@ -17693,9 +17451,9 @@
         )
       )
       (pin unspecified line
-        (at -31.75 6.35 0)
+        (at -13.97 2.54 0)
         (length 2.54)
-        (name "GND"
+        (name "ALERT#"
           (effects
             (font (size 1 1))
           )
@@ -17707,9 +17465,9 @@
         )
       )
       (pin unspecified line
-        (at -31.75 3.81 0)
+        (at -13.97 -0.0 0)
         (length 2.54)
-        (name "VDD"
+        (name "SMDAT"
           (effects
             (font (size 1 1))
           )
@@ -17721,9 +17479,9 @@
         )
       )
       (pin unspecified line
-        (at -31.75 1.27 0)
+        (at -13.97 -2.54 0)
         (length 2.54)
-        (name "BUTTON0/GPIO0"
+        (name "SMCLK"
           (effects
             (font (size 1 1))
           )
@@ -17735,9 +17493,9 @@
         )
       )
       (pin unspecified line
-        (at -31.75 -1.27 0)
+        (at -13.97 -5.08 0)
         (length 2.54)
-        (name "BUTTON1/GPIO1"
+        (name "N/C"
           (effects
             (font (size 1 1))
           )
@@ -17749,9 +17507,9 @@
         )
       )
       (pin unspecified line
-        (at -31.75 -3.81 0)
+        (at -13.97 -7.62 0)
         (length 2.54)
-        (name "BUTTON2/GPIO2"
+        (name "VDD"
           (effects
             (font (size 1 1))
           )
@@ -17763,9 +17521,9 @@
         )
       )
       (pin unspecified line
-        (at -31.75 -6.35 0)
+        (at 13.97 -7.62 180)
         (length 2.54)
-        (name "BUTTON3/GPIO3"
+        (name "GND"
           (effects
             (font (size 1 1))
           )
@@ -17777,9 +17535,9 @@
         )
       )
       (pin unspecified line
-        (at -31.75 -8.89 0)
+        (at 13.97 -5.08 180)
         (length 2.54)
-        (name "BUTTON4/GPIO4"
+        (name "CS8"
           (effects
             (font (size 1 1))
           )
@@ -17791,9 +17549,9 @@
         )
       )
       (pin unspecified line
-        (at -31.75 -11.43 0)
+        (at 13.97 -2.54 180)
         (length 2.54)
-        (name "BUTTON5/GPIO5"
+        (name "CS7"
           (effects
             (font (size 1 1))
           )
@@ -17805,9 +17563,9 @@
         )
       )
       (pin unspecified line
-        (at 31.75 -11.43 180)
+        (at 13.97 -0.0 180)
         (length 2.54)
-        (name "INT#"
+        (name "CS6"
           (effects
             (font (size 1 1))
           )
@@ -17819,9 +17577,9 @@
         )
       )
       (pin unspecified line
-        (at 31.75 -8.89 180)
+        (at 13.97 2.54 180)
         (length 2.54)
-        (name "GPIO12"
+        (name "CS5/SG"
           (effects
             (font (size 1 1))
           )
@@ -17833,9 +17591,9 @@
         )
       )
       (pin unspecified line
-        (at 31.75 -6.35 180)
+        (at 13.97 5.08 180)
         (length 2.54)
-        (name "BUTTON6/GPIO6"
+        (name "CS4"
           (effects
             (font (size 1 1))
           )
@@ -17847,112 +17605,14 @@
         )
       )
       (pin unspecified line
-        (at 31.75 -3.81 180)
+        (at 13.97 7.62 180)
         (length 2.54)
-        (name "BUTTON7/GPIO7"
+        (name "CS3"
           (effects
             (font (size 1 1))
           )
         )
         (number "14"
-          (effects
-            (font (size 1 1))
-          )
-        )
-      )
-      (pin unspecified line
-        (at 31.75 -1.27 180)
-        (length 2.54)
-        (name "BUTTON8/GPIO8"
-          (effects
-            (font (size 1 1))
-          )
-        )
-        (number "15"
-          (effects
-            (font (size 1 1))
-          )
-        )
-      )
-      (pin unspecified line
-        (at 31.75 1.27 180)
-        (length 2.54)
-        (name "BUTTON9/GPIO9"
-          (effects
-            (font (size 1 1))
-          )
-        )
-        (number "16"
-          (effects
-            (font (size 1 1))
-          )
-        )
-      )
-      (pin unspecified line
-        (at 31.75 3.81 180)
-        (length 2.54)
-        (name "BUTTON10/GPIO10"
-          (effects
-            (font (size 1 1))
-          )
-        )
-        (number "17"
-          (effects
-            (font (size 1 1))
-          )
-        )
-      )
-      (pin unspecified line
-        (at 31.75 6.35 180)
-        (length 2.54)
-        (name "BUTTON11/DS/GPIO11"
-          (effects
-            (font (size 1 1))
-          )
-        )
-        (number "18"
-          (effects
-            (font (size 1 1))
-          )
-        )
-      )
-      (pin unspecified line
-        (at 31.75 8.89 180)
-        (length 2.54)
-        (name "RESET#"
-          (effects
-            (font (size 1 1))
-          )
-        )
-        (number "19"
-          (effects
-            (font (size 1 1))
-          )
-        )
-      )
-      (pin unspecified line
-        (at 31.75 11.43 180)
-        (length 2.54)
-        (name "SDA"
-          (effects
-            (font (size 1 1))
-          )
-        )
-        (number "20"
-          (effects
-            (font (size 1 1))
-          )
-        )
-      )
-      (pin unspecified line
-        (at 31.75 13.97 180)
-        (length 2.54)
-        (name "EP"
-          (effects
-            (font (size 1 1))
-          )
-        )
-        (number "21"
           (effects
             (font (size 1 1))
           )
