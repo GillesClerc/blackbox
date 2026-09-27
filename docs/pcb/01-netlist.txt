@@ -539,7 +539,8 @@ NET SAT_GND:
 Pinout ST25DV04KC-IE6S3 (SO8, remplace le PN532, EOL/abandonne 2026-09-20,
 use-case badge externe abandonne) — deplace sur le futur satellite face
 Dessus (sera U11 la-bas, namespace independant de Main) : pinout confirme
-contre datasheet officielle ST DS10925 Rev9 : AC0=1, V_EH=2 (NC), AC1=3,
+contre datasheet officielle ST DS10925 Rev9 : V_EH=1 (NC), AC0=2, AC1=3,
+[CORRIGE 2026-09-27 : l'ancienne ligne inversait 1 et 2 ; figure 2 relue, symbole LCSC juste]
 VSS=4 (GND), SDA=5, SCL=6, GPO=7 (NC, polling I2C prefere a l'interrupt —
 budget GPIO sature), VCC=8 (3V3_D, decouplage 10nF+100nF). Beaucoup plus
 simple que le PN532 : pas de cristal, pas de reseau d'adaptation RF externe

@@ -72,6 +72,7 @@
   retiré, R1/R2 470 Ω, C21/C22 2,2 nF C0G, TMAG5273A1 (C3716049), U10 SOT-23-6, bouche
   « à choisir », notes J7b/J8/J9/U3/R_PG, LCSC de D1/Q1/Q2 dans la bonne colonne ; ajoutés :
   CAP1298 (COTE2-U2), ST25DV (U27, absent), haut-parleur (LS1) ; découplage satellites 5 × 100 nF.
+  Lignes satellites refaites le 27/09 d'après les schémas (préfixes DESSUS-/DEVANT-/COTE1-/COTE3-).
 - [x] 🤖 **Une seule BOM** : `docs/pcb/02-bom-lcsc.csv` supprimée (2026-09-27).
 - [ ] 🧑 **FS8205 (U10) : C32254 à 0 en stock chez JLCPCB** (27/09). Équivalents SOT-23-6 en
   stock : FS8205A TECH PUBLIC C2830320 (55 501), FS8205A FUXINSEMI C908265 (22 508), 8205A
@@ -94,11 +95,14 @@ Projets KiCad créés le 2026-09-27 : `hardware/devant/`, `dessus/`, `cote1/`, `
 (bibliothèques partagées avec la Main, cartouche de spécification sur chaque feuille).
 - [x] 🤖 **Côté 2 — partie USB dessinée** : J1 USB-C, U1 USBLC6 (sur les lignes brutes, côté
   connecteur), R1/R2 CC 5,1 kΩ, J2 vers J14 de la Main — netlist vérifiée.
-- [ ] 🤝 Dessin face par face (🤖 schéma + vérification netlist, 🧑 mise en page + ERC) :
-  Côté 2 (USB + tactile dessinés ; SW3 en câble direct sur J12), Côté 3 (TMAG5273 seul), Côté 1 (ADS7830, faders, pots,
-  toggles, boutons), Dessus (ST25DV + antenne, base `hardware/main/.history/nfc.kicad_sch`),
-  Devant (écrans, BMP280, VEML7700 — bloqué par la fiche du module GC9A01 et le choix de
-  l'écran bouche).
+- [x] 🤖 **Schémas Dessus, Devant, Côté 1, Côté 3 dessinés** (27/09) — netlists vérifiées par
+  script (0 pin isolée, 0 net à plusieurs noms), BOM passée en références préfixées par face
+  (`DESSUS-U1`, `DEVANT-LED1`, `COTE1-SL1`, `COTE3-U1`…) et recoupée avec les schémas.
+  **Questions ouvertes : `docs/audits/2026-09-27-questions-satellites.md`** (modules des yeux,
+  écran bouche, nombre de LED du halo, montage des toggles/boutons, antenne NFC…).
+- [ ] 🧑 Recharger les 4 feuilles dans KiCad, mise en page, ERC, F8.
+- [x] 🤖 Brochages corrigés dans les synthèses (27/09) : **ST25DV** 1 = V_EH, 2 = AC0 (l'inverse
+  était écrit, figure 2 relue) ; **VEML7700** 2 = VDD, 4 = SDA. Les symboles LCSC étaient justes.
 - [x] 🧑 Symboles MLX90614 (C2837265) et MTCH2120 (C45606479) importés par LCSC manager
   (2026-09-27) — brochages conformes, mais les deux composants sont remis en cause (ci-dessous).
 - [x] 🤝 **MLX90614 retiré du produit** (2026-09-27) : trop cher (variante 3 V 6,6-8,9 $),
@@ -120,9 +124,9 @@ Projets KiCad créés le 2026-09-27 : `hardware/devant/`, `dessus/`, `cote1/`, `
   les bibliothèques dans `hardware/libs/` (variable de chemin commune) le jour où l'on veut
   la 3D des satellites.
 
-- [ ] 🧑 **TMAG5273A1** (0x35) ; INT → GND (+ MASK_INTB côté firmware) ; ≥ 10 nF sur VCC.
-- [ ] 🧑 **BMP280** : CSB **directement** sur VDDIO, SDO → GND (0x76), 100 nF sur VDD et VDDIO.
-- [ ] 🧑 Brochage **Qwiic** sur chaque satellite (1 = GND, 2 = 3V3, 3 = SDA, 4 = SCL).
+- [x] 🤖 **TMAG5273A1** (0x35) ; INT → GND (+ MASK_INTB côté firmware) ; 100 nF sur VCC — au schéma Côté 3.
+- [x] 🤖 **BMP280** : CSB **directement** sur VDDIO, SDO → GND (0x76), 100 nF sur VDD et VDDIO — au schéma Devant.
+- [x] 🤖 Brochage **Qwiic** sur chaque satellite (1 = GND, 2 = 3V3, 3 = SDA, 4 = SCL) — 5 satellites.
 - [ ] 🧑 **Satellite Côté 2** : J1 USB-C + USBLC6 **au plus près du port** + CC 5,1 kΩ,
   connecteur vers J14 (JST-PH 6, fils de section adaptée à ~1,1 A sur VBUS, D+/D− torsadés),
   CAP1298 dessiné ; SW3 câblé en direct sur J12 (hors satellite).
@@ -131,7 +135,7 @@ Projets KiCad créés le 2026-09-27 : `hardware/devant/`, `dessus/`, `cote1/`, `
   contre la réinjection dans le chargeur, CC côté source, commande par expander I2C (plus de
   GPIO libre). Côté firmware : bascule USB-Serial-JTAG ↔ OTG hôte (console USB perdue en
   mode hôte).
-- [ ] 🧑 Satellite Dessus : antenne NFC ST25DV (boucle, zone de garde) ; reprendre `nfc.kicad_sch`.
+- [ ] 🧑 Satellite Dessus : dessiner l'antenne NFC ANT1 au layout (boucle ~4,8 µH, zone de garde ; empreinte à créer).
 - [ ] 🧑 Au proto : **temps de montée du bus I2C** ≤ 1000 ns à 100 kHz (≤ ~250 pF avec
   4,7 kΩ) ; passer en 2,2 kΩ si besoin.
 

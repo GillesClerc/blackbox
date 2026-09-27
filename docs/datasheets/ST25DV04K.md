@@ -18,10 +18,15 @@ Tag NFC dynamique (NFC Forum Type 5 / ISO 15693) avec EEPROM 4-Kbit (512 octets 
 
 ## Pinout (SO8, variante -IE = GPO open-drain)
 
+> ⚠ **Corrigé le 2026-09-27** d'après DS10925 Rev 9 **figure 2** (coordonnées des étiquettes relevées
+> dans le PDF : V_EH sur la ligne de la broche 1, AC0 sur celle de la 2). L'ancienne version de
+> cette synthèse, et `docs/pcb/01-netlist.txt`, inversaient les broches 1 et 2. Le symbole LCSC
+> (`lcsc_imported:ST25DV04KC-IE6S3`) était juste.
+
 | Pin | Nom | Direction | Fonction |
 |---|---|---|---|
-| 1 | AC0 | RF | Antenne (bobine) — pas d'autre chemin DC/AC dessus |
-| 2 | V_EH | Sortie analogique | Energy harvesting — non régulé, non utilisé dans notre design |
+| 1 | V_EH | Sortie analogique | Energy harvesting — non régulé, haute impédance si EH désactivé (§2.5) ; non utilisé |
+| 2 | AC0 | RF | Antenne (bobine) — pas d'autre chemin DC/AC dessus |
 | 3 | AC1 | RF | Antenne (bobine) |
 | 4 | VSS | PWR | Masse |
 | 5 | SDA | I/O I2C | Données I2C (open-drain, pull-up externe requis) |
@@ -35,7 +40,7 @@ Tag NFC dynamique (NFC Forum Type 5 / ISO 15693) avec EEPROM 4-Kbit (512 octets 
 |---|---|---|---|---|---|
 | VCC | 1.8 | — | 5.5 | V | Compatible direct 3V3_D |
 | I2C clock | — | — | 1 | MHz | Fast mode+ |
-| Capacité tuning interne | — | 28.5 | — | pF | Déjà intégrée, simplifie l'antenne vs PN532 |
+| Capacité tuning interne C_TUN | 26.5 | 28.5 | 30.5 | pF | à 13,56 MHz (tableau des caractéristiques RF) — L d'antenne visée ≈ 1/((2π·13,56 MHz)²·C_TUN) ≈ 4,8 µH (calcul, pas une valeur de la datasheet) |
 | Cycles d'écriture | — | 1M @25°C | — | — | Rétention 40 ans |
 | Distance de lecture typique | — | quelques cm | — | — | _(non chiffré précisément dans cette datasheet courte — dépend de l'antenne)_ |
 
@@ -50,12 +55,12 @@ Tag NFC dynamique (NFC Forum Type 5 / ISO 15693) avec EEPROM 4-Kbit (512 octets 
 
 Donc : même si le téléphone tape la box **VCC non alimenté** (box éteinte), le chip s'auto-alimente en RF **sans jamais renvoyer de tension sur la pin VCC externe** — aucun risque de reverse-feed vers le rail 3V3_D quand la box est éteinte.
 
-## Câblage proposé (main PCB)
+## Câblage (satellite Dessus, schéma dessiné le 2026-09-27 : `hardware/dessus/`, U1)
 
-- **VCC (8)** → `3V3_D` + découplage 10nF + 100nF au plus près
+- **VCC (8)** → `3V3_D` + découplage 10 nF + 100 nF au plus près (DS10925 : « usually of the order of 10 nF and 100 nF » près de VCC/VSS)
 - **VSS (4)** → GND
 - **SDA (5) / SCL (6)** → bus `I2C_SDA`/`I2C_SCL` partagé (pull-up déjà existant R3/R4 4.7k sur ce bus)
-- **GPO (7)** → non connecté. Décision : détection du tap téléphone par polling I2C du registre d'état (`ITSTS_DYN`) toutes les ~150ms plutôt que par interruption matérielle — le budget GPIO de l'ESP32-S3 est saturé (GPIO1-21 et 38-48 tous alloués), et le coût du polling est négligeable (~0.6-1ms par lecture à 100kHz, soit ~1% de charge bus à 150ms d'intervalle, latence imperceptible pour l'utilisateur)
+- **GPO (7)** → non connecté (open-drain : il faudrait un pull-up > 4,7 kΩ pour qu'il serve, §2.4.2). Décision : détection du tap téléphone par polling I2C du registre d'état (`ITSTS_DYN`) toutes les ~150ms plutôt que par interruption matérielle — le budget GPIO de l'ESP32-S3 est saturé (GPIO1-21 et 38-48 tous alloués), et le coût du polling est négligeable (~0.6-1ms par lecture à 100kHz, soit ~1% de charge bus à 150ms d'intervalle, latence imperceptible pour l'utilisateur)
 - **V_EH (2)** → non connecté (non utilisé)
 - **AC0 (1) / AC1 (3)** → bobine antenne (boucle PCB ou fil) — dimensionnement à faire (plus simple que PN532 : pas de C1/C2/Rq/CRx/R1/R2, la capacité de tuning 28.5pF est déjà interne, potentiellement juste un petit condensateur d'ajustement externe selon l'inductance finale de la boucle choisie)
 

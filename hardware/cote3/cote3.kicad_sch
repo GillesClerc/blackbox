@@ -5,8 +5,529 @@
 	(uuid "bd9c10a9-c2f9-4c8c-85e8-174040f4ba31")
 	(paper "A4")
 	(lib_symbols
+		(symbol "lcsc_imported:TMAG5273A2QDBVR"
+    (exclude_from_sim no)
+    (in_bom yes)
+    (on_board yes)
+    (property "Reference" "U"
+      (at 0 1.27 0)
+      (effects
+        (font (size 1.27 1.27))
+      )
+    )
+    (property "Value" "TMAG5273A2QDBVR"
+      (at 0 -2.54 0)
+      (effects
+        (font (size 1.27 1.27))
+      )
+    )
+    (property "Footprint" "lcsc_footprints:C3715882_SOT-23-6_L2_9-W1_6-P0_95-LS2_8-BR"
+      (at 0 -10.16 0)
+      (effects
+        (font (size 1.27 1.27))
+        (hide yes)
+      )
+    )
+    (property "Datasheet" "https://www.ti.com/cn/lit/gpn/tmag5273"
+      (at -2.286 0.127 0)
+      (effects
+        (font (size 1.27 1.27))
+        (hide yes)
+      )
+    )
+    (property "Description" "TMAG5273A2QDBVR"
+      (at 0 0 0)
+      (effects
+        (font (size 1.27 1.27))
+        (hide yes)
+      )
+    )
+    (property "LCSC" "C3715882"
+      (at 0 0 0)
+      (effects
+        (font (size 1.27 1.27))
+        (hide yes)
+      )
+    )
+    (property "Manufacturer" "TI(德州仪器)"
+      (at 0 0 0)
+      (effects
+        (font (size 1.27 1.27))
+        (hide yes)
+      )
+    )
+    (symbol "TMAG5273A2QDBVR_1_1"
+      (rectangle
+        (start -12.700025400050801 5.08001016002032)
+        (end 12.700025400050801 -5.08001016002032)
+        (stroke (width 0) (type default) (color 0 0 0 0))
+        (fill (type background))
+      )
+      (circle
+        (center -11.430022860045721 3.81000762001524)
+        (radius 0.381000762001524)
+        (stroke (width 0) (type default) (color 0 0 0 0))
+        (fill (type background))
+      )
+      (pin unspecified line
+        (at -15.24 2.54 0)
+        (length 2.54)
+        (name "SCL"
+          (effects
+            (font (size 1 1))
+          )
+        )
+        (number "1"
+          (effects
+            (font (size 1 1))
+          )
+        )
+      )
+      (pin unspecified line
+        (at -15.24 -0.0 0)
+        (length 2.54)
+        (name "GND"
+          (effects
+            (font (size 1 1))
+          )
+        )
+        (number "2"
+          (effects
+            (font (size 1 1))
+          )
+        )
+      )
+      (pin unspecified line
+        (at -15.24 -2.54 0)
+        (length 2.54)
+        (name "GND(TEST)"
+          (effects
+            (font (size 1 1))
+          )
+        )
+        (number "3"
+          (effects
+            (font (size 1 1))
+          )
+        )
+      )
+      (pin unspecified line
+        (at 15.24 -2.54 180)
+        (length 2.54)
+        (name "VCC"
+          (effects
+            (font (size 1 1))
+          )
+        )
+        (number "4"
+          (effects
+            (font (size 1 1))
+          )
+        )
+      )
+      (pin unspecified line
+        (at 15.24 -0.0 180)
+        (length 2.54)
+        (name "INT#"
+          (effects
+            (font (size 1 1))
+          )
+        )
+        (number "5"
+          (effects
+            (font (size 1 1))
+          )
+        )
+      )
+      (pin unspecified line
+        (at 15.24 2.54 180)
+        (length 2.54)
+        (name "SDA"
+          (effects
+            (font (size 1 1))
+          )
+        )
+        (number "6"
+          (effects
+            (font (size 1 1))
+          )
+        )
+      )
+    )
+  )
+		(symbol "Device:C"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0.254)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "C"
+				(at 0.635 2.54 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Value" "C"
+				(at 0.635 -2.54 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Footprint" ""
+				(at 0.9652 -3.81 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "Unpolarized capacitor"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "cap capacitor"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_fp_filters" "C_*"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "C_0_1"
+				(polyline
+					(pts
+						(xy -2.032 0.762) (xy 2.032 0.762)
+					)
+					(stroke
+						(width 0.508)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -2.032 -0.762) (xy 2.032 -0.762)
+					)
+					(stroke
+						(width 0.508)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "C_1_1"
+				(pin passive line
+					(at 0 3.81 270)
+					(length 2.794)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 0 -3.81 90)
+					(length 2.794)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+		(symbol "Connector_Generic:Conn_01x04"
+			(pin_names
+				(offset 1.016)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "J"
+				(at 0 5.08 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "Conn_01x04"
+				(at 0 -7.62 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "Generic connector, single row, 01x04, script generated (kicad-library-utils/schlib/autogen/connector/)"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "connector"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_fp_filters" "Connector*:*_1x??_*"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "Conn_01x04_1_1"
+				(rectangle
+					(start -1.27 3.81)
+					(end 1.27 -6.35)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type background)
+					)
+				)
+				(rectangle
+					(start -1.27 2.667)
+					(end 0 2.413)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(rectangle
+					(start -1.27 0.127)
+					(end 0 -0.127)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(rectangle
+					(start -1.27 -2.413)
+					(end 0 -2.667)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(rectangle
+					(start -1.27 -4.953)
+					(end 0 -5.207)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(pin passive line
+					(at -5.08 2.54 0)
+					(length 3.81)
+					(name "Pin_1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at -5.08 0 0)
+					(length 3.81)
+					(name "Pin_2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at -5.08 -2.54 0)
+					(length 3.81)
+					(name "Pin_3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at -5.08 -5.08 0)
+					(length 3.81)
+					(name "Pin_4"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "4"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 	)
-	(text "SATELLITE COTE 3 — zone magique (FSD §2.2.2c / §2.2.3)\n\n- Face dediee au seul capteur d aimant (decision 2026-09-27) : \"approche ta main\" est sur Cote 2 (CAP1298),\n   MLX90614 retire du produit.\n- TMAG5273A1 (0x35, +-40/80 mT) : INT -> GND (MASK_INTB cote firmware), >= 10 nF sur VCC. La bibliotheque contient\n   le symbole A2 : meme brochage, changer la valeur/MPN en A1. TMAG5273.md.\n- Connecteur I2C Qwiic vers un des J3-J6/J13 de la Main : 1 = GND, 2 = 3V3_D, 3 = SDA, 4 = SCL\n(JST-SH 4 broches, cable standard Qwiic). Bus a 100 kHz. Pas de pull-up sur le satellite\n(4,7 k deja sur la Main)."
+	(text "SATELLITE COTE 3 — zone magique (FSD §2.2.2c / §2.2.3)\n\n- Face dediee au seul capteur d aimant (decision 2026-09-27) : 'approche ta main' est sur Cote 2 (CAP1298), MLX90614 retire.\n- U1 TMAG5273A1 (0x35, +-40/80 mT). Symbole de bibliotheque = A2 (meme brochage SOT-23-6) : valeur, MPN et LCSC forces en A1 (C3716049).\n   TEST (3) -> GND ; INT (5) -> GND : pas de GPIO libre, MASK_INTB = 1 cote firmware (tableau 4-1). C1 100 nF (>= 10 nF, §7.4).\n- J1 Qwiic vers un des J3-J6/J13 de la Main : 1 = GND, 2 = 3V3_D, 3 = SDA, 4 = SCL (JST-SH 4). Pas de pull-up ici (4,7 k sur la Main)."approche ta main\" est sur Cote 2 (CAP1298),\n   MLX90614 retire du produit.\n- TMAG5273A1 (0x35, +-40/80 mT) : INT -> GND (MASK_INTB cote firmware), >= 10 nF sur VCC. La bibliotheque contient\n   le symbole A2 : meme brochage, changer la valeur/MPN en A1. TMAG5273.md.\n- Connecteur I2C Qwiic vers un des J3-J6/J13 de la Main : 1 = GND, 2 = 3V3_D, 3 = SDA, 4 = SCL\n(JST-SH 4 broches, cable standard Qwiic). Bus a 100 kHz. Pas de pull-up sur le satellite\n(4,7 k deja sur la Main)."
 		(exclude_from_sim no)
 		(at 20.32 142.24 0)
 		(effects
@@ -23,4 +544,711 @@
 		)
 	)
 	(embedded_fonts no)
+	(symbol
+		(lib_id "lcsc_imported:TMAG5273A2QDBVR")
+		(at 101.6 63.5 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "82d1fc26-2bfd-432e-9649-722b5a1db6df")
+		(property "Reference" "U1"
+			(at 104.14 62.23 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "TMAG5273A1QDBVR"
+			(at 104.14 64.77 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "lcsc_footprints:C3715882_SOT-23-6_L2_9-W1_6-P0_95-LS2_8-BR"
+			(at 101.6 63.5 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 101.6 63.5 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Hall lineaire 3D I2C, variante A1 : 0x35, +-40/80 mT (SLYS045C tableau 6-2). Symbole A2 : meme brochage"
+			(at 101.6 63.5 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C3716049"
+			(at 101.6 63.5 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Manufacturer" "Texas Instruments"
+			(at 101.6 63.5 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "TMAG5273A1QDBVR"
+			(at 101.6 63.5 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "6b704f57-a38f-4d46-84f4-9dbb49af9ebb")
+		)
+		(pin "2"
+			(uuid "ecae5e95-1ee2-4dff-82cb-eb63932273bf")
+		)
+		(pin "3"
+			(uuid "11864b5c-0128-42db-b7bd-f2d00bb22fc4")
+		)
+		(pin "4"
+			(uuid "987b0188-3410-4a02-a89b-1e67b4754e7d")
+		)
+		(pin "5"
+			(uuid "7dbfd35d-6b79-4ba0-aa3c-0652ab5be6e6")
+		)
+		(pin "6"
+			(uuid "7e870763-dae7-448f-b5ff-9b5df8683aa2")
+		)
+		(instances
+			(project "cote3"
+				(path "/bd9c10a9-c2f9-4c8c-85e8-174040f4ba31"
+					(reference "U1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 86.36 60.96) (xy 81.28 60.96)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "6484b07d-211f-41d0-aedb-f06838ab90f9")
+	)
+	(global_label "I2C_SCL"
+		(shape bidirectional)
+		(at 81.28 60.96 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "b950b420-5b61-4fc7-8e31-b463098a7144")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 69.85 60.96 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 86.36 63.5) (xy 81.28 63.5)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "bd43282f-428c-45e5-9b41-d715306a2e58")
+	)
+	(global_label "GND"
+		(shape passive)
+		(at 81.28 63.5 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "f12e37c9-66bb-4d06-9d22-76c081eeb18f")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 69.85 63.5 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 86.36 66.04) (xy 81.28 66.04)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "1acae9d9-a1d2-4b78-8981-af652c7b8926")
+	)
+	(global_label "GND"
+		(shape passive)
+		(at 81.28 66.04 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "6aae6c53-23e7-4483-a851-0346c7eb5a3d")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 69.85 66.04 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 116.84 66.04) (xy 121.92 66.04)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "e42d5a94-0737-4e60-aa23-02c073dbe767")
+	)
+	(global_label "3V3_D"
+		(shape passive)
+		(at 121.92 66.04 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "ecbae4cc-b817-4889-8908-08586b6d452f")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 133.35 66.04 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 116.84 63.5) (xy 121.92 63.5)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "944919bb-2943-4dc3-8949-1a7501757a5b")
+	)
+	(global_label "GND"
+		(shape passive)
+		(at 121.92 63.5 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "36c8a7ad-ede8-4248-8b1f-02bb90867a8a")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 133.35 63.5 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 116.84 60.96) (xy 121.92 60.96)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "cfc56bda-bfb6-4ac2-98d8-c7485ecf14c5")
+	)
+	(global_label "I2C_SDA"
+		(shape bidirectional)
+		(at 121.92 60.96 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "74086f57-f3e8-432b-8891-522b0da82986")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 133.35 60.96 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C")
+		(at 137.16 60.96 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "a8757fb0-b788-453a-aed4-c9668731bda0")
+		(property "Reference" "C1"
+			(at 139.7 59.69 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "100n"
+			(at 139.7 62.230000000000004 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
+			(at 137.16 60.96 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 137.16 60.96 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Decouplage VCC TMAG5273 au plus pres (SLYS045C §7.4 : >= 0,01 uF ceramique)"
+			(at 137.16 60.96 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Dielectric" "X7R"
+			(at 137.16 60.96 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "89b78bb6-b2f8-4865-9f03-ca6ca54c0a01")
+		)
+		(pin "2"
+			(uuid "c1fbc9cf-600f-4628-ae38-616d10399ad9")
+		)
+		(instances
+			(project "cote3"
+				(path "/bd9c10a9-c2f9-4c8c-85e8-174040f4ba31"
+					(reference "C1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 137.16 57.15) (xy 137.16 54.61)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f15f9626-0ec9-4ceb-bb71-9e9404eaa6ce")
+	)
+	(global_label "3V3_D"
+		(shape passive)
+		(at 137.16 54.61 90)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "5512ad0c-f24c-4382-b18d-240242c648c3")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 148.59 54.61 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 137.16 64.77) (xy 137.16 67.31)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "87923797-6643-4eb3-87da-abcc259a5da8")
+	)
+	(global_label "GND"
+		(shape passive)
+		(at 137.16 67.31 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "515618be-c34c-427c-877d-5dca7f76c35d")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 148.59 67.31 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector_Generic:Conn_01x04")
+		(at 172.72 60.96 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "cf605730-7bd8-4ffe-a101-870da26590ff")
+		(property "Reference" "J1"
+			(at 175.26 59.69 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "Qwiic"
+			(at 175.26 62.230000000000004 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Connector_JST:JST_SH_BM04B-SRSS-TB_1x04-1MP_P1.00mm_Vertical"
+			(at 172.72 60.96 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 172.72 60.96 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Bus I2C vers un des J3-J6/J13 de la Main (brochage Qwiic)"
+			(at 172.72 60.96 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "81112b30-d9ab-47b0-88de-629044e063ae")
+		)
+		(pin "2"
+			(uuid "d25e3cd3-35df-439c-b91c-b80b498f2a23")
+		)
+		(pin "3"
+			(uuid "39791388-b1d6-46d2-858e-8b44ddd3f22b")
+		)
+		(pin "4"
+			(uuid "1532ff1b-e56a-49b9-b899-b05ab1c294fd")
+		)
+		(instances
+			(project "cote3"
+				(path "/bd9c10a9-c2f9-4c8c-85e8-174040f4ba31"
+					(reference "J1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 167.64 58.42) (xy 162.56 58.42)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c1b23648-8944-46af-8dce-c83e7f68c0bf")
+	)
+	(global_label "GND"
+		(shape passive)
+		(at 162.56 58.42 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "f77ea3a5-b514-4276-bbd7-9a3d3d682cff")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 151.13 58.42 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 167.64 60.96) (xy 162.56 60.96)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "04dcdbc4-af15-47c8-a2b2-f10e529988f4")
+	)
+	(global_label "3V3_D"
+		(shape passive)
+		(at 162.56 60.96 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "51989c42-66c1-441d-86b1-a6226cec6d9e")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 151.13 60.96 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 167.64 63.5) (xy 162.56 63.5)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "8b006f2e-f940-4035-810d-7a44feb24623")
+	)
+	(global_label "I2C_SDA"
+		(shape bidirectional)
+		(at 162.56 63.5 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "cb88c03a-9d7a-495e-a488-657d93f22be8")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 151.13 63.5 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 167.64 66.04) (xy 162.56 66.04)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c32ff6bc-ce08-46f7-a2d5-f866a8fb886c")
+	)
+	(global_label "I2C_SCL"
+		(shape bidirectional)
+		(at 162.56 66.04 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "847b75f3-c899-4f2e-b0d5-e5cd7ecd0f44")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 151.13 66.04 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+	)
 )

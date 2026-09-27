@@ -11,8 +11,6 @@ U9,DW01A,,SOT-23-6,C351410,1,Main,Protection batterie
 U10,FS8205,,SOT-23-6,C32254,1,Main,Dual MOSFET protection
 U11,LSM6DSOXTR,,LGA-14,C481766,1,Main,"Accelerometre + gyro 6 axes + MLC, soude sur la Main (feuille imu) — docs/datasheets/LSM6DSOXTR.md"
 COTE2-U1,USBLC6-2SC6,,SOT-23-6,C7519,1,Satellite Cote 2,"[Satellite Cote 2, projet hardware/cote2/ (ex-U12 de la Main, deplace le 2026-09-27).] Au plus pres de J1. Protection ESD USB D+/D-"
-—,,GC9A01 module 1.3 rond,Module,—,2,Face avant,Yeux du personnage 240x240 SPI (modules achetes)
-—,,"Ecran bouche (a choisir, pas e-ink)",Module,—,1,Face avant,Type non choisi (FSD) — SPI2 via J7b
 COTE2-J1,HOOYA USB-307HB-B-SU,,USB-C-24P SMD vertical,C309361,1,Satellite Cote 2,"[Satellite Cote 2, projet hardware/cote2/ (ex-J1 de la Main, deplace le 2026-09-27).] Connecteur USB-C femelle 24 pins (fab. Dongguang Haoyu Electronics) — sur LCSC/JLCPCB, importable via easyeda2kicad ou plugin kicad-lcsc-manager (LCSC ID C309361). Pinout standard verifie sur datasheet fabricant 2026-09-20 (voir docs/pcb/01-netlist.txt) : VBUS=A4/A9/B4/B9, GND=A1/A12/B1/B12+shield, D+=A6+B6, D-=A7+B7, CC1=A5, CC2=B5, pins SS/SBU non utilisees (design USB2.0 only)."
 "J3,J4,J5,J6,J13",,Connecteur JST-SH 4pin,JST-SH-4P,—,5,Main,Bus I2C vers satellites (brochage Qwiic ; J13 ajoute le 2026-09-27 : 5 faces satellites en I2C)
 J7,,Connecteur JST-SH 10pin,JST-SH-10P,—,1,Main,SPI3 vers 2x GC9A01 yeux
@@ -55,18 +53,37 @@ COTE2-U2,CAP1298-1-SL-TR,,SOIC-14,C2652072,1,Satellite Cote 2,"[Satellite Cote 2
 COTE2-C1,,100nF 16V ceramique X7R,0402,—,1,Satellite Cote 2,[Satellite Cote 2 (C1).] Decouplage VDD CAP1298 au plus pres (DS00001571B figure 3-1)
 COTE2-C2,,1uF 10V ceramique X5R,0402,—,1,Satellite Cote 2,"[Satellite Cote 2 (C2).] Decouplage VDD CAP1298 (figure 3-1 : 1 uF + 0,1 uF)"
 COTE2-J3,,Connecteur JST-SH 4pin,JST-SH-4P,—,1,Satellite Cote 2,"[Satellite Cote 2 (J3).] Qwiic vers un des J3-J6/J13 de la Main : 1 GND, 2 3V3_D, 3 SDA, 4 SCL"
-U22,VEML7700-TT,,OPLGA,C1850416,1,Satellite,Capteur lumiere ambiante
-U23,BMP280,,LGA-8,C83291,1,Satellite,Pression / souffle
-U25,TMAG5273A1QDBVR,,SOT-23-6,C3716049,1,Satellite,"Hall lineaire 3D I2C, variante A1 (+-40/80 mT, adresse 0x35) — docs/datasheets/TMAG5273.md tableau 6-2 ; Satellite Cote 3"
-U27,ST25DV04KC-IE6S3,,SO-8,C3304276,1,Satellite Dessus,"Tag NFC dynamique I2C 0x53 + 0x57, antenne boucle PCB — docs/datasheets/ST25DV04K.md (ajoute le 2026-09-27 : absent de la BOM)"
+DESSUS-U1,ST25DV04KC-IE6S3,,SO-8,C3304276,1,Satellite Dessus,"[Satellite Dessus, projet hardware/dessus/ (ex-U27).] Tag NFC dynamique I2C 0x53 + 0x57. Brochage SO8 DS10925 figure 2 : 1 V_EH (NC), 2 AC0, 3 AC1, 4 VSS, 5 SDA, 6 SCL, 7 GPO (NC), 8 VCC. Antenne ANT1 = boucle PCB (hors BOM) — docs/datasheets/ST25DV04K.md"
+DESSUS-C1,,10nF 16V ceramique X7R,0402,—,1,Satellite Dessus,[Satellite Dessus (C1).] Decouplage VCC ST25DV au plus pres (DS10925 : 10 nF + 100 nF)
+DESSUS-C2,,100nF 16V ceramique X7R,0402,—,1,Satellite Dessus,[Satellite Dessus (C2).] Decouplage VCC ST25DV au plus pres (DS10925 : 10 nF + 100 nF)
+DESSUS-C3,,DNP ceramique C0G/NP0,0402,—,1,Satellite Dessus,"[Satellite Dessus (C3).] NON MONTE — accord d antenne optionnel en parallele de C_TUN (28,5 pF interne), valeur a fixer a la mesure"
+DESSUS-J1,,Connecteur JST-SH 4pin,JST-SH-4P,—,1,Satellite Dessus,"[Satellite Dessus (J1).] Qwiic vers un des J3-J6/J13 de la Main : 1 GND, 2 3V3_D, 3 SDA, 4 SCL"
+DEVANT-U1,BMP280,,LGA-8,C83291,1,Satellite Devant,"[Satellite Devant, projet hardware/devant/ (ex-U23).] Pression / souffle, I2C 0x76 : SDO -> GND, CSB direct sur VDDIO. Trou d event vers l ouverture de la bouche — docs/datasheets/BMP280.md"
+DEVANT-U2,VEML7700-TT,,OPLGA,C1850416,1,Satellite Devant,"[Satellite Devant (ex-U22).] Lumiere ambiante I2C 0x10. Brochage 1 SCL, 2 VDD, 3 GND, 4 SDA (datasheet + AN figure 2) — docs/datasheets/VEML7700.md"
+"DEVANT-C1,DEVANT-C2,DEVANT-C3",,100nF 16V ceramique X7R,0402,—,3,Satellite Devant,"[Satellite Devant (ex-C30-C32).] Decouplage BMP280 VDD (C1) + VDDIO (C2), VEML7700 (C3)"
+DEVANT-J1,,Connecteur JST-SH 4pin,JST-SH-4P,—,1,Satellite Devant,"[Satellite Devant (J1).] Qwiic vers un des J3-J6/J13 de la Main : 1 GND, 2 3V3_D, 3 SDA, 4 SCL"
+DEVANT-J2,,Connecteur JST-SH 10pin,JST-SH-10P,—,1,Satellite Devant,"[Satellite Devant (J2).] Liaison J7 de la Main (SPI3 yeux), meme ordre, cable broche a broche"
+DEVANT-J3,,Connecteur JST-SH 8pin,JST-SH-8P,—,1,Satellite Devant,"[Satellite Devant (J3).] Liaison J7b de la Main (SPI2 bouche), meme ordre, cable broche a broche"
+"DEVANT-J4,DEVANT-J5,DEVANT-J6",,"Barrette femelle 1x8 2,54 mm",PinSocket_1x08_P2.54mm_Vertical,—,3,Satellite Devant,"[Satellite Devant.] Embases des modules : J4/J5 yeux GC9A01, J6 bouche — brochage PROVISOIRE tant que les modules ne sont pas choisis"
+DEVANT-J7,,Connecteur JST-PH 4pin,JST-PH-4P,—,1,Satellite Devant,"[Satellite Devant (J7).] Liaison J9 de la Main (5V, GND, DATA halo, NC)"
+DEVANT-R1,,0 ohm,0603,—,1,Satellite Devant,"[Satellite Devant (R1).] Retroeclairage des yeux (BLK) sur 3V3_D — provisoire, a fixer avec la fiche du module"
+"DEVANT-LED1,DEVANT-LED2,DEVANT-LED3,DEVANT-LED4,DEVANT-LED5,DEVANT-LED6,DEVANT-LED7,DEVANT-LED8",WS2812B-B/W,LED RGB adressable,LED-SMD 5x5,C2761795,8,Satellite Devant,"[Satellite Devant.] Halo visage, suite de la chaine de la Main (J9). Nombre provisoire (~8-10 externes au budget batterie). Sans condensateur (datasheet V5)"
+—,,GC9A01 module 1.28 rond,Module,—,2,Satellite Devant,Yeux du personnage 240x240 SPI (modules achetes) sur DEVANT-J4/J5 — fiche du module a recuperer
+—,,"Ecran bouche (a choisir, pas e-ink)",Module,—,1,Satellite Devant,Type non choisi (FSD) — SPI2 via J7b / DEVANT-J6
+COTE1-U1,ADS7830IPWR,,TSSOP-16,C161747,1,Satellite Cote 1,"[Satellite Cote 1, projet hardware/cote1/ (ex-U26).] ADC 8 voies 8 bits I2C 0x48 : SL1-SL4 sur CH0-CH3, RV1-RV4 sur CH4-CH7, REFIN = 3V3_D (ratiometrique) — docs/datasheets/ADS7830.md"
+COTE1-C1,,100nF 16V ceramique X7R,0402,—,1,Satellite Cote 1,"[Satellite Cote 1 (ex-C_FP1).] Bypass VDD ADS7830 au plus pres (SBAS302C : 0,1 uF)"
+"COTE1-C2,COTE1-C3",,1uF 10V ceramique X5R,0402,—,2,Satellite Cote 1,[Satellite Cote 1.] C2 : VDD alimente par cable (SBAS302C : 1-10 uF) ; C3 (ex-C_FP2) : REFIN
+"COTE1-SL1,COTE1-SL2,COTE1-SL3,COTE1-SL4",Bourns PTA6043-2015CPB103,,Slide-PTA6043-60mm,C17203852,4,Satellite Cote 1,Fader 60mm 10kOhm lineaire carbon (enigmes) ; pattes 4-7 (cadre) a GND - datasheet docs/datasheets/Bourns-PTA6043.pdf
+"COTE1-RV1,COTE1-RV2,COTE1-RV3,COTE1-RV4",Bourns PDB181-K420K-103B,,Pot-PDB181-17mm-panel,C6251250,4,Satellite Cote 1,Pot rotatif 17mm 10kOhm lineaire knurled axe 6mm (enigmes) - datasheet docs/datasheets/Bourns-PDB181.pdf
+COTE1-J2,,Connecteur JST-SH 6pin,JST-SH-6P,—,1,Satellite Cote 1,"[Satellite Cote 1 (J2).] Liaison J8 de la Main : 3V3_D, GND, SW1, SW2, BTN1, BTN2, cable broche a broche"
+COTE1-J3,,Connecteur JST-SH 4pin,JST-SH-4P,—,1,Satellite Cote 1,"[Satellite Cote 1 (J3).] Qwiic vers un des J3-J6/J13 de la Main : 1 GND, 2 3V3_D, 3 SDA, 4 SCL"
+"COTE1-J4,COTE1-J5,COTE1-J6,COTE1-J7",,Connecteur JST-PH 2pin,JST-PH-2P,—,4,Satellite Cote 1,"[Satellite Cote 1.] Fils vers les organes de facade : J4 SW1 / J5 SW2 (signal, GND), J6 BTN1 / J7 BTN2 (signal, 3V3_D)"
+"SW1,SW2",E-Switch 100SP1T1B4M1QE,,Toggle-100SP-12mm-bushing,—,2,Cote 1,"Toggle SPDT ON-ON panel 12mm (a sourcer DigiKey/Mouser - non LCSC), cable vers COTE1-J4/J5 ; finition or a confirmer - datasheet docs/datasheets/E-Switch-100-series-toggle.pdf"
+"BTN1,BTN2",,Bouton poussoir momentane (a choisir),Panel,—,2,Cote 1,"Montage panneau, cable vers COTE1-J6/J7 : contact vers 3V3_D, ACTIF HAUT (pull-down R23/R24 sur la Main) — reference non choisie"
+COTE3-U1,TMAG5273A1QDBVR,,SOT-23-6,C3716049,1,Satellite Cote 3,"[Satellite Cote 3, projet hardware/cote3/ (ex-U25).] Hall lineaire 3D I2C, variante A1 (+-40/80 mT, 0x35) ; TEST et INT -> GND (MASK_INTB=1) — docs/datasheets/TMAG5273.md"
+COTE3-C1,,100nF 16V ceramique X7R,0402,—,1,Satellite Cote 3,"[Satellite Cote 3 (ex-C33).] Decouplage VCC TMAG5273 (SLYS045C §7.4 : >= 0,01 uF)"
+COTE3-J1,,Connecteur JST-SH 4pin,JST-SH-4P,—,1,Satellite Cote 3,"[Satellite Cote 3 (J1).] Qwiic vers un des J3-J6/J13 de la Main : 1 GND, 2 3V3_D, 3 SDA, 4 SCL"
 LS1,PUI Audio AS04008PO-2-R,Haut-parleur 8 ohms 1 W (2 W max),Module,—,1,Satellite Dessus,Cable depuis J10 de la Main (canal L en pont via FB3/FB4) — docs/datasheets/AS04008PO.md
-"C30,C31,C32,C33",,100nF 16V ceramique X7R,0402,—,4,Satellite,"Decouplage 100 nF au plus pres : BMP280 VDD + VDDIO, VEML7700 (Devant), TMAG5273 (Cote 3) — a repartir dans les projets satellites"
-U26,ADS7830IPWR,,TSSOP-16,C161747,1,Face avant,ADC 8ch 8-bit I2C addr 0x48 - lit SL1-SL4 + RV1-RV4 ratiometrique (REFIN=3V3) - datasheet docs/datasheets/ADS7830.md
-C_FP1,,100nF 16V ceramique,0402,—,1,Face avant,Decouplage ADS7830 VDD
-C_FP2,,1uF 10V ceramique,0402,—,1,Face avant,ADS7830 REFIN (ref externe ratiometrique)
-"SL1,SL2,SL3,SL4",Bourns PTA6043-2015CPB103,,Slide-PTA6043-60mm,C17203852,4,Face avant,Fader 60mm 10kOhm lineaire carbon (enigmes) - datasheet docs/datasheets/Bourns-PTA6043.pdf
-"RV1,RV2,RV3,RV4",Bourns PDB181-K420K-103B,,Pot-PDB181-17mm-panel,C6251250,4,Face avant,Pot rotatif 17mm 10kOhm lineaire knurled axe 6mm (enigmes) - datasheet docs/datasheets/Bourns-PDB181.pdf
-"SW1,SW2",E-Switch 100SP1T1B4M1QE,,Toggle-100SP-12mm-bushing,—,2,Face avant,Toggle SPDT ON-ON panel 12mm (a sourcer DigiKey/Mouser - non LCSC) - datasheet docs/datasheets/E-Switch-100-series-toggle.pdf
 Q1,AO3401A,MOSFET P AO3401A -30V -4A,SOT-23,C15127,1,Main,Load switch rail 5V (marche/arret)
 Q2,2N7002,MOSFET N 2N7002,SOT-23,C8545,1,Main,Inverseur de commande du load switch
 R20,,2.2k 1%,0402,—,1,Main,"Pull-down EN_SYS. 2,2 k (et non 100 k) depuis le 2026-09-27 : courant de contact ~1,5 mA (VSYS 3,4 V) a 2,5 mA (5,5 V) dans SW3 (contacts argent E-Switch RR1), uniquement box allumee ; 14 mW max"
