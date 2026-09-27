@@ -1,12 +1,10 @@
 # Validation et contrôle qualité des cartes — EscapeBox
 
-> **Statut : points de test POSÉS au schéma le 2026-09-27** (22 nouveaux + 4 existants,
-> vérifiés un par un sur leur net). La check-list, elle, reste un squelette.
+> **Points de test : POSÉS au schéma le 2026-09-27** — 22 nouveaux + 4 existants, chacun
+> vérifié sur son net. Ils devaient l'être avant le routage : on ne les ajoute pas après.
 >
-> **Statut initial : squelette** (2026-09-27). Objectif : figer *maintenant* la liste des points de
-> test, parce qu'ils doivent être posés sur le PCB **avant le routage** — on ne les ajoute
-> pas après coup. La check-list, elle, s'étoffera au fil des premiers prototypes : les
-> valeurs mesurées sur la première carte saine deviennent la référence des suivantes.
+> **Check-list : squelette.** Elle s'étoffera au fil des premiers prototypes — les valeurs
+> mesurées sur la première carte saine deviennent la référence des suivantes.
 
 ## 1. À quoi sert quoi
 
