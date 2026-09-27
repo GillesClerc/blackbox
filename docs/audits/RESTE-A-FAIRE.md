@@ -36,6 +36,13 @@
   **avant toute sauvegarde**, relancer l'ERC, puis « Mettre à jour le PCB depuis le
   schéma » (F8) : L1 (5 × 5), J2 (4 broches), J13, J14, R22-R24 nouveaux ; J1 et U12
   disparaissent du PCB Main. Ensuite, commiter la sauvegarde KiCad du 27/09.
+- [x] 🤖 **Validation schéma Main + Côté 2** (27/09, `2026-09-27-validation-main-cote2.md`) :
+  0 fil mal raccordé, 0 court-circuit entre rails ; no_connect corrigés sur `power` (retiré
+  sur U10 D12, ajoutés sur U5 2-4, U6.4, U9 TD) → **recharger `power`** avant l'ERC.
+- [ ] 🤝 **Pastilles UART0** (TP_TXD0 / TP_RXD0 sur les pins 37/36 du module) : prévues par le
+  FSD pour le mode hôte USB et le mode Test, absentes du schéma — à décider.
+- [ ] 🧑 Câble J14 ↔ Côté 2 J2 **broche à broche** (vérifier au montage) ; courant nominal
+  d'un contact JST-PH (~1,1 A sur VBUS) à vérifier sur la datasheet JST.
 - [ ] 🧑 Placement : **antenne en bord de carte**, opposée à la cellule, sans cuivre dessous ;
   15 mm de dégagement en boîtier (H7).
 
