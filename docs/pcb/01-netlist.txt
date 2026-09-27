@@ -346,17 +346,38 @@ NET PCM_VNEG:
 
 ═══ PAM8406 — SORTIES HP ════════════════════════════════════════════════════
 
+Chaine de sortie (2026-09-27, audit A2 corrige) : chaque fil passe par une ferrite
+BLM21PG221SN1D (220R@100MHz, 2 A, LCSC C85840) avant le connecteur J10, comme
+l'exige la datasheet PAM8406 en classe D sans filtre (Application Note 2).
+J10 = JST PH 4 broches : 1 = L+, 2 = L-, 3 = R+, 4 = R-.
+/!\ Sorties en pont : AUCUNE masse commune sur J10, ne jamais relier les "-"
+    entre elles ni a GND.
+Haut-parleur retenu : PUI AS04008PO-2-R, 8 ohm, 1 W nominal / 2 W max
+(docs/datasheets/AS04008PO.md), cable sur le canal L ; canal R en reserve.
+
 NET HP_L+:
-  U3.OUTL+ -> haut-parleur gauche +
+  U3.OUTL+ -> FB3.1
+
+NET SPK_L+:
+  FB3.2 -> J10.1 (haut-parleur +)
 
 NET HP_L-:
-  U3.OUTL- -> haut-parleur gauche -
+  U3.OUTL- -> FB4.1
+
+NET SPK_L-:
+  FB4.2 -> J10.2 (haut-parleur -)
 
 NET HP_R+:
-  U3.OUTR+ -> haut-parleur droite +
+  U3.OUTR+ -> FB5.1
+
+NET SPK_R+:
+  FB5.2 -> J10.3 (reserve 2e HP +)
 
 NET HP_R-:
-  U3.OUTR- -> haut-parleur droite -
+  U3.OUTR- -> FB6.1
+
+NET SPK_R-:
+  FB6.2 -> J10.4 (reserve 2e HP -)
 
 NET PAM_SHDN:
   U3.SHDN -> 3V3_D via 10k (toujours actif)

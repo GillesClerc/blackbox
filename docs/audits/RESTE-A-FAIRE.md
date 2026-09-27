@@ -3,7 +3,7 @@
 > Document vivant, consolidé à partir de `2026-09-23-audit.md` (logiciel) et
 > `2026-09-23-hardware-db.md` (hardware rév. 2.1 + DB). Cocher ici au fil de l'eau ;
 > le détail, les sources datasheet et les calculs sont dans les rapports.
-> Dernière mise à jour : 2026-09-23.
+> Dernière mise à jour : 2026-09-27.
 >
 > **Qui** : 🧑 Gilles (KiCad, décision, action sur un service) · 🤖 Claude (code / doc,
 > sur validation) · 🤝 à trancher ensemble.
@@ -20,10 +20,16 @@
 
 ## 1. Hardware — PCB Main (avant le layout)
 
-### 🔴 Bloquant
-- [ ] 🧑 **C20 (PCM5122)** : le déplacer de CAPM–VNEG vers **VNEG–GND** (rail −3,3 V non découplé).
-- [ ] 🧑 **Connecteur haut-parleur** (HP_L±, HP_R± reliés à rien) + **ferrite sur chaque fil**.
-- [ ] 🧑 **Reporter le patch J3-J6** dans le projet KiCad.
+### 🔴 Bloquant — ✅ soldé le 2026-09-27
+- [x] 🧑 **C20 (PCM5122)** : déplacé sur **VNEG–GND** (vérifié par netlist : C19 reste le
+  condensateur volant CAPP–CAPM).
+- [x] 🤖 **Connecteur haut-parleur** : **J10** (JST PH 4 broches) + **FB3-FB6**
+  (BLM21PG221SN1D, 220 Ω @ 100 MHz, 2 A — `docs/datasheets/BLM21PG.md`) sur la feuille
+  `audio`. Chaîne vérifiée : `U3.OUT → HP_x → FBn → SPK_x → J10.n`.
+  Haut-parleur retenu : **PUI AS04008PO-2-R** 8 Ω (`docs/datasheets/AS04008PO.md`).
+  ⚠ Reste à faire côté KiCad : **ouvrir la feuille `audio` et lancer l'ERC** pour valider
+  le rendu et le placement du bloc (inséré par script, électriquement juste).
+- [x] 🤖 **Patch J3-J6 reporté** dans le projet KiCad (pin 1 = GND, 2 = 3V3_D, vérifié).
 
 ### 🟠 Important
 - [ ] 🧑 **Bouton marche/arrêt** (face Côté 2) — option recommandée : net EN_SYS vers les EN
@@ -31,7 +37,11 @@
   même désactivé). Alternative simple : SYSOFF (mais pas de charge quand la box est éteinte).
 - [ ] 🧑 **Charge LiPo** : TMR → **R 56 kΩ** (timers 5,6-9,3 h) ; **batterie 3 fils avec NTC 10 kΩ**
   sur TS (J2 en 3 broches, retirer R_TS). Option : R_ISET 1,27 kΩ (0,7 A) pour chauffer moins.
-- [ ] 🧑 **D1 SS14 → SS34** (1 A insuffisant avec LEDs + audio) ; revoir l'objectif de 1,9 A sur J9.
+- [ ] 🧑 **D1 SS14 → SS34** ; revoir l'objectif de 1,9 A sur J9. Moins tendu depuis le choix
+  d'un haut-parleur 8 Ω : l'audio ne tire plus que ~0,4 A par canal (au lieu de 1,15-1,44 A
+  en 4 Ω), soit 0,83 A au total avec les LEDs blanches — juste sous le 1 A du SS14. Le SS34
+  reste recommandé (même empreinte SMA, marge, et J9 ferait sauter le SS14).
+  ⚠ Datasheet officielle SS34 encore à récupérer avant de figer la référence.
 - [ ] 🧑 **3V3_D** : AP2112 en **SOT-89-5** (θJA 120 au lieu de 184 °C/W) + cuivre autour.
 - [ ] 🧑 **Carte SD** : 5 × **10 kΩ** vers 3V3_D (CS, CMD, DAT0, DAT1, DAT2).
 - [ ] 🧑 **ICS-43434** : **100 nF** au pied de VDD.
@@ -62,7 +72,8 @@
 - [ ] **Driver MTCH2120** : adresse **0x20** + adressage mémoire 16 bits (DEVID 0x0000, BTNSTA 0x0102)
   — confirmer d'abord l'ordre des octets (figure 3-5 / driver Microchip).
 - [ ] **WS2812** : timings V5 (bit0 0,3/0,9 µs, bit1 0,8/0,6 µs) + 12 LEDs au lieu de 1.
-- [ ] **Volume** plafonné vers −20 dB (gain fixe 24 dB du PAM8406).
+- [ ] **Volume** plafonné vers **−22 dB** (gain fixe 24 dB du PAM8406 + nominal 1 W du
+  haut-parleur 8 Ω retenu — calcul dans `docs/datasheets/PAM8406.md`).
 - [ ] **Extinction sur batterie basse** (VBAT_SENSE, ~3,4-3,5 V : MTCH2120 et ESP32 ≥ 3,0 V).
 - [ ] **WiFi** : reconnexion après 5 échecs + **sync périodique**.
 - [ ] SPI2 partagé : monter la SD avant l'écran bouche ; TMAG5273 MASK_INTB ; MLX90614 avec PEC.
@@ -95,7 +106,11 @@
 
 - [ ] 🧑 Module écran rond GC9A01 retenu (rétroéclairage, régulateur éventuel).
 - [ ] 🧑 Batterie 3000 mAh retenue (NTC, courant max, protection intégrée).
-- [ ] 🧑 Écran bouche et haut-parleur (pas encore choisis) ; carte microSD (consommation).
+- [x] ✅ Haut-parleur : **PUI AS04008PO-2-R** (`docs/datasheets/AS04008PO.md`).
+- [x] ✅ Ferrites de sortie audio : **Murata BLM21PG** (`docs/datasheets/BLM21PG.md`).
+- [ ] 🧑 Écran bouche (pas encore choisi) ; carte microSD (consommation).
+- [ ] 🤖 SS34 (diode 3 A), AO3401A + N-MOS d'inversion (load switch du bouton marche/arrêt)
+  — datasheets à récupérer avant de modifier le schéma.
 
 ## 7. Divers
 
