@@ -17,8 +17,9 @@
   dessinée d'après le catalogue (pastilles 1,4 × 4,2 mm, écart 2,3 mm, sans modèle 3D),
   BOM à jour. 🧑 Reste : recharger la feuille `power` dans KiCad, puis « Mettre à jour le
   PCB depuis le schéma » (F8).
-- [ ] 🧑 **C_B1 (entrée du MT3608) : 10 µF → 22 µF** — la datasheet recommande 22 µF
-  céramique en entrée **et** en sortie (« Capacitor Selection ») ; C_B2 fait déjà 22 µF.
+- [x] 🤖 **C_B1 (entrée du MT3608) : 10 µF → 22 µF 16 V 0805** (27/09) — la datasheet
+  recommande 22 µF céramique en entrée **et** en sortie (« Capacitor Selection »). Schéma
+  et BOM modifiés, même empreinte.
 - [ ] 🧑 **J2 en 4 broches** (H2) — BAT+, BAT−, NTC, **retour NTC sur GND** : aujourd'hui la
   NTC revient sur `VBAT-`, ce qui décale la coupure en surchauffe d'environ +7 °C à 1 A et
   la supprime pendant la récupération d'une décharge profonde.

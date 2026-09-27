@@ -25,7 +25,8 @@ J11,,Slot microSD push-push,TF-PUSH,C91145,1,Main,Carte SD sur SPI2 partage (MIS
 L1,Sunlord SWPA5040S6R8MT,6.8uH,SMD 5x5x4mm,C36411,1,Main,"Inductance boost MT3608 : 6,8 uH +-20 %, Isat 2,9 A, Irms 2,5 A, DCR 56 mOhm max (decision 2026-09-27, docs/datasheets/SWPA5040S.md) — remplace le 22uH 1210"
 "C2,C3,C4,C5",,100nF 16V ceramique,0402,—,4,Main,Decouplage generique (ESP32 C2, micro C3, IMU C4/C5)
 "C_AVDD,C_DVDD,C_CPVDD,C_LDOO,C_EN",,100nF 16V ceramique,0402,—,5,Main,PCM5122 AVDD(pin8)/DVDD(pin28)/CPVDD(pin1)/LDOO(pin26) + filtre RC EN ESP32 (pins corriges 2026-09-11 vs datasheet TI SLAS763C — l'ancien netlist avait tous les numeros de pins PCM5122 faux)
-"C_D2,C_A2,C_B1",,10uF 10V ceramique,0805,—,3,Main,Sorties LDO U5/U6 + entree MT3608
+"C_D2,C_A2",,10uF 10V ceramique,0805,—,2,Main,Sorties LDO U5/U6
+C_B1,,22uF 16V ceramique,0805,—,1,Main,"Entree MT3608 (VSYS) — 22 uF recommandes par la datasheet MT3608, Capacitor Selection ; 16V pour le derating DC bias, comme C_B2"
 "C15,C16,C17",,10uF 16V ceramique,0805,—,3,Main,Bulk decouplage PCM5122 (AVDD/DVDD/CPVDD)
 "C19,C20",,2.2uF 25V ceramique,0603,—,2,Main,Charge pump PCM5122
 "C21,C22",,22nF 50V ceramique,0603,—,2,Main,Filtre RC sortie audio
