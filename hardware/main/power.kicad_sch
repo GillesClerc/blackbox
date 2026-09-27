@@ -4360,16 +4360,6 @@
 	)
 	(wire
 		(pts
-			(xy 176.53 59.69) (xy 185.42 59.69)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "3ea23a48-8441-48c8-b4ca-9e40dd283612")
-	)
-	(wire
-		(pts
 			(xy 232.41 57.15) (xy 220.98 57.15)
 		)
 		(stroke
@@ -10402,5 +10392,95 @@
 				)
 			)
 		)
+	)
+
+	(symbol
+		(lib_id "Device:R")
+		(at 180.34 59.69 90)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "1460de61-88d3-49f4-99fa-e30f49cd263b")
+		(property "Reference" "R_TMR"
+			(at 182.88 58.419999999999995 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "56k"
+			(at 182.88 60.96 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
+			(at 180.34 59.69 90)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 180.34 59.69 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Timer de securite bq24075 : 56k -> t_MAXCHG 5,6-9,3 h (10 x K_TMR x R, K_TMR 36-60 s/kOhm). 1 %."
+			(at 180.34 59.69 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "39f6481b-dd37-4c8c-84ad-8ed33830a164")
+		)
+		(pin "2"
+			(uuid "b817fb18-483c-4b62-b7bf-e3dcbe2fd14c")
+		)
+		(instances
+			(project "blackbox"
+				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/85a32c7c-168b-4c08-8a60-f4e86c1b8173"
+					(reference "R_TMR")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 184.15 59.69) (xy 185.42 59.69)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "5b1289db-0b30-43ad-bd7a-19abf9e444a5")
 	)
 )

@@ -150,7 +150,7 @@ NET SPI2_MOSI:
   J11.DI (microSD Data In — bus partage display + SD)
 
 NET SPI2_SCLK:
-  U1.GPIO12 -> FB1 (ferrite 120R@100MHz) -> CC_SPI2_CLK (10pF vers GND, filtre EMI)
+  U1.GPIO12 -> R13 (22R serie, ex-FB1) -> SPI2_SCLK (C6 10pF vers GND, DNP)
   J7b.SCLK (display bouche CLK)
   J11.CLK (microSD clock — bus partage)
 
@@ -178,7 +178,7 @@ NET SPI3_MOSI:
   J7.MOSI (GC9A01 #1 SDA + GC9A01 #2 SDA, partage)
 
 NET SPI3_SCLK:
-  U1.GPIO39 -> FB2 (ferrite 120R@100MHz) -> CC_SPI3_CLK (10pF vers GND, filtre EMI)
+  U1.GPIO39 -> R14 (22R serie, ex-FB2) -> SPI3_SCLK (C7 10pF vers GND, DNP)
   J7.SCLK (GC9A01 #1 SCL + GC9A01 #2 SCL, partage)
 
 NET SPI3_CS_L:
@@ -252,7 +252,17 @@ NET GND (ajout J11):
   J11.VSS (pin 6), J11.GND (pins 10,11,12,13 — masses mecaniques/blindage
    du slot TF-01A)
 
-(J11 pins 1/DAT2, 8/DAT1, 9/CD non connectees — reserve SDIO et card-detect
+PULL-UPS CARTE SD (ajoutees le 2026-09-27, ESP-IDF sd_pullup_requirements.rst :
+ « en mode SPI ou SD 1 bit, CMD et DAT0-DAT3 doivent etre tirees au plus par 10k,
+ y compris les lignes non reliees a l'hote ») — R15 a R19, 10k vers 3V3_D sur un
+ rail commun, feuille connector :
+  R15 -> SPI2_CS_SD (J11.2, CS/DAT3)
+  R16 -> SPI2_MOSI  (J11.3, CMD/DI)
+  R17 -> SPI2_MISO  (J11.7, DAT0/DO)
+  R18 -> SD_DAT1    (J11.8, DAT1 — net nomme a cette occasion)
+  R19 -> SD_DAT2    (J11.1, DAT2 — net nomme a cette occasion)
+
+(J11 pin 9/CD non connectee — card-detect
  non utilises, pas de GPIO libre pour le CD)
 
 NET BTN1:
@@ -392,7 +402,9 @@ NET BQ_ISET:
   U8.ISET (pin 16) -> R_ISET (890R vers GND -> courant charge 1A)
 
 NET BQ_TMR:
-  U8.TMR (pin 14) -> GND (timers desactives)
+  U8.TMR (pin 14) -> R_TMR 56k 1% -> GND
+  (timers de securite actifs : t_MAXCHG = 10 x K_TMR x R_TMR = 5,6 a 9,3 h,
+   t_PRECHG 34-56 min. Etait TMR->GND = timers desactives avant le 2026-09-27.)
 
 NET BQ_SYSOFF:
   U8.SYSOFF (pin 15) -> GND (systeme ON, NE PAS laisser flottant)

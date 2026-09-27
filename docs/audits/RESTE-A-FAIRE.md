@@ -32,20 +32,33 @@
 - [x] 🤖 **Patch J3-J6 reporté** dans le projet KiCad (pin 1 = GND, 2 = 3V3_D, vérifié).
 
 ### 🟠 Important
-- [ ] 🧑 **Bouton marche/arrêt** (face Côté 2) — option recommandée : net EN_SYS vers les EN
-  de U5/U6/U7 + pull-down 100 kΩ + **MOSFET P sur le rail 5 V** (le boost laisse passer VBAT
-  même désactivé). Alternative simple : SYSOFF (mais pas de charge quand la box est éteinte).
-- [ ] 🧑 **Charge LiPo** : TMR → **R 56 kΩ** (timers 5,6-9,3 h) ; **batterie 3 fils avec NTC 10 kΩ**
-  sur TS (J2 en 3 broches, retirer R_TS). Option : R_ISET 1,27 kΩ (0,7 A) pour chauffer moins.
+- [x] 🤖 **Carte SD : 5 × 10 kΩ vers 3V3_D** — R15-R19 sur un rail commun, feuille
+  `connector` (2026-09-27). DAT1 et DAT2 n'avaient aucun fil : nets nommés `SD_DAT1` /
+  `SD_DAT2` au passage. Source : ESP-IDF `sd_pullup_requirements.rst`.
+- [x] 🤖 **Horloges SPI** : FB1/FB2 remplacées par **R13/R14 = 22 Ω** 0603 (mêmes pins,
+  fils inchangés) + **C6/C7 10 pF en DNP** vers GND sur SPI2_SCLK / SPI3_SCLK (2026-09-27).
+- [x] 🤖 **Charge LiPo — timers** : **R_TMR 56 kΩ** 1 % entre TMR et GND, feuille `power`
+  (2026-09-27) → t_MAXCHG 5,6-9,3 h au lieu de timers désactivés.
+- [x] ⚠️ **ICS-43434 100 nF : constat A4 infondé** — le découplage existait déjà (`C3`,
+  100 nF 0402 sur 3V3_A, à côté de U4), vérifié par netlist sur le fichier du 23/09.
+  Reste une **contrainte de layout** : au plus près des broches 5 et 3, sans via.
+- [ ] 🧑 **Bouton marche/arrêt** (face Côté 2) — **option B retenue** (2026-09-27) : net
+  EN_SYS vers les EN de U5/U6/U7 + pull-down 100 kΩ + **load switch P-MOS sur le rail 5 V**
+  (le boost laisse passer VBAT même désactivé). ⚠️ Il faut **trois** composants, pas un :
+  le P-MOS conduit grille basse alors que EN_SYS est haut quand la box est allumée → il
+  faut un N-MOS d'inversion (BSS138/2N7002) + 100 kΩ grille-source. Candidat P-MOS :
+  **AO3401A** (LCSC C15127, −30 V/−4 A, 60 mΩ à V_GS −4,5 V → ~96 mV et 0,15 W à 1,6 A).
+  Datasheets à récupérer avant de modifier le schéma.
+- [ ] 🧑 **Charge LiPo — NTC** : **batterie 3 fils avec NTC 10 kΩ** sur TS (J2 en 3 broches,
+  retirer R_TS). Proposition pour ne pas dépendre du choix de batterie : J2 en 3 broches +
+  **pad NTC 10 kΩ 0603 en DNP** sur le PCB, qui couvre les batteries 2 et 3 fils.
+  Option : R_ISET 1,27 kΩ (0,7 A) pour chauffer moins.
 - [ ] 🧑 **D1 SS14 → SS34** ; revoir l'objectif de 1,9 A sur J9. Moins tendu depuis le choix
   d'un haut-parleur 8 Ω : l'audio ne tire plus que ~0,4 A par canal (au lieu de 1,15-1,44 A
   en 4 Ω), soit 0,83 A au total avec les LEDs blanches — juste sous le 1 A du SS14. Le SS34
   reste recommandé (même empreinte SMA, marge, et J9 ferait sauter le SS14).
   ⚠ Datasheet officielle SS34 encore à récupérer avant de figer la référence.
 - [ ] 🧑 **3V3_D** : AP2112 en **SOT-89-5** (θJA 120 au lieu de 184 °C/W) + cuivre autour.
-- [ ] 🧑 **Carte SD** : 5 × **10 kΩ** vers 3V3_D (CS, CMD, DAT0, DAT1, DAT2).
-- [ ] 🧑 **ICS-43434** : **100 nF** au pied de VDD.
-- [ ] 🧑 **Horloges SPI** : FB1/FB2 → **22-33 Ω**, 10 pF en DNP.
 
 ### 🟡 Faible
 - [ ] 🧑 LSM6DSOX : ajouter **10 µF** sur VDD.

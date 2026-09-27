@@ -72,7 +72,14 @@ La datasheet avertit qu'un signal trop fort écrête et **peut endommager** le c
 → Plafonner le volume numérique vers −20 dB (0x58) dans `hal_audio_set_volume`, ou
 ajouter un atténuateur résistif avant INL/INR. Ce plafond limite aussi la charge du rail 5 V (A5).
 
-### A4 — ICS-43434 sans condensateur de découplage
+### A4 — ICS-43434 sans condensateur de découplage — ❌ CONSTAT ERRONÉ (corrigé le 2026-09-27)
+
+> **Ce constat était faux.** Le découplage existait déjà : `C3`, 100 nF 0402, entre `3V3_A`
+> et `GND`, placé juste au-dessus de U4 sur la feuille `audio`. Vérifié par netlist sur le
+> fichier du 23/09 lui-même — il y était au moment de l'audit. Ce qui reste valable est la
+> **contrainte de layout** (au plus près des broches 5 et 3, sans via), pas un ajout de
+> composant. Texte d'origine conservé ci-dessous.
+
 La datasheet recommande **fortement** 0,1 µF X7R au plus près des pins 5/3, sans via
 [ICS-43434 §Power Supply Decoupling]. Aucun sur le schéma (3V3_A n'est découplé qu'au
 PCM5122). → Ajouter 100 nF 0402 au pied de U4.

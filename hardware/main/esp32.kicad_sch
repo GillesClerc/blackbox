@@ -3245,7 +3245,7 @@
 		)
 	)
 	(symbol
-		(lib_id "Device:FerriteBead")
+		(lib_id "Device:R")
 		(at 176.53 95.25 90)
 		(unit 1)
 		(body_style 1)
@@ -3256,7 +3256,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "23355dab-0e32-49b8-ba3f-7e113957e902")
-		(property "Reference" "FB2"
+		(property "Reference" "R14"
 			(at 176.4792 87.63 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3266,7 +3266,7 @@
 				)
 			)
 		)
-		(property "Value" "120R@100MHz"
+		(property "Value" "22R"
 			(at 176.4792 90.17 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3276,7 +3276,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Inductor_SMD:L_0603_1608Metric"
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
 			(at 176.53 97.028 90)
 			(hide yes)
 			(show_name no)
@@ -3318,7 +3318,7 @@
 		(instances
 			(project "blackbox"
 				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/14cfff57-6a31-4c05-af76-83111480b025"
-					(reference "FB2")
+					(reference "R14")
 					(unit 1)
 				)
 			)
@@ -3887,7 +3887,7 @@
 		)
 	)
 	(symbol
-		(lib_id "Device:FerriteBead")
+		(lib_id "Device:R")
 		(at 115.57 102.87 90)
 		(unit 1)
 		(body_style 1)
@@ -3897,7 +3897,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "e7d13352-a67e-4a06-9dda-df507b97bc1e")
-		(property "Reference" "FB1"
+		(property "Reference" "R13"
 			(at 114.3 95.25 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3907,7 +3907,7 @@
 				)
 			)
 		)
-		(property "Value" "120R@100MHz"
+		(property "Value" "22R"
 			(at 109.982 98.298 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3917,7 +3917,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Inductor_SMD:L_0603_1608Metric"
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
 			(at 115.57 104.648 90)
 			(hide yes)
 			(show_name no)
@@ -3959,7 +3959,7 @@
 		(instances
 			(project "blackbox"
 				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/14cfff57-6a31-4c05-af76-83111480b025"
-					(reference "FB1")
+					(reference "R13")
 					(unit 1)
 				)
 			)
@@ -4126,6 +4126,261 @@
 					(reference "C1")
 					(unit 1)
 				)
+			)
+		)
+	)
+
+	(global_label "SPI2_SCLK"
+		(shape input)
+		(at 120.65 128.27 90)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "387856e6-44fd-43ab-8889-faf8eed65d6d")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 132.08 128.27 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C")
+		(at 120.65 132.08 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp yes)
+		(uuid "c79a640f-f161-447a-8521-74e56ba3f8d1")
+		(property "Reference" "C6"
+			(at 123.19000000000001 130.81 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "10p"
+			(at 123.19000000000001 133.35000000000002 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
+			(at 120.65 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 120.65 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Provision CEM SPI2_SCLK : non monte (DNP), a evaluer au test CEM"
+			(at 120.65 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "87b75856-9c43-466e-b122-f47c202c7e1f")
+		)
+		(pin "2"
+			(uuid "451feb6d-97bb-4d0b-908c-753c7dc24731")
+		)
+		(instances
+			(project "blackbox"
+				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/14cfff57-6a31-4c05-af76-83111480b025"
+					(reference "C6")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(global_label "GND"
+		(shape input)
+		(at 120.65 135.89000000000001 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "87c35adb-6537-410f-b3c5-38fa2c10e045")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 132.08 135.89000000000001 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+	)
+	(global_label "SPI3_SCLK"
+		(shape input)
+		(at 149.86 128.27 90)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "faf248ba-1106-486e-9b73-10c674d93d8d")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 161.29000000000002 128.27 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C")
+		(at 149.86 132.08 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp yes)
+		(uuid "032084de-7df6-47e2-acb0-9bb97e467f21")
+		(property "Reference" "C7"
+			(at 152.4 130.81 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "10p"
+			(at 152.4 133.35000000000002 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
+			(at 149.86 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 149.86 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Provision CEM SPI3_SCLK : non monte (DNP), a evaluer au test CEM"
+			(at 149.86 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "3e49e5cc-2d26-428f-a040-994c5a2c1f5c")
+		)
+		(pin "2"
+			(uuid "c069a9b4-614a-4aeb-8a35-2cc911d7959c")
+		)
+		(instances
+			(project "blackbox"
+				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/14cfff57-6a31-4c05-af76-83111480b025"
+					(reference "C7")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(global_label "GND"
+		(shape input)
+		(at 149.86 135.89000000000001 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "e594a21c-0608-4322-9b4f-18ce2ce4d895")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 161.29000000000002 135.89000000000001 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
 			)
 		)
 	)
