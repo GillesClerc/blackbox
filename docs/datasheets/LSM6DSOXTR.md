@@ -27,21 +27,23 @@ LGA-14, vue de dessous (cf. section "Pin description" du PDF datasheet pour la d
 | Pin | Nom | Direction | Fonction |
 |---|---|---|---|
 | 1 | SDO / SA0 | I/O | SPI MISO en mode SPI 4-fils ; sélection adresse I²C (0 = `0x6A`, 1 = `0x6B`) |
-| 2 | SDx | I/O | I²C data (sensor hub maître, vers slaves externes) |
-| 3 | SCx | OUT | I²C clock (sensor hub maître) |
-| 4 | NC / VDDIO | PWR | Selon variante, voir PDF — typ. VDDIO (1,62–3,6 V) |
-| 5 | GND | PWR | Masse |
-| 6 | OCS_AUX | IN | Chip-select auxiliaire (interface OIS) |
-| 7 | SDO_AUX | OUT | Données OIS (Optical Image Stabilization) |
-| 8 | SDA / SDI / SDO | I/O | I²C SDA, SPI MOSI/SDI selon mode |
-| 9 | SCL / SPC | IN | I²C SCL ou SPI clock |
-| 10 | CS | IN | Sélection bus : 1 = I²C/MIPI I3C, 0 = SPI |
-| 11 | INT1 | OUT | Interruption programmable 1 (data ready, MLC, FSM, FIFO, wake-up…) |
-| 12 | VDD | PWR | Alimentation principale 1,71–3,6 V |
-| 13 | INT2 | OUT | Interruption programmable 2 |
-| 14 | RES / OCS_AUX2 | — | Réservé / signaux aux |
+| 2 | SDx | I/O | Mode 1 (I²C/SPI seul) : **relier à VDDIO ou GND** ; mode 2 : I²C maître (MSDA) |
+| 3 | SCx | OUT | Mode 1 : **relier à VDDIO ou GND** ; mode 2 : I²C maître (MSCL) |
+| 4 | INT1 | OUT | Interruption programmable 1. Flottante au démarrage (pull-down interne) = I²C et I3C actifs |
+| 5 | VDDIO | PWR | Alimentation des E/S (100 nF recommandé) |
+| 6 | GND | PWR | Masse |
+| 7 | GND | PWR | Masse |
+| 8 | VDD | PWR | Alimentation principale 1,71–3,6 V (100 nF recommandé) |
+| 9 | INT2 | OUT | Interruption programmable 2 / DEN |
+| 10 | OCS_Aux | IN | Mode 1 : **laisser non connectée** (soudée au PCB) |
+| 11 | SDO_Aux | OUT | Mode 1 : relier à VDDIO ou laisser non connectée |
+| 12 | CS | IN | Sélection bus : 1 = I²C/MIPI I3C, 0 = SPI |
+| 13 | SCL / SPC | IN | I²C SCL ou SPI clock |
+| 14 | SDA / SDI / SDO | I/O | I²C SDA, SPI MOSI/SDI selon mode |
 
-> ⚠️ La numérotation et le nom exact des pads dépendent de la marque LGA — vérifier la section "Pin description" et "Package information" du PDF datasheet local avant routage.
+> Brochage relu dans le PDF local le 2026-09-27 (DS12814 rév. 3, p. 8, tableau 2 « Pin
+> description »). L'ancien tableau de cette synthèse était faux de la broche 4 à la 14 ; le
+> schéma KiCad (`imu.kicad_sch`) suit bien le PDF.
 >
 > **Découplage exigé (vérifié 2026-09-27, figure 24 « LSM6DSOX electrical connections in
 > Mode 1 ») : 100 nF sur VDD (C1) et 100 nF sur VDDIO (C2). C'est tout.** La note de pied

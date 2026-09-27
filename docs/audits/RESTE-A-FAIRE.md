@@ -1,157 +1,174 @@
-# Reste à faire — synthèse des audits
+# Reste à faire
 
-> Document vivant, consolidé à partir de `2026-09-23-audit.md` (logiciel) et
-> `2026-09-23-hardware-db.md` (hardware rév. 2.1 + DB). Cocher ici au fil de l'eau ;
-> le détail, les sources datasheet et les calculs sont dans les rapports.
-> Dernière mise à jour : 2026-09-27.
+> Document vivant, **recréé le 2026-09-27** à partir de l'audit complet du jour
+> (`2026-09-27-audit.md`). Les numéros (H1, F2…) renvoient à ce rapport ; le détail des
+> points hérités est dans `2026-09-23-audit.md` et `2026-09-23-hardware-db.md`.
+> Cocher ici au fil de l'eau.
 >
-> **Qui** : 🧑 Gilles (KiCad, décision, action sur un service) · 🤖 Claude (code / doc,
-> sur validation) · 🤝 à trancher ensemble.
-
-## ✅ Déjà fait (pour mémoire)
-
-- Logiciel : 5 critiques corrigés, **validés sur cible** (box ESP32S3-8FF7-D684) :
-  signatures `auth`/`register`, partition `box_nvs`, boot sans DAC/écran, validateur de
-  scénario, preuve d'appairage juste avant `/register`.
-- Hardware : J3-J6 passés en brochage Qwiic (patch `docs/pcb/kicad-patches/connector.kicad_sch`).
-- Docs : 32 datasheets + synthèses `.md`, règle « datasheet d'abord » dans CLAUDE.md, FSD à jour.
+> **Qui** : 🧑 Gilles (KiCad, choix, service externe) · 🤖 Claude (code / doc, sur
+> validation) · 🤝 à trancher ensemble.
 
 ---
 
-## 1. Hardware — PCB Main (avant le layout)
+## 0. Avant de router la carte Main — maintenant
 
-### 🔴 Bloquant — ✅ soldé le 2026-09-27
-- [x] 🧑 **C20 (PCM5122)** : déplacé sur **VNEG–GND** (vérifié par netlist : C19 reste le
-  condensateur volant CAPP–CAPM).
-- [x] 🤖 **Connecteur haut-parleur** : **J10** (JST PH 4 broches) + **FB3-FB6**
-  (BLM21PG221SN1D, 220 Ω @ 100 MHz, 2 A — `docs/datasheets/BLM21PG.md`) sur la feuille
-  `audio`. Chaîne vérifiée : `U3.OUT → HP_x → FBn → SPK_x → J10.n`.
-  Haut-parleur retenu : **PUI AS04008PO-2-R** 8 Ω (`docs/datasheets/AS04008PO.md`).
-  ⚠ Reste à faire côté KiCad : **ouvrir la feuille `audio` et lancer l'ERC** pour valider
-  le rendu et le placement du bloc (inséré par script, électriquement juste).
-- [x] 🤖 **Patch J3-J6 reporté** dans le projet KiCad (pin 1 = GND, 2 = 3V3_D, vérifié).
+- [ ] 🧑 **L1 : choisir l'inductance du boost** (H1) — I_sat ≥ ~2,5 A, 4,7-22 µH, DCR
+  faible ; le 1210 actuel n'a pas de référence. Récupérer sa fiche (🤖 synthèse) puis
+  adapter l'empreinte.
+- [ ] 🧑 **J2 en 4 broches** (H2) — BAT+, BAT−, NTC, **retour NTC sur GND** : aujourd'hui la
+  NTC revient sur `VBAT-`, ce qui décale la coupure en surchauffe d'environ +7 °C à 1 A et
+  la supprime pendant la récupération d'une décharge profonde.
+- [ ] 🧑 **FS8205 (U10) : confirmer le brochage SOT-23-6 à l'œil** dans le PDF (H3) — il a
+  été déduit, jamais lu. Vérifier aussi sur LCSC que C32254 est bien en SOT-23-6.
+- [ ] 🤝 **BTN1/BTN2 (GPIO45/46)** (H4) — les router vers J8.5/J8.6 (Côté 1 : boutons
+  actifs hauts, pull-down externe autorisée, **jamais de pull-up sur GPIO45**) ou les
+  laisser en réserve avec une pastille.
+- [ ] 🤝 **5ᵉ connecteur I2C ou chaînage** (H5) — 5 faces satellites en I2C pour 4
+  connecteurs J3-J6.
+- [ ] 🤝 **Emplacement du port USB-C** (H6) — le FSD le place sur Côté 2, mais J1
+  (vertical) est sur la Main, en face Dessous.
+- [ ] 🧑 Placement : **antenne en bord de carte**, opposée à la cellule, sans cuivre dessous ;
+  15 mm de dégagement en boîtier (H7).
+- [ ] 🧑 Nettoyer les **deux bouts de fil pendants** de la feuille `power` (sur `C_U9` et
+  sur le corps de `R_CS`), relancer l'ERC, puis **commiter la sauvegarde KiCad** du
+  27/09 (annotation des TP en `TP_xxx1`).
 
-### 🟠 Important
-- [x] 🤖 **Carte SD : 5 × 10 kΩ vers 3V3_D** — R15-R19 sur un rail commun, feuille
-  `connector` (2026-09-27). DAT1 et DAT2 n'avaient aucun fil : nets nommés `SD_DAT1` /
-  `SD_DAT2` au passage. Source : ESP-IDF `sd_pullup_requirements.rst`.
-- [x] 🤖 **Horloges SPI** : FB1/FB2 remplacées par **R13/R14 = 22 Ω** 0603 (mêmes pins,
-  fils inchangés) + **C6/C7 10 pF en DNP** vers GND sur SPI2_SCLK / SPI3_SCLK (2026-09-27).
-- [x] 🤖 **Charge LiPo — timers** : **R_TMR 56 kΩ** 1 % entre TMR et GND, feuille `power`
-  (2026-09-27) → t_MAXCHG 5,6-9,3 h au lieu de timers désactivés.
-- [x] ⚠️ **ICS-43434 100 nF : constat A4 infondé** — le découplage existait déjà (`C3`,
-  100 nF 0402 sur 3V3_A, à côté de U4), vérifié par netlist sur le fichier du 23/09.
-  Reste une **contrainte de layout** : au plus près des broches 5 et 3, sans via.
-- [x] 🤖 **Bouton marche/arrêt — option B appliquée** (2026-09-27, feuille `power`) :
-  net `EN_SYS` commun aux EN de U5/U6/U7 (ils étaient câblés sur VSYS), **R20 100 kΩ** en
-  pull-down, **J12** (JST-SH 2 broches) vers l'interrupteur **SW3** (E-Switch 100, contacts
-  or), et load switch **Q1 = AO3401A** sur le rail 5 V commandé par **Q2 = 2N7002** +
-  **R21 100 kΩ**. Le rail est coupé en `5V_BOOST` (D1, C_B2, feedback R_FB_H) et `5V`
-  (12 WS2812, PAM8406, J9). Fiches : `AO3401A.md`, `2N7002.md`.
-  ⚠ À vérifier au proto : la consommation réelle box éteinte (attendu ~10-15 µA).
-- [x] 🤖 **Charge — NTC** (2026-09-27) : **J2 passé en JST-PH 3 broches** (BAT+, BAT−, NTC),
-  net `BAT_TS`, `R_TS` conservée en **DNP**. Batterie retenue : **cellule 18650 3400-3500 mAh**
-  avec NTC collée. R_ISET (890 Ω → 1 A) et R_TMR (56 kΩ) restent valables tels quels pour
-  cette capacité — une seconde cellule aurait imposé de les revoir (charge en 8 h).
-  🧑 Reste : choisir la cellule (LG MJ1 / Samsung 35E / Panasonic NCR18650B) et récupérer
-  sa datasheet ; décider support à ressorts (proto) ou languettes soudées (série).
-- [x] 🤖 **D1 SS14 → SS34** (2026-09-27) : symbole `Diode:SS34` + LCSC **C8678**
-  (Basic part JLCPCB), même empreinte SMA, BOM mise à jour (`docs/datasheets/SS34.md`).
-  ⚠ Le PDF local est celui de Vishay (famille SS32-SS36) : LCSC bloque le téléchargement
-  de la fiche MDD, et les tableaux du PDF Vishay ne sont pas extractibles en texte → pour
-  un chiffre critique, ouvrir la fiche MDD depuis la page LCSC.
-- [ ] 🧑 **Objectif de 1,9 A sur J9 à revoir** (indépendant de la diode) : sur batterie,
-  cela ferait ~3,1 A côté cellule, au-delà du seuil de coupure DW01A (1,6-3,2 A).
-- [x] 🤖 **3V3_D** : U5 passé en **SO-8** (`AP2112M-3.3TRG1`, LCSC C5290219, θJA 114 °C/W)
-  le 2026-09-27 — meilleur que le SOT-89-5 envisagé, et disponible chez LCSC. U6 reste en
-  SOT-25. Symbole créé dans la bibliothèque projet (absent de la bibliothèque KiCad).
-  🧑 Reste à faire au layout : **plan de cuivre généreux** sous et autour de U5.
+## 1. Carte Main — pendant le layout
 
-### 🟡 Faible
-- [x] ❌ **LSM6DSOX 10 µF : constat erroné** (2026-09-27) — la datasheet ST ne demande que
-  100 nF sur VDD et 100 nF sur VDDIO (figure 24), déjà présents (C4/C5). Le « 10 µF » venait
-  d'une affirmation non sourcée de notre synthèse. Rien à faire.
-- [ ] 🧑 USBLC6 au plus près de J1 (layout).
-- [ ] 🧑 **Champs LCSC manquants — À FAIRE PLUS TARD, au moment de la commande** (115
-  références). Décision du 2026-09-27 : le rendement est bien meilleur au moment de passer
-  commande, JLCPCB proposant l'appariement automatique des passifs courants. `tools/check_bom.py`
-  les liste à la demande.
-- [ ] 🧑 E-Switch SW1/SW2 en finition **or**.
-- [x] ✅ **VBAT_SENSE retiré de J8.5** (2026-09-27) : nœud ADC haute impédance (1 M // 1 M)
-  sorti dans un câble, sans usage côté face avant depuis que les analogiques passent par
-  l'ADS7830 en I2C. La broche est marquée non connectée.
-- [ ] 🧑 Mettre à jour la section « power » de `docs/pcb/01-netlist.txt` (en retard sur le KiCad) ;
-  lancer l'**ERC KiCad**.
+- [ ] 🧑 U5 (AP2112M SO-8) : plan de cuivre généreux sous et autour.
+- [ ] 🧑 bq24075 : pad exposé sur GND avec vias thermiques, VSS (broche 8) raccordée aussi.
+- [ ] 🧑 Boost : boucle SW → L1 → D1 → C_B2 → GND la plus courte ; C_B1 au pied de IN.
+- [ ] 🧑 USBLC6 (U12) au plus près de J1.
+- [ ] 🧑 ICS-43434 : C3 au plus près des broches 5 et 3, sans via ; trou du micro à
+  prévoir avec le boîtier (bottom-port en face Dessous, H13).
+- [ ] 🧑 Audio dans un coin, pas de piste numérique dessous, **GND continu (pas de split)**,
+  I2S court et groupé.
+- [ ] 🧑 Piste EN (RC 10 k / 1 µF) courte.
+- [ ] 🧑 Points de test : nom sérigraphié, groupés face Dessous, une masse qui accepte une pince.
+- [ ] 🤝 Options peu coûteuses (H11, H12) : pastilles **TXD0/RXD0**, pull-up externe sur
+  GPIO0, résistance série 1-10 kΩ sur la broche VSYS de J12.
+- [ ] 🧑 DRC (règles JLCPCB), Gerbers, CPL, revue 3D — checklists du FSD §3.2.
 
-## 2. Hardware — satellites (à la conception)
+## 2. BOM et documents hardware
 
-- [ ] 🧑 **MLX90614 : variante 3 V (Bxx)** — vérifier la référence LCSC C58661.
-- [ ] 🧑 **TMAG5273 : variante A1** (adresse 0x35) ; INT → GND.
-- [ ] 🧑 **BMP280** : CSB **directement** sur VDDIO, SDO → GND, 100 nF sur VDD et VDDIO.
-- [ ] 🧑 Satellites en **brochage Qwiic** (1 = GND, 2 = 3V3, 3 = SDA, 4 = SCL).
-- [ ] 🤝 **Énigme « clé USB »** : le mode host exige de fournir le VBUS → à concevoir ou à abandonner
-  avant le routage de Côté 2.
-- [ ] 🧑 Au proto : **mesurer la capacité / le temps de montée du bus I2C** (≤ 1000 ns à 100 kHz,
-  soit ≤ ~250 pF avec 4,7 kΩ) ; passer en 2,2 kΩ si besoin.
+- [ ] 🤖 **Corriger la BOM de référence** `hardware/main/BOM/02-bom-lcsc.csv` (H8) :
+  **U11 = LSM6DSOXTR (pas un PN532)**, doublon U21 à retirer, **R1/R2 = 470 Ω, C21/C22 =
+  2,2 nF NP0/C0G**, TMAG5273**A1**, U10 en SOT-23-6, bouche « non choisie » (pas SSD1680),
+  notes J7b/J8/J9/U3/L1/R_PG/R_CHG, LCSC de D1/Q1/Q2 dans la bonne colonne, TP en
+  `TP_xxx1`, haut-parleur ajouté.
+- [ ] 🤖 **Une seule BOM** : supprimer `docs/pcb/02-bom-lcsc.csv` (périmée) ou la générer.
+- [ ] 🤖 `check_bom.py` : comparer aussi la **MPN** et les valeurs des **lignes à
+  plusieurs références** (il n'a vu ni U11 ni le filtre audio).
+- [ ] 🤖 `docs/pcb/01-netlist.txt` : régénérer depuis `kicad_netlist.py` (ou l'archiver) —
+  en retard sur KiCad (power, J8.5, J10/J12/Q1/Q2).
+- [ ] 🤖 `docs/pcb/03-validation-qualite.md` : noms des TP → `TP_xxx1`.
+- [ ] 🤝 Archiver `docs/schematics/*.txt` (schémas ASCII d'avant KiCad : ILI9488, PN532, AS5600…).
+- [ ] 🧑 Champs LCSC manquants (~100 références) — **au moment de la commande**, décision du
+  27/09 (appariement automatique JLCPCB des passifs courants).
+- [ ] 🧑 E-Switch SW1/SW2/SW3 en finition **or**.
 
-## 3. Firmware (🤖, sur validation)
+## 3. Satellites (à la conception)
 
-- [ ] **Driver MTCH2120** : adresse **0x20** + adressage mémoire 16 bits (DEVID 0x0000, BTNSTA 0x0102)
-  — confirmer d'abord l'ordre des octets (figure 3-5 / driver Microchip).
-- [ ] **WS2812** : timings V5 (bit0 0,3/0,9 µs, bit1 0,8/0,6 µs) + 12 LEDs au lieu de 1.
-- [ ] **Volume** plafonné vers **−22 dB** (gain fixe 24 dB du PAM8406 + nominal 1 W du
-  haut-parleur 8 Ω retenu — calcul dans `docs/datasheets/PAM8406.md`).
-- [ ] **Extinction sur batterie basse** (VBAT_SENSE, ~3,4-3,5 V : MTCH2120 et ESP32 ≥ 3,0 V).
+- [ ] 🧑 **MLX90614 variante Bxx (3 V)** — vérifier la référence LCSC C58661 ; 100 nF sur VDD.
+- [ ] 🧑 **TMAG5273A1** (0x35) ; INT → GND (+ MASK_INTB côté firmware) ; ≥ 10 nF sur VCC.
+- [ ] 🧑 **BMP280** : CSB **directement** sur VDDIO, SDO → GND (0x76), 100 nF sur VDD et VDDIO.
+- [ ] 🧑 Brochage **Qwiic** sur chaque satellite (1 = GND, 2 = 3V3, 3 = SDA, 4 = SCL).
+- [ ] 🤝 **Énigme « clé USB »** : le mode host exige de fournir le VBUS → à concevoir ou
+  abandonner, lié à H6.
+- [ ] 🧑 Satellite Dessus : antenne NFC ST25DV (boucle, zone de garde) ; reprendre `nfc.kicad_sch`.
+- [ ] 🧑 Au proto : **temps de montée du bus I2C** ≤ 1000 ns à 100 kHz (≤ ~250 pF avec
+  4,7 kΩ) ; passer en 2,2 kΩ si besoin.
+
+## 4. Firmware (🤖, sur validation)
+
+Adaptation au hardware actuel :
+- [ ] **LEDs** (F1) : 12 LEDs + chaîne J9, timings V5 (0,3/0,9 et 0,8/0,6 µs),
+  **plafond global de luminosité** (budget DW01A), mutex autour de `hal_leds_show`.
+- [ ] **Audio** (F2) : plafond de volume vers **−22 dB** (ou gain analogique −6 dB +
+  plafond réduit), courbe de volume utilisable, **mixage mono sur L** (un seul haut-parleur).
+- [ ] **Batterie basse** (F3) : lecture VBAT_SENSE (ADC1_CH2), extinction propre vers
+  3,4-3,5 V.
+- [ ] **Bus I2C** (F4) : tout à 100 kHz (`hal_imu` est à 400 kHz) ; aucun
+  `ESP_ERROR_CHECK` sur un accès I2C dans `hal_imu` et `hal_light` (satellite absent ⇒
+  reboot en boucle aujourd'hui).
+- [ ] **MTCH2120** (F5) : adresse 0x20, adressage mémoire 16 bits (DEVID 0x0000, BTNSTA
+  0x0102) — confirmer d'abord l'ordre des octets (figure 3-5 / driver Microchip).
+- [ ] **Drivers à écrire** : LSM6DSOX sur la Main (brancher `hal_imu`, fin de l'inclinaison
+  simulée), TMAG5273 (MASK_INTB), MLX90614 (SMBus + PEC), BMP280, ADS7830, ST25DV
+  (remplace `hal_nfc` PN532), micro ICS-43434, écran bouche (quand il sera choisi).
+- [ ] Boutons GPIO45/46 (F6) — selon la décision H4.
+- [ ] **PCM5122 : lire le verrouillage PLL au registre 4, bit 4 (0 = verrouillé)** (F7) —
+  le code lit le registre réservé 0x05 ; compléter `pcm5122-registers.md`.
+- [ ] `yaml2json.py` : ajouter `eye_blink`/`eye_emotion`/`eye_look`, retirer `servo` (F8).
+- [ ] SPI2 partagé : monter la SD avant tout échange avec l'écran bouche (CS écran haut).
+
+Hérités du 23/09 :
 - [ ] **WiFi** : reconnexion après 5 échecs + **sync périodique**.
-- [ ] SPI2 partagé : monter la SD avant l'écran bouche ; TMAG5273 MASK_INTB ; MLX90614 avec PEC.
-- [ ] Raccourcis debug (touches maintenues 9/10/11) derrière le mode dev ; borne sur `count` (flash LED).
-- [ ] BLE : LE Secure Connections (`sm_sc = 1`) + fermer la fenêtre après `wifi_ok`.
-- [ ] OTA (F6) : `esp_ota_mark_app_valid_cancel_rollback()`, vérification sha256/signature,
-  retirer le MP3 embarqué (1 Mo, déjà sur SD).
-- [ ] Hygiène : licences cJSON/NimBLE dans `THIRD_PARTY_LICENSES`, commiter `dependencies.lock`,
-  code mort (LVGL, hal_imu/nfc/light, `/components` vide).
+- [ ] **BLE** : LE Secure Connections (`sm_sc = 1`) + fermer la fenêtre après `wifi_ok`.
+- [ ] **F5 E2E** : parcours navigateur complet (Chrome → `/devices/add`) à valider.
+- [ ] **OTA (F6)** : `esp_ota_mark_app_valid_cancel_rollback()`, vérification
+  sha256/signature de l'URL, retrait du MP3 embarqué (1 Mo ; binaire à 2,63 Mo pour 3 Mo).
+- [ ] Raccourcis debug (touches 9/10/11 maintenues) derrière le mode dev ; borne sur
+  `count` (`action_flash`) ; `voice_stop_wait` qui peut expirer (buffer réalloué).
+- [ ] Hygiène : licences cJSON/NimBLE dans `THIRD_PARTY_LICENSES`, commiter
+  `dependencies.lock`, code mort (LVGL, `hal_nfc`, `/components` vide), coredump (option).
+- [ ] **Auto-test firmware** (scan I2C, SD, écrans, audio en boucle acoustique, LEDs,
+  IMU, ADC) — remplace l'essentiel des mesures manuelles de la validation.
 
-## 4. Web & base de données
+## 5. Web et base de données
 
 - [ ] 🤝 **Licences liées à l'utilisateur plutôt qu'à la box** — à trancher **avant Stripe**.
-- [ ] 🤖 **Migrations SQL versionnées** (`supabase/migrations/`) — 🧑 Gilles passe les requêtes
-  d'extraction du rapport hardware-db dans Studio et colle le résultat.
-- [ ] 🤖 `firmware_releases.sha256` NOT NULL + UNIQUE(version, channel) ; `used`/`active` NOT NULL ;
-  index `devices.owner_id` ; `/register` : 409 au lieu de 500 sur doublon.
+- [ ] 🤖 **Migrations SQL versionnées** (`supabase/migrations/`) — 🧑 passer dans Studio
+  les requêtes d'extraction du rapport `2026-09-23-hardware-db.md` et coller le résultat.
+- [ ] 🤖 `firmware_releases.sha256` NOT NULL + UNIQUE(version, channel) ; `used`/`active`
+  NOT NULL ; index `devices.owner_id` ; `/register` : 409 au lieu de 500 sur doublon (23505).
 - [ ] 🤖 Version de scénario en un seul endroit (le serveur lit le manifest).
-- [ ] 🤖 Clé JWT dérivée (`HKDF(master, "escapebox:jwt")`) + `iss`/`aud`.
-- [ ] 🤖 Rate limiting `/api/box/*` (FSD WB-11 : 10 req/min par box).
+- [ ] 🤖 Clé JWT dérivée (`HKDF(master, "escapebox:jwt")`) + `iss`/`aud` ; révocation (WB-12).
+- [ ] 🤖 Rate limiting `/api/box/*` (WB-11 : 10 req/min par box).
 - [ ] 🤖 `shadcn` en devDependencies + `npm audit fix` ; en-têtes de sécurité (CSP, HSTS).
 - [ ] 🤖 CI : tests host, crypto, `tsc`/`lint`, validation des scénarios.
 
-## 5. Sécurité produit (avant la vente)
+## 6. Sécurité produit (avant la vente)
 
 - [ ] 🤝 Secure Boot + flash encryption (secret de la box en clair aujourd'hui).
-- [ ] 🤝 Chiffrement / liaison des packages de scénario à la box (FSD R-04) — choix business.
+- [ ] 🤝 Signature des scénarios et du firmware (FW-02, WB-05) ; chiffrement/liaison des
+  packages à la box (R-04) — choix business.
 
-## 6. Datasheets encore manquantes
+## 7. Datasheets manquantes
 
-- [ ] 🧑 Module écran rond GC9A01 retenu (rétroéclairage, régulateur éventuel).
-- [ ] 🧑 Batterie 3000 mAh retenue (NTC, courant max, protection intégrée).
-- [x] ✅ Haut-parleur : **PUI AS04008PO-2-R** (`docs/datasheets/AS04008PO.md`).
-- [x] ✅ Ferrites de sortie audio : **Murata BLM21PG** (`docs/datasheets/BLM21PG.md`).
-- [ ] 🧑 Écran bouche (pas encore choisi) ; carte microSD (consommation).
-- [x] ✅ SS34 (`SS34.md`), AO3401A (`AO3401A.md`), 2N7002 (`2N7002.md`) — récupérées.
+- [ ] 🧑 **Inductance L1** (dès le choix, H1).
+- [ ] 🧑 **Cellule 18650** retenue (LG MJ1 / Samsung 35E / Panasonic NCR18650B) : courant
+  max, **température de charge max** (souvent 45 °C, contre 50 °C pour la fenêtre du
+  bq24075, H14) ; décider support à ressorts (proto) ou languettes (série).
+- [ ] 🧑 **NTC** collée sur la cellule (courbe B, R25).
+- [ ] 🧑 **Module écran rond GC9A01** (rétroéclairage, régulateur éventuel, courant sur 3V3_D).
+- [ ] 🧑 Écran bouche (pas encore choisi) ; carte microSD (consommation, découplage au slot).
 
-## 6b. Validation et contrôle qualité (nouveau, 2026-09-27)
+## 8. Validation et contrôle qualité
 
-Document : **`docs/pcb/03-validation-qualite.md`** (squelette).
-
-- [x] ✅ **Liste des points de test validée et posée au schéma** (2026-09-27) : 22 nouveaux
-  (10 alimentation, 6 diagnostic, 6 signaux) + 4 existants = **26 au total**, vérifiés
-  22/22 sur leur net. Nets `BQ_ISET`, `BQ_CHG` et `BOOST_FB` nommés au passage.
-- [ ] 🧑 Au routage : sérigraphier le nom de chaque pastille, les grouper face Dessous,
-  prévoir au moins une masse acceptant une pince.
-- [ ] 🤖 **Auto-test firmware** (scan I2C, SD, écrans, audio en boucle acoustique, LEDs,
-  IMU, ADC) — remplace l'essentiel des mesures manuelles de la phase 4.
+Document : `docs/pcb/03-validation-qualite.md`.
 - [ ] 🧑 Relever les valeurs de référence sur la première carte saine.
+- [ ] 🧑 Mesures ciblées par l'audit : rendement réel du MT3608 ; **charge crête** (LEDs
+  blanches + audio + WiFi, batterie basse) sans coupure DW01A ; rail 5 V ≤ 5,3 V avec
+  plusieurs chargeurs (H9) ; charge sur un port PC 500 mA (H10) ; consommation éteinte
+  ≤ 20 µA ; thermique de U5 et du bq24075 sous USB en boîtier fermé.
 
-## 7. Divers
+## 9. Divers
 
 - [ ] 🧑 Réassigner la box de test du compte `qwe@qwe.com` à ton vrai compte (SQL dans Studio,
   ou supprimer la ligne `devices` puis refaire l'appairage BLE depuis `/devices/add`).
+- [ ] 🧑 Replanifier les jalons M2/M3 du FSD §3.0 (dates dépassées).
+
+---
+
+## ✅ Soldé récemment (pour mémoire)
+
+- **Hardware Main (27/09)** : C20 sur VNEG–GND, J10 + FB3-FB6, J3-J6 en Qwiic, pull-ups SD,
+  R13/R14 22 Ω sur les horloges SPI, R_TMR 56 k, NTC sur TS (R_TS en DNP), marche/arrêt
+  (EN_SYS + load switch Q1/Q2), D1 SS34, U5 en SO-8, VBAT_SENSE retiré de J8.5,
+  26 points de test, 53 erreurs ERC traitées. Constats A4 (ICS-43434) et LSM6DSOX 10 µF
+  reconnus erronés. **Tous vérifiés sur la netlist le 27/09.**
+- **Logiciel (23/09)** : signatures `auth`/`register`, partition `box_nvs`, boot sans
+  DAC/écran, validateur de scénario (26 cas), preuve d'appairage — validés sur cible.
+- **Docs (27/09)** : FSD nettoyé (v0.3), synthèse `LSM6DSOXTR.md` corrigée (brochage),
+  CLAUDE.md pointé vers l'audit du 27/09.
