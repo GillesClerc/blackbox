@@ -57,12 +57,15 @@
 
 ## 2. BOM et documents hardware
 
-- [ ] 🤖 **Corriger la BOM de référence** `hardware/main/BOM/02-bom-lcsc.csv` (H8) :
-  **U11 = LSM6DSOXTR (pas un PN532)**, doublon U21 à retirer, **R1/R2 = 470 Ω, C21/C22 =
-  2,2 nF NP0/C0G**, TMAG5273**A1**, U10 en SOT-23-6, bouche « non choisie » (pas SSD1680),
-  notes J7b/J8/J9/U3/L1/R_PG/R_CHG, LCSC de D1/Q1/Q2 dans la bonne colonne, TP en
-  `TP_xxx1`, haut-parleur ajouté.
-- [ ] 🤖 **Une seule BOM** : supprimer `docs/pcb/02-bom-lcsc.csv` (périmée) ou la générer.
+- [x] 🤖 **BOM de référence corrigée** (H8, 2026-09-27) : U11 = LSM6DSOXTR, doublon U21
+  retiré, R1/R2 470 Ω, C21/C22 2,2 nF C0G, TMAG5273A1 (C3716049), U10 SOT-23-6, bouche
+  « à choisir », notes J7b/J8/J9/U3/R_PG, LCSC de D1/Q1/Q2 dans la bonne colonne ; ajoutés :
+  CAP1298 (COTE2-U2), ST25DV (U27, absent), haut-parleur (LS1) ; découplage satellites 5 × 100 nF.
+- [x] 🤖 **Une seule BOM** : `docs/pcb/02-bom-lcsc.csv` supprimée (2026-09-27).
+- [ ] 🧑 **FS8205 (U10) : C32254 à 0 en stock chez JLCPCB** (27/09). Équivalents SOT-23-6 en
+  stock : FS8205A TECH PUBLIC C2830320 (55 501), FS8205A FUXINSEMI C908265 (22 508), 8205A
+  JSMSEMI C2762931… — **brochage à confirmer sur leur datasheet** (dessin non lisible à
+  l'extraction) avant de changer la référence.
 - [ ] 🤖 `check_bom.py` : comparer aussi la **MPN** et les valeurs des **lignes à
   plusieurs références** (il n'a vu ni U11 ni le filtre audio).
 - [ ] 🤖 `docs/pcb/01-netlist.txt` : régénérer depuis `kicad_netlist.py` (ou l'archiver) —
@@ -80,7 +83,7 @@ Projets KiCad créés le 2026-09-27 : `hardware/devant/`, `dessus/`, `cote1/`, `
 - [x] 🤖 **Côté 2 — partie USB dessinée** : J1 USB-C, U1 USBLC6 (sur les lignes brutes, côté
   connecteur), R1/R2 CC 5,1 kΩ, J2 vers J14 de la Main — netlist vérifiée.
 - [ ] 🤝 Dessin face par face (🤖 schéma + vérification netlist, 🧑 mise en page + ERC) :
-  Côté 2 (contrôleur tactile 12 canaux, SW3), Côté 3 (TMAG5273, électrode de proximité), Côté 1 (ADS7830, faders, pots,
+  Côté 2 (CAP1298, SW3), Côté 3 (TMAG5273), Côté 1 (ADS7830, faders, pots,
   toggles, boutons), Dessus (ST25DV + antenne, base `hardware/main/.history/nfc.kicad_sch`),
   Devant (écrans, BMP280, VEML7700 — bloqué par la fiche du module GC9A01 et le choix de
   l'écran bouche).
@@ -88,9 +91,14 @@ Projets KiCad créés le 2026-09-27 : `hardware/devant/`, `dessus/`, `cote1/`, `
   (2026-09-27) — brochages conformes, mais les deux composants sont remis en cause (ci-dessous).
 - [x] 🤝 **MLX90614 retiré du produit** (2026-09-27) : trop cher (variante 3 V 6,6-8,9 $),
   bridait le bus à 100 kHz. Côté 3 = TMAG5273 + électrode de proximité capacitive.
-- [ ] 🤝 **Contrôleur tactile Côté 2 à rechoisir** : MTCH2120 sans stock JLCPCB, MPR121 en
-  fin de vie (2019), CAP1298 limité à 8 canaux, CAP1214 introuvable. Besoin : 12 canaux
-  (clavier numérique) + proximité pour Côté 3.
+- [x] 🤝 **Contrôleur tactile Côté 2 = CAP1298** (2026-09-27, SOIC-14, C2652072) : moins cher
+  et disponible. Écartés : MTCH2120 (0 stock), MPR121 (fin de vie), CAP1214, SC12B, deux
+  CAP12xx (0x28 fixe commune), MCU dédié (second firmware). Comparatif : synthèses
+  CAP1298/CAP1296/SC12B/AT42QT2120/ATtiny1616 dans `docs/datasheets/`.
+- [ ] 🧑 Importer le symbole et l'empreinte **CAP1298-1-SL-TR (C2652072)** par LCSC manager ;
+  supprimer si tu veux les imports MLX90614 / MTCH2120 (non commités).
+- [ ] 🤝 **« Approche ta main » (Côté 3) en suspens** : pas de second CAP12xx possible
+  (0x28). Options : une entrée du CAP1298 de Côté 2 en proximité, multiplexeur I2C, ou abandon.
 - [ ] 🤝 Modèles 3D des satellites : les empreintes LCSC pointent vers
   `${KIPRJMOD}/libs/lcsc/3dmodels`, donc introuvables depuis `hardware/<face>/` → déplacer
   les bibliothèques dans `hardware/libs/` (variable de chemin commune) le jour où l'on veut
@@ -101,7 +109,7 @@ Projets KiCad créés le 2026-09-27 : `hardware/devant/`, `dessus/`, `cote1/`, `
 - [ ] 🧑 Brochage **Qwiic** sur chaque satellite (1 = GND, 2 = 3V3, 3 = SDA, 4 = SCL).
 - [ ] 🧑 **Satellite Côté 2** : J1 USB-C + USBLC6 **au plus près du port** + CC 5,1 kΩ,
   connecteur vers J14 (JST-PH 6, fils de section adaptée à ~1,1 A sur VBUS, D+/D− torsadés),
-  interrupteur SW3 (J12), contrôleur tactile (I2C, à rechoisir).
+  interrupteur SW3 (J12), CAP1298 (I2C 0x28, ALERT# à GND, 100 nF).
 - [ ] 🤝 **Énigme « clé USB » (mode hôte) — place réservée, pas câblée** : sur le satellite,
   commutateur de VBUS limité en courant alimenté par `5V_HOST` (R22 à monter), protection
   contre la réinjection dans le chargeur, CC côté source, commande par expander I2C (plus de
@@ -123,8 +131,8 @@ Adaptation au hardware actuel :
 - [ ] **Bus I2C** (F4) : tout à 100 kHz (`hal_imu` est à 400 kHz) ; aucun
   `ESP_ERROR_CHECK` sur un accès I2C dans `hal_imu` et `hal_light` (satellite absent ⇒
   reboot en boucle aujourd'hui).
-- [ ] **MTCH2120** (F5) : adresse 0x20, adressage mémoire 16 bits (DEVID 0x0000, BTNSTA
-  0x0102) — confirmer d'abord l'ordre des octets (figure 3-5 / driver Microchip).
+- [ ] **Pilote CAP1298** (F5, remplace le pilote MTCH2120 devenu obsolète) : adresse 0x28,
+  registres 8 bits, scrutation (ALERT# non remontée) — garder l'API commune de `hal_touch`.
 - [ ] **Drivers à écrire** : LSM6DSOX sur la Main (brancher `hal_imu`, fin de l'inclinaison
   simulée), TMAG5273 (MASK_INTB), BMP280, ADS7830, ST25DV
   (remplace `hal_nfc` PN532), micro ICS-43434, écran bouche (quand il sera choisi).

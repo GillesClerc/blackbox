@@ -14,8 +14,12 @@
 >   AGND/PGND levée. **Ce qui reste à faire vit dans `docs/audits/RESTE-A-FAIRE.md`**, pas ici.
 > - **0.3 (2026-09-27, suite)** — **MLX90614 retiré du produit** (variante 3 V à 6,6-8,9 $ pièce chez
 >   JLCPCB, pilote à écrire, bus I2C bridé à 100 kHz, adresse 0x5A). Côté 3 = TMAG5273
->   + électrode de proximité capacitive (« approche ta main »). Contrôleur tactile de Côté 2 en
->   cours de réévaluation (MTCH2120 introuvable chez JLCPCB, MPR121 en fin de vie).
+>   + électrode de proximité capacitive (« approche ta main »).
+> - **0.3 (2026-09-27, suite)** — **contrôleur tactile de Côté 2 = CAP1298** (Microchip, 8 canaux,
+>   SOIC-14, 1,61 $, en stock JLCPCB) à la place du MTCH2120 (aucun stock JLCPCB). Écartés : MPR121
+>   (fin de vie), CAP1214 (introuvable), SC12B, deux CAP12xx (adresse fixe 0x28 commune), MCU
+>   dédié (ATtiny1616 : second firmware). Clavier ramené à 8 touches (7 + garde). Proximité de
+>   Côté 3 en suspens (pas de second CAP12xx possible).
 > - 0.2 (2026-09-23) — corrections issues des datasheets (audit hardware + DB).
 > - 0.1 (mai 2026) — première version.
 >
@@ -171,8 +175,8 @@ Scores et stats remontés à la prochaine synchro
 | Adresse | Composant | Fonction | PCB |
 |---|---|---|---|
 | 0x10 | VEML7700 | Lumière ambiante | Satellite Devant |
-| 0x20 | MTCH2120 | Capacitif 12 canaux (keypad + zones touch) — cible PCB Phase 2. **ADD_SEL = GND → 0x20** (0x21 si VDD), vérifié datasheet DS40002613 ; adressage mémoire 16 bits | Satellite Côté 2 |
-| 0x5A | MPR121 | Capacitif 12 canaux (breakout Phase 1, même rôle que MTCH2120) | Proto breadboard |
+| 0x28 | CAP1298 | Capacitif 8 canaux (clavier + zones touch ; CS5 = garde SG si utilisée → 7 touches) — cible PCB Phase 2. **Adresse fixe 0x28** [CAP1298 §3.2.2] : un seul CAP12xx sur le bus. ALERT# non remontée (Qwiic 4 fils) → scrutation | Satellite Côté 2 |
+| 0x5A | MPR121 | Capacitif 12 canaux (breakout Phase 1, même rôle que le CAP1298 ; fin de vie depuis 2019) | Proto breadboard |
 | 0x53 / 0x57 | ST25DV04KC-IE6S3 | Tag NFC dynamique — 0x53 mémoire utilisateur/registres dynamiques, 0x57 configuration système (vérifié datasheet) | Satellite Dessus |
 | 0x4C | PCM5122PW | DAC audio stéréo (I2C contrôle) | Main |
 | 0x6A | LSM6DSOXTR | Accéléromètre + gyroscope 6 axes + MLC | **Main** (soudé, feuille `imu`) |
@@ -251,7 +255,7 @@ Scores et stats remontés à la prochaine synchro
 | GPIO47 | SPI2_CS_SD | Carte microSD (chip select) | Distinct du CS display bouche (GPIO10) |
 | GPIO48 | WS2812 DATA | Chaîne LEDs RGB | RMT driver |
 
-> Deux boutons poussoirs mécaniques (Côté 1) sont câblés sur GPIO45/46 via J8 ; d'autres boutons peuvent passer par les 12 canaux du MTCH2120 (capacitif, fonctionne aussi avec boutons conducteurs).
+> Deux boutons poussoirs mécaniques (Côté 1) sont câblés sur GPIO45/46 via J8 ; d'autres boutons peuvent passer par les 8 canaux du CAP1298 (capacitif, fonctionne aussi avec boutons conducteurs).
 >
 > **Budget GPIO saturé** : à ce stade, GPIO1-21 et GPIO38-48 sont tous alloués (plus aucune pin libre). GPIO0 réservé strapping/boot, GPIO26-37 indisponibles (flash/PSRAM octal), GPIO43-44 réservées UART0 debug.
 
@@ -315,7 +319,7 @@ bq24075 (U8) — chargeur 1 A + power path DPPM, entrée limitée à 1,07 A (R_I
 >   la cellule. Jamais de soudure au fer sur une cellule : languettes ou support.
 > - **NTC** : J2 en **4 broches** (2026-09-27) — le retour de la NTC va sur **GND** (J2.4) et non sur BAT− : la TS mesure par rapport à VSS, et BAT− en est séparé par les MOSFET du FS8205 (56-74 mV à 1 A, soit ≈ +7 °C d'erreur sur la coupure en surchauffe). Harnais de cellule à 4 fils.
 > - Protection DW01A + FS8205 : surcharge 4,30 V, décharge profonde 2,40 V, **surintensité ≈ 1,6-3,2 A** → plafond du courant crête total (plafonds firmware de luminosité et de volume, mesure au proto).
-> - 3V3_D : **U5 = AP2112M-3.3 en SO-8** (θJA 114 °C/W au lieu de 184 °C/W en SOT-25), 600 mA garantis, l'ESP32 en exige ≥ 0,5 A ; plan de cuivre sous U5 au layout. Charges du rail : ESP32 ≥ 3,0 V, MTCH2120 ≥ 3,0 V, GC9A01A ≤ 3,3 V → **extinction firmware sur VBAT basse** (~3,4-3,5 V).
+> - 3V3_D : **U5 = AP2112M-3.3 en SO-8** (θJA 114 °C/W au lieu de 184 °C/W en SOT-25), 600 mA garantis, l'ESP32 en exige ≥ 0,5 A ; plan de cuivre sous U5 au layout. Charges du rail : ESP32 ≥ 3,0 V, CAP1298 ≥ 3,0 V, GC9A01A ≤ 3,3 V → **extinction firmware sur VBAT basse** (~3,4-3,5 V).
 > - Rail 5 V (MT3608, 5,0-5,2 V) : 12 WS2812B = 432 mA en blanc (+ 7,2 mA au repos), PAM8406 ≈ 0,4 A par canal au maximum sur le haut-parleur 8 Ω, plus le halo externe sur J9 (pas de budget fixé : c'est le plafond firmware de luminosité qui borne l'ensemble). **D1 = SS34** (3 A). **L1 = Sunlord SWPA5040S6R8MT** (6,8 µH ±20 %, Isat 2,9 A, 5 × 5 mm ; crête calculée ≈ 1,9 A — `docs/datasheets/SWPA5040S.md`).
 
 #### 2.2.2c Assignation des faces — Cube 150×150×150mm *(dimension à valider au proto boîtier — la vision mentionne 120mm)*
@@ -327,8 +331,8 @@ bq24075 (U8) — chargeur 1 A + power path DPPM, entrée limitée à 1,07 A (R_I
 | **Devant** | Visage du personnage | 2× GC9A01 1.3" ronds (yeux) + display bouche (TBD, pas e-ink) + WS2812 rétro + BMP280 souffle (souffler sur la bouche) + VEML7700 lumière (éclairer les yeux → réaction du personnage) |
 | **Dessus** | Voix + NFC | Haut-parleur (câblé depuis PAM8406 sur Main) + ST25DV04KC-IE6S3 NFC (tap téléphone) |
 | **Côté 1** | Panneau de contrôle | ADS7830 + 4 faders + 4 potentiomètres rotatifs, toggles SW1/SW2, boutons poussoir |
-| **Côté 2** | Accès technique + énigme | Port USB-C réel (charge + énigme "bonne clé USB avec le bon contenu"), interrupteur, zones tactiles MTCH2120 |
-| **Côté 3** | Zone magique | Électrode de proximité capacitive ("approche ta main") + TMAG5273 Hall linéaire ("pose un objet") — MLX90614 retiré le 2026-09-27 |
+| **Côté 2** | Accès technique + énigme | Port USB-C réel (charge + énigme "bonne clé USB avec le bon contenu"), interrupteur, clavier tactile CAP1298 (8 touches) |
+| **Côté 3** | Zone magique | TMAG5273 Hall linéaire ("pose un objet") ; "approche ta main" (proximité) en suspens — MLX90614 retiré le 2026-09-27 |
 | **Dessous** | Main (technique + lest) | ESP32-S3, alimentation, PCM5122+PAM8406, LSM6DSOXTR (IMU, soudé directement sur Main — aucune contrainte de position), batterie (lest, stabilise l'orientation de repos), WS2812 halo table |
 
 > Répartition figée par face (2026-09-21). Le cube prend de fait une orientation de repos stable une fois assemblé (batterie + Main lestent le Dessous), même si géométriquement un cube n'a ni haut ni bas.
@@ -395,14 +399,14 @@ Composants embarqués :
 **Satellite face Côté 2** — accès technique + énigme :
 - Port USB-C réel J1 + USBLC6 + CC 5,1 kΩ (déplacés depuis la Main le 2026-09-27), relié à J14 ; lecture de clé USB (énigme) : place réservée, circuit hôte à concevoir
 - Interrupteur
-- MTCH2120 capacitif 12 canaux (zones tactiles, pads déportables via FPC)
+- CAP1298 capacitif 8 canaux (clavier / zones tactiles, pads déportables via FPC) — SOIC-14, LCSC C2652072 ; remplace le MTCH2120 le 2026-09-27
 
 **Satellite face Côté 3** — zone magique :
 - TMAG5273 Hall linéaire 3D I2C
-- Électrode de proximité capacitive (« approche ta main ») ; contrôleur à choisir avec celui de Côté 2
+- « Approche ta main » : électrode de proximité **en suspens** (le CAP1298 prend l'unique adresse 0x28 des CAP12xx : pas de second contrôleur possible ; options : une entrée du CAP1298 de Côté 2 en proximité, un multiplexeur I2C, ou abandon)
 - ~~MLX90614~~ (retiré le 2026-09-27 : coût, et bus I2C bridé à 100 kHz)
 
-> Tous les capteurs I2C (satellites + Main) partagent le même bus backbone. Adresses vérifiées datasheets (2026-09-23), aucun conflit en Phase 2 : VEML7700 0x10, MTCH2120 0x20, TMAG5273A1 0x35, ADS7830 0x48, PCM5122 0x4C, ST25DV 0x53 + 0x57, LSM6DSOX 0x6A, BMP280 0x76 (MPR121 0x5A en Phase 1). Bus à 100 kHz aujourd'hui ; le MLX90614, qui imposait cette limite, est retiré — monter à 400 kHz demande de vérifier chaque datasheet et la capacité du bus avec les câbles.
+> Tous les capteurs I2C (satellites + Main) partagent le même bus backbone. Adresses vérifiées datasheets (2026-09-23), aucun conflit en Phase 2 : VEML7700 0x10, CAP1298 0x28 (fixe : un seul CAP12xx), TMAG5273A1 0x35, ADS7830 0x48, PCM5122 0x4C, ST25DV 0x53 + 0x57, LSM6DSOX 0x6A, BMP280 0x76 (MPR121 0x5A en Phase 1). Bus à 100 kHz aujourd'hui ; le MLX90614, qui imposait cette limite, est retiré — monter à 400 kHz demande de vérifier chaque datasheet et la capacité du bus avec les câbles.
 
 **Connectique backbone (état du schéma Main au 2026-09-27)** :
 
@@ -463,7 +467,7 @@ JST-SH (1,0 mm, verrouillable) pour les signaux inter-PCB ; JST-PH (2,0 mm) pour
 └──────────────────────────────────────────────────────────────────┘
 ```
 
-> Le schéma ci-dessus est l'architecture **cible**. Correspondance avec les composants réels de `firmware/components/` : réseau = `hal_wifi` + `cloud_client` (auth, sync, packages ; OTA à venir) + `ble_prov` (provisioning) ; audio = `hal_audio` (mixer 4 voix, task `audio_mixer` seule écrivaine I2S) ; écrans = `hal_display` + `ui_manager` (yeux) ; scénario = `scenario` (moteur + validateur) ; stockage = `hal_storage` (SD) + `config_manager` (NVS) ; identité = `hal_box_auth` ; capteurs = `hal_i2c_bus`, `hal_touch` (MPR121/MTCH2120), `hal_leds`, `hal_imu`, `hal_light`, `hal_nfc` (ancien PN532, à réécrire pour le ST25DV). Pas de `sensor_manager` ni de `crypto_manager` pour l'instant ; les servos ont été retirés du produit.
+> Le schéma ci-dessus est l'architecture **cible**. Correspondance avec les composants réels de `firmware/components/` : réseau = `hal_wifi` + `cloud_client` (auth, sync, packages ; OTA à venir) + `ble_prov` (provisioning) ; audio = `hal_audio` (mixer 4 voix, task `audio_mixer` seule écrivaine I2S) ; écrans = `hal_display` + `ui_manager` (yeux) ; scénario = `scenario` (moteur + validateur) ; stockage = `hal_storage` (SD) + `config_manager` (NVS) ; identité = `hal_box_auth` ; capteurs = `hal_i2c_bus`, `hal_touch` (MPR121 ; CAP1298 à écrire, pilote MTCH2120 obsolète), `hal_leds`, `hal_imu`, `hal_light`, `hal_nfc` (ancien PN532, à réécrire pour le ST25DV). Pas de `sensor_manager` ni de `crypto_manager` pour l'instant ; les servos ont été retirés du produit.
 
 **Composants / librairies :**
 
@@ -476,7 +480,7 @@ JST-SH (1,0 mm, verrouillable) pour les signaux inter-PCB ; JST-PH (2,0 mm) pour
 | cJSON | Parsing scénario / API — copie embarquée dans `components/scenario/` (MIT) |
 | minimp3 | Décodeur MP3 single-header (voix du mixer `hal_audio`, buffers PSRAM). ESP-ADF évalué en Phase 2+ uniquement si un vrai pipeline multi-format/streaming devient nécessaire. |
 | i2c_master (PCM5122) | Config DAC : PLL, volume, filtre, mute via registres I2C (addr 0x4C) |
-| i2c_master | Bus unique à **100 kHz** : MPR121/MTCH2120, LSM6DSOXTR, VEML7700 ; ST25DV, TMAG5273, BMP280, ADS7830 **à écrire** |
+| i2c_master | Bus unique à **100 kHz** : MPR121/CAP1298, LSM6DSOXTR, VEML7700 ; ST25DV, TMAG5273, BMP280, ADS7830 **à écrire** |
 | NimBLE (ESP-IDF) | Provisioning WiFi + preuve de possession via BLE (`ble_prov`) |
 | esp_http_client + bundle CA | Auth, sync et download des packages en HTTPS (`cloud_client`) |
 | PSA crypto (mbedTLS 4) | HMAC-SHA256 de l'identité box (`hal_box_auth`) |
@@ -793,7 +797,7 @@ M2 → M3   : intégration complète + playtests
 - [x] Câbler MPR121 breakout → keypad capacitif 12 canaux validé (I2C 0x5A)
 - [x] Câbler WS2812 → LEDs validées (RMT, GPIO48)
 - [ ] Câbler ST25DV04KC-IE6S3 → valider NFC (tag, écriture URL NDEF depuis l'ESP32)
-- [ ] Câbler MTCH2120 → valider keypad capacitif (Phase 2 PCB)
+- [ ] Câbler CAP1298 → valider le clavier capacitif (Phase 2 PCB)
 - [ ] Câbler LSM6DSOXTR, BMP280, VEML7700, TMAG5273 → valider I2C bus complet
 - [ ] Câbler microphone MEMS I2S → valider micro
 - [ ] Tester le moteur de scénario YAML sur le hardware assemblé complet
@@ -806,7 +810,7 @@ M2 → M3   : intégration complète + playtests
 - [x] Driver yeux 2× GC9A01 SPI3 partagé (CS_L=40, CS_R=14, MOSI=38, SCLK=39, DC=41, RST=42) — `components/hal_display` autour de `esp_lcd_gc9a01` v2.0.4, 240×240 RGB565 @ 40 MHz
 - [x] MPR121 tactile capacitif 12 canaux — validé DevKitC-1 (I2C 0x5A, 100kHz, SDA=21/SCL=17)
 - [x] Driver LEDs WS2812B (RMT, GRB, show) — validé
-- [x] Drivers I2C écrits : MPR121 (validé), `hal_imu` (LSM6DSO/DSOX, non branché), `hal_light` (VEML7700, non branché), MTCH2120 (⚠ à réécrire : adresse et protocole faux)
+- [x] Drivers I2C écrits : MPR121 (validé), `hal_imu` (LSM6DSO/DSOX, non branché), `hal_light` (VEML7700, non branché), MTCH2120 (abandonné le 2026-09-27 ; pilote CAP1298 à écrire)
 - [ ] Drivers I2C à écrire : TMAG5273, BMP280, ADS7830, ST25DV
 - [x] Outil YAML→JSON (tools/yaml2json.py avec validation)
 - [ ] Driver NFC ST25DV — composant changé (ex-PN532, protocole totalement différent : registres I2C/EEPROM au lieu du protocole de commande PN532), ancien driver `hal_nfc` obsolète, réécriture à faire
@@ -815,7 +819,7 @@ M2 → M3   : intégration complète + playtests
 - [x] `hal_box_auth` — creds box dans la partition dédiée `box_nvs` (namespace `box_creds`, migration auto) + signature HMAC-SHA256 `"<purpose>:<uid>:<challenge>"` via PSA crypto (mbedTLS 4). Provisionné par `tools/provision_box.py`
 - [x] `hal_wifi` — STA, creds WiFi en NVS (`wifi_creds`, provisionnés par `provision_box.py --wifi-ssid/--wifi-pass`), connexion validée sur cible + smoke-test HTTPS OK (bundle CA Mozilla, GET box.agill.es status 200). Réseau dans une tâche dédiée core 0 (pile TLS 8 KB)
 - [x] `cloud_client` — flux challenge→auth→sync + packages de scénarios sur SD, validé sur cible (voir `docs/plans/firmware-cloud-client.md`)
-- [ ] **Corrections issues des datasheets et du hardware actuel** (MTCH2120, WS2812 V5 + 12 LEDs, plafond de volume −22 dB + mono, batterie basse, SPI2 partagé, bus I2C à 100 kHz…) : liste tenue dans `docs/audits/RESTE-A-FAIRE.md` §4
+- [ ] **Corrections issues des datasheets et du hardware actuel** (pilote CAP1298, WS2812 V5 + 12 LEDs, plafond de volume −22 dB + mono, batterie basse, SPI2 partagé, bus I2C à 100 kHz…) : liste tenue dans `docs/audits/RESTE-A-FAIRE.md` §4
 - [x] Partitions OTA 16 MB (factory + ota_0 + ota_1 de 3 MB, `box_nvs`, storage LittleFS 6.9 MB, rollback activé) — validées sur cible
 - [x] PSRAM octal 8 MB activée (SPIRAM_MODE_OCT 80 MHz) — buffers scénario et MP3 en MALLOC_CAP_SPIRAM
 - [x] `ui_manager` v2 — animation yeux (Uncanny Eyes Adafruit MIT porté ESP-IDF) : 2× GC9A01, rendu 128×128 centré, mouvement autonome + clignements aléatoires, émotions HAPPY/SAD/SURPRISED/SLEEPY/ANGRY/CLOSED, regard L/R/U/D pilotable depuis le scénario JSON (`eye_blink`, `eye_emotion`, `eye_look`)
@@ -958,8 +962,8 @@ Critères produit — go/no-go Phase 2 :
 - [ ] **Devant** (visage) : 2×GC9A01 + display bouche + WS2812 + BMP280 + VEML7700 — schéma + layout + Gerbers
 - [ ] **Dessus** (voix + NFC) : ST25DV04KC-IE6S3 (reprendre `nfc.kicad_sch` existant) + connecteur haut-parleur — schéma + dessin antenne NFC (boucle PCB, zone de garde) + layout + Gerbers
 - [ ] **Côté 1** (panneau de contrôle) : ADS7830 + faders/pots + toggles + boutons — schéma + layout + Gerbers
-- [ ] **Côté 2** (technique + énigme) : port USB-C + interrupteur + MTCH2120 — schéma + layout + Gerbers
-- [ ] **Côté 3** (zone magique) : TMAG5273 + électrode de proximité — schéma + layout + Gerbers
+- [ ] **Côté 2** (technique + énigme) : port USB-C + interrupteur + CAP1298 — schéma + layout + Gerbers
+- [ ] **Côté 3** (zone magique) : TMAG5273 (+ proximité si retenue) — schéma + layout + Gerbers
 - [x] 5 connecteurs I2C sur Main (J3-J6 + J13), un par face satellite (2026-09-27)
 
 *Commun à tous les PCB :*
@@ -1309,7 +1313,7 @@ proxy.ts                            → Next 16 (ex-middleware.ts) : refresh ses
 - **Yeux (2× GC9A01)** — `components/ui_manager/eyes_anim.c`, port C ESP-IDF du pipeline « Uncanny Eyes » Adafruit (MIT, Phil Burgess) via le fork GC9A01 de thelastoutpostworkshop. Rendu 128×128 centré dans 240×240, mouvement autonome (drift aléatoire + clignements) en mode IDLE. Actions JSON disponibles dans les scénarios : `eye_blink`, `eye_emotion {type: happy|sad|surprised|sleepy|angry|closed}`, `eye_look {direction: left|right|up|down|center}`. Asset embarqué : `defaultEye.h` (~156 KB flash).
 - **Bouche (display TBD, pas e-ink)** — à implémenter. Affichage texte mot-à-mot synchro audio.
 
-**Navigation : boutons physiques + visage.** Le joueur navigue avec les touches capacitives (MPR121/MTCH2120) — et les deux boutons poussoirs GPIO45/46 du Côté 1 ; le personnage répond par la bouche (texte), la voix (audio) et les yeux. La configuration avancée (compte, langue, renommage) est déportée sur la webapp.
+**Navigation : boutons physiques + visage.** Le joueur navigue avec les touches capacitives (MPR121 puis CAP1298) — et les deux boutons poussoirs GPIO45/46 du Côté 1 ; le personnage répond par la bouche (texte), la voix (audio) et les yeux. La configuration avancée (compte, langue, renommage) est déportée sur la webapp.
 
 > **Implémenté aujourd'hui** (`firmware/main/boot_menu.c`) : au boot, invite de 4 s (double bip + LEDs douces) ; sans appui → jeu direct (premier déballage sans setup). Un appui → menu au keypad : ◀ = touche 4, ▶ = touche 6, ✓ = touche 11 ; items JOUER, SCÉNARIO (✓ = suivant, persisté en NVS) et APPAIRAGE (fenêtre BLE de 5 min) ; sortie par ✓ sur JOUER ou après 30 s. Le reste de cette section est la **cible**.
 
@@ -1420,7 +1424,7 @@ blackbox/
 │   │   ├── ui_manager/          # visage : eyes_anim (Uncanny Eyes), ui_face
 │   │   ├── hal_leds/            # WS2812 via RMT
 │   │   ├── hal_i2c_bus/         # bus I2C partagé (SDA 21 / SCL 17)
-│   │   ├── hal_touch/           # MPR121 (Phase 1) / MTCH2120 (à réécrire)
+│   │   ├── hal_touch/           # MPR121 (Phase 1) / CAP1298 (pilote à écrire)
 │   │   ├── hal_imu/             # LSM6DSO(X) — non branché
 │   │   ├── hal_light/           # VEML7700 — non branché
 │   │   ├── hal_nfc/             # ancien PN532 — obsolète, à réécrire pour le ST25DV
@@ -1652,13 +1656,13 @@ Ces 3 réponses sont liées à la session (`hints_used`, `duration_sec`, `score`
 [ ] EQ DSP PCM5122 testée sur un scénario (pas de distorsion)
 [ ] Micro détecte un claquement de mains à 1 mètre
 [ ] ESP32 écrit une URL NDEF sur le ST25DV via I2C, et un smartphone la lit correctement en tapant la box
-[ ] MPR121 keypad détecte les 12 touches avec < 1% faux positifs (MTCH2120 : même test en Phase 2 PCB)
+[ ] MPR121 keypad détecte les 12 touches avec < 1% faux positifs (CAP1298 : même test sur ses 8 touches en Phase 2 PCB)
 [ ] ADS7830 : valeur stable, pleine échelle sur les 8 canaux (SL1-SL4 + RV1-RV4)
 [ ] Toggles SW1/SW2 : niveaux propres sur GPIO1/2 (pull-up interne)
 [ ] LSM6DSOXTR détecte une inclinaison de 15° minimum
 [ ] BMP280 détecte un souffle buccal à 5 cm
 [ ] VEML7700 distingue pièce éclairée / pièce sombre
-[ ] Électrode de proximité Côté 3 détecte une main approchée
+[ ] Proximité « approche ta main » détecte une main approchée (si retenue)
 [ ] WS2812 : toute la chaîne répond, couleurs correctes
 [ ] USB-C : programmation ET charge fonctionnels simultanément
 [ ] Carte SD : lecture / écriture à > 1 MB/s
@@ -1773,7 +1777,8 @@ Ces 3 réponses sont liées à la session (`hints_used`, `duration_sec`, `score`
 |---|---|---|
 | ESP32-S3-WROOM-1-N16R8 | LCSC C2913202 | https://datasheet.lcsc.com/lcsc/2207151200_Espressif-Systems-ESP32-S3-WROOM-1-N16R8_C2913202.pdf |
 | ST25DV04KC-IE6S3 | LCSC C3304276 | https://www.st.com/resource/en/datasheet/st25dv04k.pdf |
-| MTCH2120 | LCSC (chercher) | https://ww1.microchip.com/downloads/aemDocuments/documents/MCU08/ProductDocuments/DataSheets/MTCH2120-12CH-CapacitiveTouchControl-DataSheet-DS40002613.pdf (DS40002613E, adresse 0x20/0x21) |
+| CAP1298 | LCSC C2652072 (SOIC-14) | https://ww1.microchip.com/downloads/en/DeviceDoc/00001571B.pdf (DS00001571B, adresse fixe 0x28) |
+| ~~MTCH2120~~ (abandonné 2026-09-27) | — | DS40002613E (aucun stock JLCPCB) |
 | ~~AS5600~~ (retiré) | LCSC C79815 | https://ams.com/documents/20143/36005/AS5600_DS000365_5-00.pdf |
 | VEML7700 | LCSC C1850416 | https://www.vishay.com/docs/84286/veml7700.pdf |
 | BMP280 | LCSC C83291 | https://www.bosch-sensortec.com/media/boschsensortec/downloads/datasheets/bst-bmp280-ds001.pdf |

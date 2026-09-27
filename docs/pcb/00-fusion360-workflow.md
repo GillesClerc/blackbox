@@ -39,13 +39,13 @@ télécharger en format "Eagle", et importer le .lbr dans Fusion 360 :
 | Chargeur LiPo + PP | bq24075RGTR | "bq24075" |
 | Protection batterie | DW01A | "DW01A" |
 | Dual MOSFET | FS8205 | "FS8205" |
-| Touch capacitif | MTCH2120-I/MX | "MTCH2120" |
+| Touch capacitif | CAP1298-1-SL-TR | "CAP1298" |
 | IMU 6 axes | LSM6DSOXTR | "LSM6DSOX" |
 | Lumière ambiante | VEML7700 | "VEML7700" |
 | Pression | BMP280 | "BMP280" |
 | NFC tag | ST25DV04KC-IE6S3 | "ST25DV04K" |
 | ~~Température IR~~ | ~~MLX90614ESF-BAA~~ (retiré 2026-09-27) | — |
-| Hall linéaire 3D | TMAG5273A2QDBVR | "TMAG5273" |
+| Hall linéaire 3D | TMAG5273A1QDBVR | "TMAG5273" |
 | ESD USB | USBLC6-2SC6 | "USBLC6-2" |
 | USB-C connector | — | "USB Type-C 16 pin" |
 
@@ -93,7 +93,7 @@ Créer plusieurs feuilles dans le schéma pour la lisibilité :
 
 1. `File` → `CAM Processor` → charger le job JLCPCB (ou utiliser les Gerber defaults)
 2. Exporter les Gerbers : Top, Bottom, GND, Power, Drill, Silkscreen, Soldermask
-3. Exporter la BOM en CSV (voir `docs/pcb/02-bom-lcsc.csv`)
+3. Exporter la BOM en CSV (BOM de référence : `hardware/main/BOM/02-bom-lcsc.csv`)
 4. Exporter le CPL (Component Placement List) en CSV
 5. Uploader sur jlcpcb.com : Gerbers + BOM + CPL
 

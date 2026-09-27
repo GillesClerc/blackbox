@@ -1,24 +1,24 @@
 Designator,MPN,Value,Footprint,LCSC Part #,Qty,Board,Notes
 U1,ESP32-S3-WROOM-1-N16R8,,ESP32-S3-WROOM-1,C2913202,1,Main,Module WiFi+BT 16MB flash 8MB PSRAM
 U2,PCM5122PW,,TSSOP-28,C1540085,1,Main,DAC audio stereo I2S+I2C
-U3,PAM8406DR,,SOP-16,C86270,1,Main,Ampli Class D 5W+5W stereo
+U3,PAM8406DR,,SOP-16,C86270,1,Main,"Ampli classe D stereo en pont ; 1,8 W/canal max sur le HP 8 ohms retenu (docs/datasheets/PAM8406.md)"
 U4,ICS-43434,,BGA-6 bottom-port,C5656610,1,Main,Micro MEMS I2S 24-bit
 U5,AP2112M-3.3TRG1,,SO-8,C5290219,1,Main,LDO 3.3V digital 600mA — SO-8 (114 °C/W au lieu de 184) pour la thermique sous USB
 U6,AP2112K-3.3TRG1,,SOT-23-5,C51118,1,Main,LDO 3.3V audio 600mA
 U7,MT3608,,SOT-23-6,C84817,1,Main,Boost 3.7V->5V 2A
 U8,bq24075RGTR,,QFN-16,C15464,1,Main,Chargeur LiPo 1.5A + power path DPPM
 U9,DW01A,,SOT-23-6,C351410,1,Main,Protection batterie
-U10,FS8205,,TSSOP-8,C32254,1,Main,Dual MOSFET protection
-U11,PN5321A3HN/C106,,HVQFN-40,C28925,1,Main,NFC reader (equiv. PN532)
+U10,FS8205,,SOT-23-6,C32254,1,Main,Dual MOSFET protection
+U11,LSM6DSOXTR,,LGA-14,C481766,1,Main,"Accelerometre + gyro 6 axes + MLC, soude sur la Main (feuille imu) — docs/datasheets/LSM6DSOXTR.md"
 COTE2-U1,USBLC6-2SC6,,SOT-23-6,C7519,1,Satellite Cote 2,"[Satellite Cote 2, projet hardware/cote2/ (ex-U12 de la Main, deplace le 2026-09-27).] Au plus pres de J1. Protection ESD USB D+/D-"
-"—",,GC9A01 module 1.3 rond,Module,—,2,Face avant,Yeux du personnage 240x240 SPI (modules achetes)
-"—",,SSD1680 e-ink module 2.9,Module,—,1,Face avant,Bouche du personnage 296x128 SPI (Waveshare 2.9 V2)
+—,,GC9A01 module 1.3 rond,Module,—,2,Face avant,Yeux du personnage 240x240 SPI (modules achetes)
+—,,"Ecran bouche (a choisir, pas e-ink)",Module,—,1,Face avant,Type non choisi (FSD) — SPI2 via J7b
 COTE2-J1,HOOYA USB-307HB-B-SU,,USB-C-24P SMD vertical,C309361,1,Satellite Cote 2,"[Satellite Cote 2, projet hardware/cote2/ (ex-J1 de la Main, deplace le 2026-09-27).] Connecteur USB-C femelle 24 pins (fab. Dongguang Haoyu Electronics) — sur LCSC/JLCPCB, importable via easyeda2kicad ou plugin kicad-lcsc-manager (LCSC ID C309361). Pinout standard verifie sur datasheet fabricant 2026-09-20 (voir docs/pcb/01-netlist.txt) : VBUS=A4/A9/B4/B9, GND=A1/A12/B1/B12+shield, D+=A6+B6, D-=A7+B7, CC1=A5, CC2=B5, pins SS/SBU non utilisees (design USB2.0 only)."
 "J3,J4,J5,J6,J13",,Connecteur JST-SH 4pin,JST-SH-4P,—,5,Main,Bus I2C vers satellites (brochage Qwiic ; J13 ajoute le 2026-09-27 : 5 faces satellites en I2C)
 J7,,Connecteur JST-SH 10pin,JST-SH-10P,—,1,Main,SPI3 vers 2x GC9A01 yeux
-J7b,,Connecteur JST-SH 8pin,JST-SH-8P,—,1,Main,SPI2 vers SSD1680 e-ink bouche
-J8,,Connecteur JST-SH 6pin,JST-SH-6P,—,1,Main,Toggles SW1/SW2 face avant + reserve GPIO3 (ex-ADC potentiometres - analogique migre sur ADS7830 I2C)
-J9,,Connecteur JST-PH 4pin,JST-PH-4P,—,1,Main,"WS2812 + reserve (PH 2mm choisi pour 32 LEDs = ~1.9A ; en pratique le budget batterie ne laisse que ~8-10 LEDs externes, cf. audit A5 — au-dela, alimenter la bande separement et n'utiliser que DATA+GND)"
+J7b,,Connecteur JST-SH 8pin,JST-SH-8P,—,1,Main,SPI2 vers l ecran bouche (type a choisir)
+J8,,Connecteur JST-SH 6pin,JST-SH-6P,—,1,Main,"Cote 1 : 3V3_D, GND, SW1, SW2, BTN1 (J8.5), BTN2 (J8.6)"
+J9,,Connecteur JST-PH 4pin,JST-PH-4P,—,1,Main,"WS2812 externes + reserve (le budget batterie limite a ~8-10 LEDs externes ; au-dela, alimenter la bande separement)"
 J2,,Connecteur batterie JST-PH 4pin (BAT+/BAT-/NTC/retour NTC),JST-PH-4P,—,1,Main,"Cellule 18650 + NTC collee, harnais 4 fils : le retour NTC va sur GND (VSS du bq24075), pas sur BAT- (audit 2026-09-27 H2)"
 J10,,Connecteur haut-parleur JST-PH 4pin,JST-PH-4P,—,1,Main,"Sorties en pont L+/L-/R+/R- via ferrites FB3-FB6 — aucune masse commune, ne jamais relier les - entre elles ni a GND"
 J11,,Slot microSD push-push,TF-PUSH,C91145,1,Main,Carte SD sur SPI2 partage (MISO=15 CS=47) - verifier ref LCSC avant commande
@@ -29,16 +29,16 @@ L1,Sunlord SWPA5040S6R8MT,6.8uH,SMD 5x5x4mm,C36411,1,Main,"Inductance boost MT36
 C_B1,,22uF 16V ceramique,0805,—,1,Main,"Entree MT3608 (VSYS) — 22 uF recommandes par la datasheet MT3608, Capacitor Selection ; 16V pour le derating DC bias, comme C_B2"
 "C15,C16,C17",,10uF 16V ceramique,0805,—,3,Main,Bulk decouplage PCM5122 (AVDD/DVDD/CPVDD)
 "C19,C20",,2.2uF 25V ceramique,0603,—,2,Main,Charge pump PCM5122
-"C21,C22",,22nF 50V ceramique,0603,—,2,Main,Filtre RC sortie audio
+"C21,C22",,2.2nF 50V ceramique C0G/NP0,0603,—,2,Main,"Filtre RC sortie DAC PCM5122 (470 ohm + 2,2 nF)"
 C_IN,,4.7uF 10V ceramique,0603,—,1,Main,bq24075 IN pin13 decouplage (datasheet 4.7uF min)
 "C_D1,C_A1",,1uF 10V ceramique,0402,—,2,Main,Entrees LDO U5/U6
 C_B2,,22uF 16V ceramique,0805,—,1,Main,Sortie MT3608 boost (16V pour derating DC bias)
-"R1,R2",,100 ohm,0603,—,2,Main,Filtre RC sortie audio
+"R1,R2",,470 ohm,0603,—,2,Main,"Filtre RC sortie DAC PCM5122 (470 ohm + 2,2 nF, docs/datasheets/pcm5122.md)"
 "R3,R4",,4.7k ohm,0402,—,2,Main,Pull-up I2C SDA/SCL
 "R5,R6",,10k ohm,0402,—,2,Main,Pull-up XSMT (R5 vers 3V3_A) / EN ESP32 (R6)
 R8,,330 ohm,0402,—,1,Main,Serie WS2812 data
 R_ILIM,,1.5k ohm,0402,—,1,Main,bq24075 ILIM pin12 (input current limit en mode RILIM EN2=H/EN1=L)
-"R_PG,R_CHG",,100k ohm,0402,—,2,Main,Pull-up debug PGOOD/CHG bq24075 (DNP par defaut - pads testpoint)
+"R_PG,R_CHG",,100k ohm,0402,—,2,Main,Pull-up PGOOD/CHG bq24075 (montees au schema)
 R_ISET,,890 ohm,0402,—,1,Main,bq24075 ISET pin16 (charge current 1A)
 R_VCC,,100 ohm,0402,—,1,Main,DW01A VCC serie (protection)
 R_FB_H,,750k ohm,0402,—,1,Main,MT3608 feedback diviseur haut
@@ -49,30 +49,31 @@ R_TS,,10k ohm (DNP),0402,—,1,Main,"DNP — remplacee par la NTC de la cellule 
 "COTE2-R1,COTE2-R2",,5.1k ohm,0402,—,2,Satellite Cote 2,"[Satellite Cote 2, projet hardware/cote2/ (ex-R9,R10 de la Main, deplace le 2026-09-27).] Au pied de J1. USB-C CC1/CC2"
 COTE2-J2,,Connecteur JST-PH 6pin,JST-PH-6P,—,1,Satellite Cote 2,"Liaison vers J14 de la Main (VBUS, GND, D-, D+, GND, 5V_HOST)"
 "R11,R12",,22 ohm,0402,—,2,Main,Serie USB D+/D-
-D1,C8678,Diode Schottky SS34 (3A),SMA,—,1,Main,Protection MT3608 (SS14 1A insuffisant — audit A5)
-U20,MTCH2120-I/MX,,QFN-20,—,1,Satellite,Touch capacitif 12ch (pas sur LCSC - DigiKey/Mouser)
-U21,LSM6DSOXTR,,LGA-14,C481766,1,Satellite,Accelerometre+gyro 6 axes + MLC
+D1,SS34 (MDD),Diode Schottky SS34 (3A),SMA,C8678,1,Main,Protection MT3608 (SS14 1A insuffisant — audit A5)
+COTE2-U2,CAP1298-1-SL-TR,,SOIC-14,C2652072,1,Satellite Cote 2,"[Satellite Cote 2, projet hardware/cote2/.] Controleur tactile 8 canaux (CS5 = garde SG si utilisee -> 7 touches), adresse I2C FIXE 0x28 (un seul CAP12xx par bus), ALERT# non relie a la Main (Qwiic 4 fils) -> a GND, polling. Remplace le MTCH2120 (decision 2026-09-27). docs/datasheets/CAP1298.md"
 U22,VEML7700-TT,,OPLGA,C1850416,1,Satellite,Capteur lumiere ambiante
 U23,BMP280,,LGA-8,C83291,1,Satellite,Pression / souffle
-U25,TMAG5273A2QDBVR,,SOT-23-6,C3715882,1,Satellite,Hall lineaire 3D I2C (remplace A3144E)
-"C30,C31,C32,C33,C34,C35",,100nF 16V ceramique,0402,—,6,Satellite,Decouplage capteurs
+U25,TMAG5273A1QDBVR,,SOT-23-6,C3716049,1,Satellite,"Hall lineaire 3D I2C, variante A1 (+-40/80 mT, adresse 0x35) — docs/datasheets/TMAG5273.md tableau 6-2 ; Satellite Cote 3"
+U27,ST25DV04KC-IE6S3,,SO-8,C3304276,1,Satellite Dessus,"Tag NFC dynamique I2C 0x53 + 0x57, antenne boucle PCB — docs/datasheets/ST25DV04K.md (ajoute le 2026-09-27 : absent de la BOM)"
+LS1,PUI Audio AS04008PO-2-R,Haut-parleur 8 ohms 1 W (2 W max),Module,—,1,Satellite Dessus,Cable depuis J10 de la Main (canal L en pont via FB3/FB4) — docs/datasheets/AS04008PO.md
+"C30,C31,C32,C33,C34",,100nF 16V ceramique,0402,—,5,Satellite,"Decouplage 100 nF au plus pres : BMP280 VDD + VDDIO, VEML7700 (Devant), CAP1298 (Cote 2), TMAG5273 (Cote 3) — a repartir dans les projets satellites"
 U26,ADS7830IPWR,,TSSOP-16,C161747,1,Face avant,ADC 8ch 8-bit I2C addr 0x48 - lit SL1-SL4 + RV1-RV4 ratiometrique (REFIN=3V3) - datasheet docs/datasheets/ADS7830.md
 C_FP1,,100nF 16V ceramique,0402,—,1,Face avant,Decouplage ADS7830 VDD
 C_FP2,,1uF 10V ceramique,0402,—,1,Face avant,ADS7830 REFIN (ref externe ratiometrique)
 "SL1,SL2,SL3,SL4",Bourns PTA6043-2015CPB103,,Slide-PTA6043-60mm,C17203852,4,Face avant,Fader 60mm 10kOhm lineaire carbon (enigmes) - datasheet docs/datasheets/Bourns-PTA6043.pdf
 "RV1,RV2,RV3,RV4",Bourns PDB181-K420K-103B,,Pot-PDB181-17mm-panel,C6251250,4,Face avant,Pot rotatif 17mm 10kOhm lineaire knurled axe 6mm (enigmes) - datasheet docs/datasheets/Bourns-PDB181.pdf
 "SW1,SW2",E-Switch 100SP1T1B4M1QE,,Toggle-100SP-12mm-bushing,—,2,Face avant,Toggle SPDT ON-ON panel 12mm (a sourcer DigiKey/Mouser - non LCSC) - datasheet docs/datasheets/E-Switch-100-series-toggle.pdf
-Q1,C15127,MOSFET P AO3401A -30V -4A,SOT-23,—,1,Main,Load switch rail 5V (marche/arret)
-Q2,C8545,MOSFET N 2N7002,SOT-23,—,1,Main,Inverseur de commande du load switch
+Q1,AO3401A,MOSFET P AO3401A -30V -4A,SOT-23,C15127,1,Main,Load switch rail 5V (marche/arret)
+Q2,2N7002,MOSFET N 2N7002,SOT-23,C8545,1,Main,Inverseur de commande du load switch
 "R20,R21",,100k 1%,0402,—,2,Main,Pull-down EN_SYS + grille-source Q1
 J14,,Connecteur JST-PH 6pin,JST-PH-6P,—,1,Main,"Liaison USB vers le satellite Cote 2 : 1 VBUS (5V_USB, ~1,1 A), 2 GND, 3 D-, 4 D+, 5 GND, 6 5V_HOST (reserve mode hote)"
-R22,,0 ohm (DNP),0603,—,1,Main,"Reserve mode hote USB : relie le rail 5V a J14.6 pour alimenter une cle. NON MONTEE"
+R22,,0 ohm (DNP),0603,—,1,Main,Reserve mode hote USB : relie le rail 5V a J14.6 pour alimenter une cle. NON MONTEE
 "R23,R24",,10k ohm,0402,—,2,Main,"Pull-down BTN1/BTN2 (GPIO45/46, strapping) vers J8.5/J8.6 — boutons actifs hauts, JAMAIS de pull-up"
 J12,,Connecteur JST-SH 2pin,JST-SH-2P,—,1,Main,Interrupteur marche/arret (face Cote 2)
 SW3,,Interrupteur SPDT E-Switch 100 (contacts or),Toggle,—,1,Cote 2,Marche/arret — ne commute que EN_SYS (~50 uA)
-"—",,Cellule 18650 3400-3500mAh (LG MJ1 / Samsung 35E / Panasonic NCR18650B),18650,—,1,Batterie,Cellule nue — protection assuree par DW01A+FS8205 sur la carte
-"—",,NTC 10k B3950 a coller sur la cellule,axial/CMS,—,1,Batterie,Surveillance thermique de charge (bq24075 TS) — fenetre 0-50 C
-"—",,Support 18650 ou cellule a languettes,—,—,1,Batterie,Jamais de soudure au fer sur une cellule
+—,,Cellule 18650 3400-3500mAh (LG MJ1 / Samsung 35E / Panasonic NCR18650B),18650,—,1,Batterie,Cellule nue — protection assuree par DW01A+FS8205 sur la carte
+—,,NTC 10k B3950 a coller sur la cellule,axial/CMS,—,1,Batterie,Surveillance thermique de charge (bq24075 TS) — fenetre 0-50 C
+—,,Support 18650 ou cellule a languettes,—,—,1,Batterie,Jamais de soudure au fer sur une cellule
 "FB3,FB4,FB5,FB6",BLM21PG221SN1D,220R@100MHz 2A,0805,C85840,4,Main,Ferrites sortie haut-parleur (exigees par la datasheet PAM8406 en classe D sans filtre)
 "R13,R14",,22 ohm,0603,—,2,Main,Resistances serie horloges SPI2/SPI3 (ex-ferrites FB1/FB2 — une ferrite arrondit les fronts)
 "R15,R16,R17,R18,R19",,10k,0402,—,5,Main,Pull-ups carte SD (CS/DAT3 CMD DAT0 DAT1 DAT2) — obligatoires (ESP-IDF sd_pullup_requirements)

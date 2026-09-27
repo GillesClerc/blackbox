@@ -22,6 +22,9 @@ ATTINY1616-SN (SOIC-20) C614136, 2,89 $, stock 33 ; ATTINY3216-SNR (SOIC-20) C60
 
 ## Notes projet
 
+- **Option « MCU dédié au tactile » écartée le 2026-09-27** au profit du CAP1298 (pas de second
+  firmware). Reste pertinente si l'on veut un jour 12 touches + GPIO locales sur un satellite.
+
 - Le tactile se programme avec la **bibliothèque QTouch de Microchip** (générée par MPLAB) :
   vérifier sa licence avant de l'adopter (règle « licences » du projet).
 - Suppose un **second firmware** (sur le satellite), à flasher en production (pastilles

@@ -1,5 +1,7 @@
 # SC12B (ICMAN) — contrôleur tactile capacitif 12 touches, I2C
 
+> ⚠ **Écarté le 2026-09-27** (choix de Gilles : CAP1298). Synthèse conservée pour référence.
+
 > _Synthèse du « SC12B 规格书 v1.1 » (ICMAN, en chinois ; fichier local [./SC12B.pdf](./SC12B.pdf),
 > miroir LCSC de C718973), lu le 2026-09-27._
 
