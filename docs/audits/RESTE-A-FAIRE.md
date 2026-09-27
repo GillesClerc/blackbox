@@ -12,9 +12,10 @@
 
 ## 0. Avant de router la carte Main — maintenant
 
-- [ ] 🧑 **L1 : inductance du boost** (H1) — proposition sourcée : **Sunlord
-  SWPA5040S6R8MT, C36411** (6,8 µH ±20 %, Isat 2,9 A, 5 × 5 × 4 mm), synthèse
-  `docs/datasheets/SWPA5040S.md`. À valider, puis remplacer le 1210 dans KiCad.
+- [ ] 🧑 **L1 dans KiCad** (H1) — **choix validé le 27/09 : Sunlord SWPA5040S6R8MT,
+  C36411** (6,8 µH ±20 %, Isat 2,9 A, 5 × 5 × 4 mm ; `docs/datasheets/SWPA5040S.md`).
+  Reste à mettre la valeur `6.8u` et l'empreinte 5 × 5 (import LCSC C36411, ou pastilles
+  1,4 × 4,2 mm écartées de 2,3 mm) à la place du 1210. BOM déjà à jour.
 - [ ] 🧑 **C_B1 (entrée du MT3608) : 10 µF → 22 µF** — la datasheet recommande 22 µF
   céramique en entrée **et** en sortie (« Capacitor Selection ») ; C_B2 fait déjà 22 µF.
 - [ ] 🧑 **J2 en 4 broches** (H2) — BAT+, BAT−, NTC, **retour NTC sur GND** : aujourd'hui la
@@ -138,7 +139,6 @@ Hérités du 23/09 :
 
 ## 7. Datasheets manquantes
 
-- [ ] 🧑 **Inductance L1** (dès le choix, H1).
 - [ ] 🧑 **Cellule 18650** retenue (LG MJ1 / Samsung 35E / Panasonic NCR18650B) : courant
   max, **température de charge max** (souvent 45 °C, contre 50 °C pour la fenêtre du
   bq24075, H14) ; décider support à ressorts (proto) ou languettes (série).

@@ -313,7 +313,7 @@ bq24075 (U8) — chargeur 1 A + power path DPPM, entrée limitée à 1,07 A (R_I
 > - ⚠ **NTC** : sur J2 à 3 broches, son retour se fait sur BAT− (négatif de la cellule, **avant** le FS8205), alors que la TS mesure par rapport à GND. La chute des MOSFET (56-74 mV à 1 A) décale la coupure en surchauffe d'environ +7 °C → **J2 à passer en 4 broches** (retour NTC sur GND), audit 2026-09-27 H2.
 > - Protection DW01A + FS8205 : surcharge 4,30 V, décharge profonde 2,40 V, **surintensité ≈ 1,6-3,2 A** → plafond du courant crête total (plafonds firmware de luminosité et de volume, mesure au proto).
 > - 3V3_D : **U5 = AP2112M-3.3 en SO-8** (θJA 114 °C/W au lieu de 184 °C/W en SOT-25), 600 mA garantis, l'ESP32 en exige ≥ 0,5 A ; plan de cuivre sous U5 au layout. Charges du rail : ESP32 ≥ 3,0 V, MTCH2120 ≥ 3,0 V, GC9A01A ≤ 3,3 V → **extinction firmware sur VBAT basse** (~3,4-3,5 V).
-> - Rail 5 V (MT3608, 5,0-5,2 V) : 12 WS2812B = 432 mA en blanc (+ 7,2 mA au repos), PAM8406 ≈ 0,4 A par canal au maximum sur le haut-parleur 8 Ω, plus le halo externe sur J9 (pas de budget fixé : c'est le plafond firmware de luminosité qui borne l'ensemble). **D1 = SS34** (3 A). **L1** : référence à choisir avec I_sat ≥ ~2,5 A (audit 2026-09-27 H1).
+> - Rail 5 V (MT3608, 5,0-5,2 V) : 12 WS2812B = 432 mA en blanc (+ 7,2 mA au repos), PAM8406 ≈ 0,4 A par canal au maximum sur le haut-parleur 8 Ω, plus le halo externe sur J9 (pas de budget fixé : c'est le plafond firmware de luminosité qui borne l'ensemble). **D1 = SS34** (3 A). **L1 = Sunlord SWPA5040S6R8MT** (6,8 µH ±20 %, Isat 2,9 A, 5 × 5 mm ; crête calculée ≈ 1,9 A — `docs/datasheets/SWPA5040S.md`).
 
 #### 2.2.2c Assignation des faces — Cube 150×150×150mm *(dimension à valider au proto boîtier — la vision mentionne 120mm)*
 
@@ -943,7 +943,7 @@ Critères produit — go/no-go Phase 2 :
 - [x] **Bouton marche/arrêt** (option B) : EN_SYS sur les EN de U5/U6/U7 + load switch Q1/Q2 sur le rail 5 V, charge USB préservée quand éteint (2026-09-27)
 - [x] Corrections de l'audit hardware 2026-09-23 : C20 PCM5122, J10 + ferrites FB3-FB6, pull-ups SD, J3-J6 Qwiic, D1 SS34, R_TMR + NTC, U5 en SO-8 (2026-09-27, vérifiées sur la netlist)
 - [x] ERC natif KiCad lancé, 53 erreurs traitées (2026-09-27) — à relancer après chaque modification
-- [ ] **Validation schéma main → étape de passage au PCB** : restent les points de `docs/audits/RESTE-A-FAIRE.md` §0 (inductance L1, J2 à 4 broches, brochage FS8205, BTN1/BTN2, 5ᵉ connecteur I2C, emplacement USB-C)
+- [ ] **Validation schéma main → étape de passage au PCB** : restent les points de `docs/audits/RESTE-A-FAIRE.md` §0 (empreinte de L1, J2 à 4 broches, brochage FS8205, BTN1/BTN2, 5ᵉ connecteur I2C, emplacement USB-C)
 - [ ] Placement des composants sur le PCB (contrainte : zone audio isolée dans un coin, pas de trace digitale dessous)
 - [ ] Routage (plan de masse continu layer 2, I2S court/groupé/blindé, alimentation en priorité)
 - [ ] DRC KiCad (clearance 0.2mm, track 0.2-0.5mm, via 0.3/0.6mm — règles JLCPCB)
@@ -1799,7 +1799,7 @@ Ces 3 réponses sont liées à la session (`hints_used`, `duration_sec`, `score`
 | ADS7830 (face Côté 1) | LCSC C161747 | `docs/datasheets/ADS7830.md` |
 | E-Switch série 100 (SW1-SW3, finition or) | — | `docs/datasheets/E-Switch-100-series-toggle.md` |
 | Bourns PTA6043 / PDB181 (faders, pots) | LCSC C17203852 / C6251250 | `docs/datasheets/Bourns-PTA6043.md`, `Bourns-PDB181.md` |
-| Inductance L1 (boost) | **à choisir** (I_sat ≥ ~2,5 A) | — |
+| Sunlord SWPA5040S6R8MT (L1, boost, 6,8 µH) | LCSC C36411 | `docs/datasheets/SWPA5040S.md` |
 | Cellule 18650 + NTC | **à choisir** | — |
 
 ### 10.2 Liens utiles

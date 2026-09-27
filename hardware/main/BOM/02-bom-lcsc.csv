@@ -22,7 +22,7 @@ J9,,Connecteur JST-PH 4pin,JST-PH-4P,—,1,Main,"WS2812 + reserve (PH 2mm choisi
 J2,,Connecteur batterie JST-PH 3pin (BAT+/BAT-/NTC),JST-PH-3P,—,1,Main,Cellule 18650 + NTC collee (etait un 2pin LiPo avant le 2026-09-27)
 J10,,Connecteur haut-parleur JST-PH 4pin,JST-PH-4P,—,1,Main,"Sorties en pont L+/L-/R+/R- via ferrites FB3-FB6 — aucune masse commune, ne jamais relier les - entre elles ni a GND"
 J11,,Slot microSD push-push,TF-PUSH,C91145,1,Main,Carte SD sur SPI2 partage (MISO=15 CS=47) - verifier ref LCSC avant commande
-L1,,Inductance 22uH,1210,—,1,Main,Pour MT3608 boost (22uH recommande datasheet)
+L1,Sunlord SWPA5040S6R8MT,6.8uH,SMD 5x5x4mm,C36411,1,Main,"Inductance boost MT3608 : 6,8 uH +-20 %, Isat 2,9 A, Irms 2,5 A, DCR 56 mOhm max (decision 2026-09-27, docs/datasheets/SWPA5040S.md) — remplace le 22uH 1210"
 "C2,C3,C4,C5",,100nF 16V ceramique,0402,—,4,Main,Decouplage generique (ESP32 C2, micro C3, IMU C4/C5)
 "C_AVDD,C_DVDD,C_CPVDD,C_LDOO,C_EN",,100nF 16V ceramique,0402,—,5,Main,PCM5122 AVDD(pin8)/DVDD(pin28)/CPVDD(pin1)/LDOO(pin26) + filtre RC EN ESP32 (pins corriges 2026-09-11 vs datasheet TI SLAS763C — l'ancien netlist avait tous les numeros de pins PCM5122 faux)
 "C_D2,C_A2,C_B1",,10uF 10V ceramique,0805,—,3,Main,Sorties LDO U5/U6 + entree MT3608
