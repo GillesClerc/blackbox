@@ -45,8 +45,12 @@ def _prop(name, value, x, y, angle=0, hide=False):
 
 
 def symbol(lib_id, ref, value, footprint, at, angle=0, sheet='audio',
-           extra_props=(), description='', dnp=False, pins=2):
+           extra_props=(), description='', dnp=False, pins=2, mirror=None,
+           pin_names=None):
+    """pins : nombre de broches numerotees 1..n, ou pin_names pour des numeros
+    explicites (ex. ('1','2','3') ou ('G','D','S'))."""
     x, y = at
+    mir = f'\n\t\t(mirror {mirror})' if mirror else ''
     props = [
         _prop('Reference', ref, x + 2.54, y - 1.27, angle),
         _prop('Value', value, x + 2.54, y + 1.27, angle),
@@ -56,12 +60,13 @@ def symbol(lib_id, ref, value, footprint, at, angle=0, sheet='audio',
     ]
     for n, v in extra_props:
         props.append(_prop(n, v, x, y, 0, hide=True))
-    pin_blk = '\n'.join(f'''		(pin "{i}"
+    numbers = pin_names if pin_names else [str(i) for i in range(1, pins + 1)]
+    pin_blk = '\n'.join(f'''		(pin "{n}"
 			(uuid "{u()}")
-		)''' for i in range(1, pins + 1))
+		)''' for n in numbers)
     return f'''	(symbol
 		(lib_id "{lib_id}")
-		(at {x} {y} {angle})
+		(at {x} {y} {angle}){mir}
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)

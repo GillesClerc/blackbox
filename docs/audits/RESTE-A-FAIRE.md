@@ -42,13 +42,13 @@
 - [x] ⚠️ **ICS-43434 100 nF : constat A4 infondé** — le découplage existait déjà (`C3`,
   100 nF 0402 sur 3V3_A, à côté de U4), vérifié par netlist sur le fichier du 23/09.
   Reste une **contrainte de layout** : au plus près des broches 5 et 3, sans via.
-- [ ] 🧑 **Bouton marche/arrêt** (face Côté 2) — **option B retenue** (2026-09-27) : net
-  EN_SYS vers les EN de U5/U6/U7 + pull-down 100 kΩ + **load switch P-MOS sur le rail 5 V**
-  (le boost laisse passer VBAT même désactivé). ⚠️ Il faut **trois** composants, pas un :
-  le P-MOS conduit grille basse alors que EN_SYS est haut quand la box est allumée → il
-  faut un N-MOS d'inversion (BSS138/2N7002) + 100 kΩ grille-source. Candidat P-MOS :
-  **AO3401A** (LCSC C15127, −30 V/−4 A, 60 mΩ à V_GS −4,5 V → ~96 mV et 0,15 W à 1,6 A).
-  Datasheets à récupérer avant de modifier le schéma.
+- [x] 🤖 **Bouton marche/arrêt — option B appliquée** (2026-09-27, feuille `power`) :
+  net `EN_SYS` commun aux EN de U5/U6/U7 (ils étaient câblés sur VSYS), **R20 100 kΩ** en
+  pull-down, **J12** (JST-SH 2 broches) vers l'interrupteur **SW3** (E-Switch 100, contacts
+  or), et load switch **Q1 = AO3401A** sur le rail 5 V commandé par **Q2 = 2N7002** +
+  **R21 100 kΩ**. Le rail est coupé en `5V_BOOST` (D1, C_B2, feedback R_FB_H) et `5V`
+  (12 WS2812, PAM8406, J9). Fiches : `AO3401A.md`, `2N7002.md`.
+  ⚠ À vérifier au proto : la consommation réelle box éteinte (attendu ~10-15 µA).
 - [ ] 🧑 **Charge LiPo — NTC** : **batterie 3 fils avec NTC 10 kΩ** sur TS (J2 en 3 broches,
   retirer R_TS). Proposition pour ne pas dépendre du choix de batterie : J2 en 3 broches +
   **pad NTC 10 kΩ 0603 en DNP** sur le PCB, qui couvre les batteries 2 et 3 fils.
@@ -124,8 +124,7 @@
 - [x] ✅ Haut-parleur : **PUI AS04008PO-2-R** (`docs/datasheets/AS04008PO.md`).
 - [x] ✅ Ferrites de sortie audio : **Murata BLM21PG** (`docs/datasheets/BLM21PG.md`).
 - [ ] 🧑 Écran bouche (pas encore choisi) ; carte microSD (consommation).
-- [ ] 🤖 SS34 (diode 3 A), AO3401A + N-MOS d'inversion (load switch du bouton marche/arrêt)
-  — datasheets à récupérer avant de modifier le schéma.
+- [x] ✅ SS34 (`SS34.md`), AO3401A (`AO3401A.md`), 2N7002 (`2N7002.md`) — récupérées.
 
 ## 7. Divers
 

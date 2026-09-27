@@ -60,3 +60,8 @@ C_FP2,,1uF 10V ceramique,0402,—,1,Face avant,ADS7830 REFIN (ref externe ratiom
 "SL1,SL2,SL3,SL4",Bourns PTA6043-2015CPB103,,Slide-PTA6043-60mm,C17203852,4,Face avant,Fader 60mm 10kOhm lineaire carbon (enigmes) - datasheet docs/datasheets/Bourns-PTA6043.pdf
 "RV1,RV2,RV3,RV4",Bourns PDB181-K420K-103B,,Pot-PDB181-17mm-panel,C6251250,4,Face avant,Pot rotatif 17mm 10kOhm lineaire knurled axe 6mm (enigmes) - datasheet docs/datasheets/Bourns-PDB181.pdf
 "SW1,SW2",E-Switch 100SP1T1B4M1QE,,Toggle-100SP-12mm-bushing,—,2,Face avant,Toggle SPDT ON-ON panel 12mm (a sourcer DigiKey/Mouser - non LCSC) - datasheet docs/datasheets/E-Switch-100-series-toggle.pdf
+Q1,C15127,MOSFET P AO3401A -30V -4A,SOT-23,—,1,Main,Load switch rail 5V (marche/arret)
+Q2,C8545,MOSFET N 2N7002,SOT-23,—,1,Main,Inverseur de commande du load switch
+"R20,R21",,100k 1%,0402,—,2,Main,Pull-down EN_SYS + grille-source Q1
+J12,,Connecteur JST-SH 2pin,JST-SH-2P,—,1,Main,Interrupteur marche/arret (face Cote 2)
+SW3,,Interrupteur SPDT E-Switch 100 (contacts or),Toggle,—,1,Cote 2,Marche/arret — ne commute que EN_SYS (~50 uA)

@@ -63,13 +63,32 @@ NET BOOST_FB:
   R_FB_H.2 (750k, autre borne sur 5V)
   R_FB_L.1 (100k, autre borne sur GND)
 
-NET 5V:
-  D1.K (SS14 cathode), C_B2.+
-  R_FB_H.1 (diviseur feedback)
+NET 5V_BOOST (sortie du boost, avant le load switch — 2026-09-27) :
+  D1.K (SS34 cathode), C_B2.+
+  R_FB_H.1 (diviseur feedback — reste cote boost, la regulation ne voit pas
+   la chute du load switch)
+  Q1.S (AO3401A, source cote boost)
+
+NET GATE_5V:
+  Q1.G, Q2.D (2N7002), R21.2 (100k vers 5V_BOOST)
+  (Q1 conduit grille basse alors que EN_SYS est haut box allumee -> Q2 inverse)
+
+NET EN_SYS (marche/arret, 2026-09-27) :
+  J12.2 (interrupteur SW3 face Cote 2), R20.1 (pull-down 100k vers GND),
+  U5.EN (LDO 3V3_D), U6.EN (LDO 3V3_A), U7.EN (boost MT3608), Q2.G
+  (etaient tous cables directement sur VSYS avant : la box s'allumait des
+   qu'une batterie etait branchee, ~10 mA de repos)
+
+NET VSYS (ajout J12) :
+  J12.1 (l'interrupteur ramene VSYS sur EN_SYS quand il est ferme)
+
+NET 5V (apres le load switch) :
+  Q1.D
   J9.VCC (WS2812)
   U3.VDD (PAM8406)
   (VOUT = 0.6V x (1 + 750k/100k) = 5.1V — le MT3608 n'a pas de pin VOUT,
-   la sortie passe par SW -> D1)
+   la sortie passe par SW -> D1 -> Q1. Chute du load switch ~50 mV a 0,83 A,
+   la charge voit donc ~5,05 V, dans les specs WS2812 et PAM8406.)
 
 NET GND:
   (toutes les masses — plan continu, pas de split)
