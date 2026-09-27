@@ -1363,7 +1363,7 @@ Les préférences (volume par défaut, langue) sont persistées en **NVS** via `
 
 | Bloc | Données affichées | Phase (capteur) |
 |---|---|---|
-| Touch capacitif | état des 12 électrodes (bitmap live) + seuils | 1 (MPR121) |
+| Touch capacitif | état des électrodes (bitmap live) + seuils : 12 en Phase 1, 6 touches + proximité en Phase 2 | 1 (MPR121) → 2 (CAP1298) |
 | Accéléro / gyro | x/y/z (g), tilt détecté, température | 2 (LSM6DSOX, sur la Main) |
 | Luminosité ambiante | lux | 1 (VEML7700) |
 | Panneau de contrôle | 4 faders + 4 potentiomètres (0-255), toggles SW1/SW2 | 2 (ADS7830, GPIO1/2) |
