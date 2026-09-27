@@ -53,11 +53,13 @@
   retirer R_TS). Proposition pour ne pas dépendre du choix de batterie : J2 en 3 broches +
   **pad NTC 10 kΩ 0603 en DNP** sur le PCB, qui couvre les batteries 2 et 3 fils.
   Option : R_ISET 1,27 kΩ (0,7 A) pour chauffer moins.
-- [ ] 🧑 **D1 SS14 → SS34** ; revoir l'objectif de 1,9 A sur J9. Moins tendu depuis le choix
-  d'un haut-parleur 8 Ω : l'audio ne tire plus que ~0,4 A par canal (au lieu de 1,15-1,44 A
-  en 4 Ω), soit 0,83 A au total avec les LEDs blanches — juste sous le 1 A du SS14. Le SS34
-  reste recommandé (même empreinte SMA, marge, et J9 ferait sauter le SS14).
-  ⚠ Datasheet officielle SS34 encore à récupérer avant de figer la référence.
+- [x] 🤖 **D1 SS14 → SS34** (2026-09-27) : symbole `Diode:SS34` + LCSC **C8678**
+  (Basic part JLCPCB), même empreinte SMA, BOM mise à jour (`docs/datasheets/SS34.md`).
+  ⚠ Le PDF local est celui de Vishay (famille SS32-SS36) : LCSC bloque le téléchargement
+  de la fiche MDD, et les tableaux du PDF Vishay ne sont pas extractibles en texte → pour
+  un chiffre critique, ouvrir la fiche MDD depuis la page LCSC.
+- [ ] 🧑 **Objectif de 1,9 A sur J9 à revoir** (indépendant de la diode) : sur batterie,
+  cela ferait ~3,1 A côté cellule, au-delà du seuil de coupure DW01A (1,6-3,2 A).
 - [ ] 🧑 **3V3_D** : AP2112 en **SOT-89-5** (θJA 120 au lieu de 184 °C/W) + cuivre autour.
 
 ### 🟡 Faible

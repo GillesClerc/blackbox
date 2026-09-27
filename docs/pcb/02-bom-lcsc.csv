@@ -66,7 +66,7 @@ C_OUT,,4.7uF 10V ceramique,0603,—,1,Main,bq24075 OUT decouplage
 R_TS,,10k ohm,0402,—,1,Main,bq24075 TS pin1 vers GND (pas de NTC - 10k fixe TS->VSS datasheet §9.3.6)
 "R9,R10",,5.1k ohm,0402,—,2,Main,USB-C CC1/CC2
 "R11,R12",,22 ohm,0402,—,2,Main,Serie USB D+/D-
-D1,,Diode Schottky SS14,SMA,—,1,Main,Protection MT3608
+D1,C8678,Diode Schottky SS34 (3A),SMA,—,1,Main,Protection MT3608 (SS14 1A insuffisant — audit A5)
 U20,MTCH2120-I/MX,,QFN-20,—,1,Satellite,Touch capacitif 12ch (pas sur LCSC - DigiKey/Mouser)
 U11,LSM6DSOXTR,,LGA-14,C481766,1,Main,Accelerometre+gyro 6 axes + MLC (IMU) — deplace du satellite capteurs vers Main (2026-09-21), aucune contrainte de position. Sheet imu.kicad_sch, mode I2C (SDO/SA0=GND -> addr 0x6A, SDx/SCx=GND, CS=3V3_D), pinout verifie datasheet ST DS12814
 U22,VEML7700-TT,,OPLGA,C1850416,1,Satellite,Capteur lumiere ambiante
