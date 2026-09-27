@@ -80,24 +80,28 @@ Projets KiCad créés le 2026-09-27 : `hardware/devant/`, `dessus/`, `cote1/`, `
 - [x] 🤖 **Côté 2 — partie USB dessinée** : J1 USB-C, U1 USBLC6 (sur les lignes brutes, côté
   connecteur), R1/R2 CC 5,1 kΩ, J2 vers J14 de la Main — netlist vérifiée.
 - [ ] 🤝 Dessin face par face (🤖 schéma + vérification netlist, 🧑 mise en page + ERC) :
-  Côté 2 (MTCH2120, SW3), Côté 3 (MLX90614, TMAG5273), Côté 1 (ADS7830, faders, pots,
+  Côté 2 (contrôleur tactile 12 canaux, SW3), Côté 3 (TMAG5273, électrode de proximité), Côté 1 (ADS7830, faders, pots,
   toggles, boutons), Dessus (ST25DV + antenne, base `hardware/main/.history/nfc.kicad_sch`),
   Devant (écrans, BMP280, VEML7700 — bloqué par la fiche du module GC9A01 et le choix de
   l'écran bouche).
-- [ ] 🧑 Symboles manquants : **MLX90614** et **MTCH2120** (absents de la bibliothèque) —
-  import LCSC manager si disponibles, sinon je les crée depuis la datasheet.
+- [x] 🧑 Symboles MLX90614 (C2837265) et MTCH2120 (C45606479) importés par LCSC manager
+  (2026-09-27) — brochages conformes, mais les deux composants sont remis en cause (ci-dessous).
+- [x] 🤝 **MLX90614 retiré du produit** (2026-09-27) : trop cher (variante 3 V 6,6-8,9 $),
+  bridait le bus à 100 kHz. Côté 3 = TMAG5273 + électrode de proximité capacitive.
+- [ ] 🤝 **Contrôleur tactile Côté 2 à rechoisir** : MTCH2120 sans stock JLCPCB, MPR121 en
+  fin de vie (2019), CAP1298 limité à 8 canaux, CAP1214 introuvable. Besoin : 12 canaux
+  (clavier numérique) + proximité pour Côté 3.
 - [ ] 🤝 Modèles 3D des satellites : les empreintes LCSC pointent vers
   `${KIPRJMOD}/libs/lcsc/3dmodels`, donc introuvables depuis `hardware/<face>/` → déplacer
   les bibliothèques dans `hardware/libs/` (variable de chemin commune) le jour où l'on veut
   la 3D des satellites.
 
-- [ ] 🧑 **MLX90614 variante Bxx (3 V)** — vérifier la référence LCSC C58661 ; 100 nF sur VDD.
 - [ ] 🧑 **TMAG5273A1** (0x35) ; INT → GND (+ MASK_INTB côté firmware) ; ≥ 10 nF sur VCC.
 - [ ] 🧑 **BMP280** : CSB **directement** sur VDDIO, SDO → GND (0x76), 100 nF sur VDD et VDDIO.
 - [ ] 🧑 Brochage **Qwiic** sur chaque satellite (1 = GND, 2 = 3V3, 3 = SDA, 4 = SCL).
 - [ ] 🧑 **Satellite Côté 2** : J1 USB-C + USBLC6 **au plus près du port** + CC 5,1 kΩ,
   connecteur vers J14 (JST-PH 6, fils de section adaptée à ~1,1 A sur VBUS, D+/D− torsadés),
-  interrupteur SW3 (J12), MTCH2120 (I2C).
+  interrupteur SW3 (J12), contrôleur tactile (I2C, à rechoisir).
 - [ ] 🤝 **Énigme « clé USB » (mode hôte) — place réservée, pas câblée** : sur le satellite,
   commutateur de VBUS limité en courant alimenté par `5V_HOST` (R22 à monter), protection
   contre la réinjection dans le chargeur, CC côté source, commande par expander I2C (plus de
@@ -122,7 +126,7 @@ Adaptation au hardware actuel :
 - [ ] **MTCH2120** (F5) : adresse 0x20, adressage mémoire 16 bits (DEVID 0x0000, BTNSTA
   0x0102) — confirmer d'abord l'ordre des octets (figure 3-5 / driver Microchip).
 - [ ] **Drivers à écrire** : LSM6DSOX sur la Main (brancher `hal_imu`, fin de l'inclinaison
-  simulée), TMAG5273 (MASK_INTB), MLX90614 (SMBus + PEC), BMP280, ADS7830, ST25DV
+  simulée), TMAG5273 (MASK_INTB), BMP280, ADS7830, ST25DV
   (remplace `hal_nfc` PN532), micro ICS-43434, écran bouche (quand il sera choisi).
 - [ ] **Boutons GPIO45/46** (F6) — lire BTN1/BTN2 (actifs hauts, pull-down externe) ; ne
   jamais exiger d'appui au démarrage (strapping).

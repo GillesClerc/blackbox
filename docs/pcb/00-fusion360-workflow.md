@@ -44,7 +44,7 @@ télécharger en format "Eagle", et importer le .lbr dans Fusion 360 :
 | Lumière ambiante | VEML7700 | "VEML7700" |
 | Pression | BMP280 | "BMP280" |
 | NFC tag | ST25DV04KC-IE6S3 | "ST25DV04K" |
-| Température IR | MLX90614ESF-BAA | "MLX90614" |
+| ~~Température IR~~ | ~~MLX90614ESF-BAA~~ (retiré 2026-09-27) | — |
 | Hall linéaire 3D | TMAG5273A2QDBVR | "TMAG5273" |
 | ESD USB | USBLC6-2SC6 | "USBLC6-2" |
 | USB-C connector | — | "USB Type-C 16 pin" |

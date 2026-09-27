@@ -12,6 +12,10 @@
 >   (TMAG5273, servo) décochés, API §6.1 et BLE §6.2 réécrites d'après le code, commande de
 >   flash et structure du dépôt corrigées, servos/AS5600 retirés des exigences, contradiction
 >   AGND/PGND levée. **Ce qui reste à faire vit dans `docs/audits/RESTE-A-FAIRE.md`**, pas ici.
+> - **0.3 (2026-09-27, suite)** — **MLX90614 retiré du produit** (variante 3 V à 6,6-8,9 $ pièce chez
+>   JLCPCB, pilote à écrire, bus I2C bridé à 100 kHz, adresse 0x5A). Côté 3 = TMAG5273
+>   + électrode de proximité capacitive (« approche ta main »). Contrôleur tactile de Côté 2 en
+>   cours de réévaluation (MTCH2120 introuvable chez JLCPCB, MPR121 en fin de vie).
 > - 0.2 (2026-09-23) — corrections issues des datasheets (audit hardware + DB).
 > - 0.1 (mai 2026) — première version.
 >
@@ -171,7 +175,6 @@ Scores et stats remontés à la prochaine synchro
 | 0x5A | MPR121 | Capacitif 12 canaux (breakout Phase 1, même rôle que MTCH2120) | Proto breadboard |
 | 0x53 / 0x57 | ST25DV04KC-IE6S3 | Tag NFC dynamique — 0x53 mémoire utilisateur/registres dynamiques, 0x57 configuration système (vérifié datasheet) | Satellite Dessus |
 | 0x4C | PCM5122PW | DAC audio stéréo (I2C contrôle) | Main |
-| 0x5A | MLX90614 | Température IR (sans contact) — **variante 3 V obligatoire (MLX90614Bxx)** ; adresse usine 0x5A, à reprogrammer en 0x5C (EEPROM) seulement si le MPR121 (Phase 1) est sur le même bus. SMBus ≤ 100 kHz | Satellite Côté 3 |
 | 0x6A | LSM6DSOXTR | Accéléromètre + gyroscope 6 axes + MLC | **Main** (soudé, feuille `imu`) |
 | 0x35 | TMAG5273 | Hall linéaire 3D (distance/angle aimant) — **variante A1 à commander** (0x35, ±40/80 mT ; B/C/D = 0x22/0x78/0x44) | Satellite Côté 3 |
 | 0x76 | BMP280 | Pression / détection souffle — SDO = GND (0x76), **CSB relié directement à VDDIO** (sinon verrouillage en SPI) | Satellite Devant |
@@ -325,7 +328,7 @@ bq24075 (U8) — chargeur 1 A + power path DPPM, entrée limitée à 1,07 A (R_I
 | **Dessus** | Voix + NFC | Haut-parleur (câblé depuis PAM8406 sur Main) + ST25DV04KC-IE6S3 NFC (tap téléphone) |
 | **Côté 1** | Panneau de contrôle | ADS7830 + 4 faders + 4 potentiomètres rotatifs, toggles SW1/SW2, boutons poussoir |
 | **Côté 2** | Accès technique + énigme | Port USB-C réel (charge + énigme "bonne clé USB avec le bon contenu"), interrupteur, zones tactiles MTCH2120 |
-| **Côté 3** | Zone magique | MLX90614 température IR sans contact + TMAG5273 Hall linéaire ("approche ta main" / "pose un objet") |
+| **Côté 3** | Zone magique | Électrode de proximité capacitive ("approche ta main") + TMAG5273 Hall linéaire ("pose un objet") — MLX90614 retiré le 2026-09-27 |
 | **Dessous** | Main (technique + lest) | ESP32-S3, alimentation, PCM5122+PAM8406, LSM6DSOXTR (IMU, soudé directement sur Main — aucune contrainte de position), batterie (lest, stabilise l'orientation de repos), WS2812 halo table |
 
 > Répartition figée par face (2026-09-21). Le cube prend de fait une orientation de repos stable une fois assemblé (batterie + Main lestent le Dessous), même si géométriquement un cube n'a ni haut ni bas.
@@ -395,10 +398,11 @@ Composants embarqués :
 - MTCH2120 capacitif 12 canaux (zones tactiles, pads déportables via FPC)
 
 **Satellite face Côté 3** — zone magique :
-- MLX90614 IR température (avec fenêtre IR)
 - TMAG5273 Hall linéaire 3D I2C
+- Électrode de proximité capacitive (« approche ta main ») ; contrôleur à choisir avec celui de Côté 2
+- ~~MLX90614~~ (retiré le 2026-09-27 : coût, et bus I2C bridé à 100 kHz)
 
-> Tous les capteurs I2C (satellites + Main) partagent le même bus backbone. Adresses vérifiées datasheets (2026-09-23), aucun conflit en Phase 2 : VEML7700 0x10, MTCH2120 0x20, TMAG5273A1 0x35, ADS7830 0x48, PCM5122 0x4C, ST25DV 0x53 + 0x57, MLX90614 0x5A, LSM6DSOX 0x6A, BMP280 0x76 (MPR121 0x5A en Phase 1 : conflit avec le MLX90614 si les deux cohabitent). **Bus limité à 100 kHz par le MLX90614.**
+> Tous les capteurs I2C (satellites + Main) partagent le même bus backbone. Adresses vérifiées datasheets (2026-09-23), aucun conflit en Phase 2 : VEML7700 0x10, MTCH2120 0x20, TMAG5273A1 0x35, ADS7830 0x48, PCM5122 0x4C, ST25DV 0x53 + 0x57, LSM6DSOX 0x6A, BMP280 0x76 (MPR121 0x5A en Phase 1). Bus à 100 kHz aujourd'hui ; le MLX90614, qui imposait cette limite, est retiré — monter à 400 kHz demande de vérifier chaque datasheet et la capacité du bus avec les câbles.
 
 **Connectique backbone (état du schéma Main au 2026-09-27)** :
 
@@ -472,7 +476,7 @@ JST-SH (1,0 mm, verrouillable) pour les signaux inter-PCB ; JST-PH (2,0 mm) pour
 | cJSON | Parsing scénario / API — copie embarquée dans `components/scenario/` (MIT) |
 | minimp3 | Décodeur MP3 single-header (voix du mixer `hal_audio`, buffers PSRAM). ESP-ADF évalué en Phase 2+ uniquement si un vrai pipeline multi-format/streaming devient nécessaire. |
 | i2c_master (PCM5122) | Config DAC : PLL, volume, filtre, mute via registres I2C (addr 0x4C) |
-| i2c_master | Bus unique à **100 kHz** (limite du MLX90614) : MPR121/MTCH2120, LSM6DSOXTR, VEML7700 ; ST25DV, TMAG5273, MLX90614, BMP280, ADS7830 **à écrire** |
+| i2c_master | Bus unique à **100 kHz** : MPR121/MTCH2120, LSM6DSOXTR, VEML7700 ; ST25DV, TMAG5273, BMP280, ADS7830 **à écrire** |
 | NimBLE (ESP-IDF) | Provisioning WiFi + preuve de possession via BLE (`ble_prov`) |
 | esp_http_client + bundle CA | Auth, sync et download des packages en HTTPS (`cloud_client`) |
 | PSA crypto (mbedTLS 4) | HMAC-SHA256 de l'identité box (`hal_box_auth`) |
@@ -803,7 +807,7 @@ M2 → M3   : intégration complète + playtests
 - [x] MPR121 tactile capacitif 12 canaux — validé DevKitC-1 (I2C 0x5A, 100kHz, SDA=21/SCL=17)
 - [x] Driver LEDs WS2812B (RMT, GRB, show) — validé
 - [x] Drivers I2C écrits : MPR121 (validé), `hal_imu` (LSM6DSO/DSOX, non branché), `hal_light` (VEML7700, non branché), MTCH2120 (⚠ à réécrire : adresse et protocole faux)
-- [ ] Drivers I2C à écrire : TMAG5273, MLX90614, BMP280, ADS7830, ST25DV
+- [ ] Drivers I2C à écrire : TMAG5273, BMP280, ADS7830, ST25DV
 - [x] Outil YAML→JSON (tools/yaml2json.py avec validation)
 - [ ] Driver NFC ST25DV — composant changé (ex-PN532, protocole totalement différent : registres I2C/EEPROM au lieu du protocole de commande PN532), ancien driver `hal_nfc` obsolète, réécriture à faire
 - [x] Système de fichiers SD SPI+FAT — validé sur cible (module 5V, SPI2 CS=47, monté sur /sdcard)
@@ -955,7 +959,7 @@ Critères produit — go/no-go Phase 2 :
 - [ ] **Dessus** (voix + NFC) : ST25DV04KC-IE6S3 (reprendre `nfc.kicad_sch` existant) + connecteur haut-parleur — schéma + dessin antenne NFC (boucle PCB, zone de garde) + layout + Gerbers
 - [ ] **Côté 1** (panneau de contrôle) : ADS7830 + faders/pots + toggles + boutons — schéma + layout + Gerbers
 - [ ] **Côté 2** (technique + énigme) : port USB-C + interrupteur + MTCH2120 — schéma + layout + Gerbers
-- [ ] **Côté 3** (zone magique) : MLX90614 + TMAG5273 — schéma + layout + Gerbers
+- [ ] **Côté 3** (zone magique) : TMAG5273 + électrode de proximité — schéma + layout + Gerbers
 - [x] 5 connecteurs I2C sur Main (J3-J6 + J13), un par face satellite (2026-09-27)
 
 *Commun à tous les PCB :*
@@ -1361,7 +1365,6 @@ Les préférences (volume par défaut, langue) sont persistées en **NVS** via `
 | NFC | état RF (champ détecté via poll I2C du registre `ITSTS_DYN`) | 2 (ST25DV) |
 | Souffle / pression | pression hPa, seuil détection | 2 (BMP280) |
 | Hall / aimant | champ x/y/z, aimant détecté | 2 (TMAG5273) |
-| Température IR | °C objet / ambiant | 2 (MLX90614) |
 | Batterie | VBAT (mV), seuil d'extinction | 2 (VBAT_SENSE) |
 | Audio | état I2S, volume courant, flag sous-tension | 1 |
 | WiFi | RSSI, IP | 1 |
@@ -1655,7 +1658,7 @@ Ces 3 réponses sont liées à la session (`hints_used`, `duration_sec`, `score`
 [ ] LSM6DSOXTR détecte une inclinaison de 15° minimum
 [ ] BMP280 détecte un souffle buccal à 5 cm
 [ ] VEML7700 distingue pièce éclairée / pièce sombre
-[ ] MLX90614 mesure la température d'une main à 2 cm
+[ ] Électrode de proximité Côté 3 détecte une main approchée
 [ ] WS2812 : toute la chaîne répond, couleurs correctes
 [ ] USB-C : programmation ET charge fonctionnels simultanément
 [ ] Carte SD : lecture / écriture à > 1 MB/s
@@ -1775,7 +1778,7 @@ Ces 3 réponses sont liées à la session (`hints_used`, `duration_sec`, `score`
 | VEML7700 | LCSC C1850416 | https://www.vishay.com/docs/84286/veml7700.pdf |
 | BMP280 | LCSC C83291 | https://www.bosch-sensortec.com/media/boschsensortec/downloads/datasheets/bst-bmp280-ds001.pdf |
 | LSM6DSOXTR | LCSC C481766 | https://www.st.com/resource/en/datasheet/lsm6dsox.pdf |
-| MLX90614 (**variante Bxx 3 V**) | LCSC C58661 (variante à vérifier) | https://www.melexis.com/en/documents/documentation/datasheets/datasheet-mlx90614 |
+| ~~MLX90614~~ (retiré 2026-09-27) | — | https://www.melexis.com/en/documents/documentation/datasheets/datasheet-mlx90614 |
 | PCM5122PW | LCSC C1540085 (BOM) | https://www.ti.com/lit/ds/symlink/pcm5122.pdf |
 | PAM8406DR | LCSC C86270 (BOM) | https://www.diodes.com/assets/Datasheets/PAM8406.pdf |
 | ICS-43434 | LCSC C5656610 (BOM) | https://invensense.tdk.com/wp-content/uploads/2016/02/DS-000069-ICS-43434-v1.2.pdf |

@@ -54,7 +54,6 @@ U20,MTCH2120-I/MX,,QFN-20,—,1,Satellite,Touch capacitif 12ch (pas sur LCSC - D
 U21,LSM6DSOXTR,,LGA-14,C481766,1,Satellite,Accelerometre+gyro 6 axes + MLC
 U22,VEML7700-TT,,OPLGA,C1850416,1,Satellite,Capteur lumiere ambiante
 U23,BMP280,,LGA-8,C83291,1,Satellite,Pression / souffle
-U24,MLX90614ESF-BAA,,TO-39,—,1,Satellite,Temperature IR sans contact - variante 3V obligatoire (AAA=5V incompatible rail 3V3) - adresse usine 0x5A a reprogrammer en 0x5C (EEPROM) - verifier dispo LCSC/Mouser - pinout confirme (SCL/Vz=1 SDA/PWM=2 VDD=3 VSS=4)
 U25,TMAG5273A2QDBVR,,SOT-23-6,C3715882,1,Satellite,Hall lineaire 3D I2C (remplace A3144E)
 "C30,C31,C32,C33,C34,C35",,100nF 16V ceramique,0402,—,6,Satellite,Decouplage capteurs
 U26,ADS7830IPWR,,TSSOP-16,C161747,1,Face avant,ADC 8ch 8-bit I2C addr 0x48 - lit SL1-SL4 + RV1-RV4 ratiometrique (REFIN=3V3) - datasheet docs/datasheets/ADS7830.md
