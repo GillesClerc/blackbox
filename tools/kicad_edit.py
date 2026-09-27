@@ -196,15 +196,39 @@ def append(txt, *chunks):
 
 
 def symbol_block(txt, ref):
-    """(debut, fin) du bloc symbole portant cette reference."""
+    """(debut, fin) du bloc symbole portant cette reference.
+
+    La fin est trouvee par comptage de parentheses, pas en cherchant le symbole
+    suivant : des fils, labels ou jonctions peuvent etre intercales entre deux
+    symboles, et les emporter lors d'une suppression casse le schema
+    silencieusement.
+    """
     m = re.search(r'\(property "Reference" "' + re.escape(ref) + r'"', txt)
     if not m:
         raise SystemExit(f'reference {ref} introuvable')
-    start = txt.rfind('\n\t(symbol\n', 0, m.start())
-    end = txt.find('\n\t(symbol\n', m.start())
-    if end < 0:
-        end = txt.rfind('\n)')
-    return start, end
+    start = txt.rfind('\n\t(symbol\n', 0, m.start()) + 1
+    depth, i, in_str = 0, start, False
+    while i < len(txt):
+        c = txt[i]
+        if in_str:
+            if c == '\\':
+                i += 2
+                continue
+            if c == '"':
+                in_str = False
+        elif c == '"':
+            in_str = True
+        elif c == '(':
+            depth += 1
+        elif c == ')':
+            depth -= 1
+            if depth == 0:
+                end = i + 1
+                if txt[end:end + 1] == '\n':
+                    end += 1
+                return start, end
+        i += 1
+    raise SystemExit(f'bloc du symbole {ref} mal forme')
 
 
 def retarget(txt, ref, new_ref=None, lib_id=None, value=None, footprint=None):
@@ -230,12 +254,29 @@ def retarget(txt, ref, new_ref=None, lib_id=None, value=None, footprint=None):
     return txt[:start] + blk + txt[end:]
 
 
-def drop_wire(txt, p1, p2):
-    """Supprime le fil reliant exactement ces deux points (dans un sens ou l'autre)."""
-    for a, b in ((p1, p2), (p2, p1)):
-        pat = (r'\t\(wire\s*\(pts\s*\(xy ' + f'{a[0]} {a[1]}' + r'\)\s*\(xy '
-               + f'{b[0]} {b[1]}' + r'\)[\s\S]*?\n\t\)\n')
-        new, n = re.subn(pat, '', txt, count=1)
-        if n:
-            return new
+def drop_wire(txt, p1, p2, tol=0.01):
+    """Supprime le fil reliant ces deux points (dans un sens ou l'autre).
+
+    La comparaison est numerique et non textuelle : KiCad ecrit volontiers
+    « 165.10000000000002 », qu'une correspondance exacte de chaine rate.
+    """
+    pat = re.compile(r'\t\(wire\s*\(pts\s*\(xy ([-\d.]+) ([-\d.]+)\)\s*'
+                     r'\(xy ([-\d.]+) ([-\d.]+)\)[\s\S]*?\n\t\)\n')
+    for m in pat.finditer(txt):
+        a = (float(m.group(1)), float(m.group(2)))
+        b = (float(m.group(3)), float(m.group(4)))
+        close = lambda u, v: abs(u[0] - v[0]) < tol and abs(u[1] - v[1]) < tol
+        if (close(a, p1) and close(b, p2)) or (close(a, p2) and close(b, p1)):
+            return txt[:m.start()] + txt[m.end():]
     raise SystemExit(f'fil {p1}-{p2} introuvable')
+
+
+def drop_label(txt, name, at, tol=0.01):
+    """Supprime le global label de ce nom a cette position (comparaison numerique)."""
+    pat = re.compile(r'\t\(global_label "' + re.escape(name) +
+                     r'"\n\t\t\(shape \w+\)\n\t\t\(at ([-\d.]+) ([-\d.]+) \d+\)[\s\S]*?\n\t\)\n')
+    for m in pat.finditer(txt):
+        if (abs(float(m.group(1)) - at[0]) < tol
+                and abs(float(m.group(2)) - at[1]) < tol):
+            return txt[:m.start()] + txt[m.end():]
+    raise SystemExit(f'label {name} en {at} introuvable')

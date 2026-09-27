@@ -377,7 +377,7 @@
 						)
 					)
 				)
-				(pin output line
+				(pin power_out line
 					(at 17.78 7.62 180)
 					(length 5.08)
 					(name "OUT_10"
@@ -12790,7 +12790,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "73255d6c-ad08-406d-8810-1990711dc1b2")
-		(property "Reference" "#FLGGND"
+		(property "Reference" "#FLG01"
 			(at 193.04 158.75 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -12849,7 +12849,7 @@
 		(instances
 			(project "blackbox"
 				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/85a32c7c-168b-4c08-8a60-f4e86c1b8173"
-					(reference "#FLGGND")
+					(reference "#FLG01")
 					(unit 1)
 				)
 			)
@@ -12891,116 +12891,6 @@
 	)
 	(symbol
 		(lib_id "power:PWR_FLAG")
-		(at 200.66 160.02 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "3f0e9c57-99d9-4c45-93e0-d6f4e91a4c44")
-		(property "Reference" "#FLGVSYS"
-			(at 203.2 158.75 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "PWR_FLAG"
-			(at 203.2 161.29000000000002 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 200.66 160.02 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 200.66 160.02 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "Declare VSYS comme pilote (le projet n utilise pas de symboles d alimentation, uniquement des global labels)"
-			(at 200.66 160.02 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "dc8aa89a-b269-4bc1-b049-48fde4bcf95e")
-		)
-		(instances
-			(project "blackbox"
-				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/85a32c7c-168b-4c08-8a60-f4e86c1b8173"
-					(reference "#FLGVSYS")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(wire
-		(pts
-			(xy 200.66 160.02) (xy 200.66 165.10000000000002)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "de0c506e-73ab-4b4c-9a73-c9c93e525cc3")
-	)
-	(global_label "VSYS"
-		(shape input)
-		(at 200.66 165.10000000000002 270)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "ba7c5703-085b-4698-84c8-a679ce9c3664")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 212.09 165.10000000000002 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:PWR_FLAG")
 		(at 210.82 160.02 0)
 		(unit 1)
 		(body_style 1)
@@ -13010,7 +12900,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "9ad03ad3-d513-4463-aa33-74c592780fc8")
-		(property "Reference" "#FLGVBAT"
+		(property "Reference" "#FLG02"
 			(at 213.35999999999999 158.75 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -13069,7 +12959,7 @@
 		(instances
 			(project "blackbox"
 				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/85a32c7c-168b-4c08-8a60-f4e86c1b8173"
-					(reference "#FLGVBAT")
+					(reference "#FLG02")
 					(unit 1)
 				)
 			)
@@ -13120,7 +13010,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "f314f1cc-be1e-44ad-9649-7b3f7fd7c630")
-		(property "Reference" "#FLGVBATN"
+		(property "Reference" "#FLG03"
 			(at 223.51999999999998 158.75 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -13179,7 +13069,7 @@
 		(instances
 			(project "blackbox"
 				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/85a32c7c-168b-4c08-8a60-f4e86c1b8173"
-					(reference "#FLGVBATN")
+					(reference "#FLG03")
 					(unit 1)
 				)
 			)
@@ -13221,226 +13111,6 @@
 	)
 	(symbol
 		(lib_id "power:PWR_FLAG")
-		(at 231.14 160.02 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "cca2f763-2810-4f19-a28f-36f025311a96")
-		(property "Reference" "#FLGV33D"
-			(at 233.67999999999998 158.75 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "PWR_FLAG"
-			(at 233.67999999999998 161.29000000000002 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 231.14 160.02 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 231.14 160.02 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "Declare 3V3_D comme pilote (le projet n utilise pas de symboles d alimentation, uniquement des global labels)"
-			(at 231.14 160.02 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "fe968748-2551-4a30-a921-3060896a056f")
-		)
-		(instances
-			(project "blackbox"
-				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/85a32c7c-168b-4c08-8a60-f4e86c1b8173"
-					(reference "#FLGV33D")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(wire
-		(pts
-			(xy 231.14 160.02) (xy 231.14 165.10000000000002)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "ad7af9b1-a603-42a5-b004-edfbbee4d947")
-	)
-	(global_label "3V3_D"
-		(shape input)
-		(at 231.14 165.10000000000002 270)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "4bec0e81-f5c3-4764-a0cb-ab17cc185c03")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 242.57 165.10000000000002 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:PWR_FLAG")
-		(at 241.29999999999998 160.02 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "a51243c2-b826-40ba-9dc8-3432b9a85b43")
-		(property "Reference" "#FLGV33A"
-			(at 243.83999999999997 158.75 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "PWR_FLAG"
-			(at 243.83999999999997 161.29000000000002 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 241.29999999999998 160.02 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 241.29999999999998 160.02 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "Declare 3V3_A comme pilote (le projet n utilise pas de symboles d alimentation, uniquement des global labels)"
-			(at 241.29999999999998 160.02 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "be568850-0f19-444a-8e11-6ba848954ef0")
-		)
-		(instances
-			(project "blackbox"
-				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/85a32c7c-168b-4c08-8a60-f4e86c1b8173"
-					(reference "#FLGV33A")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(wire
-		(pts
-			(xy 241.29999999999998 160.02) (xy 241.29999999999998 165.10000000000002)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "049d6848-1f55-4c85-ae99-354ba0bd88e1")
-	)
-	(global_label "3V3_A"
-		(shape input)
-		(at 241.29999999999998 165.10000000000002 270)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "22643e22-1e85-4c05-93a1-e976124df5bd")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 252.73 165.10000000000002 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:PWR_FLAG")
 		(at 251.45999999999998 160.02 0)
 		(unit 1)
 		(body_style 1)
@@ -13450,7 +13120,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "9f4234ca-e24c-4411-aaff-f34a5c2632d5")
-		(property "Reference" "#FLGV5"
+		(property "Reference" "#FLG04"
 			(at 253.99999999999997 158.75 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -13509,7 +13179,7 @@
 		(instances
 			(project "blackbox"
 				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/85a32c7c-168b-4c08-8a60-f4e86c1b8173"
-					(reference "#FLGV5")
+					(reference "#FLG04")
 					(unit 1)
 				)
 			)
@@ -13560,7 +13230,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "07efb517-91fc-4621-954a-a394976ea9a3")
-		(property "Reference" "#FLGV5BOOST"
+		(property "Reference" "#FLG05"
 			(at 264.16 158.75 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -13619,7 +13289,7 @@
 		(instances
 			(project "blackbox"
 				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/85a32c7c-168b-4c08-8a60-f4e86c1b8173"
-					(reference "#FLGV5BOOST")
+					(reference "#FLG05")
 					(unit 1)
 				)
 			)
@@ -13670,7 +13340,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "24237d0b-6645-4823-a141-0f924e792c1c")
-		(property "Reference" "#FLGV5USB"
+		(property "Reference" "#FLG06"
 			(at 274.32000000000005 158.75 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -13729,7 +13399,7 @@
 		(instances
 			(project "blackbox"
 				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/85a32c7c-168b-4c08-8a60-f4e86c1b8173"
-					(reference "#FLGV5USB")
+					(reference "#FLG06")
 					(unit 1)
 				)
 			)
@@ -15594,6 +15264,142 @@
 		(uuid "53421807-a69a-400b-b32c-b7d5ce3c2a15")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 214.63 181.61 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+	)
+
+	(global_label "DW_VCC"
+		(shape input)
+		(at 55.88 148.59 90)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "dc896e92-8edc-46af-86e1-3729e4853dd6")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 67.31 148.59 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+	)
+
+	(symbol
+		(lib_id "power:PWR_FLAG")
+		(at 55.88 133.35 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "2688f1e6-de6b-4a07-aab5-08f11935f96d")
+		(property "Reference" "#FLG07"
+			(at 58.42 132.07999999999998 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "PWR_FLAG"
+			(at 58.42 134.62 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 55.88 133.35 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 55.88 133.35 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Declare DW_VCC comme pilote : le VCC du DW01A arrive a travers R_VCC"
+			(at 55.88 133.35 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "ee221710-2e2f-40ff-bd66-991257cd29f1")
+		)
+		(instances
+			(project "blackbox"
+				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/85a32c7c-168b-4c08-8a60-f4e86c1b8173"
+					(reference "#FLG07")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 55.88 133.35) (xy 55.88 138.43)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "97356f91-73ae-432f-b771-03eaa079c79d")
+	)
+	(global_label "DW_VCC"
+		(shape input)
+		(at 55.88 138.43 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "413f5bc7-5544-4145-8460-63e6f957020f")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 67.31 138.43 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)

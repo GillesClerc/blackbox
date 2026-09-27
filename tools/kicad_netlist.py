@@ -266,6 +266,41 @@ def build(sheets, angle_sign=1.0):
 
 # ---------------------------------------------------------------- main
 
+def check_wires(sheets):
+    """Detecte ce que l'ERC de KiCad appelle « unconnected wire endpoint ».
+
+    Ecrit apres coup : en retirant une jonction devenue « inutile », j'avais
+    coupe l'alimentation de L1 sans que la netlist s'en apercoive — ce script
+    relie un endpoint pose sur un segment, la ou KiCad exige une jonction.
+    Deux controles :
+      - extremite de fil qui ne touche ni pin, ni label, ni autre fil ;
+      - extremite posee au MILIEU d'un autre fil sans jonction : KiCad ne la
+        considere pas connectee, alors que la connectivite « logique » le
+        suggere. C'est le piege exact de la jonction L1.
+    """
+    problems = []
+    for sh in sheets:
+        pins = {pt for _, _, _, pt, _, _ in sheet_pins(sh)}
+        labels = {p for _, p, _ in sh.labels}
+        junctions = set(sh.junctions)
+        endpoints = {}
+        for a, b in sh.wires:
+            endpoints.setdefault(a, 0)
+            endpoints.setdefault(b, 0)
+        for pt in endpoints:
+            touching = sum(1 for a, b in sh.wires if pt in (a, b))
+            on_mid = [(a, b) for a, b in sh.wires
+                      if pt not in (a, b) and on_segment(pt, a, b)]
+            if pt in pins or pt in labels:
+                continue
+            if on_mid and pt not in junctions:
+                problems.append((sh.name, pt, 'extremite sur un fil sans jonction '
+                                 '(KiCad ne la connecte pas)'))
+            elif touching < 2 and not on_mid:
+                problems.append((sh.name, pt, 'extremite de fil non connectee'))
+    return problems
+
+
 def main():
     d = sys.argv[1] if len(sys.argv) > 1 else '.'
     files = sorted(glob.glob(os.path.join(d, '*.kicad_sch')))
@@ -296,6 +331,14 @@ def main():
             for ref, number, pname, sheet in sorted(nets[name]):
                 if ref.upper() == want:
                     print(f"{ref:8s} pin {number:>4s} {pname:<14s} -> {name}   [{sheet}]")
+    if '--check' in args:
+        problems = check_wires(sheets)
+        if problems:
+            print(f"\n{len(problems)} fil(s) mal raccorde(s) :")
+            for name, pt, why in problems:
+                print(f'   {name:10s} {pt} : {why}')
+        else:
+            print('\nfils : aucun probleme de raccordement detecte')
     if '--all' in args:
         for name in sorted(nets):
             pins = nets[name]
