@@ -23,7 +23,7 @@ J2,,Connecteur batterie JST-PH 3pin (BAT+/BAT-/NTC),JST-PH-3P,—,1,Main,Cellule
 J10,,Connecteur haut-parleur JST-PH 4pin,JST-PH-4P,—,1,Main,"Sorties en pont L+/L-/R+/R- via ferrites FB3-FB6 — aucune masse commune, ne jamais relier les - entre elles ni a GND"
 J11,,Slot microSD push-push,TF-PUSH,C91145,1,Main,Carte SD sur SPI2 partage (MISO=15 CS=47) - verifier ref LCSC avant commande
 L1,,Inductance 22uH,1210,—,1,Main,Pour MT3608 boost (22uH recommande datasheet)
-"C1,C2,C3,C4,C5,C6,C7,C8,C9,C10,C11,C12",,100nF 16V ceramique,0402,—,12,Main,Decouplage generique (ESP32/PN532/divers)
+"C2,C3,C4,C5",,100nF 16V ceramique,0402,—,4,Main,Decouplage generique (ESP32 C2, micro C3, IMU C4/C5)
 "C1_AV,C2_DV,C3_CP,C_LDOO,C_EN",,100nF 16V ceramique,0402,—,5,Main,PCM5122 AVDD(pin8)/DVDD(pin28)/CPVDD(pin1)/LDOO(pin26) + filtre RC EN ESP32 (pins corriges 2026-09-11 vs datasheet TI SLAS763C — l'ancien netlist avait tous les numeros de pins PCM5122 faux)
 "C_D2,C_A2,C_B1",,10uF 10V ceramique,0805,—,3,Main,Sorties LDO U5/U6 + entree MT3608
 "C15,C16,C17",,10uF 16V ceramique,0805,—,3,Main,Bulk decouplage PCM5122 (AVDD/DVDD/CPVDD)
@@ -34,7 +34,7 @@ C_IN,,4.7uF 10V ceramique,0603,—,1,Main,bq24075 IN pin13 decouplage (datasheet
 C_B2,,22uF 16V ceramique,0805,—,1,Main,Sortie MT3608 boost (16V pour derating DC bias)
 "R1,R2",,100 ohm,0603,—,2,Main,Filtre RC sortie audio
 "R3,R4",,4.7k ohm,0402,—,2,Main,Pull-up I2C SDA/SCL
-"R5,R6,R7",,10k ohm,0402,—,3,Main,Pull-up XSMT (R5 vers 3V3_A) / EN ESP32 (R6) / RSTPD PN532 (R7 - ex-Hall retire)
+"R5,R6",,10k ohm,0402,—,2,Main,Pull-up XSMT (R5 vers 3V3_A) / EN ESP32 (R6)
 R8,,330 ohm,0402,—,1,Main,Serie WS2812 data
 R_ILIM,,1.5k ohm,0402,—,1,Main,bq24075 ILIM pin12 (input current limit en mode RILIM EN2=H/EN1=L)
 "R_PG,R_CHG",,100k ohm,0402,—,2,Main,Pull-up debug PGOOD/CHG bq24075 (DNP par defaut - pads testpoint)
@@ -71,6 +71,18 @@ SW3,,Interrupteur SPDT E-Switch 100 (contacts or),Toggle,—,1,Cote 2,Marche/arr
 "—",,Support 18650 ou cellule a languettes,—,—,1,Batterie,Jamais de soudure au fer sur une cellule
 "FB3,FB4,FB5,FB6",BLM21PG221SN1D,220R@100MHz 2A,0805,C85840,4,Main,Ferrites sortie haut-parleur (exigees par la datasheet PAM8406 en classe D sans filtre)
 "R13,R14",,22 ohm,0603,—,2,Main,Resistances serie horloges SPI2/SPI3 (ex-ferrites FB1/FB2 — une ferrite arrondit les fronts)
-"C6,C7",,10pF (DNP),0402,—,2,Main,Provision CEM sur les horloges SPI — non montees
 "R15,R16,R17,R18,R19",,10k,0402,—,5,Main,Pull-ups carte SD (CS/DAT3 CMD DAT0 DAT1 DAT2) — obligatoires (ESP-IDF sd_pullup_requirements)
 R_TMR,,56k 1%,0402,—,1,Main,Timer de securite bq24075 : t_MAXCHG 5.6-9.3 h (etait TMR->GND = timers desactives)
+"LED2,LED3,LED4,LED5,LED6,LED7,LED8,LED9,LED10,LED11,LED12,LED13",WS2812B-B/W,LED RGB adressable,LED-SMD 5x5,C2761795,12,Main,Halo face Dessous — plafond de luminosite firmware obligatoire (budget batterie)
+"C_PAM_HF1,C_PAM_HF2,C_PAM_HF3,C_PAM_INL,C_PAM_INR,C_PAM_VREF",,1uF 16V ceramique,0603,—,6,Main,PAM8406 : decouplage HF + liaison entrees + VREF
+C_PAM_BULK,,22uF 10V ceramique,0805,—,1,Main,PAM8406 : reservoir (datasheet : >= 20uF pres de l ampli)
+C_U9,,100nF 16V ceramique,0402,—,1,Main,Decouplage DW01A
+C_VBAT_SENSE,,100nF 16V ceramique,0402,—,1,Main,Filtrage du pont diviseur VBAT_SENSE (ADC1_CH2)
+"R_MUTE,R_SHDN,R_MODE_D",,10k ohm,0402,—,3,Main,PAM8406 : MUTE/SHDN tires hauts + MODE vers 3V3_A (classe D)
+R_MODE_AB,,10k ohm (DNP),0402,—,1,Main,Alternative classe AB (MODE vers GND) — NE JAMAIS monter en meme temps que R_MODE_D
+R_SD_PD,,100k ohm,0402,—,1,Main,Pull-down SD du micro ICS-43434 (datasheet)
+R_CS,,1k ohm,0402,—,1,Main,DW01A : resistance de detection (application typique)
+"R_VBAT_H,R_VBAT_L",,1M ohm 1%,0402,—,2,Main,Pont diviseur VBAT_SENSE 1:1
+"TP_EN,TP_GPIO0,TP_I2CA,TP_I2CL",,Point de test,TestPoint_Pad_D1.5mm,—,4,Main,Pastilles de test (EN, GPIO0, I2C SDA/SCL)
+"C_CLK2,C_CLK3",,10pF (DNP),0402,—,2,Main,Provision CEM sur les horloges SPI — non montees
+C1,,10uF 16V ceramique,0603,—,1,Main,Reservoir 3V3_D au pied du module ESP32-S3

@@ -2876,7 +2876,7 @@
 		(in_pos_files yes)
 		(dnp yes)
 		(uuid "032084de-7df6-47e2-acb0-9bb97e467f21")
-		(property "Reference" "C7"
+		(property "Reference" "C_CLK3"
 			(at 191.77 99.06 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2938,7 +2938,7 @@
 		(instances
 			(project "blackbox"
 				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/14cfff57-6a31-4c05-af76-83111480b025"
-					(reference "C7")
+					(reference "C_CLK3")
 					(unit 1)
 				)
 			)
@@ -3711,7 +3711,7 @@
 		(in_pos_files yes)
 		(dnp yes)
 		(uuid "c79a640f-f161-447a-8521-74e56ba3f8d1")
-		(property "Reference" "C6"
+		(property "Reference" "C_CLK2"
 			(at 111.76 109.22 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3773,7 +3773,7 @@
 		(instances
 			(project "blackbox"
 				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/14cfff57-6a31-4c05-af76-83111480b025"
-					(reference "C6")
+					(reference "C_CLK2")
 					(unit 1)
 				)
 			)

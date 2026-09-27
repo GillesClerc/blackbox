@@ -90,6 +90,8 @@ SW3,,Interrupteur SPDT E-Switch 100 (contacts or),Toggle,—,1,Cote 2,Marche/arr
 "—",,Support 18650 ou cellule a languettes,—,—,1,Batterie,Jamais de soudure au fer sur une cellule
 "FB3,FB4,FB5,FB6",BLM21PG221SN1D,220R@100MHz 2A,0805,C85840,4,Main,Ferrites sortie haut-parleur (exigees par la datasheet PAM8406 en classe D sans filtre)
 "R13,R14",,22 ohm,0603,—,2,Main,Resistances serie horloges SPI2/SPI3 (ex-ferrites FB1/FB2 — une ferrite arrondit les fronts)
-"C6,C7",,10pF (DNP),0402,—,2,Main,Provision CEM sur les horloges SPI — non montees
 "R15,R16,R17,R18,R19",,10k,0402,—,5,Main,Pull-ups carte SD (CS/DAT3 CMD DAT0 DAT1 DAT2) — obligatoires (ESP-IDF sd_pullup_requirements)
 R_TMR,,56k 1%,0402,—,1,Main,Timer de securite bq24075 : t_MAXCHG 5.6-9.3 h (etait TMR->GND = timers desactives)
+"R_MUTE,R_SHDN,R_MODE_D",,10k ohm,0402,—,3,Main,PAM8406 : MUTE/SHDN tires hauts + MODE vers 3V3_A (classe D)
+"TP_EN,TP_GPIO0,TP_I2CA,TP_I2CL",,Point de test,TestPoint_Pad_D1.5mm,—,4,Main,Pastilles de test (EN, GPIO0, I2C SDA/SCL)
+"C_CLK2,C_CLK3",,10pF (DNP),0402,—,2,Main,Provision CEM sur les horloges SPI — non montees
