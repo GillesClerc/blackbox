@@ -1,6 +1,6 @@
 # ATtiny1616 / ATtiny3216 (Microchip, tinyAVR 1-series) — MCU avec contrôleur tactile PTC
 
-> _Synthèse de la datasheet DS40002001 (2019, fichier local [./ATtiny1616.pdf](./ATtiny1616.pdf),
+> _Synthèse de la datasheet ATtiny1616/3216 (© 2019, fichier local [./ATtiny1616.pdf](./ATtiny1616.pdf),
 > miroir LCSC de C507118), lue le 2026-09-27. Évalué comme « contrôleur tactile programmable »._
 
 **Catégorie** : microcontrôleur AVR 8 bits, 16 Ko (1616) / 32 Ko (3216) de flash, 20 MHz

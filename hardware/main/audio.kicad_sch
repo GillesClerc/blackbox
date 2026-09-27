@@ -607,6 +607,129 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "Connector:TestPoint"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0.762)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "TP"
+				(at 0 6.858 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "TestPoint"
+				(at 0 5.08 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 5.08 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" ""
+				(at 5.08 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "test point"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "test point tp"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_fp_filters" "Pin* Test*"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "TestPoint_0_1"
+				(circle
+					(center 0 3.302)
+					(radius 0.762)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "TestPoint_1_1"
+				(pin passive line
+					(at 0 0 90)
+					(length 2.54)
+					(name "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "Connector_Generic:Conn_01x04"
 			(pin_names
 				(offset 1.016)
@@ -1907,129 +2030,6 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "Connector:TestPoint"
-			(pin_numbers
-				(hide yes)
-			)
-			(pin_names
-				(offset 0.762)
-				(hide yes)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(in_pos_files yes)
-			(duplicate_pin_numbers_are_jumpers no)
-			(property "Reference" "TP"
-				(at 0 6.858 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Value" "TestPoint"
-				(at 0 5.08 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Footprint" ""
-				(at 5.08 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Datasheet" ""
-				(at 5.08 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Description" "test point"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "ki_keywords" "test point tp"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "ki_fp_filters" "Pin* Test*"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(symbol "TestPoint_0_1"
-				(circle
-					(center 0 3.302)
-					(radius 0.762)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-			)
-			(symbol "TestPoint_1_1"
-				(pin passive line
-					(at 0 0 90)
-					(length 2.54)
-					(name "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
 	)
 	(junction
 		(at 30.48 39.37)
@@ -2138,6 +2138,22 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "f854435b-3192-47bc-808e-61bcf404b911")
+	)
+	(no_connect
+		(at 110.49 59.69)
+		(uuid "18485262-4510-4b44-8891-8877aca9b18a")
+	)
+	(no_connect
+		(at 110.49 64.77)
+		(uuid "21c9f043-774e-4b5c-a743-874d3002cba0")
+	)
+	(no_connect
+		(at 110.49 62.23)
+		(uuid "6b5f7363-dd58-4c93-8c53-65c6740762c3")
+	)
+	(no_connect
+		(at 110.49 57.15)
+		(uuid "7b315da8-93c1-4185-aa06-1ceba62183a7")
 	)
 	(wire
 		(pts
@@ -2308,6 +2324,16 @@
 			(type default)
 		)
 		(uuid "2393763c-7d54-4467-beb8-55eacc69c2a1")
+	)
+	(wire
+		(pts
+			(xy 27.94 175.26) (xy 27.94 180.34)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "24787834-2e39-4d74-97d7-1f80cc5d3887")
 	)
 	(wire
 		(pts
@@ -2711,6 +2737,16 @@
 	)
 	(wire
 		(pts
+			(xy 35.56 175.26) (xy 35.56 180.34)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "944b1d9a-2661-4a65-9cf8-31bfcba7a64d")
+	)
+	(wire
+		(pts
 			(xy 129.54 60.96) (xy 144.78 60.96)
 		)
 		(stroke
@@ -2718,6 +2754,16 @@
 			(type default)
 		)
 		(uuid "94ee4335-c82e-4cef-970e-533175610358")
+	)
+	(wire
+		(pts
+			(xy 20.32 175.26) (xy 20.32 180.34)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "99903331-88db-4ec9-a231-63e791999d95")
 	)
 	(wire
 		(pts
@@ -3325,6 +3371,30 @@
 			)
 		)
 	)
+	(global_label "I2S0_BCLK"
+		(shape input)
+		(at 20.32 180.34 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "0d69634e-a554-405b-8218-c87ba620139a")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 20.32 193.3642 90)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+	)
 	(global_label "HP_L+"
 		(shape input)
 		(at 215.9 116.84 180)
@@ -3386,6 +3456,30 @@
 		(uuid "1276d9c7-9135-48c4-8012-92b39c39aa02")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 123.19 183.3857 90)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+	)
+	(global_label "I2S0_LRCK"
+		(shape input)
+		(at 27.94 180.34 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "16e81020-5e84-4137-937c-1184991e8c1e")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 27.94 193.3642 90)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4333,6 +4427,30 @@
 			)
 		)
 	)
+	(global_label "AUDIO_L"
+		(shape input)
+		(at 35.56 180.34 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "e4957686-168d-4a9c-a52d-8562af22f78e")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 35.56 190.9453 90)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+	)
 	(global_label "HP_R-"
 		(shape input)
 		(at 237.49 67.31 0)
@@ -5194,6 +5312,83 @@
 		)
 	)
 	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 35.56 175.26 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "3bf24040-287e-4748-8af8-fd14bed62d47")
+		(property "Reference" "TP_AUDIOL"
+			(at 39.37 166.116 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "TestPoint"
+			(at 38.1 176.53 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.5mm"
+			(at 35.56 175.26 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 35.56 175.26 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Point de test AUDIO_L — voir docs/pcb/03-validation-qualite.md"
+			(at 35.56 175.26 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "f940bc89-9a07-40ef-9fc6-1f05e41dd82e")
+		)
+		(instances
+			(project "blackbox"
+				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/17c39c9a-96dc-41e6-b1fb-7a30f21efb24"
+					(reference "TP_AUDIOL")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:C")
 		(at 91.44 143.51 0)
 		(unit 1)
@@ -5349,6 +5544,83 @@
 			(project "blackbox"
 				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/17c39c9a-96dc-41e6-b1fb-7a30f21efb24"
 					(reference "R1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 27.94 175.26 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "5401c0e1-b6e3-464f-9d44-a4fa4bc8fd83")
+		(property "Reference" "TP_I2SLRCK"
+			(at 29.21 166.878 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "TestPoint"
+			(at 30.48 176.53 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.5mm"
+			(at 27.94 175.26 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 27.94 175.26 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Point de test I2S0_LRCK — voir docs/pcb/03-validation-qualite.md"
+			(at 27.94 175.26 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "9056a833-a32f-48eb-9fe5-9f7ac2fd56a3")
+		)
+		(instances
+			(project "blackbox"
+				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/17c39c9a-96dc-41e6-b1fb-7a30f21efb24"
+					(reference "TP_I2SLRCK")
 					(unit 1)
 				)
 			)
@@ -7536,6 +7808,83 @@
 		)
 	)
 	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 20.32 175.26 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "f8a82785-7b37-43c4-8bd2-ca65d2f370dc")
+		(property "Reference" "TP_I2SBCK"
+			(at 17.78 168.148 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "TestPoint"
+			(at 22.86 176.53 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.5mm"
+			(at 20.32 175.26 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 20.32 175.26 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Point de test I2S0_BCLK — voir docs/pcb/03-validation-qualite.md"
+			(at 20.32 175.26 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "f94ec9be-047e-4e9c-be98-08f1a7c3604e")
+		)
+		(instances
+			(project "blackbox"
+				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/17c39c9a-96dc-41e6-b1fb-7a30f21efb24"
+					(reference "TP_I2SBCK")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:R")
 		(at 63.5 81.28 0)
 		(unit 1)
@@ -7613,354 +7962,6 @@
 					(reference "R5")
 					(unit 1)
 				)
-			)
-		)
-	)
-
-	(no_connect
-		(at 110.49 62.23)
-		(uuid "6b5f7363-dd58-4c93-8c53-65c6740762c3")
-	)
-	(no_connect
-		(at 110.49 59.69)
-		(uuid "18485262-4510-4b44-8891-8877aca9b18a")
-	)
-	(no_connect
-		(at 110.49 57.15)
-		(uuid "7b315da8-93c1-4185-aa06-1ceba62183a7")
-	)
-	(no_connect
-		(at 110.49 64.77)
-		(uuid "21c9f043-774e-4b5c-a743-874d3002cba0")
-	)
-
-	(symbol
-		(lib_id "Connector:TestPoint")
-		(at 17.78 191.77 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "f8a82785-7b37-43c4-8bd2-ca65d2f370dc")
-		(property "Reference" "TP_I2SBCK"
-			(at 20.32 190.5 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "TestPoint"
-			(at 20.32 193.04000000000002 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "TestPoint:TestPoint_Pad_D1.5mm"
-			(at 17.78 191.77 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 17.78 191.77 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "Point de test I2S0_BCLK — voir docs/pcb/03-validation-qualite.md"
-			(at 17.78 191.77 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "f94ec9be-047e-4e9c-be98-08f1a7c3604e")
-		)
-		(instances
-			(project "blackbox"
-				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/17c39c9a-96dc-41e6-b1fb-7a30f21efb24"
-					(reference "TP_I2SBCK")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(wire
-		(pts
-			(xy 17.78 191.77) (xy 17.78 196.85000000000002)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "99903331-88db-4ec9-a231-63e791999d95")
-	)
-	(global_label "I2S0_BCLK"
-		(shape input)
-		(at 17.78 196.85000000000002 270)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "0d69634e-a554-405b-8218-c87ba620139a")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 29.21 196.85000000000002 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Connector:TestPoint")
-		(at 25.4 191.77 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "5401c0e1-b6e3-464f-9d44-a4fa4bc8fd83")
-		(property "Reference" "TP_I2SLRCK"
-			(at 27.939999999999998 190.5 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "TestPoint"
-			(at 27.939999999999998 193.04000000000002 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "TestPoint:TestPoint_Pad_D1.5mm"
-			(at 25.4 191.77 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 25.4 191.77 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "Point de test I2S0_LRCK — voir docs/pcb/03-validation-qualite.md"
-			(at 25.4 191.77 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "9056a833-a32f-48eb-9fe5-9f7ac2fd56a3")
-		)
-		(instances
-			(project "blackbox"
-				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/17c39c9a-96dc-41e6-b1fb-7a30f21efb24"
-					(reference "TP_I2SLRCK")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(wire
-		(pts
-			(xy 25.4 191.77) (xy 25.4 196.85000000000002)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "24787834-2e39-4d74-97d7-1f80cc5d3887")
-	)
-	(global_label "I2S0_LRCK"
-		(shape input)
-		(at 25.4 196.85000000000002 270)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "16e81020-5e84-4137-937c-1184991e8c1e")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 36.83 196.85000000000002 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Connector:TestPoint")
-		(at 33.02 191.77 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "3bf24040-287e-4748-8af8-fd14bed62d47")
-		(property "Reference" "TP_AUDIOL"
-			(at 35.56 190.5 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "TestPoint"
-			(at 35.56 193.04000000000002 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "TestPoint:TestPoint_Pad_D1.5mm"
-			(at 33.02 191.77 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 33.02 191.77 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "Point de test AUDIO_L — voir docs/pcb/03-validation-qualite.md"
-			(at 33.02 191.77 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "f940bc89-9a07-40ef-9fc6-1f05e41dd82e")
-		)
-		(instances
-			(project "blackbox"
-				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/17c39c9a-96dc-41e6-b1fb-7a30f21efb24"
-					(reference "TP_AUDIOL")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(wire
-		(pts
-			(xy 33.02 191.77) (xy 33.02 196.85000000000002)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "944b1d9a-2661-4a65-9cf8-31bfcba7a64d")
-	)
-	(global_label "AUDIO_L"
-		(shape input)
-		(at 33.02 196.85000000000002 270)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "e4957686-168d-4a9c-a52d-8562af22f78e")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 44.45 196.85000000000002 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
 			)
 		)
 	)
