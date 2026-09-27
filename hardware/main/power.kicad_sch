@@ -6069,6 +6069,30 @@
 		(color 0 0 0 0)
 		(uuid "f29238d2-e093-4fcc-a17f-b5e75d8e0744")
 	)
+	(no_connect
+		(at 106.68 176.53)
+		(uuid "0d34b580-ce43-40ff-ac8c-5bf4741e9c5a")
+	)
+	(no_connect
+		(at 237.49 106.68)
+		(uuid "438b901e-6778-43a2-8993-3e4ecf2ae010")
+	)
+	(no_connect
+		(at 252.73 104.14)
+		(uuid "8904cff6-7c41-49f4-ad04-d34983f1d952")
+	)
+	(no_connect
+		(at 252.73 106.68)
+		(uuid "d331dc6a-2461-48da-84f5-08f6a2516aae")
+	)
+	(no_connect
+		(at 250.19 137.16)
+		(uuid "df7a9d2d-563f-4bee-8fc4-32e81a981cb9")
+	)
+	(no_connect
+		(at 116.84 151.13)
+		(uuid "fe18501c-64b5-43d0-b19d-c33b443e655d")
+	)
 	(wire
 		(pts
 			(xy 200.66 100.33) (xy 200.66 102.87)
@@ -9045,17 +9069,17 @@
 	)
 	(global_label "BQ_ISET"
 		(shape input)
-		(at 200.66 59.69 90)
+		(at 200.66 59.69 270)
 		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify left)
+			(justify right)
 		)
 		(uuid "c656cd42-5423-43b5-9e65-fce814f83393")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 212.09 59.69 0)
+			(at 200.66 70.1742 90)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9063,7 +9087,7 @@
 				(font
 					(size 1.27 1.27)
 				)
-				(justify left)
+				(justify right)
 			)
 		)
 	)
@@ -10957,7 +10981,7 @@
 		(dnp no)
 		(uuid "4059c36c-f3f0-497d-99c0-0febbcb2772f")
 		(property "Reference" "J14"
-			(at 66.04 59.69 0)
+			(at 67.818 59.69 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -10967,7 +10991,7 @@
 			)
 		)
 		(property "Value" "USB Cote 2"
-			(at 66.04 62.23 0)
+			(at 71.882 64.262 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -15280,25 +15304,5 @@
 				)
 			)
 		)
-	)
-	(no_connect
-		(at 250.19 137.16)
-		(uuid "df7a9d2d-563f-4bee-8fc4-32e81a981cb9")
-	)
-	(no_connect
-		(at 252.73 104.14)
-		(uuid "8904cff6-7c41-49f4-ad04-d34983f1d952")
-	)
-	(no_connect
-		(at 252.73 106.68)
-		(uuid "d331dc6a-2461-48da-84f5-08f6a2516aae")
-	)
-	(no_connect
-		(at 237.49 106.68)
-		(uuid "438b901e-6778-43a2-8993-3e4ecf2ae010")
-	)
-	(no_connect
-		(at 116.84 151.13)
-		(uuid "fe18501c-64b5-43d0-b19d-c33b443e655d")
 	)
 )

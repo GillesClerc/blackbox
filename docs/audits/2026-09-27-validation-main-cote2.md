@@ -9,15 +9,16 @@
 
 | Carte | Pins | Nets | Fils mal raccordés | Courts-circuits entre rails | Pins isolées non marquées |
 |---|---|---|---|---|---|
-| Main | 478 | 121 | 0 | 0 | 0 (après correction ci-dessous) |
+| Main | 478 | 121 | 0 | 0 | 0 (après correction ci-dessous) — ERC KiCad : voir « Retour ERC » |
 | Côté 2 | 74 | 28 | 0 | 0 | 1 attendue (J2.6 `5V_HOST`, réserve mode hôte) |
 
 ## Corrigé pendant la validation (feuille `power`)
 
-- **U10 (FS8205)** : les pins 2 et 5 (drain commun D12) sont superposées dans le symbole et
-  portaient un **no_connect** → KiCad voit deux pins reliées sous un « non connecté » (erreur
-  ERC). Marqueur retiré ; électriquement, le drain commun n'a besoin d'aucune liaison externe
-  [FS8205.md].
+- **U10 (FS8205)** : les pins 2 et 5 (drain commun D12) sont superposées dans le symbole, la 5
+  étant **cachée**. J'avais retiré le no_connect posé à cet endroit en le croyant superflu :
+  l'ERC de KiCad a alors signalé « pin cachée 5 non connectée » (KiCad ne relie pas une pin
+  cachée à la pin visible superposée). **Marqueur remis** ; le drain commun n'a besoin
+  d'aucune liaison externe [FS8205.md].
 - **no_connect ajoutés** sur des pins réellement non connectées selon leur datasheet, qui
   auraient levé des avertissements ERC : U5 (AP2112M SO-8) pins 2, 3, 4 = NC [AP2112.md,
   brochage SO-8] ; U6 (AP2112K SOT-25) pin 4 = NC ; U9 (DW01A) pin 4 TD « non connectée en
@@ -60,3 +61,10 @@
 5. **Électrodes de Côté 2** : règles de dessin dans `docs/datasheets/AN2934-touch-sensor-design.md`
    (dépendent de l'épaisseur de la paroi, à fixer).
 6. **ERC KiCad** à lancer sur les deux projets après rechargement des feuilles.
+
+## Retour ERC de Gilles (2026-09-27)
+
+- « Pin non connectée : U10 pin cachée 5 » → causée par le retrait du no_connect ; corrigé.
+- « Item non numéroté : C_AVDD? » → sur le disque la référence est bien `C_AVDD` (feuille
+  `audio` inchangée) : le « ? » vient de la session KiCad (réannotation locale) ; remettre la
+  référence `C_AVDD` ou recharger la feuille `audio`.

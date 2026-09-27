@@ -3430,17 +3430,17 @@
 	)
 	(global_label "GND"
 		(shape input)
-		(at 115.57 74.93 90)
+		(at 115.57 74.93 270)
 		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify left)
+			(justify right)
 		)
 		(uuid "2a303e24-5b3c-4c31-a5b5-3b99c3b47ac9")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 127 74.93 0)
+			(at 115.57 81.7857 90)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3448,7 +3448,7 @@
 				(font
 					(size 1.27 1.27)
 				)
-				(justify left)
+				(justify right)
 			)
 		)
 	)
@@ -3502,17 +3502,17 @@
 	)
 	(global_label "GND"
 		(shape input)
-		(at 107.95 74.93 90)
+		(at 107.95 74.93 270)
 		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify left)
+			(justify right)
 		)
 		(uuid "376196df-6348-42d4-9c81-575a04adc603")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 119.38 74.93 0)
+			(at 107.95 81.7857 90)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3520,7 +3520,7 @@
 				(font
 					(size 1.27 1.27)
 				)
-				(justify left)
+				(justify right)
 			)
 		)
 	)
