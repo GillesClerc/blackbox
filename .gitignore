@@ -1,2 +1,13 @@
 __pycache__/
 *.pyc
+
+# KiCad (hardware/)
+*.lck
+~*.lck
+*.kicad_prl
+*-backups/
+*.kicad_sch-bak
+*.kicad_pcb-bak
+# historique local VS Code (genere) et metadonnees Windows
+.history/
+*:Zone.Identifier
