@@ -41,8 +41,11 @@
   celui de U10 D12 retiré à tort puis remis) → **recharger `power`** avant l'ERC.
 - [x] 🤖 **Pastilles UART0** TP_TXD0 / TP_RXD0 (nets UART0_TX / UART0_RX, pins 37/36 du
   module) posées le 27/09 → recharger `esp32` puis F8.
-- [x] 🤝 **SW3 = E-Switch série 100 en façade** (27/09 : bouton anti-vandale jugé trop cher),
-  câblé en direct sur J12.
+- [x] 🤝 **SW3 = E-Switch RR111C1921** (27/09 : bascule ronde de façade Ø 20 mm, non lumineuse),
+  câblée en direct sur J12 par cosses faston 4,8 mm.
+- [ ] 🤝 **SW3 : contacts argent pour ~50 µA** (R20 100 kΩ) — la datasheet RR1 ne donne pas de
+  courant minimal. Option : baisser R20 (ex. 2,2 kΩ → ~1,5-2,5 mA quand la box est allumée,
+  rien éteinte) pour garder le contact « propre ». À décider.
 - [ ] 🧑 Câble J14 ↔ Côté 2 J2 **broche à broche** (vérifier au montage) ; courant nominal
   d'un contact JST-PH (~1,1 A sur VBUS) à vérifier sur la datasheet JST.
 - [ ] 🧑 Placement : **antenne en bord de carte**, opposée à la cellule, sans cuivre dessous ;
@@ -83,7 +86,7 @@
 - [ ] 🤝 Archiver `docs/schematics/*.txt` (schémas ASCII d'avant KiCad : ILI9488, PN532, AS5600…).
 - [ ] 🧑 Champs LCSC manquants (~100 références) — **au moment de la commande**, décision du
   27/09 (appariement automatique JLCPCB des passifs courants).
-- [ ] 🧑 E-Switch SW1/SW2/SW3 en finition **or** : confirmer la lettre du code de commande
+- [ ] 🧑 E-Switch SW1/SW2 en finition **or** : confirmer la lettre du code de commande
   (illisible à l'extraction du PDF ; `100SP1T1B4M1QE` de la BOM non vérifié).
 
 ## 3. Satellites (à la conception)

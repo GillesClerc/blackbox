@@ -422,7 +422,7 @@ JST-SH (1,0 mm, verrouillable) pour les signaux inter-PCB ; JST-PH (2,0 mm) pour
 | J9 | JST-PH 4 | 5V, GND, DATA (sortie de LED13), NC | halo visage (Devant), suite de la chaîne WS2812 — pas de budget de courant fixé : le plafond firmware de luminosité borne l'ensemble |
 | J10 | JST-PH 4 | L+, L−, R+, R− (sorties en pont, via FB3-FB6) | haut-parleur (Dessus) |
 | J11 | slot microSD TF-01A | — | carte SD |
-| J12 | JST-SH 2 | VSYS, EN_SYS | interrupteur marche/arrêt SW3 (face Côté 2, câble direct, hors satellite) |
+| J12 | JST-SH 2 | VSYS, EN_SYS | interrupteur marche/arrêt SW3 = E-Switch RR111C1921 (bascule ronde de façade Côté 2, câble direct, hors satellite) |
 | J2 | JST-PH 4 | BAT+, BAT−, NTC, retour NTC (GND) | cellule 18650 (harnais 4 fils, voir §2.2.2b) |
 | J14 | JST-PH 6 | VBUS (5V_USB), GND, D−, D+, GND, 5V_HOST | satellite Côté 2 (port USB-C J1 + USBLC6 + CC) |
 
@@ -1806,7 +1806,8 @@ Ces 3 réponses sont liées à la session (`hints_used`, `duration_sec`, `score`
 | BLM21PG221SN1D (FB3-FB6, ferrites HP) | LCSC C85840 | `docs/datasheets/BLM21PG.md` |
 | PUI AS04008PO-2-R (haut-parleur 8 Ω, 1 W) | — | `docs/datasheets/AS04008PO.md` |
 | ADS7830 (face Côté 1) | LCSC C161747 | `docs/datasheets/ADS7830.md` |
-| E-Switch série 100 (SW1-SW3, finition or) | — | `docs/datasheets/E-Switch-100-series-toggle.md` |
+| E-Switch série 100 (SW1-SW2, finition or) | — | `docs/datasheets/E-Switch-100-series-toggle.md` |
+| E-Switch RR111C1921 (SW3, marche/arrêt) | DigiKey / Mouser | `docs/datasheets/E-Switch-RR1.md` |
 | Bourns PTA6043 / PDB181 (faders, pots) | LCSC C17203852 / C6251250 | `docs/datasheets/Bourns-PTA6043.md`, `Bourns-PDB181.md` |
 | Sunlord SWPA5040S6R8MT (L1, boost, 6,8 µH) | LCSC C36411 | `docs/datasheets/SWPA5040S.md` |
 | Cellule 18650 + NTC | **à choisir** | — |

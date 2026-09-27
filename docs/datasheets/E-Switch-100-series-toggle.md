@@ -37,7 +37,8 @@ Montages : PCB (M2), panneau, avec étrier de maintien, etc. (voir le PDF pour l
 - **SW1 / SW2** (face Côté 1 → J8) lus sur GPIO1/GPIO2 avec pull-up interne : courant de
   quelques dizaines de µA → choisir la **finition or** (prévue pour les signaux bas niveau)
   plutôt que l'argent (prévu pour les charges de puissance).
-- **SW3 — retenu pour l'interrupteur marche/arrêt** (face Côté 2, schéma du 2026-09-27) :
+- **SW3 — remplacé le 2026-09-27 par l'E-Switch RR111C1921** (bascule ronde de façade, voir
+  `E-Switch-RR1.md`). Ancienne analyse : (face Côté 2, schéma du 2026-09-27) :
   il ne commute que le net `EN_SYS` vers les entrées EN des trois régulateurs, à travers un
   pull-down de 100 kΩ, soit **~50 µA sous 5,5 V** — trois ordres de grandeur sous les
   0,4 VA des contacts or. Relié au Main par **J12** (JST-SH 2 broches).
