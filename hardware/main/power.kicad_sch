@@ -9516,7 +9516,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Connector_JST:JST_PH_B2B-PH-K_1x02-P2.00mm_Vertical"
+		(property "Footprint" "Connector_JST:JST_PH_B2B-PH-K_1x02_P2.00mm_Vertical"
 			(at 52.07 111.76 0)
 			(hide yes)
 			(show_name no)
@@ -12275,5 +12275,12 @@
 			(type default)
 		)
 		(uuid "c7f0b389-2fe1-489e-b12a-90c121fb134b")
+	)
+
+	(junction
+		(at 105.41 111.76)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "4210f4df-b8b0-4a5b-821e-26b7c03c2798")
 	)
 )
