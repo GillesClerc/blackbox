@@ -19,7 +19,14 @@ NET VSYS:
   (USB branche: ~4.4V / batterie: 3.0-4.2V)
 
 NET VBAT:
-  U8.BAT (bq24075), U9.VDD (DW01A), J2.+, C_BAT.+
+  U8.BAT (bq24075), U9.VDD (DW01A), J2.1 (+), C_BAT.+
+
+NET BAT_TS (2026-09-27, cellule 18650 avec NTC collee) :
+  J2.3 (NTC 10k de la cellule), U8.TS (pin 1), R_TS.1 (10k fixe, DNP)
+  (J2 = JST-PH 3 broches : 1 = BAT+, 2 = BAT-, 3 = NTC.
+   /!\ Monter la NTC OU R_TS, jamais les deux : en parallele la mesure est
+   faussee et le bq24075 suspend la charge sans symptome visible. TS flottante
+   suspend la charge egalement. Fenetre obtenue : 0-50 C.)
 
 NET 3V3_D (digital):
   U5.VOUT (pin 1 — AP2112M en SO-8 depuis le 2026-09-27, cf. brochage

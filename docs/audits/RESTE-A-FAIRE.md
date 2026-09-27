@@ -49,10 +49,12 @@
   **R21 100 kΩ**. Le rail est coupé en `5V_BOOST` (D1, C_B2, feedback R_FB_H) et `5V`
   (12 WS2812, PAM8406, J9). Fiches : `AO3401A.md`, `2N7002.md`.
   ⚠ À vérifier au proto : la consommation réelle box éteinte (attendu ~10-15 µA).
-- [ ] 🧑 **Charge LiPo — NTC** : **batterie 3 fils avec NTC 10 kΩ** sur TS (J2 en 3 broches,
-  retirer R_TS). Proposition pour ne pas dépendre du choix de batterie : J2 en 3 broches +
-  **pad NTC 10 kΩ 0603 en DNP** sur le PCB, qui couvre les batteries 2 et 3 fils.
-  Option : R_ISET 1,27 kΩ (0,7 A) pour chauffer moins.
+- [x] 🤖 **Charge — NTC** (2026-09-27) : **J2 passé en JST-PH 3 broches** (BAT+, BAT−, NTC),
+  net `BAT_TS`, `R_TS` conservée en **DNP**. Batterie retenue : **cellule 18650 3400-3500 mAh**
+  avec NTC collée. R_ISET (890 Ω → 1 A) et R_TMR (56 kΩ) restent valables tels quels pour
+  cette capacité — une seconde cellule aurait imposé de les revoir (charge en 8 h).
+  🧑 Reste : choisir la cellule (LG MJ1 / Samsung 35E / Panasonic NCR18650B) et récupérer
+  sa datasheet ; décider support à ressorts (proto) ou languettes soudées (série).
 - [x] 🤖 **D1 SS14 → SS34** (2026-09-27) : symbole `Diode:SS34` + LCSC **C8678**
   (Basic part JLCPCB), même empreinte SMA, BOM mise à jour (`docs/datasheets/SS34.md`).
   ⚠ Le PDF local est celui de Vishay (famille SS32-SS36) : LCSC bloque le téléchargement

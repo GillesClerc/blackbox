@@ -18,8 +18,9 @@ J1,HOOYA USB-307HB-B-SU,,USB-C-24P SMD vertical,C309361,1,Main,Connecteur USB-C 
 J7,,Connecteur JST-SH 10pin,JST-SH-10P,—,1,Main,SPI3 vers 2x GC9A01 yeux
 J7b,,Connecteur JST-SH 8pin,JST-SH-8P,—,1,Main,SPI2 vers SSD1680 e-ink bouche
 J8,,Connecteur JST-SH 6pin,JST-SH-6P,—,1,Main,Toggles SW1/SW2 face avant + reserve GPIO3 (ex-ADC potentiometres - analogique migre sur ADS7830 I2C)
-J9,,Connecteur JST-PH 4pin,JST-PH-4P,—,1,Main,"WS2812 + reserve (PH 2mm 3A/contact - 32 LEDs = jusqu'a ~1.9A sur 5V, JST-SH 1A insuffisant)"
-J10,,Connecteur JST-PH 2pin,JST-PH-2P,—,1,Main,Batterie LiPo
+J9,,Connecteur JST-PH 4pin,JST-PH-4P,—,1,Main,"WS2812 + reserve (PH 2mm choisi pour 32 LEDs = ~1.9A ; en pratique le budget batterie ne laisse que ~8-10 LEDs externes, cf. audit A5 — au-dela, alimenter la bande separement et n'utiliser que DATA+GND)"
+J2,,Connecteur batterie JST-PH 3pin (BAT+/BAT-/NTC),JST-PH-3P,—,1,Main,Cellule 18650 + NTC collee (etait un 2pin LiPo avant le 2026-09-27)
+J10,,Connecteur haut-parleur JST-PH 4pin,JST-PH-4P,—,1,Main,"Sorties en pont L+/L-/R+/R- via ferrites FB3-FB6 — aucune masse commune, ne jamais relier les - entre elles ni a GND"
 J11,,Slot microSD push-push,TF-PUSH,C91145,1,Main,Carte SD sur SPI2 partage (MISO=15 CS=47) - verifier ref LCSC avant commande
 L1,,Inductance 22uH,1210,—,1,Main,Pour MT3608 boost (22uH recommande datasheet)
 "C1,C2,C3,C4,C5,C6,C7,C8,C9,C10,C11,C12",,100nF 16V ceramique,0402,—,12,Main,Decouplage generique (ESP32/PN532/divers)
@@ -43,7 +44,7 @@ R_FB_H,,750k ohm,0402,—,1,Main,MT3608 feedback diviseur haut
 R_FB_L,,100k ohm,0402,—,1,Main,MT3608 feedback diviseur bas
 C_BAT,,4.7uF 10V ceramique,0603,—,1,Main,bq24075 BAT decouplage
 C_OUT,,4.7uF 10V ceramique,0603,—,1,Main,bq24075 OUT decouplage
-R_TS,,10k ohm,0402,—,1,Main,bq24075 TS pin1 vers GND (pas de NTC - 10k fixe TS->VSS datasheet §9.3.6)
+R_TS,,10k ohm (DNP),0402,—,1,Main,DNP — remplacee par la NTC de la cellule sur J2.3. Monter l'une OU l'autre, jamais les deux
 "R9,R10",,5.1k ohm,0402,—,2,Main,USB-C CC1/CC2
 "R11,R12",,22 ohm,0402,—,2,Main,Serie USB D+/D-
 D1,C8678,Diode Schottky SS34 (3A),SMA,—,1,Main,Protection MT3608 (SS14 1A insuffisant — audit A5)
@@ -65,3 +66,11 @@ Q2,C8545,MOSFET N 2N7002,SOT-23,—,1,Main,Inverseur de commande du load switch
 "R20,R21",,100k 1%,0402,—,2,Main,Pull-down EN_SYS + grille-source Q1
 J12,,Connecteur JST-SH 2pin,JST-SH-2P,—,1,Main,Interrupteur marche/arret (face Cote 2)
 SW3,,Interrupteur SPDT E-Switch 100 (contacts or),Toggle,—,1,Cote 2,Marche/arret — ne commute que EN_SYS (~50 uA)
+"—",,Cellule 18650 3400-3500mAh (LG MJ1 / Samsung 35E / Panasonic NCR18650B),18650,—,1,Batterie,Cellule nue — protection assuree par DW01A+FS8205 sur la carte
+"—",,NTC 10k B3950 a coller sur la cellule,axial/CMS,—,1,Batterie,Surveillance thermique de charge (bq24075 TS) — fenetre 0-50 C
+"—",,Support 18650 ou cellule a languettes,—,—,1,Batterie,Jamais de soudure au fer sur une cellule
+"FB3,FB4,FB5,FB6",BLM21PG221SN1D,220R@100MHz 2A,0805,C85840,4,Main,Ferrites sortie haut-parleur (exigees par la datasheet PAM8406 en classe D sans filtre)
+"R13,R14",,22 ohm,0603,—,2,Main,Resistances serie horloges SPI2/SPI3 (ex-ferrites FB1/FB2 — une ferrite arrondit les fronts)
+"C6,C7",,10pF (DNP),0402,—,2,Main,Provision CEM sur les horloges SPI — non montees
+"R15,R16,R17,R18,R19",,10k,0402,—,5,Main,Pull-ups carte SD (CS/DAT3 CMD DAT0 DAT1 DAT2) — obligatoires (ESP-IDF sd_pullup_requirements)
+R_TMR,,56k 1%,0402,—,1,Main,Timer de securite bq24075 : t_MAXCHG 5.6-9.3 h (etait TMR->GND = timers desactives)

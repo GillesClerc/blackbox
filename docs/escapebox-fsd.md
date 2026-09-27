@@ -263,7 +263,7 @@ GPIO 48     — WS2812 LEDs
 USB-C (5V, 2A max)
     ↓
 bq24075 (TI) — chargeur 1.5A + power path DPPM
-    ├── BAT → DW01A + FS8205 → LiPo 3.7V 3000mAh
+    ├── BAT → DW01A + FS8205 → cellule Li-ion 18650 3.7V 3400-3500mAh + NTC (J2, 3 broches)
     └── OUT (VSYS : ≈ VIN USB − 0,3 V sur secteur (5,5 V max régulés), ≈ VBAT sur batterie)
          ├── AP2112K-3.3 #1 → 3.3V_D (digital : ESP32, écrans, capteurs I2C, micro)
          ├── AP2112K-3.3 #2 → 3.3V_A (audio : PCM5122, zone isolée)
@@ -273,7 +273,16 @@ bq24075 (TI) — chargeur 1.5A + power path DPPM
 > **Power path (DPPM)** : le système est alimenté en priorité par l'USB, le surplus charge la batterie. La box peut rester branchée sans user la batterie. **Deux LDOs séparés** pour isoler le bruit digital du chemin audio. GND unique continu (PAS de split). Voir `docs/schematics/06-power-audio.txt` pour le schéma détaillé.
 >
 > **Paramètres vérifiés datasheets (audit 2026-09-23, `docs/audits/2026-09-23-hardware-db.md`)** :
-> - Charge : 1 A (R_ISET 890 Ω), entrée limitée à 1,07 A (R_ILIM 1,5 kΩ, mode EN2 = H / EN1 = L). **À modifier** : timers de sécurité réactivés (R_TMR 56 kΩ → 5,6-9,3 h au lieu de TMR → GND) et NTC 10 kΩ de batterie sur TS (fenêtre 0-50 °C) au lieu de la résistance fixe.
+> - Charge : 1 A (R_ISET 890 Ω), entrée limitée à 1,07 A (R_ILIM 1,5 kΩ, mode EN2 = H / EN1 = L).
+>   ✅ 2026-09-27 : timers de sécurité réactivés (**R_TMR 56 kΩ** → 5,6-9,3 h) et **NTC 10 kΩ
+>   de la cellule sur TS** via J2.3 (fenêtre 0-50 °C) ; `R_TS` conservée en **DNP** — monter
+>   l'une **ou** l'autre, jamais les deux (mesure faussée, charge suspendue sans symptôme).
+> - **Batterie : cellule 18650 de 3400-3500 mAh** (décision 2026-09-27), et non plus une LiPo
+>   pouch. Même chimie lithium-ion, mais enveloppe acier rigide avec évent de surpression :
+>   bien plus robuste dans un objet qu'on secoue et retourne. ~5 h d'autonomie (~690 mA
+>   moyens), charge en ~4 h — compatible avec R_ISET et R_TMR tels quels. Protection assurée
+>   par le DW01A + FS8205 de la carte, donc **cellule nue** possible. NTC 10 kΩ à coller sur
+>   la cellule. Jamais de soudure au fer sur une cellule : languettes ou support.
 > - Protection DW01A + FS8205 : surcharge 4,30 V, décharge profonde 2,40 V, **surintensité ≈ 1,6-3,2 A** → plafond du courant crête total.
 > - 3V3_D (AP2112K) : 600 mA garantis, l'ESP32 en exige ≥ 0,5 A ; risque thermique sous USB en SOT-23-5 (θJA 184 °C/W) → SOT-89-5 recommandé. Charges du rail : ESP32 ≥ 3,0 V, MTCH2120 ≥ 3,0 V, GC9A01A ≤ 3,3 V → **extinction firmware sur VBAT basse** (~3,4-3,5 V).
 > - Rail 5 V (MT3608, 5,0-5,2 V) : 12 WS2812B = 432 mA en blanc (+ 7,2 mA au repos), PAM8406 jusqu'à ~1,15-1,44 A sur 4 Ω → **D1 SS14 (1 A) sous-dimensionnée → SS34** ; plafonds firmware de luminosité et de volume.
