@@ -68,3 +68,52 @@
 - « Item non numéroté : C_AVDD? » → sur le disque la référence est bien `C_AVDD` (feuille
   `audio` inchangée) : le « ? » vient de la session KiCad (réannotation locale) ; remettre la
   référence `C_AVDD` ou recharger la feuille `audio`.
+
+## Vérification des empreintes et des passifs (2026-09-27, demande de Gilles)
+
+**Empreintes** : les 165 composants (Main + Côté 2) ont une empreinte cohérente avec le boîtier
+de la BOM et de leur datasheet (CI : SOT-23-5/6, SO-8, SOIC-14/16, TSSOP-28, QFN-16 3 × 3,
+LGA-14, module WROOM-1 ; connecteurs JST-SH/PH ; passifs 0402/0603/0805 ; L1 5 × 5 ; D1 SMA).
+Aucun écart de boîtier.
+
+**Valeurs** : une seule erreur, **C_EN = 1 µF au schéma mais rangé dans la ligne 100 nF de la
+BOM** (le contrôle `check_bom` ne compare pas les lignes groupées) → ligne propre ajoutée,
+1 µF (guide Espressif : RC de EN = 10 kΩ + 1 µF).
+
+**Diélectriques** (précisés dans la BOM, aucun n'y figurait sauf C21/C22) :
+- **C0G/NP0** : C21/C22 2,2 nF (filtre de sortie du DAC), C_CLK2/C_CLK3 10 pF (DNP).
+- **X7R** : découplages 100 nF, 1 µF de l'ampli (HF, entrées, VREF — la datasheet PAM8406 demande
+  seulement « céramique faible ESR »).
+- **X5R** : réservoirs ≥ 1 µF (LDO, bq24075, MT3608, PCM5122, rails 3,3 V).
+- Le schéma de la Main ne porte ni diélectrique ni tension dans les champs des condensateurs :
+  **la BOM est la référence** pour la commande.
+
+**Charge pump PCM5122** : C19 entre CAPP et CAPM, C20 de VNEG à GND — conforme (la note
+« C20 à corriger » de `pcm5122.md` datait du 23/09, déjà corrigée au schéma).
+
+### Tension et taille : points à trancher
+
+Les condensateurs céramiques X5R/X7R **perdent une partie de leur capacité sous tension continue**,
+d'autant plus que le boîtier est petit et que la tension nominale est proche de la tension
+de service. Le pourcentage dépend de la référence exacte (courbe « DC bias » du fabricant) :
+aucune référence n'est encore choisie, donc pas de chiffre ici. Les cas où la valeur **minimale
+exigée par une datasheet** est juste atteinte en nominal :
+
+| Réf. | Actuel | Rail | Exigence datasheet | Proposition |
+|---|---|---|---|---|
+| C_IN | 4,7 µF 10 V 0603 | 5V_USB (4,35-6,4 V en service, 28 V destruction) | bq24075 : 1-10 µF | **25 V** (marge contre un chargeur défectueux ou une surtension au branchement) |
+| C_BAT | 4,7 µF 10 V 0603 | VBAT ≤ 4,2 V | bq24075 : 4,7-47 µF | 10 µF 10 V 0805 (reste ≥ 4,7 µF effectif) |
+| C_OUT | 4,7 µF 10 V 0603 | VSYS ≤ 5,5 V | bq24075 : 4,7-47 µF | 10 µF 16 V 0805 |
+| C_D1, C_A1 | 1 µF 10 V 0402 | VSYS ≤ 5,5 V | AP2112 : 1 µF céramique min | 1 µF 16 V 0603 (ou 2,2 µF 10 V 0603) |
+| C_B1, C_B2 | 22 µF 16 V 0805 | VSYS / 5 V boost | MT3608 : 22 µF | 22 µF 25 V 1206 |
+| C_PAM_BULK | 22 µF **10 V** 0805 | 5 V | PAM8406 : ≥ 20 µF | 22 µF 25 V 1206 (ou 2 × 22 µF 16 V 0805) |
+
+Les autres (100 nF, 10 µF sur 3,3 V, 2,2 µF charge pump 25 V, 1 µF de l'ampli en 16 V) ont une
+marge suffisante. Changer de boîtier modifie les empreintes au schéma (F8 ensuite).
+
+### Résistances
+
+Dissipation maximale : R20 (2,2 kΩ sous 5,5 V) ≈ 14 mW, toutes les autres négligeables — le
+calibre usuel d'une 0402 (1/16 W) suffit, à confirmer sur la référence retenue. **R22 (0 Ω,
+DNP)** : si un jour on la monte pour le mode hôte USB, elle portera le courant de la clé →
+vérifier le courant admissible du 0 Ω 0603 choisi.
