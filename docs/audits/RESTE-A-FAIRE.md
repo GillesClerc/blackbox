@@ -12,9 +12,11 @@
 
 ## 0. Avant de router la carte Main — maintenant
 
-- [ ] 🧑 **L1 : choisir l'inductance du boost** (H1) — I_sat ≥ ~2,5 A, 4,7-22 µH, DCR
-  faible ; le 1210 actuel n'a pas de référence. Récupérer sa fiche (🤖 synthèse) puis
-  adapter l'empreinte.
+- [ ] 🧑 **L1 : inductance du boost** (H1) — proposition sourcée : **Sunlord
+  SWPA5040S6R8MT, C36411** (6,8 µH ±20 %, Isat 2,9 A, 5 × 5 × 4 mm), synthèse
+  `docs/datasheets/SWPA5040S.md`. À valider, puis remplacer le 1210 dans KiCad.
+- [ ] 🧑 **C_B1 (entrée du MT3608) : 10 µF → 22 µF** — la datasheet recommande 22 µF
+  céramique en entrée **et** en sortie (« Capacitor Selection ») ; C_B2 fait déjà 22 µF.
 - [ ] 🧑 **J2 en 4 broches** (H2) — BAT+, BAT−, NTC, **retour NTC sur GND** : aujourd'hui la
   NTC revient sur `VBAT-`, ce qui décale la coupure en surchauffe d'environ +7 °C à 1 A et
   la supprime pendant la récupération d'une décharge profonde.

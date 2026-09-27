@@ -265,7 +265,12 @@ def stream_text(stream: bytes, fonts=None) -> str:
                 table = fonts.get(last_name)
             pending = []
         elif t.startswith(b'<'):
-            raw = bytes.fromhex(re.sub(rb'\s', b'', t[1:-1]).decode('ascii'))
+            hexstr = re.sub(rb'\s', b'', t[1:-1])
+            if not re.fullmatch(rb'[0-9A-Fa-f]*', hexstr):
+                continue    # « << » de dictionnaire inline (images), pas une chaine hex
+            if len(hexstr) % 2:
+                hexstr += b'0'  # PDF : un dernier chiffre impair vaut « x0 »
+            raw = bytes.fromhex(hexstr.decode('ascii'))
             s = decode_bytes(raw, table)
             if array is not None:
                 array.append(s)
