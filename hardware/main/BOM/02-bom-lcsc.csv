@@ -24,7 +24,7 @@ J10,,Connecteur haut-parleur JST-PH 4pin,JST-PH-4P,—,1,Main,"Sorties en pont L
 J11,,Slot microSD push-push,TF-PUSH,C91145,1,Main,Carte SD sur SPI2 partage (MISO=15 CS=47) - verifier ref LCSC avant commande
 L1,,Inductance 22uH,1210,—,1,Main,Pour MT3608 boost (22uH recommande datasheet)
 "C2,C3,C4,C5",,100nF 16V ceramique,0402,—,4,Main,Decouplage generique (ESP32 C2, micro C3, IMU C4/C5)
-"C1_AV,C2_DV,C3_CP,C_LDOO,C_EN",,100nF 16V ceramique,0402,—,5,Main,PCM5122 AVDD(pin8)/DVDD(pin28)/CPVDD(pin1)/LDOO(pin26) + filtre RC EN ESP32 (pins corriges 2026-09-11 vs datasheet TI SLAS763C — l'ancien netlist avait tous les numeros de pins PCM5122 faux)
+"C_AVDD,C_DVDD,C_CPVDD,C_LDOO,C_EN",,100nF 16V ceramique,0402,—,5,Main,PCM5122 AVDD(pin8)/DVDD(pin28)/CPVDD(pin1)/LDOO(pin26) + filtre RC EN ESP32 (pins corriges 2026-09-11 vs datasheet TI SLAS763C — l'ancien netlist avait tous les numeros de pins PCM5122 faux)
 "C_D2,C_A2,C_B1",,10uF 10V ceramique,0805,—,3,Main,Sorties LDO U5/U6 + entree MT3608
 "C15,C16,C17",,10uF 16V ceramique,0805,—,3,Main,Bulk decouplage PCM5122 (AVDD/DVDD/CPVDD)
 "C19,C20",,2.2uF 25V ceramique,0603,—,2,Main,Charge pump PCM5122
@@ -86,3 +86,6 @@ R_CS,,1k ohm,0402,—,1,Main,DW01A : resistance de detection (application typiqu
 "TP_EN,TP_GPIO0,TP_I2CA,TP_I2CL",,Point de test,TestPoint_Pad_D1.5mm,—,4,Main,Pastilles de test (EN, GPIO0, I2C SDA/SCL)
 "C_CLK2,C_CLK3",,10pF (DNP),0402,—,2,Main,Provision CEM sur les horloges SPI — non montees
 C1,,10uF 16V ceramique,0603,—,1,Main,Reservoir 3V3_D au pied du module ESP32-S3
+"TP_VBUS,TP_VSYS,TP_VBAT,TP_3V3D,TP_3V3A,TP_5VB,TP_5V,TP_GND1,TP_GND2,TP_GND3",,Point de test alimentation,TestPoint_Pad_D1.5mm,—,10,Main,Rails et masses — voir docs/pcb/03-validation-qualite.md
+"TP_ISET,TP_CHG,TP_FB,TP_TS,TP_ENSYS,TP_GATE",,Point de test diagnostic,TestPoint_Pad_D1.5mm,—,6,Main,Courant de charge, etat chargeur, boucle du boost, NTC, marche/arret, load switch
+"TP_SCLK2,TP_SCLK3,TP_I2SBCK,TP_I2SLRCK,TP_AUDIOL,TP_WS2812",,Point de test signaux,TestPoint_Pad_D1.5mm,—,6,Main,Fronts des horloges SPI, I2S, sortie DAC, data LED

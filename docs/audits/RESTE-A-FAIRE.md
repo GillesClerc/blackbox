@@ -72,9 +72,14 @@
   100 nF sur VDD et 100 nF sur VDDIO (figure 24), déjà présents (C4/C5). Le « 10 µF » venait
   d'une affirmation non sourcée de notre synthèse. Rien à faire.
 - [ ] 🧑 USBLC6 au plus près de J1 (layout).
-- [ ] 🧑 Champs LCSC manquants (passifs, U1, U2, U5-U10, U12).
+- [ ] 🧑 **Champs LCSC manquants — À FAIRE PLUS TARD, au moment de la commande** (115
+  références). Décision du 2026-09-27 : le rendement est bien meilleur au moment de passer
+  commande, JLCPCB proposant l'appariement automatique des passifs courants. `tools/check_bom.py`
+  les liste à la demande.
 - [ ] 🧑 E-Switch SW1/SW2 en finition **or**.
-- [ ] 🤝 VBAT_SENSE sur J8.5 : le garder ou le retirer du connecteur.
+- [x] ✅ **VBAT_SENSE retiré de J8.5** (2026-09-27) : nœud ADC haute impédance (1 M // 1 M)
+  sorti dans un câble, sans usage côté face avant depuis que les analogiques passent par
+  l'ADS7830 en I2C. La broche est marquée non connectée.
 - [ ] 🧑 Mettre à jour la section « power » de `docs/pcb/01-netlist.txt` (en retard sur le KiCad) ;
   lancer l'**ERC KiCad**.
 
@@ -137,10 +142,9 @@
 
 Document : **`docs/pcb/03-validation-qualite.md`** (squelette).
 
-- [ ] 🤝 **Valider la liste des points de test** — ils doivent être posés **avant le
-  routage**, on ne les ajoute pas après coup. 8 obligatoires (rails + masses), 6 de
-  diagnostic, 6 de signaux, 4 déjà au schéma.
-- [ ] 🤖 Ajouter les symboles `TestPoint` retenus au schéma, une fois la liste validée.
+- [x] ✅ **Liste des points de test validée et posée au schéma** (2026-09-27) : 22 nouveaux
+  (10 alimentation, 6 diagnostic, 6 signaux) + 4 existants = **26 au total**, vérifiés
+  22/22 sur leur net. Nets `BQ_ISET`, `BQ_CHG` et `BOOST_FB` nommés au passage.
 - [ ] 🧑 Au routage : sérigraphier le nom de chaque pastille, les grouper face Dessous,
   prévoir au moins une masse acceptant une pince.
 - [ ] 🤖 **Auto-test firmware** (scan I2C, SD, écrans, audio en boucle acoustique, LEDs,

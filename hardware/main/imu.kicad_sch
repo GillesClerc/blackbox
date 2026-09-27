@@ -1282,4 +1282,21 @@
 			)
 		)
 	)
+
+	(no_connect
+		(at 135.89 87.63)
+		(uuid "b7a6e3c1-c897-492c-9794-8e919873d39e")
+	)
+	(no_connect
+		(at 168.91 92.71)
+		(uuid "2b89fa0f-dc88-427d-9574-2b5c3b697fab")
+	)
+	(no_connect
+		(at 168.91 90.17)
+		(uuid "a930030a-eec4-4344-97f3-fd2a1316c32d")
+	)
+	(no_connect
+		(at 168.91 87.63)
+		(uuid "2a839011-2071-4aa1-8882-cc349db6f4fa")
+	)
 )

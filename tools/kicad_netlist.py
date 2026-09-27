@@ -224,7 +224,10 @@ def build(sheets, angle_sign=1.0):
                     touched = True
             if touched:
                 stats['connected'] += 1
-            if is_power:
+            if is_power and value != 'PWR_FLAG':
+                # PWR_FLAG est une exception KiCad : il declare qu'un net est
+                # pilote, sans le nommer. Le compter comme un nom de net ferait
+                # fusionner tous les rails qui en portent un.
                 node_labels[uf.find(key(pt))].add(value)
             else:
                 pins_at[uf.find(key(pt))].append((ref, number, pname, sh.name))

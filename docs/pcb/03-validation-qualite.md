@@ -1,6 +1,9 @@
 # Validation et contrôle qualité des cartes — EscapeBox
 
-> **Statut : squelette** (2026-09-27). Objectif : figer *maintenant* la liste des points de
+> **Statut : points de test POSÉS au schéma le 2026-09-27** (22 nouveaux + 4 existants,
+> vérifiés un par un sur leur net). La check-list, elle, reste un squelette.
+>
+> **Statut initial : squelette** (2026-09-27). Objectif : figer *maintenant* la liste des points de
 > test, parce qu'ils doivent être posés sur le PCB **avant le routage** — on ne les ajoute
 > pas après coup. La check-list, elle, s'étoffera au fil des premiers prototypes : les
 > valeurs mesurées sur la première carte saine deviennent la référence des suivantes.
@@ -71,7 +74,20 @@ masse longue en fil volant rend inexploitable toute mesure de signal rapide.
 
 `TP_EN`, `TP_GPIO0`, `TP_I2CA`, `TP_I2CL` — empreinte `TestPoint:TestPoint_Pad_D1.5mm`.
 
-### 2.5 Règles de pose (pour le routage)
+### 2.5 État : posés le 2026-09-27
+
+Les 22 points de test ci-dessus **sont au schéma**, chacun relié par un fil court à un
+global label portant son net (le routeur est donc libre de les placer là où ils sont
+accessibles, sans contrainte de dessin). Vérification : 22/22 sur le net attendu.
+
+Trois nets utiles n'avaient aucun nom et ont été nommés à cette occasion — ce qui sert
+aussi la lisibilité du PCB : **`BQ_ISET`** (courant de charge), **`BQ_CHG`** (état du
+chargeur), **`BOOST_FB`** (boucle de régulation du MT3608).
+
+Avec les 4 existants, la carte compte **26 points de test**. Total en BOM : 3 lignes
+groupées, empreinte `TestPoint:TestPoint_Pad_D1.5mm`.
+
+### 2.6 Règles de pose (pour le routage)
 
 - **Sérigraphier le nom à côté de chaque pastille.** Une pastille non identifiée ne sert à
   personne six mois plus tard.

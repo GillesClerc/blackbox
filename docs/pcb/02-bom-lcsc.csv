@@ -95,3 +95,6 @@ R_TMR,,56k 1%,0402,—,1,Main,Timer de securite bq24075 : t_MAXCHG 5.6-9.3 h (et
 "R_MUTE,R_SHDN,R_MODE_D",,10k ohm,0402,—,3,Main,PAM8406 : MUTE/SHDN tires hauts + MODE vers 3V3_A (classe D)
 "TP_EN,TP_GPIO0,TP_I2CA,TP_I2CL",,Point de test,TestPoint_Pad_D1.5mm,—,4,Main,Pastilles de test (EN, GPIO0, I2C SDA/SCL)
 "C_CLK2,C_CLK3",,10pF (DNP),0402,—,2,Main,Provision CEM sur les horloges SPI — non montees
+"TP_VBUS,TP_VSYS,TP_VBAT,TP_3V3D,TP_3V3A,TP_5VB,TP_5V,TP_GND1,TP_GND2,TP_GND3",,Point de test alimentation,TestPoint_Pad_D1.5mm,—,10,Main,Rails et masses — voir docs/pcb/03-validation-qualite.md
+"TP_ISET,TP_CHG,TP_FB,TP_TS,TP_ENSYS,TP_GATE",,Point de test diagnostic,TestPoint_Pad_D1.5mm,—,6,Main,Courant de charge, etat chargeur, boucle du boost, NTC, marche/arret, load switch
+"TP_SCLK2,TP_SCLK3,TP_I2SBCK,TP_I2SLRCK,TP_AUDIOL,TP_WS2812",,Point de test signaux,TestPoint_Pad_D1.5mm,—,6,Main,Fronts des horloges SPI, I2S, sortie DAC, data LED

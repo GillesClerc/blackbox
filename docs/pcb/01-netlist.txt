@@ -52,9 +52,9 @@ NET 3V3_D (digital):
 NET 3V3_A (audio):
   U6.VOUT, C_A2.+
   R5.1 (pull-up XSMT — vers 3V3_A, cf. NET PCM_XSMT)
-  U2.AVDD (pin 8), C1_AV.+
-  U2.DVDD (pin 28), C2_DV.+
-  U2.CPVDD (pin 1), C3_CP.+
+  U2.AVDD (pin 8), C_AVDD.+
+  U2.DVDD (pin 28), C_DVDD.+
+  U2.CPVDD (pin 1), C_CPVDD.+
   U2.XSMT (pin 25) via R5
   (⚠ pins PCM5122 corrigees 2026-09-11 — vs datasheet TI SLAS763C, mode I2C.
    L'ancien netlist avait TOUS les numeros de pins PCM5122 faux, y compris
