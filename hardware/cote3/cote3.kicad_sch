@@ -527,7 +527,7 @@
 			(embedded_fonts no)
 		)
 	)
-	(text "SATELLITE COTE 3 — zone magique (FSD §2.2.2c / §2.2.3)\n\n- Face dediee au seul capteur d aimant (decision 2026-09-27) : 'approche ta main' est sur Cote 2 (CAP1298), MLX90614 retire.\n- U1 TMAG5273A1 (0x35, +-40/80 mT). Symbole de bibliotheque = A2 (meme brochage SOT-23-6) : valeur, MPN et LCSC forces en A1 (C3716049).\n   TEST (3) -> GND ; INT (5) -> GND : pas de GPIO libre, MASK_INTB = 1 cote firmware (tableau 4-1). C1 100 nF (>= 10 nF, §7.4).\n- J1 Qwiic vers un des J3-J6/J13 de la Main : 1 = GND, 2 = 3V3_D, 3 = SDA, 4 = SCL (JST-SH 4). Pas de pull-up ici (4,7 k sur la Main)."approche ta main\" est sur Cote 2 (CAP1298),\n   MLX90614 retire du produit.\n- TMAG5273A1 (0x35, +-40/80 mT) : INT -> GND (MASK_INTB cote firmware), >= 10 nF sur VCC. La bibliotheque contient\n   le symbole A2 : meme brochage, changer la valeur/MPN en A1. TMAG5273.md.\n- Connecteur I2C Qwiic vers un des J3-J6/J13 de la Main : 1 = GND, 2 = 3V3_D, 3 = SDA, 4 = SCL\n(JST-SH 4 broches, cable standard Qwiic). Bus a 100 kHz. Pas de pull-up sur le satellite\n(4,7 k deja sur la Main)."
+	(text "SATELLITE COTE 3 — zone magique (FSD §2.2.2c / §2.2.3)\n\n- Face dediee au seul capteur d aimant (decision 2026-09-27) : 'approche ta main' est sur Cote 2 (CAP1298), MLX90614 retire.\n- U1 TMAG5273A1 (0x35, +-40/80 mT). Symbole de bibliotheque = A2 (meme brochage SOT-23-6) : valeur, MPN et LCSC forces en A1 (C3716049).\n   TEST (3) -> GND ; INT (5) -> GND : pas de GPIO libre, MASK_INTB = 1 cote firmware (tableau 4-1). C1 100 nF (>= 10 nF, §7.4).\n- J1 Qwiic vers un des J3-J6/J13 de la Main : 1 = GND, 2 = 3V3_D, 3 = SDA, 4 = SCL (JST-SH 4). Pas de pull-up ici (4,7 k sur la Main)."
 		(exclude_from_sim no)
 		(at 20.32 142.24 0)
 		(effects
