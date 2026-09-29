@@ -953,7 +953,7 @@ Critères produit — go/no-go Phase 2 :
 - [x] Corrections de l'audit hardware 2026-09-23 : C20 PCM5122, J10 + ferrites FB3-FB6, pull-ups SD, J3-J6 Qwiic, D1 SS34, R_TMR + NTC, U5 en SO-8 (2026-09-27, vérifiées sur la netlist)
 - [x] ERC natif KiCad lancé, 53 erreurs traitées (2026-09-27) — à relancer après chaque modification
 - [ ] **Validation schéma main → étape de passage au PCB** : restent les points de `docs/audits/RESTE-A-FAIRE.md` §0 (aucun point bloquant ; placement de l'antenne)
-- [ ] Placement des composants sur le PCB (contrainte : zone audio isolée dans un coin, pas de trace digitale dessous)
+- [ ] Placement des composants sur le PCB (contrainte : zone audio isolée dans un coin, pas de trace digitale dessous) — **guide composant par composant + règles KiCad/JLCPCB : `docs/pcb/04-guide-layout.md`**
 - [ ] Routage (plan de masse continu layer 2, I2S court/groupé/blindé, alimentation en priorité)
 - [ ] DRC KiCad (clearance 0.2mm, track 0.2-0.5mm, via 0.3/0.6mm — règles JLCPCB)
 - [ ] Export Gerbers + BOM + CPL
