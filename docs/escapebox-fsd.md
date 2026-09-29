@@ -1793,7 +1793,7 @@ Ces 3 réponses sont liées à la session (`hints_used`, `duration_sec`, `score`
 | FS8205(A) | LCSC C32254 (SOT-23-6 — brochage à confirmer sur le PDF) | https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/1811081616_Fortune-Semicon-FS8205A_C32254.pdf |
 | USBLC6-2SC6 | LCSC C7519 | https://www.st.com/resource/en/datasheet/usblc6-2.pdf |
 | SS34 (D1, 3 A) | LCSC C8678 | `docs/datasheets/SS34.md` (PDF local Vishay SS32-SS36 ; fiche MDD sur la page LCSC) |
-| TMAG5273 (**variante A1**, 0x35) | — (la BOM cite C3715882 = A2, à corriger) | https://www.ti.com/lit/ds/symlink/tmag5273.pdf |
+| TMAG5273 (**variante A1**, 0x35) | C3716049 (TMAG5273A1QDBVR ; empreinte SOT-23-6 commune à la famille, fichier nommé C3715882) | https://www.ti.com/lit/ds/symlink/tmag5273.pdf |
 | MPR121 (Phase 1) | — | https://cdn-shop.adafruit.com/datasheets/MPR121.pdf |
 | GC9A01A (puce driver des yeux) | — | https://github.com/fbiego/dt78/blob/master/datasheets/GC9A01A.pdf (fiche du **module** écran encore absente) |
 | TF-01A (slot microSD) | LCSC C91145 | plan mécanique LCSC (pull-ups 10 kΩ exigées côté hôte, cf. ESP-IDF) |
