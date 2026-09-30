@@ -91,10 +91,13 @@ Taille indicative : S ≈ 1 session, M ≈ 2-3, L ≈ 4+.
 
 **Objectif** : un socle reproductible et vérifié avant d'ajouter des tables et de l'argent.
 
-- [ ] Relever le schéma réel (🧑 `web/supabase/snapshot-schema.sql` à passer dans Studio, une
-      seule cellule JSON à me renvoyer) et l'écrire en
+- [x] Relever le schéma réel (`web/supabase/snapshot-schema.sql`, fait le 2026-09-30) et l'écrire en
       **migration initiale** `web/supabase/migrations/0001_initial.sql` (tables, RLS, trigger
       `handle_new_user`, index manquants `devices.owner_id`, contraintes `firmware_releases`).
+      → `0001_baseline.sql` (état exact de la prod) + **`0002_security.sql`** (🧑 à passer en prod) :
+      le relevé a révélé deux failles — `box_challenges` sans RLS et ouverte à la clé publique
+      (déni de service de l'auth box), et la policy `devices` FOR ALL qui laissait un utilisateur
+      connecté insérer une box sans la preuve BLE (contournement de l'option B).
 - [ ] Types TypeScript générés depuis le schéma (`lib/database.types.ts`) — après la migration initiale.
 - [x] Dettes API box : clé JWT dérivée `HKDF(master, "escapebox:jwt")` + `iss`/`aud` ;
       `/register` → 409 sur 23505 (2026-09-30, tests `lib/box-auth.test.ts`).
