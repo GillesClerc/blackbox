@@ -215,6 +215,10 @@ Document : `docs/pcb/03-validation-qualite.md`.
 
 ## 9. Divers
 
+- [ ] 🤝 **Provisioning Wi-Fi par BLE (`/devices/add`) : ne fonctionnait pas** au dernier essai
+  de Gilles (souvenir, 2026-09-30) — à contrôler (logs `ble_prov`, Chrome, fenêtre 5 min) quand
+  le firmware reprend.
+
 - [ ] 🧑 Réassigner la box de test du compte `qwe@qwe.com` à ton vrai compte (SQL dans Studio,
   ou supprimer la ligne `devices` puis refaire l'appairage BLE depuis `/devices/add`).
 - [ ] 🧑 Replanifier les jalons M2/M3 du FSD §3.0 (dates dépassées).

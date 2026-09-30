@@ -655,10 +655,10 @@ steps:
 | IA | Anthropic API (Claude) — assistance génération scénarios |
 | Hébergement | Coolify self-hosted (Nixpacks, base dir `web/`, domaine dev box.agill.es) + Supabase self-hosted — en production depuis 2026-06 |
 
-> Stack : **en service** = Next.js 16 + Tailwind/shadcn, Supabase Auth (email + Google) et PostgreSQL, Coolify ; **cible** = Stripe, Resend, R2, React Flow, Monaco, Anthropic API.
+> Stack : **en service** = Next.js 16 + Tailwind (shadcn initialisé, aucun composant encore), Supabase Auth (**e-mail seul**, Google pas encore câblé) et PostgreSQL, Coolify ; **cible** = Google, Stripe, Resend, Supabase Storage (assets des histoires, décision 2026-09-30), React Flow, Monaco, Anthropic API. Roadmap : `docs/plans/web-roadmap.md`.
 
 **Schéma base de données — état réel (Supabase, relevé lors de l'audit 2026-09-23) :**
-`profiles` (→ `auth.users`), `devices` (`box_uid` UNIQUE, `owner_id`, `name`, `firmware_version`, `last_sync_at`), `scenarios` (`slug` UNIQUE, `version`, `package_path`, `active`, `price_chf`…), `device_scenarios` (PK `device_id, scenario_id` — **seul droit d'accès aujourd'hui, lié à la box**), `box_challenges` (nonces à usage unique), `firmware_releases` (`version`, `channel`, `url`, `sha256`, `active`), `waitlist`. Pas encore de migrations versionnées dans le dépôt. **Décision ouverte avant Stripe** : lier les licences à l'utilisateur (table `licenses`/`purchases`) plutôt qu'à la box.
+`profiles` (→ `auth.users`), `devices` (`box_uid` UNIQUE, `owner_id`, `name`, `firmware_version`, `last_sync_at`), `scenarios` (`slug` UNIQUE, `version`, `package_path`, `active`, `price_chf`…), `device_scenarios` (PK `device_id, scenario_id` — **seul droit d'accès aujourd'hui, lié à la box**), `box_challenges` (nonces à usage unique), `firmware_releases` (`version`, `channel`, `url`, `sha256`, `active`), `waitlist`. Migrations versionnées en cours d'écriture (`web/supabase/migrations/`, étape E0). **Décidé le 2026-09-30 : licences liées au compte** (table `licenses`, étape E1) ; `device_scenarios` deviendra le suivi d'installation.
 
 **Schéma base de données — cible (tables principales) :**
 

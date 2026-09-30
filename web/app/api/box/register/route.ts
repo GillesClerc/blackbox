@@ -120,6 +120,14 @@ export async function POST(request: NextRequest) {
     .select("id")
     .single();
 
+  // 23505 = violation d'unicité (box_uid) : un enregistrement concurrent de la
+  // même box vient de passer entre notre SELECT et notre INSERT.
+  if (error?.code === "23505") {
+    return Response.json(
+      { error: "box déjà enregistrée (enregistrement concurrent)" },
+      { status: 409 }
+    );
+  }
   if (error || !device) {
     return Response.json({ error: "enregistrement échoué" }, { status: 500 });
   }

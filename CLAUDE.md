@@ -31,6 +31,7 @@ Box physique d'escape game. Specs completes dans :
 - Flash complet (premiere fois ou si table de partitions change) : `python -m esptool --chip esp32s3 -p /dev/ttyACM0 -b 460800 --before default-reset --after hard-reset write_flash --flash_mode dio --flash_size 16MB --flash_freq 80m 0x0 build/bootloader/bootloader.bin 0x8000 build/partition_table/partition-table.bin 0xf000 build/ota_data_initial.bin 0x20000 build/blackbox.bin`
 - Reflash app seule (cas courant) : meme commande avec uniquement `0x20000 build/blackbox.bin`
 - Tests host (sans cible) : `firmware/test_host/run.sh` (validateur de scenario, ASan/UBSan), `python3 tools/test_box_crypto.py` (vecteur crypto aligne sur le serveur)
+- Web (depuis web/) : `npm run typecheck`, `npm run lint`, `npm test` (Vitest), `npm run build` ; CI GitHub Actions `.github/workflows/ci.yml` (web + crypto + tests host)
 - Monitor : lancer depuis un terminal WSL2 (pas dispo dans Claude Code)
 - Logs : `python3 -c "import serial,time; s=serial.Serial('/dev/ttyACM0',115200,timeout=0.5); time.sleep(2); print(s.read(4096).decode('utf-8','replace'))"`
 

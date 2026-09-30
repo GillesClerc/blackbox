@@ -23,10 +23,19 @@ function getMasterSecret(): string {
 }
 
 // Clé de signature des JWT box : propre au serveur (émis ET vérifié côté serveur),
-// dérivée du master pour ne pas multiplier les secrets d'environnement.
+// dérivée du master (HKDF, info "escapebox:jwt") pour ne pas multiplier les
+// secrets d'environnement sans jamais signer avec le master lui-même. L'info
+// ne peut pas entrer en collision avec un secret de box ("escapebox:<uid>") :
+// un box_uid ne vaut jamais "jwt" (format ESP32S3-XXXX-XXXX).
 function getJwtSecret(): Uint8Array {
-  return new TextEncoder().encode(getMasterSecret());
+  return new Uint8Array(
+    hkdfSync("sha256", getMasterSecret(), "", "escapebox:jwt", 32)
+  );
 }
+
+// Émetteur / audience : un JWT box n'est valable que sur l'API box.
+export const BOX_JWT_ISSUER = "escapebox";
+export const BOX_JWT_AUDIENCE = "escapebox:box";
 
 export type BoxJwtPayload = {
   sub: string; // box_uid
@@ -77,6 +86,8 @@ export async function signBoxJwt(payload: {
     owner_id: payload.ownerId,
   })
     .setProtectedHeader({ alg: "HS256" })
+    .setIssuer(BOX_JWT_ISSUER)
+    .setAudience(BOX_JWT_AUDIENCE)
     .setSubject(payload.boxUid)
     .setJti(randomUUID())
     .setIssuedAt()
@@ -85,7 +96,11 @@ export async function signBoxJwt(payload: {
 }
 
 export async function verifyBoxJwt(token: string): Promise<BoxJwtPayload> {
-  const { payload } = await jwtVerify(token, getJwtSecret());
+  const { payload } = await jwtVerify(token, getJwtSecret(), {
+    issuer: BOX_JWT_ISSUER,
+    audience: BOX_JWT_AUDIENCE,
+    algorithms: ["HS256"],
+  });
   return payload as BoxJwtPayload;
 }
 

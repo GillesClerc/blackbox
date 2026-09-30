@@ -6,6 +6,11 @@
 > Sources : FSD (§2.3.3, §6.1, §6.3, FR-WEB, §8.1.3, §9.3), vision, `web-implementation.md`,
 > `firmware-cloud-client.md`, `RESTE-A-FAIRE.md` §5, et relevé du code `web/` au 30/09.
 > Cocher au fil de l'eau ; les décisions ouvertes sont regroupées au §4.
+>
+> **Arbitrages de Gilles (2026-09-30)** : licence **liée au compte** · assets dans **Supabase
+> Storage** · **staging** : oui · nom de marque / domaine : en réflexion, **le site reste hors
+> ligne** (pas de mise en prod publique de la vitrine) · prix : **étude à faire** · histoire
+> révoquée déjà installée : **la box la garde** pour l'instant. → **E0 lancé.**
 
 ---
 
@@ -86,18 +91,20 @@ Taille indicative : S ≈ 1 session, M ≈ 2-3, L ≈ 4+.
 
 **Objectif** : un socle reproductible et vérifié avant d'ajouter des tables et de l'argent.
 
-- [ ] Relever le schéma réel (requêtes d'extraction à passer dans Studio) et l'écrire en
+- [ ] Relever le schéma réel (🧑 `web/supabase/snapshot-schema.sql` à passer dans Studio, une
+      seule cellule JSON à me renvoyer) et l'écrire en
       **migration initiale** `web/supabase/migrations/0001_initial.sql` (tables, RLS, trigger
       `handle_new_user`, index manquants `devices.owner_id`, contraintes `firmware_releases`).
-- [ ] Types TypeScript générés depuis le schéma (`lib/database.types.ts`).
-- [ ] Dettes API box : clé JWT dérivée `HKDF(master, "escapebox:jwt")` + `iss`/`aud` ;
-      `/register` → 409 sur 23505.
-- [ ] `shadcn` en devDependencies, `npm audit`, en-têtes de sécurité (CSP, HSTS,
-      X-Frame-Options) dans `next.config.ts`.
-- [ ] CI GitHub Actions : `tsc --noEmit`, `lint`, `next build`, `tools/test_box_crypto.py`,
-      tests host firmware (`firmware/test_host/run.sh`).
-- [ ] Environnement **staging** (deuxième service Coolify + base Supabase de test) pour tester
-      migrations et Stripe sans toucher la prod.
+- [ ] Types TypeScript générés depuis le schéma (`lib/database.types.ts`) — après la migration initiale.
+- [x] Dettes API box : clé JWT dérivée `HKDF(master, "escapebox:jwt")` + `iss`/`aud` ;
+      `/register` → 409 sur 23505 (2026-09-30, tests `lib/box-auth.test.ts`).
+- [x] `shadcn` en devDependencies, en-têtes de sécurité (CSP, HSTS, X-Frame-Options,
+      Permissions-Policy avec `bluetooth=(self)`) dans `next.config.ts` (2026-09-30).
+- [ ] `npm audit` (à relancer, voir le rapport de la session).
+- [x] CI GitHub Actions `.github/workflows/ci.yml` : typecheck, lint, Vitest, build sans
+      secret, `tools/test_box_crypto.py`, tests host firmware (2026-09-30).
+- [ ] Environnement **staging** : guide `docs/plans/staging-coolify.md` — 🧑 création des
+      services Coolify par Gilles.
 
 **Fichiers / tables** : `web/supabase/migrations/`, `web/lib/`, `web/next.config.ts`,
 `web/package.json`, `.github/workflows/`, `lib/box-auth.ts`, `api/box/register`.
