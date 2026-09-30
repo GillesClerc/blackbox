@@ -33,10 +33,10 @@ select json_build_object(
       and tgrelid::regclass::text not like 'auth.%'
       and tgrelid::regclass::text not like 'realtime.%'),
   'auth_triggers', (
-    select json_agg(json_build_object('table', tgrelid::regclass::text, 'name', tgname,
-      'def', pg_get_triggerdef(oid)) order by tgname)
+    select json_agg(json_build_object('table', t.tgrelid::regclass::text, 'name', t.tgname,
+      'def', pg_get_triggerdef(t.oid)) order by t.tgname)
     from pg_trigger t join pg_class c on c.oid = t.tgrelid
-    where not tgisinternal and c.relnamespace = 'auth'::regnamespace
+    where not t.tgisinternal and c.relnamespace = 'auth'::regnamespace
       and pg_get_triggerdef(t.oid) like '%public.%'),
   'functions', (
     select json_agg(json_build_object('name', p.proname,
