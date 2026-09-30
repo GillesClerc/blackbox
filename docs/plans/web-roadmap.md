@@ -98,6 +98,9 @@ Taille indicative : S ≈ 1 session, M ≈ 2-3, L ≈ 4+.
       le relevé a révélé deux failles — `box_challenges` sans RLS et ouverte à la clé publique
       (déni de service de l'auth box), et la policy `devices` FOR ALL qui laissait un utilisateur
       connecté insérer une box sans la preuve BLE (contournement de l'option B).
+      ✅ **0002 passée en prod le 2026-09-30**, vérifiée (relevé + test avec la clé publique).
+- [x] Désindexation : `SITE_NOINDEX=1` actif en prod (en-tête vérifié), `SITE_BLOCK_CRAWL`
+      prévu pour le staging (`docs/plans/staging-coolify.md`).
 - [ ] Types TypeScript générés depuis le schéma (`lib/database.types.ts`) — après la migration initiale.
 - [x] Dettes API box : clé JWT dérivée `HKDF(master, "escapebox:jwt")` + `iss`/`aud` ;
       `/register` → 409 sur 23505 (2026-09-30, tests `lib/box-auth.test.ts`).

@@ -14,7 +14,7 @@ Relevé de contrôle : `../snapshot-schema.sql` (une cellule JSON).
 | Fichier | Staging | Production |
 |---|---|---|
 | 0001_baseline | — | (état d'origine) |
-| 0002_security | — | — |
+| 0002_security | — | ✅ 2026-09-30 (vérifié : relevé du schéma + test clé publique → `permission denied`) |
 
 Après chaque passage : relancer `snapshot-schema.sql` et me renvoyer la cellule pour contrôle
 (RLS, policies et droits attendus).
