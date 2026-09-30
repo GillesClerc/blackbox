@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/admin";
 
-export const metadata: Metadata = { title: "Inventaire — EscapeBox" };
+export const metadata: Metadata = { title: "Inventaire" };
 export const dynamic = "force-dynamic";
 
 const STATUS: Record<string, string> = { draft: "Brouillon", published: "Publiée", archived: "Archivée" };

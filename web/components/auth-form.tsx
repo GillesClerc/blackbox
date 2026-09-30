@@ -6,7 +6,7 @@ import { signIn, signUp, type AuthState } from "@/app/(auth)/actions";
 const initialState: AuthState = { status: "idle" };
 
 const FIELD_CLASSES =
-  "h-12 w-full rounded-lg border border-input bg-night/60 px-4 text-base text-foreground placeholder:text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
+  "h-12 w-full rounded-md border border-input bg-popover px-4 text-base placeholder:text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass";
 
 export function AuthForm({ mode }: { mode: "login" | "register" }) {
   const [state, formAction, pending] = useActionState(
@@ -56,7 +56,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
       <button
         type="submit"
         disabled={pending}
-        className="mt-2 h-12 rounded-lg bg-primary px-6 font-mono text-sm font-bold tracking-wide text-primary-foreground transition-colors hover:bg-[#f0b558] disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+        className="mt-2 h-12 rounded-md bg-foreground px-6 text-sm font-semibold text-background transition-colors hover:bg-[#33403f] disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass"
       >
         {pending
           ? "Un instant…"

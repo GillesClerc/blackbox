@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
-  title: "Compte — EscapeBox",
+  title: "Compte",
 };
 
 export default async function AccountPage() {

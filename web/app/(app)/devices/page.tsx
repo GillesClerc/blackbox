@@ -3,7 +3,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
-  title: "Mes box — EscapeBox",
+  title: "Mes box",
 };
 
 // Liste des box du compte (RLS « own devices » : le client session suffit).

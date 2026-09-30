@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ScenarioForm } from "@/components/admin/scenario-form";
 
-export const metadata: Metadata = { title: "Nouvelle histoire — EscapeBox" };
+export const metadata: Metadata = { title: "Nouvelle histoire" };
 
 export default function NewScenarioPage() {
   return (

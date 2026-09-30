@@ -1,26 +1,22 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { AuthForm } from "@/components/auth-form";
+import { Logo } from "@/components/site/logo";
 
 export const metadata: Metadata = {
-  title: "Connexion — EscapeBox",
+  title: "Connexion",
 };
 
 export default function LoginPage() {
   return (
     <main className="flex flex-1 items-center justify-center px-6 py-16">
       <div className="w-full max-w-sm">
-        <Link
-          href="/"
-          className="font-mono text-xs tracking-widest text-muted-foreground transition-colors hover:text-foreground"
-        >
-          <span className="text-primary">◉◉</span> ESCAPEBOX
-        </Link>
-        <div className="mt-6 rounded-2xl border border-border bg-card p-8">
-          <p className="font-mono text-xs tracking-[0.25em] text-glow">
+        <Logo />
+        <div className="mt-6 rounded-lg border border-foreground/15 bg-card p-8">
+          <p className="font-mono text-[0.7rem] tracking-[0.24em] text-brass">
             ACCÈS JOUEUR
           </p>
-          <h1 className="mt-3 font-display text-xl font-medium">
+          <h1 className="mt-3 font-display text-3xl leading-tight">
             Elle vous attend.
           </h1>
           <div className="mt-6">
@@ -31,7 +27,7 @@ export default function LoginPage() {
           Pas encore de compte ?{" "}
           <Link
             href="/register"
-            className="text-primary underline-offset-4 hover:underline"
+            className="font-semibold text-brass underline-offset-4 hover:underline"
           >
             Créer un compte
           </Link>

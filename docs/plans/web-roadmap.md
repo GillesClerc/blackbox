@@ -193,7 +193,15 @@ un compte non admin reçoit 403 sur `/admin`.
 compilé en WebAssembly pour garder une seule implémentation — recommandé) ; visuels du catalogue
 dans le même bucket ou un bucket public.
 
-### E3 — Site de présentation (M, en parallèle de E1-E2)
+### E3 — Site de présentation (M, en parallèle de E1-E2) — 🟡 refonte faite le 2026-10-01, en revue sur `tbox`
+
+Direction « Ardoise » (arbitrage Gilles : garder l'esprit « Ouvrez l'œil », tout le reste repensé ;
+visuels dessinés en code ; même identité sur l'espace compte) : site clair aux matières de la box
+(craie, ardoise, noyer, laiton, lueur iris réservée aux écrans), Young Serif / Atkinson Hyperlegible
+Next / Martian Mono, cube vivant en ouverture (yeux qui suivent, bouche qui écrit), patron déplié
+des six faces. Pages : accueil, `/la-box`, `/histoires`, `/histoires/[slug]` (lues depuis
+l'inventaire), `/faq`, `/confidentialite`, `/mentions-legales` (mentions « à compléter » visibles).
+
 
 **Objectif** : un site vitrine complet dans la direction « Ouvrez l'œil » : ton espiègle et
 mystérieux, teasing plutôt que fiche technique, public familial.

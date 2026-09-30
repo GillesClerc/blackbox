@@ -9,7 +9,7 @@ import { VersionUpload } from "@/components/admin/version-upload";
 import { UUID_RE } from "@/lib/admin/http";
 import { createAdminClient } from "@/lib/supabase/admin";
 
-export const metadata: Metadata = { title: "Histoire — EscapeBox" };
+export const metadata: Metadata = { title: "Histoire" };
 export const dynamic = "force-dynamic";
 
 const VSTATUS: Record<string, string> = { draft: "Brouillon", published: "Publiée", retired: "Retirée" };
