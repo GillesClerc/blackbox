@@ -1,8 +1,8 @@
 import type { MetadataRoute } from "next";
 import { siteBlockCrawl } from "@/lib/indexing";
 
-// Dynamique : SITE_BLOCK_CRAWL est lu à la requête, un changement de variable dans
-// Coolify ne demande qu'un redémarrage, pas un nouveau build.
+// Dynamique : SITE_BLOCK_CRAWL est lu à la requête, pas figé au build. (Sous Coolify,
+// une nouvelle valeur n'arrive au serveur qu'après un Redeploy, pas un Restart.)
 export const dynamic = "force-dynamic";
 
 export default function robots(): MetadataRoute.Robots {

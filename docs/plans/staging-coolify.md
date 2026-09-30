@@ -43,8 +43,9 @@ vérifie, puis on clique « Deploy » sur la prod.
 
 Deux couches, de la plus simple à la plus sûre :
 
-1. **Deux variables** (code du 2026-09-30), lues à chaque requête : un changement de valeur
-   demande un **Restart**, pas un nouveau build.
+1. **Deux variables** (code du 2026-09-30), lues à chaque requête. ⚠ Sous Coolify, un changement
+   de variable exige un **Redeploy** : **Restart ne recharge pas les variables** (constaté le
+   2026-09-30 avec `SITE_NOINDEX`, comme en juin avec `BOX_MASTER_SECRET`).
    - **`SITE_NOINDEX=1` → prod** (`box.agill.es`) tant que la marque n'est pas choisie : toutes
      les pages renvoient `X-Robots-Tag: noindex, nofollow, noarchive`, **`robots.txt` reste
      ouvert**. Le robot doit pouvoir charger la page pour lire le `noindex` : un `Disallow` l'en
