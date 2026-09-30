@@ -81,3 +81,10 @@ firmware/managed_components/lvgl__lvgl — Copyright (c) 2021 LVGL Kft.
 MIT License (mêmes termes que la section 1). Conservée pour usage futur ;
 si elle reste inutilisée au moment de la production, la retirer du build
 et de ce fichier.
+
+
+6. fflate — Arjun Barrett (MIT) — web
+-------------------------------------
+web/node_modules/fflate (dépendance npm du back-office : lecture des zips de
+packages d'histoires, web/lib/scenario/package.ts). MIT License (mêmes termes
+que la section 1), Copyright (c) 2026 Arjun Barrett.

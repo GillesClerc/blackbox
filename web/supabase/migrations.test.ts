@@ -33,6 +33,8 @@ beforeAll(async () => {
     create role anon nologin; create role authenticated nologin; create role service_role nologin bypassrls;
     create schema auth;
     create table auth.users (id uuid primary key, email text);
+    create schema storage;
+    create table storage.buckets (id text primary key, name text, public boolean, file_size_limit bigint);
     create function auth.uid() returns uuid language sql stable as
       $$ select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
     grant usage on schema public, auth to anon, authenticated, service_role;
@@ -52,7 +54,7 @@ beforeAll(async () => {
     insert into public.device_scenarios (device_id, scenario_id)
       select d.id, s.id from public.devices d, public.scenarios s where s.slug in ('capitaine_verdier','vieux_test');
   `);
-  for (const f of ["0002_security.sql", "0003_inventory.sql"]) {
+  for (const f of ["0002_security.sql", "0003_inventory.sql", "0004_storage_publish.sql"]) {
     await db.exec(readFileSync(path.join(MIG, f), "utf8"));
   }
 }, 60_000);
@@ -130,5 +132,43 @@ describe("RLS vue d'un client", () => {
     expect((await asClient("authenticated", U1, "update public.profiles set role='admin'")).error).toMatch(/permission denied/);
     const box = await asClient("authenticated", U1, `insert into public.devices (box_uid, owner_id) values ('ESP32S3-SQUAT-0001', '${U1}')`);
     expect(box.error).toMatch(/permission denied/);
+  });
+});
+
+describe("0004 — bucket et publication atomique", () => {
+  it("bucket privé scenario-packages créé", async () => {
+    expect(await rows("select id, public from storage.buckets")).toEqual([
+      { id: "scenario-packages", public: false },
+    ]);
+  });
+
+  it("publier une nouvelle version la rend courante et retire l'ancienne", async () => {
+    await db.exec(`insert into public.scenario_versions (scenario_id, version, storage, storage_path)
+                   select id, 5, 'bucket', 'capitaine_verdier/v5' from public.scenarios where slug='capitaine_verdier'`);
+    const [{ id: v5 }] = await rows<{ id: string }>(
+      "select v.id from public.scenario_versions v join public.scenarios s on s.id=v.scenario_id where s.slug='capitaine_verdier' and v.version=5");
+    await db.query("select public.publish_scenario_version($1)", [v5]);
+    const st = await rows(`select v.version, v.status, (s.current_version_id = v.id) courante
+      from public.scenario_versions v join public.scenarios s on s.id = v.scenario_id
+      where s.slug='capitaine_verdier' order by v.version`);
+    expect(st).toEqual([
+      { version: 4, status: "retired", courante: false },
+      { version: 5, status: "published", courante: true },
+    ]);
+  });
+
+  it("revenir à la version précédente (republication de la v4)", async () => {
+    const [{ id: v4 }] = await rows<{ id: string }>(
+      "select v.id from public.scenario_versions v join public.scenarios s on s.id=v.scenario_id where s.slug='capitaine_verdier' and v.version=4");
+    await db.query("select public.publish_scenario_version($1)", [v4]);
+    const st = await rows<{ version: number; status: string }>(`select v.version, v.status from public.scenario_versions v
+      join public.scenarios s on s.id = v.scenario_id where s.slug='capitaine_verdier' order by v.version`);
+    expect(st).toEqual([{ version: 4, status: "published" }, { version: 5, status: "retired" }]);
+  });
+
+  it("version inconnue refusée ; fonction interdite aux clients", async () => {
+    await expect(db.query("select public.publish_scenario_version('00000000-0000-0000-0000-000000000000')")).rejects.toThrow(/version inconnue/);
+    const r = await asClient("authenticated", U1, "select public.publish_scenario_version('00000000-0000-0000-0000-000000000000')");
+    expect(r.error).toMatch(/permission denied/);
   });
 });

@@ -6,6 +6,7 @@ import type { NextRequest } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { bearerToken, verifyBoxJwt } from "@/lib/box-auth";
 import { boxPackageAccess } from "@/lib/entitlements";
+import { PACKAGES_BUCKET } from "@/lib/admin/inventory";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -14,7 +15,9 @@ export const dynamic = "force-dynamic";
 // Auth : JWT box + licence active du propriétaire de la box sur CE slug ; sert la
 // version PUBLIÉE (scenarios.current_version_id). Stockage 'repo' : fichiers dans
 // web/scenario-packages/<storage_path>/ (hors de public/ → jamais servis en
-// statique). Stockage 'bucket' (Supabase Storage) : étape E2.
+// statique). Stockage 'bucket' : Supabase Storage, bucket privé scenario-packages,
+// sous <storage_path>/ (versions publiées depuis /admin, E2) — la box ne voit
+// aucune différence.
 // ⚠ Nixpacks déploie le repo complet donc fs marche ; si passage un jour en
 // `output: standalone`, ajouter outputFileTracingIncludes pour ce dossier.
 
@@ -56,12 +59,30 @@ export async function GET(
     return Response.json({ error: "chemin invalide" }, { status: 400 });
   }
 
-  const access = await boxPackageAccess(createAdminClient(), payload.device_id, slug);
+  const admin = createAdminClient();
+  const access = await boxPackageAccess(admin, payload.device_id, slug);
   if (!access.ok) {
     return Response.json({ error: access.error }, { status: access.status });
   }
+  const mime =
+    MIME[path.extname(segments[segments.length - 1]).toLowerCase()] ?? "application/octet-stream";
+
+  if (access.version.storage === "bucket") {
+    const key = `${access.version.storage_path}/${segments.join("/")}`;
+    const { data: blob, error } = await admin.storage.from(PACKAGES_BUCKET).download(key);
+    if (error || !blob) {
+      return Response.json({ error: "fichier absent" }, { status: 404 });
+    }
+    return new Response(blob.stream(), {
+      headers: {
+        "Content-Type": mime,
+        "Content-Length": String(blob.size),
+        "Cache-Control": "private, no-store",
+      },
+    });
+  }
   if (access.version.storage !== "repo") {
-    return Response.json({ error: "stockage non encore pris en charge" }, { status: 501 });
+    return Response.json({ error: "stockage inconnu" }, { status: 500 });
   }
 
   const pkgDir = path.join(PKG_ROOT, access.version.storage_path);
@@ -84,8 +105,7 @@ export async function GET(
   const stream = Readable.toWeb(createReadStream(filePath)) as ReadableStream;
   return new Response(stream, {
     headers: {
-      "Content-Type":
-        MIME[path.extname(filePath).toLowerCase()] ?? "application/octet-stream",
+      "Content-Type": mime,
       "Content-Length": String(info.size),
       "Cache-Control": "private, no-store",
     },

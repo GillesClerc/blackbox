@@ -17,6 +17,14 @@ export default async function AppLayout({
     redirect("/login");
   }
 
+  // Lien ADMIN seulement pour les administrateurs (RLS : lecture de son profil).
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .maybeSingle();
+  const isAdmin = profile?.role === "admin";
+
   return (
     <div className="flex min-h-full flex-1 flex-col">
       <header className="border-b border-border">
@@ -28,6 +36,14 @@ export default async function AppLayout({
             <span className="text-primary">◉◉</span> ESCAPEBOX
           </Link>
           <nav className="flex items-center gap-2">
+            {isAdmin && (
+              <Link
+                href="/admin"
+                className="rounded-md px-3 py-2 font-mono text-xs tracking-wider text-primary transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              >
+                ADMIN
+              </Link>
+            )}
             <Link
               href="/devices"
               className="rounded-md px-3 py-2 font-mono text-xs tracking-wider text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"

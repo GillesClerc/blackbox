@@ -382,7 +382,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      publish_scenario_version: {
+        Args: { p_version_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

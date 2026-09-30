@@ -1,0 +1,446 @@
+{
+  "_comment": "Cas partagés du validateur de scénario : lus par firmware/test_host/test_scenario_validate.c ET par web/lib/scenario/validate.test.ts. Ajouter un cas ici le teste des deux côtés. 'file' = chemin relatif à firmware/.",
+  "cases": [
+    {
+      "name": "scénario embarqué valide",
+      "valid": true,
+      "file": "scenarios/capitaine_verdier.json"
+    },
+    {
+      "name": "scénario package valide",
+      "valid": true,
+      "file": "../web/scenario-packages/capitaine_verdier/scenario.json"
+    },
+    {
+      "name": "input minimal valide",
+      "valid": true,
+      "scenario": {
+        "steps": [
+          {
+            "id": "a",
+            "type": "input",
+            "on": "keypad_code",
+            "expect": {
+              "code": "7394"
+            },
+            "next": "b"
+          },
+          {
+            "id": "b",
+            "type": "end"
+          }
+        ]
+      }
+    },
+    {
+      "name": "expect.code nombre refusé",
+      "valid": false,
+      "scenario": {
+        "steps": [
+          {
+            "id": "a",
+            "type": "input",
+            "on": "keypad_code",
+            "expect": {
+              "code": 7394
+            },
+            "next": "b"
+          },
+          {
+            "id": "b",
+            "type": "end"
+          }
+        ]
+      }
+    },
+    {
+      "name": "expect.uid nombre refusé",
+      "valid": false,
+      "scenario": {
+        "steps": [
+          {
+            "id": "a",
+            "type": "input",
+            "on": "keypad_code",
+            "expect": {
+              "uid": 12
+            },
+            "next": "b"
+          },
+          {
+            "id": "b",
+            "type": "end"
+          }
+        ]
+      }
+    },
+    {
+      "name": "expect non objet refusé",
+      "valid": false,
+      "scenario": {
+        "steps": [
+          {
+            "id": "a",
+            "type": "input",
+            "on": "keypad_code",
+            "expect": "7394",
+            "next": "b"
+          },
+          {
+            "id": "b",
+            "type": "end"
+          }
+        ]
+      }
+    },
+    {
+      "name": "action non objet refusée",
+      "valid": false,
+      "scenario": {
+        "steps": [
+          {
+            "id": "a",
+            "type": "input",
+            "on": "keypad_code",
+            "do_success": [
+              "led"
+            ],
+            "next": "b"
+          },
+          {
+            "id": "b",
+            "type": "end"
+          }
+        ]
+      }
+    },
+    {
+      "name": "do non tableau refusé",
+      "valid": false,
+      "scenario": {
+        "steps": [
+          {
+            "id": "a",
+            "type": "input",
+            "on": "keypad_code",
+            "do_fail": {
+              "led": {}
+            },
+            "next": "b"
+          },
+          {
+            "id": "b",
+            "type": "end"
+          }
+        ]
+      }
+    },
+    {
+      "name": "timeout texte refusé",
+      "valid": false,
+      "scenario": {
+        "steps": [
+          {
+            "id": "a",
+            "type": "input",
+            "on": "keypad_code",
+            "timeout_sec": "10",
+            "next": "b"
+          },
+          {
+            "id": "b",
+            "type": "end"
+          }
+        ]
+      }
+    },
+    {
+      "name": "hint delay texte refusé",
+      "valid": false,
+      "scenario": {
+        "steps": [
+          {
+            "id": "a",
+            "type": "input",
+            "on": "keypad_code",
+            "hints": [
+              {
+                "delay_sec": "5"
+              }
+            ],
+            "next": "b"
+          },
+          {
+            "id": "b",
+            "type": "end"
+          }
+        ]
+      }
+    },
+    {
+      "name": "next_timeout inexistant refusé",
+      "valid": false,
+      "scenario": {
+        "steps": [
+          {
+            "id": "a",
+            "type": "input",
+            "on": "keypad_code",
+            "next_timeout": "zz",
+            "next": "b"
+          },
+          {
+            "id": "b",
+            "type": "end"
+          }
+        ]
+      }
+    },
+    {
+      "name": "on inconnu refusé",
+      "valid": false,
+      "scenario": {
+        "steps": [
+          {
+            "id": "a",
+            "type": "input",
+            "on": "laser"
+          }
+        ]
+      }
+    },
+    {
+      "name": "id manquant refusé",
+      "valid": false,
+      "scenario": {
+        "steps": [
+          {
+            "type": "end"
+          }
+        ]
+      }
+    },
+    {
+      "name": "id nombre refusé",
+      "valid": false,
+      "scenario": {
+        "steps": [
+          {
+            "id": 3,
+            "type": "end"
+          }
+        ]
+      }
+    },
+    {
+      "name": "id dupliqué refusé",
+      "valid": false,
+      "scenario": {
+        "steps": [
+          {
+            "id": "a",
+            "type": "end"
+          },
+          {
+            "id": "a",
+            "type": "end"
+          }
+        ]
+      }
+    },
+    {
+      "name": "type inconnu refusé",
+      "valid": false,
+      "scenario": {
+        "steps": [
+          {
+            "id": "a",
+            "type": "inptu"
+          }
+        ]
+      }
+    },
+    {
+      "name": "step non objet refusé",
+      "valid": false,
+      "scenario": {
+        "steps": [
+          "a"
+        ]
+      }
+    },
+    {
+      "name": "steps vide refusé",
+      "valid": false,
+      "scenario": {
+        "steps": []
+      }
+    },
+    {
+      "name": "steps absent refusé",
+      "valid": false,
+      "scenario": {
+        "meta": {}
+      }
+    },
+    {
+      "name": "next inexistant refusé",
+      "valid": false,
+      "scenario": {
+        "steps": [
+          {
+            "id": "a",
+            "type": "narrative",
+            "next": "zz"
+          }
+        ]
+      }
+    },
+    {
+      "name": "next nombre refusé",
+      "valid": false,
+      "scenario": {
+        "steps": [
+          {
+            "id": "a",
+            "type": "narrative",
+            "next": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "next \"end\" sans step end accepté",
+      "valid": true,
+      "scenario": {
+        "steps": [
+          {
+            "id": "a",
+            "type": "narrative",
+            "next": "end"
+          }
+        ]
+      }
+    },
+    {
+      "name": "branch valide",
+      "valid": true,
+      "scenario": {
+        "steps": [
+          {
+            "id": "a",
+            "type": "branch",
+            "conditions": [
+              {
+                "var": "x",
+                "op": "gte",
+                "value": 3,
+                "next": "b"
+              }
+            ],
+            "default": "b"
+          },
+          {
+            "id": "b",
+            "type": "end"
+          }
+        ]
+      }
+    },
+    {
+      "name": "branch op inconnu refusé",
+      "valid": false,
+      "scenario": {
+        "steps": [
+          {
+            "id": "a",
+            "type": "branch",
+            "conditions": [
+              {
+                "var": "x",
+                "op": "~",
+                "value": 3,
+                "next": "a"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "branch sans conditions refusé",
+      "valid": false,
+      "scenario": {
+        "steps": [
+          {
+            "id": "a",
+            "type": "branch",
+            "default": "a"
+          }
+        ]
+      }
+    },
+    {
+      "name": "branch condition sans next refusée",
+      "valid": false,
+      "scenario": {
+        "steps": [
+          {
+            "id": "a",
+            "type": "branch",
+            "conditions": [
+              {
+                "var": "x",
+                "op": "eq",
+                "value": 1
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "clés insensibles à la casse (cJSON_GetObjectItem)",
+      "valid": true,
+      "scenario": {
+        "STEPS": [
+          {
+            "ID": "a",
+            "Type": "end"
+          }
+        ]
+      }
+    },
+    {
+      "name": "do à null refusé (clé présente ≠ absente)",
+      "valid": false,
+      "scenario": {
+        "steps": [
+          {
+            "id": "a",
+            "type": "narrative",
+            "do": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "next à null refusé",
+      "valid": false,
+      "scenario": {
+        "steps": [
+          {
+            "id": "a",
+            "type": "narrative",
+            "next": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "racine tableau refusée",
+      "valid": false,
+      "scenario": []
+    }
+  ]
+}

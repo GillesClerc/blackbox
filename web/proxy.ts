@@ -13,6 +13,7 @@ const PROTECTED = [
   "/account",
   "/checkout",
   "/studio",
+  "/admin",
 ];
 
 export async function proxy(request: NextRequest) {
