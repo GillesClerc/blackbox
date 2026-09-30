@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import type { Database } from "@/lib/database.types";
 
 // Client service_role : bypass la RLS. Réservé aux route handlers serveur des
 // box (la box n'est pas un utilisateur Supabase, elle s'authentifie par JWT box).
@@ -13,7 +14,7 @@ export function createAdminClient() {
       "NEXT_PUBLIC_SUPABASE_URL ou SUPABASE_SERVICE_ROLE_KEY manquant"
     );
   }
-  return createClient(url, serviceRoleKey, {
+  return createClient<Database>(url, serviceRoleKey, {
     auth: { autoRefreshToken: false, persistSession: false },
   });
 }

@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { bearerToken, verifyBoxJwt } from "@/lib/box-auth";
+import { boxSyncList } from "@/lib/entitlements";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -19,8 +20,9 @@ function compareVersions(a: string, b: string): number {
 
 // GET /api/box/sync?firmware_version=1.2.3
 // Auth : header "Authorization: Bearer <box-jwt>". Met à jour last_sync_at +
-// firmware_version rapporté, puis renvoie les scénarios installés sur la box
-// (modèle pull) et un bloc OTA si une release plus récente est active.
+// firmware_version rapporté, puis renvoie les histoires publiées pour lesquelles
+// le propriétaire de la box a une licence active (lib/entitlements.ts, format
+// inchangé pour le firmware) et un bloc OTA si une release plus récente est active.
 export async function GET(request: NextRequest) {
   const token = bearerToken(request.headers.get("authorization"));
   if (!token) {
@@ -48,37 +50,10 @@ export async function GET(request: NextRequest) {
     })
     .eq("id", deviceId);
 
-  // Scénarios installés (modèle pull : le webhook Stripe a inséré le droit).
-  // package_path pointe sur la racine du package (/api/box/pkg/<slug>) ; la
-  // box y ajoute /manifest.json puis les chemins relatifs du manifest.
-  const { data: rows } = await supabase
-    .from("device_scenarios")
-    .select(
-      "installed_at, scenarios(id, slug, title, package_path, version, active)"
-    )
-    .eq("device_id", deviceId);
-
-  const scenarios = (rows ?? [])
-    .map((r) => {
-      const s = r.scenarios as unknown as {
-        id: string;
-        slug: string;
-        title: string;
-        package_path: string | null;
-        version: number | null;
-        active: boolean | null;
-      } | null;
-      if (!s || s.active === false) return null;
-      return {
-        id: s.id,
-        slug: s.slug,
-        title: s.title,
-        package_path: s.package_path,
-        version: s.version ?? 1,
-        installed_at: r.installed_at,
-      };
-    })
-    .filter((s): s is NonNullable<typeof s> => s !== null);
+  // Histoires du compte (licences actives × versions publiées). package_path
+  // pointe sur /api/box/pkg/<slug> ; la box y ajoute /manifest.json puis les
+  // chemins relatifs du manifest.
+  const scenarios = await boxSyncList(supabase, deviceId);
 
   // OTA : release la plus récente active sur le canal stable. Le tri se fait en
   // JS (compareVersions) car un ORDER BY texte trierait "1.10.0" < "1.9.0".

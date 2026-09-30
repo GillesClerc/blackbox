@@ -5,13 +5,16 @@ import { Readable } from "node:stream";
 import type { NextRequest } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { bearerToken, verifyBoxJwt } from "@/lib/box-auth";
+import { boxPackageAccess } from "@/lib/entitlements";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 // GET /api/box/pkg/<slug>/<fichier...> — livraison contrôlée des packages.
-// Auth : JWT box + droit device_scenarios sur CE slug. Les fichiers vivent
-// dans web/scenario-packages/ (hors de public/ → jamais servis en statique).
+// Auth : JWT box + licence active du propriétaire de la box sur CE slug ; sert la
+// version PUBLIÉE (scenarios.current_version_id). Stockage 'repo' : fichiers dans
+// web/scenario-packages/<storage_path>/ (hors de public/ → jamais servis en
+// statique). Stockage 'bucket' (Supabase Storage) : étape E2.
 // ⚠ Nixpacks déploie le repo complet donc fs marche ; si passage un jour en
 // `output: standalone`, ajouter outputFileTracingIncludes pour ce dossier.
 
@@ -53,32 +56,18 @@ export async function GET(
     return Response.json({ error: "chemin invalide" }, { status: 400 });
   }
 
-  const admin = createAdminClient();
-
-  const { data: scenario } = await admin
-    .from("scenarios")
-    .select("id, active")
-    .eq("slug", slug)
-    .maybeSingle();
-  if (!scenario || scenario.active === false) {
-    return Response.json({ error: "scénario inconnu" }, { status: 404 });
+  const access = await boxPackageAccess(createAdminClient(), payload.device_id, slug);
+  if (!access.ok) {
+    return Response.json({ error: access.error }, { status: access.status });
+  }
+  if (access.version.storage !== "repo") {
+    return Response.json({ error: "stockage non encore pris en charge" }, { status: 501 });
   }
 
-  const { data: right } = await admin
-    .from("device_scenarios")
-    .select("device_id")
-    .eq("device_id", payload.device_id)
-    .eq("scenario_id", scenario.id)
-    .maybeSingle();
-  if (!right) {
-    return Response.json({ error: "scénario non licencié pour cette box" }, {
-      status: 403,
-    });
-  }
-
-  const filePath = path.join(PKG_ROOT, slug, ...segments);
+  const pkgDir = path.join(PKG_ROOT, access.version.storage_path);
+  const filePath = path.join(pkgDir, ...segments);
   // Ceinture + bretelles : les regex interdisent déjà toute traversée.
-  if (!filePath.startsWith(PKG_ROOT + path.sep)) {
+  if (!pkgDir.startsWith(PKG_ROOT + path.sep) || !filePath.startsWith(pkgDir + path.sep)) {
     return Response.json({ error: "chemin invalide" }, { status: 400 });
   }
 
