@@ -16,7 +16,13 @@ avant la prod. La prod ne reçoit que ce qui a marché en staging.
 
 ## Mise en place (Coolify)
 
-1. **Base** : New Resource → Service → **Supabase**, domaine `tsupabase.agill.es`.
+1. **Base** : New Resource → Service → **Supabase**, domaine `tsupabase.agill.es` (service Kong,
+   https, port 8000). ⚠ Le modèle Coolify référence `minio/mc`, retiré de Docker Hub (et refusé
+   par quay.io) : retirer les services `supabase-minio` et `minio-createbucket`, et passer
+   `supabase-storage` en `STORAGE_BACKEND=file` + `FILE_STORAGE_BACKEND_PATH=/var/lib/storage`
+   (sans `STORAGE_S3_ENDPOINT`, `STORAGE_S3_FORCE_PATH_STYLE`, `AWS_*`). Montages de fichiers en
+   syntaxe courte. L'éditeur de compose ne colle qu'environ 150 lignes à la fois : coller par
+   morceaux et vérifier la dernière ligne avant Save.
    Variable `ENABLE_EMAIL_AUTOCONFIRM=true` (modifier l'entrée existante), puis **Redeploy**.
    Relever l'URL, la clé `anon` et la clé `service_role`.
 2. **Site** : New Resource → Application → même dépôt GitHub, branche `master`, Nixpacks,

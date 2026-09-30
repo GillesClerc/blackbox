@@ -109,8 +109,9 @@ Taille indicative : S ≈ 1 session, M ≈ 2-3, L ≈ 4+.
 - [ ] `npm audit` (à relancer, voir le rapport de la session).
 - [x] CI GitHub Actions `.github/workflows/ci.yml` : typecheck, lint, Vitest, build sans
       secret, `tools/test_box_crypto.py`, tests host firmware (2026-09-30).
-- [ ] Environnement **staging** : guide `docs/plans/staging-coolify.md` — 🧑 création des
-      services Coolify par Gilles.
+- [ ] Environnement **staging** : guide `docs/plans/staging-coolify.md`. Base `tsupabase.agill.es`
+      en ligne (2026-09-30, MinIO retiré : stockage sur disque, `STORAGE_BACKEND=file`), migrations
+      0001-0002 passées, schéma identique à la prod ; reste 🧑 l'application `tbox.agill.es`.
 
 **Fichiers / tables** : `web/supabase/migrations/`, `web/lib/`, `web/next.config.ts`,
 `web/package.json`, `.github/workflows/`, `lib/box-auth.ts`, `api/box/register`.
