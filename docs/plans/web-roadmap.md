@@ -122,24 +122,30 @@ CI verte ; `tools/test_box_api.py` passe en staging et en prod après déploieme
 **À trancher** : staging oui/non (coût Coolify) ; qui passe le SQL en prod (toi dans Studio, comme
 aujourd'hui).
 
-### E1 — Modèle d'inventaire (M)
+### E1 — Modèle d'inventaire (M) — ✅ code fait, validé en staging le 2026-09-30 ; reste la prod
 
 **Objectif** : la base qui porte tout le reste : histoires, versions, licences, installations.
 
-- [ ] Tables : `scenarios` (métadonnées catalogue complètes, statut `draft/published/archived`),
+- [x] Tables : `scenarios` (métadonnées catalogue complètes, statut `draft/published/archived`),
       `scenario_versions` (numéro, manifest JSON, taille, chemin de stockage, statut, dates,
       `published_by`), `licenses` (`user_id`, `scenario_id`, `source` = achat / cadeau / admin /
       code, référence Stripe, `revoked_at`), `device_scenarios` recyclée en suivi d'installation
       (`installed_version`, `installed_at`, `last_seen_at`).
-- [ ] `profiles.role` (`user` / `admin`, éventuellement `editor`) + policies RLS.
-- [ ] Route `/sync` : droit = licences non révoquées du propriétaire de la box × versions
+- [x] `profiles.role` (`user` / `admin`, éventuellement `editor`) + policies RLS.
+- [x] Route `/sync` : droit = licences non révoquées du propriétaire de la box × versions
       publiées ; **même format de réponse** qu'aujourd'hui.
-- [ ] Route `/pkg` : droit via licence, lecture du manifest et des fichiers de la **version
+- [x] Route `/pkg` : droit via licence, lecture du manifest et des fichiers de la **version
       publiée** (encore depuis `web/scenario-packages/` à cette étape).
-- [ ] Migration des données : Capitaine Verdier v4 → une ligne `scenario_versions` + une licence
+- [x] Migration des données : Capitaine Verdier v4 → une ligne `scenario_versions` + une licence
       pour ton compte (et réassignation de la box de test, `RESTE-A-FAIRE` §9).
 
-**Fichiers / tables** : migrations `0002_inventory.sql`, `api/box/sync`, `api/box/pkg`,
+Fiche : champs `theme` et `ambiance` ajoutés (demande de Gilles). Migration **`0003_inventory.sql`**,
+logique `lib/entitlements.ts`, types générés `lib/database.types.ts`, tests `lib/entitlements.test.ts`
++ `supabase/migrations.test.ts` (PGlite), parcours box `tools/test_box_e2e.py` (vert sur `tbox`).
+- [ ] 🧑 **Prod** : passer `0003_inventory.sql` dans Studio, PUIS cliquer Deploy sur `box.agill.es`.
+- [ ] Migration ultérieure : supprimer `scenarios.active/version/package_path` une fois E1 stable.
+
+**Fichiers / tables** : migrations `0003_inventory.sql`, `api/box/sync`, `api/box/pkg`,
 `lib/database.types.ts`.
 **Fini quand** : la box réelle synchronise et installe Capitaine Verdier sans aucun changement
 firmware ; révoquer la licence en base fait disparaître l'histoire du `/sync` ; policies RLS
