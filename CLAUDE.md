@@ -14,6 +14,7 @@ Box physique d'escape game. Specs completes dans :
 - **Ne jamais donner un retour, une recommandation ou un chiffre sans l'avoir verifie dans la datasheet** (ni de memoire, ni sur une datasheet d'une autre variante — ex. WS2812B V5 ≠ WS2812B ancienne). Citer la source (section/table) dans le retour.
 - Composant sans synthese : telecharger le PDF officiel dans `docs/datasheets/` et creer le `.md` (template du skill component-research) **avant** de conclure. Toute valeur relevee dans un PDF et utile au projet est reportee dans la synthese.
 - Lire aussi `docs/escapebox-fsd.md` (spec, pinout, decisions) et `docs/escapebox-vision.md` pour le contexte produit.
+- If my request is ambiguous, ask one clarifying question before doing anything
 
 ## Environnement
 - ESP-IDF v6.1
