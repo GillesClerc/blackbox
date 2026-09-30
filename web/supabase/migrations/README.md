@@ -16,5 +16,5 @@ Relevé de contrôle : `../snapshot-schema.sql` (une cellule JSON).
 | 0001_baseline | — | (état d'origine) |
 | 0002_security | — | — |
 
-Après chaque passage : relancer `snapshot-schema.sql` et vérifier le résultat attendu décrit en
-tête du fichier de migration.
+Après chaque passage : relancer `snapshot-schema.sql` et me renvoyer la cellule pour contrôle
+(RLS, policies et droits attendus).
