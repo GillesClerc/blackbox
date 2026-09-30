@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { NOINDEX_HEADER, siteNoIndex } from "@/lib/indexing";
 
 // Les pages protégées vivent dans le route group (app)/ → servies à la racine
 // (/library, /devices, ...). Un route group NE crée PAS de segment d'URL :
@@ -47,12 +48,19 @@ export async function proxy(request: NextRequest) {
   ) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
-    return NextResponse.redirect(url);
+    return withIndexing(NextResponse.redirect(url));
   }
 
   // TODO Phase 3 : vérifier plan Pro+ pour /studio/*
 
-  return supabaseResponse;
+  return withIndexing(supabaseResponse);
+}
+
+// Staging, et prod tant que la marque n'est pas choisie : aucune page indexée
+// (SITE_NOINDEX, lu à chaque requête — voir lib/indexing.ts).
+function withIndexing(response: NextResponse): NextResponse {
+  if (siteNoIndex()) response.headers.set("X-Robots-Tag", NOINDEX_HEADER);
+  return response;
 }
 
 export const config = {

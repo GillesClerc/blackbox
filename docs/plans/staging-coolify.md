@@ -32,15 +32,53 @@ vérifie, puis on clique « Deploy » sur la prod.
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY` = clé `anon` de staging
    - `SUPABASE_SERVICE_ROLE_KEY` = clé `service_role` de staging
    - `BOX_MASTER_SECRET` = **nouveau** secret (`openssl rand -hex 32`), différent de la prod
+   - `SITE_NOINDEX` = `1` (aucune page indexée, voir « Ne pas être référencé »)
    Puis **Redeploy** (les variables ne sont lues qu'au démarrage).
 4. **Prod en manuel** : dans l'application `box.agill.es`, désactiver le déploiement automatique
    (Auto Deploy / webhook). Les mises en prod se feront par le bouton **Deploy**.
 5. **Schéma** : dans le SQL Editor de la base de staging, passer les migrations de
    `web/supabase/migrations/` dans l'ordre (je fournis chaque fichier).
 
+## Ne pas être référencé, ne pas être visité
+
+Deux couches, de la plus simple à la plus sûre :
+
+1. **`SITE_NOINDEX=1`** (fait dans le code le 2026-09-30) : toutes les pages renvoient
+   `X-Robots-Tag: noindex, nofollow, noarchive` et `/robots.txt` répond `Disallow: /`. Lu à chaque
+   requête : un changement de valeur demande un **Restart**, pas un nouveau build. Les moteurs
+   respectueux n'indexent pas, mais le site reste ouvert à qui connaît l'adresse.
+   **Aussi sur la prod** (`box.agill.es`) tant que la marque n'est pas choisie : le site reste
+   accessible aux proches (FFF) par lien direct, sans apparaître dans les moteurs.
+2. **Mot de passe devant le staging** (basic auth, via Traefik, le proxy de Coolify) : plus
+   personne n'y entre sans identifiant, robots compris. Principe (le libellé exact des menus
+   dépend de la version de Coolify — à faire ensemble si besoin) :
+   - générer l'empreinte : `htpasswd -nbB staging '<mot de passe>'` (paquet apache2-utils) ;
+     dans les labels Docker de Coolify, doubler chaque `$` en `$$` ;
+   - ajouter un middleware sur l'application de staging :
+     `traefik.http.middlewares.staging-auth.basicauth.users=staging:<empreinte>`
+     et le rattacher au routeur HTTPS de l'application (`…routers.<routeur>.middlewares=staging-auth`) ;
+   - **laisser `/api/box/*` sans mot de passe** (routeur dédié `PathPrefix(`/api/box`)`, priorité
+     plus haute, sans le middleware) : ni une box ni le simulateur n'envoient d'identifiant, et ces
+     routes sont déjà protégées par le HMAC et le JWT.
+   - Vérifier : `curl -I https://staging.box.agill.es` → **401** ;
+     `curl https://staging.box.agill.es/api/box/challenge?box_uid=ESP32S3-TEST-0001` → 200.
+
+## Règles de sécurité du staging
+
+- **Aucun secret partagé avec la prod** : base, `BOX_MASTER_SECRET`, plus tard clés Stripe
+  **test** (elles ne peuvent pas déplacer d'argent réel). Une fuite du staging n'ouvre rien en prod.
+- **Jamais de vraies données** : pas de copie de la base de prod, seulement des comptes et des box
+  fictifs.
+- **Studio de la base de staging protégé par mot de passe**, comme celui de la prod (vérifier les
+  identifiants générés par le modèle Supabase de Coolify, les changer s'ils sont faibles).
+- Optionnel : **arrêter** les deux services de staging dans Coolify quand on ne s'en sert pas.
+
 ## Vérifications
 
-- `curl https://staging.box.agill.es` → 200 ; créer un compte de test, se connecter.
+- `curl -I https://staging.box.agill.es` → 401 si le mot de passe est en place (sinon 200) ;
+  dans le navigateur, avec l'identifiant : créer un compte de test, se connecter.
+- `curl -sI https://staging.box.agill.es/login -u staging:<mot de passe> | grep -i x-robots` →
+  `noindex, nofollow, noarchive` ; `/robots.txt` → `Disallow: /`.
 - `curl https://supabase-staging.agill.es/auth/v1/settings -H "apikey: <anon staging>"` →
   `mailer_autoconfirm: true`.
 - `BOX_MASTER_SECRET=<secret staging> python3 tools/test_box_api.py --base https://staging.box.agill.es --box-uid <uid de test>`
