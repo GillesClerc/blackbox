@@ -155,7 +155,17 @@ testées (un utilisateur ne voit que ses licences et ses box).
 que devient une histoire révoquée déjà installée (le firmware la garde tant qu'il n'a pas de
 nettoyage, voir §4.2).
 
-### E2 — Back-office d'inventaire `/admin` (L)
+### E2 — Back-office d'inventaire `/admin` (L) — ✅ code fait, validé en staging le 2026-10-01 ; reste la prod
+
+Fait : validateur de scénario porté en TypeScript avec **cas partagés avec le firmware**
+(`firmware/test_host/scenario_cases.json`) ; règles de package portées (manifest identique à
+`package_scenario.py`) ; migration `0004_storage_publish.sql` ; routes `/api/admin/*` et pages `/admin` ;
+`/api/box/pkg` lit aussi Storage. Validé par `tools/test_admin_e2e.py` sur `tbox` (29 vérifications :
+accès, fiche, dépôt, publication, retour arrière, licences, et réception côté box à chaque étape).
+- [ ] 🧑 **Prod** : passer `0004_storage_publish.sql` dans Studio, PUIS Deploy `box.agill.es`.
+- [ ] Capitaine Verdier reste servi depuis le dépôt (v4, stockage `repo`) : la déposer en v5 via `/admin`
+      la fera passer dans Storage.
+
 
 **Objectif** : publier une histoire sans terminal, sans commit, sans Studio.
 

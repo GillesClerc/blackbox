@@ -10,6 +10,7 @@ Relevé de contrôle : `../snapshot-schema.sql` (une cellule JSON).
 |---|---|---|---|
 | `0001_baseline.sql` | schéma de la prod au 2026-09-30, à l'identique | à passer (base vierge) | **ne pas passer** (déjà dans cet état) |
 | `0002_security.sql` | RLS `box_challenges`, droits clients retirés, `devices`/`profiles` en lecture seule, `waitlist` insertion seule, `handle_new_user` durcie, NOT NULL | à passer | à passer |
+| `0004_storage_publish.sql` | E2 : bucket privé `scenario-packages`, fonction `publish_scenario_version()` (publication atomique) | à passer | à passer **avant** de déployer le code E2 |
 | `0003_inventory.sql` | E1 : `scenario_versions`, `licenses` (droit au compte), fiche catalogue (`status`, thème, ambiance…), `profiles.role`, reprise des droits par box en licences ; additive | à passer | à passer **avant** de déployer le code E1 |
 
 ## Journal des passages
@@ -19,6 +20,7 @@ Relevé de contrôle : `../snapshot-schema.sql` (une cellule JSON).
 | 0001_baseline | ✅ 2026-09-30 (base vierge `tsupabase.agill.es`) | (état d'origine) |
 | 0002_security | ✅ 2026-09-30 (relevé identique à la prod) | ✅ 2026-09-30 (vérifié : relevé du schéma + test clé publique → `permission denied`) |
 | 0003_inventory | ✅ 2026-09-30 (`tools/staging_sql.py`) | ✅ 2026-09-30 (relevé identique au staging ; box réelle synchronisée avec le code E1) |
+| 0004_storage_publish | ✅ 2026-10-01 (`tools/staging_sql.py`) | — |
 
 Après chaque passage : relancer `snapshot-schema.sql` et me renvoyer la cellule pour contrôle
 (RLS, policies et droits attendus).
