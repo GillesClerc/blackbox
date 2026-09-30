@@ -122,7 +122,7 @@ CI verte ; `tools/test_box_api.py` passe en staging et en prod après déploieme
 **À trancher** : staging oui/non (coût Coolify) ; qui passe le SQL en prod (toi dans Studio, comme
 aujourd'hui).
 
-### E1 — Modèle d'inventaire (M) — ✅ code fait, validé en staging le 2026-09-30 ; reste la prod
+### E1 — Modèle d'inventaire (M) — ✅ FAIT (staging + prod, 2026-09-30)
 
 **Objectif** : la base qui porte tout le reste : histoires, versions, licences, installations.
 
@@ -142,7 +142,8 @@ aujourd'hui).
 Fiche : champs `theme` et `ambiance` ajoutés (demande de Gilles). Migration **`0003_inventory.sql`**,
 logique `lib/entitlements.ts`, types générés `lib/database.types.ts`, tests `lib/entitlements.test.ts`
 + `supabase/migrations.test.ts` (PGlite), parcours box `tools/test_box_e2e.py` (vert sur `tbox`).
-- [ ] 🧑 **Prod** : passer `0003_inventory.sql` dans Studio, PUIS cliquer Deploy sur `box.agill.es`.
+- [x] **Prod** : `0003_inventory.sql` passée, code déployé, relevé conforme, box réelle `ESP32S3-8FF7-D684`
+      synchronisée avec le nouveau code (21:31 UTC). Rôle admin donné au compte de Gilles.
 - [ ] Migration ultérieure : supprimer `scenarios.active/version/package_path` une fois E1 stable.
 
 **Fichiers / tables** : migrations `0003_inventory.sql`, `api/box/sync`, `api/box/pkg`,

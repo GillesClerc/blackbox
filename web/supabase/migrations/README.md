@@ -18,7 +18,7 @@ Relevé de contrôle : `../snapshot-schema.sql` (une cellule JSON).
 |---|---|---|
 | 0001_baseline | ✅ 2026-09-30 (base vierge `tsupabase.agill.es`) | (état d'origine) |
 | 0002_security | ✅ 2026-09-30 (relevé identique à la prod) | ✅ 2026-09-30 (vérifié : relevé du schéma + test clé publique → `permission denied`) |
-| 0003_inventory | ✅ 2026-09-30 (`tools/staging_sql.py`) | — |
+| 0003_inventory | ✅ 2026-09-30 (`tools/staging_sql.py`) | ✅ 2026-09-30 (relevé identique au staging ; box réelle synchronisée avec le code E1) |
 
 Après chaque passage : relancer `snapshot-schema.sql` et me renvoyer la cellule pour contrôle
 (RLS, policies et droits attendus).
