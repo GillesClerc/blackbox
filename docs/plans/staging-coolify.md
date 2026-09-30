@@ -32,7 +32,7 @@ vérifie, puis on clique « Deploy » sur la prod.
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY` = clé `anon` de staging
    - `SUPABASE_SERVICE_ROLE_KEY` = clé `service_role` de staging
    - `BOX_MASTER_SECRET` = **nouveau** secret (`openssl rand -hex 32`), différent de la prod
-   - `SITE_NOINDEX` = `1` (aucune page indexée, voir « Ne pas être référencé »)
+   - `SITE_BLOCK_CRAWL` = `1` (`robots.txt` interdit tout, voir « Ne pas être référencé »)
    Puis **Redeploy** (les variables ne sont lues qu'au démarrage).
 4. **Prod en manuel** : dans l'application `box.agill.es`, désactiver le déploiement automatique
    (Auto Deploy / webhook). Les mises en prod se feront par le bouton **Deploy**.
@@ -43,12 +43,17 @@ vérifie, puis on clique « Deploy » sur la prod.
 
 Deux couches, de la plus simple à la plus sûre :
 
-1. **`SITE_NOINDEX=1`** (fait dans le code le 2026-09-30) : toutes les pages renvoient
-   `X-Robots-Tag: noindex, nofollow, noarchive` et `/robots.txt` répond `Disallow: /`. Lu à chaque
-   requête : un changement de valeur demande un **Restart**, pas un nouveau build. Les moteurs
-   respectueux n'indexent pas, mais le site reste ouvert à qui connaît l'adresse.
-   **Aussi sur la prod** (`box.agill.es`) tant que la marque n'est pas choisie : le site reste
-   accessible aux proches (FFF) par lien direct, sans apparaître dans les moteurs.
+1. **Deux variables** (code du 2026-09-30), lues à chaque requête : un changement de valeur
+   demande un **Restart**, pas un nouveau build.
+   - **`SITE_NOINDEX=1` → prod** (`box.agill.es`) tant que la marque n'est pas choisie : toutes
+     les pages renvoient `X-Robots-Tag: noindex, nofollow, noarchive`, **`robots.txt` reste
+     ouvert**. Le robot doit pouvoir charger la page pour lire le `noindex` : un `Disallow` l'en
+     empêcherait, et une adresse liée ailleurs pourrait alors sortir dans les résultats sans
+     description. Le site reste accessible aux proches (FFF) par lien direct. Réversible sans
+     séquelle : on retire la variable le jour du lancement.
+   - **`SITE_BLOCK_CRAWL=1` → staging** : `robots.txt` répond `Disallow: /`. Sans risque ici,
+     puisque le mot de passe empêche de toute façon le robot d'entrer. Ne pas combiner les deux
+     en prod.
 2. **Mot de passe devant le staging** (basic auth, via Traefik, le proxy de Coolify) : plus
    personne n'y entre sans identifiant, robots compris. Principe (le libellé exact des menus
    dépend de la version de Coolify — à faire ensemble si besoin) :
@@ -77,8 +82,9 @@ Deux couches, de la plus simple à la plus sûre :
 
 - `curl -I https://staging.box.agill.es` → 401 si le mot de passe est en place (sinon 200) ;
   dans le navigateur, avec l'identifiant : créer un compte de test, se connecter.
-- `curl -sI https://staging.box.agill.es/login -u staging:<mot de passe> | grep -i x-robots` →
-  `noindex, nofollow, noarchive` ; `/robots.txt` → `Disallow: /`.
+- `curl -s https://staging.box.agill.es/robots.txt -u staging:<mot de passe>` → `Disallow: /`.
+- Prod : `curl -sI https://box.agill.es | grep -i x-robots` → `noindex, nofollow, noarchive` ;
+  `curl -s https://box.agill.es/robots.txt` → `Allow: /` (volontairement ouvert).
 - `curl https://supabase-staging.agill.es/auth/v1/settings -H "apikey: <anon staging>"` →
   `mailer_autoconfirm: true`.
 - `BOX_MASTER_SECRET=<secret staging> python3 tools/test_box_api.py --base https://staging.box.agill.es --box-uid <uid de test>`
