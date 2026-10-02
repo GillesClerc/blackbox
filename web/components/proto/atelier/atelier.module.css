@@ -1,0 +1,83 @@
+/* Piste D « Atelier » — l'objet d'artisan qu'on garde sur l'étagère.
+   forêt #1F2E27 · lin #F1E9DA · miel #E0A458 · laiton #C9A15A · noyer #5A3A26 · bouleau #D9B48A */
+
+.scene {
+  --s: clamp(210px, 27vw, 330px);
+  width: var(--s);
+  height: var(--s);
+  perspective: 1200px;
+  touch-action: none;
+  cursor: grab;
+}
+.scene:active {
+  cursor: grabbing;
+}
+.cube {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+}
+.face {
+  position: absolute;
+  inset: 0;
+  border-radius: 7px;
+  background: var(--grain), var(--wood);
+  background-size: cover;
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.28),
+    inset 0 0 calc(var(--s) * 0.18) rgba(0, 0, 0, 0.28);
+  backface-visibility: hidden;
+}
+.face::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: rgba(0, 0, 0, var(--shade, 0));
+  pointer-events: none;
+}
+.front { transform: translateZ(calc(var(--s) / 2)); --shade: 0.02; }
+.back { transform: rotateY(180deg) translateZ(calc(var(--s) / 2)); --shade: 0.2; }
+.right { transform: rotateY(90deg) translateZ(calc(var(--s) / 2)); --shade: 0.22; }
+.left { transform: rotateY(-90deg) translateZ(calc(var(--s) / 2)); --shade: 0.16; }
+.top { transform: rotateX(90deg) translateZ(calc(var(--s) / 2)); --shade: -0.06; }
+.bottom { transform: rotateX(-90deg) translateZ(calc(var(--s) / 2)); --shade: 0.3; }
+
+/* Pro : liseré de laiton sur les arêtes */
+.pro .face {
+  box-shadow:
+    inset 0 0 0 calc(var(--s) * 0.018) #c9a15a,
+    inset 0 0 0 calc(var(--s) * 0.024) rgba(0, 0, 0, 0.35),
+    inset 0 0 calc(var(--s) * 0.18) rgba(0, 0, 0, 0.3);
+}
+
+.panel {
+  position: absolute;
+  inset: 9%;
+  border-radius: 6%;
+}
+.pro .panel {
+  background:
+    radial-gradient(120% 90% at 30% 20%, rgba(255, 255, 255, 0.07), transparent 60%),
+    #2a2e30;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6), 0 0 0 2px #c9a15a;
+}
+.lite .panel {
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.35);
+}
+
+.shadow {
+  width: calc(var(--s) * 1.2);
+  height: calc(var(--s) * 0.16);
+  margin-top: calc(var(--s) * 0.32);
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.45), transparent);
+}
+
+.halo {
+  position: absolute;
+  inset: 18%;
+  border-radius: 50%;
+  box-shadow: 0 0 0 calc(var(--s) * 0.025) #ffcf8a, 0 0 calc(var(--s) * 0.12) calc(var(--s) * 0.02) rgba(255, 190, 110, 0.7);
+}

@@ -12,6 +12,9 @@ Fichiers concernés :
   firmware/components/ui_manager/eyes_anim.c   (port ESP-IDF du pipeline de rendu)
   firmware/components/ui_manager/data/defaultEye.h (assets générés par les
   scripts Adafruit ; via le fork GC9A01 de thelastoutpostworkshop / Bodmer)
+  web/components/eyes/engine.ts                (port navigateur du même rendu)
+  web/public/eyes/*.png                        (mêmes assets, convertis par
+                                                tools/eye_assets_web.py)
 
 The MIT License (MIT)
 

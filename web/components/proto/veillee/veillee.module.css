@@ -1,0 +1,79 @@
+/* Piste A « Veillée » — la box un soir de jeux : seul son visage luit.
+   nuit #1C1411 · lampe #FFC27A · braise #E8743B · parchemin #F4E7D3 · prune #3A1D2A */
+
+.hero {
+  /* lampe éteinte tant que le pointeur n'a pas bougé (ou qu'on n'a pas touché l'écran) */
+  --lx: -1000px;
+  --ly: -1000px;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+/* la flaque de lumière de la lampe, qui suit le pointeur */
+.lamp {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(520px circle at var(--lx) var(--ly), rgba(255, 186, 110, 0.17), rgba(255, 186, 110, 0) 70%),
+    radial-gradient(1200px 600px at 50% 0%, rgba(232, 116, 59, 0.1), rgba(232, 116, 59, 0) 70%);
+}
+
+/* encre invisible : n'apparaît que sous la lampe */
+.ink {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  color: #ffc27a;
+  -webkit-mask-image: radial-gradient(230px circle at var(--lx) var(--ly), #000 25%, transparent 80%);
+  mask-image: radial-gradient(230px circle at var(--lx) var(--ly), #000 25%, transparent 80%);
+}
+.ink span {
+  position: absolute;
+  white-space: nowrap;
+  opacity: 0.8;
+}
+
+.eye {
+  width: clamp(104px, 21vw, 248px);
+  box-shadow:
+    0 0 0 clamp(6px, 1vw, 12px) #110b09,
+    0 0 0 calc(clamp(6px, 1vw, 12px) + 1.5px) rgba(255, 205, 150, 0.16),
+    0 24px 90px rgba(255, 150, 70, 0.2);
+}
+
+.mouth {
+  width: clamp(190px, 30vw, 360px);
+  min-height: 3.6rem;
+  display: grid;
+  place-items: center;
+  padding: 0.6rem 1.2rem;
+  border-radius: 14px;
+  background: #0b0706;
+  box-shadow:
+    0 0 0 clamp(5px, 0.8vw, 10px) #110b09,
+    0 0 0 calc(clamp(5px, 0.8vw, 10px) + 1.5px) rgba(255, 205, 150, 0.16),
+    0 18px 60px rgba(255, 150, 70, 0.14);
+}
+.mouthText {
+  color: #ffdcae;
+  text-shadow: 0 0 12px rgba(255, 170, 90, 0.55);
+  font-weight: 600;
+  font-size: clamp(0.95rem, 1.4vw, 1.15rem);
+  letter-spacing: 0.01em;
+}
+
+.row {
+  transition: background-color 0.3s ease;
+}
+.row:hover {
+  background: radial-gradient(400px circle at 30% 50%, rgba(255, 186, 110, 0.09), transparent 70%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .row {
+    transition: none;
+  }
+}
