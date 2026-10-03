@@ -6,6 +6,7 @@ export const PISTES = [
   { slug: "recre", letter: "B", name: "Récré", box: "box illustrée" },
   { slug: "affiche", letter: "C", name: "Affiche", box: "pas de box" },
   { slug: "atelier", letter: "D", name: "Atelier", box: "box en 3D" },
+  { slug: "veillee-v2", letter: "E", name: "Veillée v2", box: "visage + box en 3D" },
 ] as const;
 
 export const MOUTH_LINES = [

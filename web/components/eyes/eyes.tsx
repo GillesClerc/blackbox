@@ -10,12 +10,17 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { EyesEngine, loadEyeAssets, SCREEN, type Mood } from "./engine";
+import { EyesEngine, loadEyeAssets, SCREEN, type EyeId, type Mood } from "./engine";
 
 // Le visage vivant : <Eyes> anime une paire d'yeux (moteur du firmware) et
 // <Eye side={0|1}> en est un écran rond, placé où l'on veut dans la page.
 // Le pointeur sert de regard à suivre et de lampe : le pointer sur un œil
 // contracte la pupille, comme le capteur de lumière de la vraie box.
+// Sur mobile, une page peut envoyer sa propre « lampe » par l'événement
+// LAMP_EVENT ({ x, y } en coordonnées d'écran), traité comme le pointeur.
+
+export const LAMP_EVENT = "escapebox:lamp";
+export type Character = { eye: EyeId; hue?: number };
 
 type Api = {
   register: (side: 0 | 1, c: HTMLCanvasElement | null) => void;
@@ -38,6 +43,8 @@ export type EyesProps = {
   pokeLines?: string[];
   /** Portée du regard : distance (en fraction de l'écran) où il atteint le bord de l'œil. */
   reach?: number;
+  /** Personnage (forme d'œil et teinte d'iris). Un changement passe par un clignement. */
+  character?: Character;
 };
 
 // Rendu ×2 (256 px par œil) : paupières lisses à la taille où le site les montre.
@@ -46,7 +53,14 @@ const RENDER_SCALE = 2;
 const prefersReducedMotion = () =>
   typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-export function Eyes({ children, mood = "neutre", lidColor = "#000000", pokeLines = [], reach = 0.38 }: EyesProps) {
+export function Eyes({
+  children,
+  mood = "neutre",
+  lidColor = "#000000",
+  pokeLines = [],
+  reach = 0.38,
+  character = { eye: "default" },
+}: EyesProps) {
   const canvases = useRef<(HTMLCanvasElement | null)[]>([null, null]);
   const engine = useRef<EyesEngine | null>(null);
   const moodRef = useRef<Mood>(mood);
@@ -60,6 +74,23 @@ export function Eyes({ children, mood = "neutre", lidColor = "#000000", pokeLine
   useEffect(() => {
     engine.current?.setLidColor(lidColor);
   }, [lidColor]);
+
+  // Changement de personnage (le premier est chargé par la boucle ci-dessous).
+  const charRef = useRef(character);
+  const charKey = `${character.eye}:${character.hue ?? 0}`;
+  useEffect(() => {
+    const prev = charRef.current;
+    charRef.current = character;
+    if (!engine.current || (prev.eye === character.eye && (prev.hue ?? 0) === (character.hue ?? 0))) return;
+    let alive = true;
+    loadEyeAssets(character.eye).then((a) => {
+      if (alive) engine.current?.transitionTo(a, character.hue ?? 0, performance.now());
+    });
+    return () => {
+      alive = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [charKey]);
 
   const say = useCallback((text: string) => setSpeech({ text, id: Date.now() }), []);
 
@@ -156,6 +187,10 @@ export function Eyes({ children, mood = "neutre", lidColor = "#000000", pokeLine
         engine.current?.blink(lastMove);
       }
     };
+    const onLamp = (ev: Event) => {
+      const d = (ev as CustomEvent<{ x: number; y: number }>).detail;
+      onMove({ clientX: d.x, clientY: d.y } as PointerEvent);
+    };
     const onScroll = () => {
       lastMove = performance.now();
       asleep = false;
@@ -170,9 +205,9 @@ export function Eyes({ children, mood = "neutre", lidColor = "#000000", pokeLine
       if (visible && !raf && engine.current && !reduced) raf = requestAnimationFrame(tick);
     };
 
-    loadEyeAssets().then((assets) => {
+    loadEyeAssets(charRef.current.eye).then((assets) => {
       if (!alive) return;
-      engine.current = new EyesEngine(assets, lidColor, RENDER_SCALE);
+      engine.current = new EyesEngine(assets, lidColor, RENDER_SCALE, charRef.current.hue ?? 0);
       buffers = [0, 1].map(() => new ImageData(engine.current!.size, engine.current!.size));
       views = buffers.map((b) => new Uint32Array(b.data.buffer));
       if (reduced) {
@@ -186,6 +221,7 @@ export function Eyes({ children, mood = "neutre", lidColor = "#000000", pokeLine
       window.addEventListener("pointermove", onMove, { passive: true });
       window.addEventListener("pointerdown", onMove, { passive: true });
       window.addEventListener("scroll", onScroll, { passive: true });
+      window.addEventListener(LAMP_EVENT, onLamp);
       document.addEventListener("visibilitychange", onVis);
       canvases.current.forEach((cv) => cv && io.observe(cv));
       raf = requestAnimationFrame(tick);
@@ -198,6 +234,7 @@ export function Eyes({ children, mood = "neutre", lidColor = "#000000", pokeLine
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("pointerdown", onMove);
       window.removeEventListener("scroll", onScroll);
+      window.removeEventListener(LAMP_EVENT, onLamp);
       document.removeEventListener("visibilitychange", onVis);
     };
     // lidColor initial seulement : les changements passent par setLidColor

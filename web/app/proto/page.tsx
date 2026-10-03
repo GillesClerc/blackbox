@@ -9,6 +9,8 @@ const WHY: Record<string, string> = {
     "L'étagère à jeux de société. La box en personnage illustré, aplats francs et gros trait, qui sautille et réagit. Le contraste avec ses yeux réalistes la rend drôle et un peu troublante.",
   affiche:
     "Une affiche suisse, rouge et crème. Pas de box : le titre est le visage. Les O de « OUVREZ L'ŒIL » sont ses yeux, et la bouche parle sous le titre.",
+  "veillee-v2":
+    "La Veillée retenue, pour un public adulte. Visage plus discret qui change de personnage (forme de pupille, couleur d'iris). La lampe parcourt toute la page : à la souris, ou sur mobile un faisceau sous lequel on fait défiler. Plus bas, la box en 3D se présente par six énigmes.",
   atelier:
     "L'objet d'artisan qu'on garde sur l'étagère. Une vraie box en 3D, qu'on fait tourner, avec la finition au choix (Lite ou Pro), puisque la matière n'est pas encore arrêtée.",
 };
@@ -37,6 +39,12 @@ export default function ProtoIndex() {
           </li>
         ))}
       </ul>
+      <p className="mt-10 text-neutral-600">
+        <Link href="/proto/yeux" className="underline underline-offset-4">
+          Planche des personnages
+        </Link>{" "}
+        : toutes les formes d&apos;œil disponibles, en trois teintes.
+      </p>
     </main>
   );
 }
