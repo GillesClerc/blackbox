@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Eye, Eyes, Mouth } from "@/components/eyes/eyes";
 import { POKE_LINES } from "../content";
-import { Ink } from "./lamp";
+import { InkLine } from "./lamp";
 import s from "./veillee2.module.css";
 
 // Six faces, six énigmes. Rien n'est dit de ce que fait chaque face : chacune se
@@ -62,8 +62,12 @@ const GRAIN = `url("data:image/svg+xml;utf8,${encodeURIComponent(
 export function Riddles() {
   const [active, setActive] = useState(0);
   const cubeRef = useRef<HTMLDivElement>(null);
-  const rot = useRef({ rx: RIDDLES[0].rx, ry: RIDDLES[0].ry });
+  const rot = useRef<{ rx: number; ry: number }>({ rx: RIDDLES[0].rx, ry: RIDDLES[0].ry });
   const items = useRef<(HTMLElement | null)[]>([]);
+  // Rotation à la main : la box reste où on la lâche, puis revient à sa face.
+  const drag = useRef<{ x: number; y: number } | null>(null);
+  const manual = useRef(false);
+  const releasedAt = useRef(0);
 
   // L'énigme au milieu de l'écran devient l'énigme active.
   useEffect(() => {
@@ -84,6 +88,12 @@ export function Riddles() {
     const tick = (t: number) => {
       const tg = RIDDLES[active];
       const r = rot.current;
+      if (drag.current || (manual.current && t - releasedAt.current < 2500)) {
+        if (cubeRef.current) cubeRef.current.style.transform = `rotateX(${r.rx}deg) rotateY(${r.ry}deg)`;
+        raf = requestAnimationFrame(tick);
+        return;
+      }
+      manual.current = false;
       // chemin le plus court
       const ry = tg.ry + Math.round((r.ry - tg.ry) / 360) * 360;
       const k = reduced ? 1 : 0.07;
@@ -107,7 +117,30 @@ export function Riddles() {
       {/* la box, collée en haut pendant qu'on lit */}
       <div className="sticky top-0 z-10 -mx-6 bg-[#140e0c]/95 px-6 pb-4 pt-12 backdrop-blur md:top-[16vh] md:mx-0 md:self-start md:bg-transparent md:p-0 md:pt-6 md:backdrop-blur-none">
         <div className={`${s.stage} flex flex-col items-center`}>
-          <div className={s.scene} style={{ "--grain": GRAIN } as React.CSSProperties}>
+          <div
+            className={s.scene}
+            style={{ "--grain": GRAIN } as React.CSSProperties}
+            onPointerDown={(e) => {
+              if ((e.target as HTMLElement).closest("button")) return; // clic sur un œil : pas de rotation
+              drag.current = { x: e.clientX, y: e.clientY };
+              manual.current = true;
+              e.currentTarget.setPointerCapture(e.pointerId);
+            }}
+            onPointerMove={(e) => {
+              if (!drag.current) return;
+              const r = rot.current;
+              r.ry += (e.clientX - drag.current.x) * 0.6;
+              r.rx = Math.max(-80, Math.min(80, r.rx - (e.clientY - drag.current.y) * 0.6));
+              drag.current = { x: e.clientX, y: e.clientY };
+            }}
+            onPointerUp={(e) => {
+              drag.current = null;
+              releasedAt.current = e.timeStamp;
+            }}
+            onPointerCancel={() => {
+              drag.current = null;
+            }}
+          >
             <Eyes pokeLines={POKE_LINES} reach={0.5}>
               <div ref={cubeRef} className={s.cube}>
                 <div className={`${s.face} ${s.front}`} {...faceProps("front")}>
@@ -133,6 +166,7 @@ export function Riddles() {
           <p className={`${s.label} font-(family-name:--font-e-display) text-lg text-[#ffc27a]`}>
             Face {RIDDLES[active].n}
           </p>
+          <p className="mt-1 text-xs italic text-[#f4e7d3]/40">Faites-la tourner du doigt</p>
         </div>
       </div>
 
@@ -148,13 +182,13 @@ export function Riddles() {
             data-active={i === active}
             className={`${s.riddle} relative py-12 md:flex md:min-h-[52vh] md:flex-col md:justify-center md:py-0`}
           >
-            <Ink notes={[{ t: r.ink, x: "52%", y: "78%", r: -4, size: "1.3rem" }]} />
             <button onClick={() => setActive(i)} className="relative text-left focus-visible:outline-2 focus-visible:outline-offset-8 focus-visible:outline-[#ffc27a]">
               <span className="text-[0.75rem] font-semibold uppercase tracking-[0.3em] text-[#e8743b]">Énigme {r.n}</span>
               <span className="mt-4 block font-(family-name:--font-e-display) text-[clamp(1.6rem,2.8vw,2.4rem)] leading-[1.18] text-balance">
                 {r.text}
               </span>
             </button>
+            <InkLine text={r.ink} className="mt-5 text-right md:pr-[10%]" />
           </li>
         ))}
       </ol>

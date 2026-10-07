@@ -6,7 +6,7 @@ export function ProtoBar({ current }: { current: string }) {
   return (
     <nav
       aria-label="Pistes de design"
-      className="fixed inset-x-0 bottom-3 z-50 mx-auto flex w-fit max-w-[calc(100%-1.5rem)] items-center gap-1 overflow-x-auto rounded-full bg-neutral-950/85 p-1 text-[13px] text-white shadow-lg backdrop-blur"
+      className="fixed bottom-3 left-1/2 z-50 flex max-w-[calc(100vw-1.5rem)] -translate-x-1/2 items-center gap-1 overflow-x-auto rounded-full bg-neutral-950/85 p-1 text-[13px] text-white shadow-lg backdrop-blur"
       style={{ fontFamily: "system-ui, sans-serif" }}
     >
       <Link href="/proto" className="rounded-full px-3 py-1.5 text-white/70 hover:text-white">

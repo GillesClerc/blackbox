@@ -34,6 +34,19 @@
   opacity: 0.85;
 }
 
+.inkLine {
+  --lx: -1000px;
+  --ly: -1000px;
+  color: #ffc27a;
+  font-family: var(--font-e-display), serif;
+  font-size: 1.35rem;
+  line-height: 1.2;
+  -webkit-mask-image: radial-gradient(190px circle at var(--lx) var(--ly), #000 25%, transparent 80%);
+  mask-image: radial-gradient(190px circle at var(--lx) var(--ly), #000 25%, transparent 80%);
+  pointer-events: none;
+  user-select: none;
+}
+
 .eye {
   width: clamp(84px, 11.5vw, 150px);
   box-shadow:
@@ -69,6 +82,11 @@
   width: var(--s);
   height: var(--s);
   perspective: 1100px;
+  touch-action: none;
+  cursor: grab;
+}
+.scene:active {
+  cursor: grabbing;
 }
 .label {
   margin-top: calc(var(--s) * 0.32);

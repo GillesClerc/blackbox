@@ -7,5 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function ProtoLayout({ children }: { children: React.ReactNode }) {
-  return <>{children}</>;
+  return <div className="overflow-x-clip">{children}</div>;
 }

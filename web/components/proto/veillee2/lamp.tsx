@@ -80,7 +80,11 @@ export function Lamp() {
   return <div className={s.glow} aria-hidden="true" />;
 }
 
-/** Notes à l'encre invisible : position en % du bloc parent (qui doit être relative). */
+/**
+ * Notes à l'encre invisible dispersées, position en % du bloc parent (qui doit
+ * être relative). Ordinateur seulement : sur un écran étroit elles tomberaient
+ * sur le texte ; on y utilise InkLine, qui a sa propre place dans le flux.
+ */
 export function Ink({
   notes,
   className = "",
@@ -89,12 +93,21 @@ export function Ink({
   className?: string;
 }) {
   return (
-    <div data-ink className={`${s.ink} ${className}`} aria-hidden="true">
+    <div data-ink className={`${s.ink} hidden overflow-hidden md:block ${className}`} aria-hidden="true">
       {notes.map((n) => (
         <span key={n.t} style={{ left: n.x, top: n.y, rotate: `${n.r ?? 0}deg`, fontSize: n.size ?? "1.4rem" }}>
           {n.t}
         </span>
       ))}
     </div>
+  );
+}
+
+/** Une ligne à l'encre invisible, dans le flux de la page (ne chevauche rien). */
+export function InkLine({ text, className = "", rotate = -3 }: { text: string; className?: string; rotate?: number }) {
+  return (
+    <p data-ink className={`${s.inkLine} ${className}`} style={{ rotate: `${rotate}deg` }} aria-hidden="true">
+      {text}
+    </p>
   );
 }

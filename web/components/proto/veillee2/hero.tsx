@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Eye, Eyes, Mouth, useEyes, type Character } from "@/components/eyes/eyes";
 import { POKE_LINES } from "../content";
 import { ProtoSignup } from "../signup";
-import { Ink } from "./lamp";
+import { Ink, InkLine } from "./lamp";
 import s from "./veillee2.module.css";
 
 // Un visage par histoire : la box change de personnage de temps en temps
@@ -105,7 +105,8 @@ export function VeilleeV2Hero() {
           </div>
         </div>
 
-        <h1 className="mt-12 font-(family-name:--font-e-display) text-[clamp(3.4rem,10vw,9rem)] leading-[0.9] tracking-[-0.02em] text-balance">
+        <InkLine text="le code est sous ses yeux" className="mt-8 md:hidden" />
+        <h1 className="mt-4 font-(family-name:--font-e-display) md:mt-12 text-[clamp(3.4rem,10vw,9rem)] leading-[0.9] tracking-[-0.02em] text-balance">
           Ouvrez l&apos;œil<span className="text-[#e8743b]">.</span>
         </h1>
         <p className="mt-6 max-w-xl text-[clamp(1.05rem,1.5vw,1.25rem)] leading-relaxed text-[#f4e7d3]/80">

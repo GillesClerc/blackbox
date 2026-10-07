@@ -4,7 +4,7 @@ import { STEPS, STORY } from "@/components/proto/content";
 import { ProtoBar } from "@/components/proto/proto-bar";
 import { ProtoSignup } from "@/components/proto/signup";
 import { VeilleeV2Hero } from "@/components/proto/veillee2/hero";
-import { Ink, Lamp } from "@/components/proto/veillee2/lamp";
+import { Ink, InkLine, Lamp } from "@/components/proto/veillee2/lamp";
 import { Riddles } from "@/components/proto/veillee2/riddles";
 
 // Piste E « Veillée v2 » : la Veillée, pour un public adulte. Visage plus discret
@@ -49,6 +49,7 @@ export default function VeilleeV2() {
         />
         <div className="relative mx-auto max-w-6xl px-6 py-24 md:py-28">
           <h2 className={`${h2} max-w-3xl`}>Une soirée, trois moments.</h2>
+          <InkLine text="elle compte les minutes" rotate={3} className="mt-4 text-right md:hidden" />
           <ol className="mt-14 grid gap-12 md:grid-cols-3">
             {STEPS.map((st, i) => (
               <li key={st.title}>
@@ -83,6 +84,7 @@ export default function VeilleeV2() {
           <p className="font-(family-name:--font-e-display) text-[clamp(5.5rem,16vw,13rem)] leading-none text-[#ffc27a]/90">
             {STORY.year}
           </p>
+          <InkLine text="42 – 1 = ?" rotate={6} className="-mt-6 text-right md:hidden" />
           <div>
             <p className="text-[0.75rem] font-semibold uppercase tracking-[0.3em] text-[#ffc27a]/80">Première histoire</p>
             <h2 className="mt-4 font-(family-name:--font-e-display) text-[clamp(2.1rem,4.6vw,3.8rem)] leading-[1] text-balance">
@@ -101,6 +103,7 @@ export default function VeilleeV2() {
       <section className="relative">
         <Ink notes={[{ t: "elle vous a vu", x: "12%", y: "20%", r: -6, size: "1.5rem" }]} />
         <div className="relative mx-auto max-w-6xl px-6 pb-36 pt-24 text-center md:pt-28">
+          <InkLine text="elle vous a vu" className="mb-6 text-left md:hidden" />
           <h2 className="font-(family-name:--font-e-display) text-[clamp(2.8rem,7vw,6rem)] leading-[0.95] tracking-[-0.015em]">
             Elle dort encore.
           </h2>
