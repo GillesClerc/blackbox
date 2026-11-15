@@ -221,6 +221,9 @@ netlist].
 
 - J11 au bord (insertion), pull-ups R15-R19 près de J11 ; SPI2 depuis l'ESP32 au-dessus de L2
   continu **[projet]**.
+- **C_SD2 (100 nF) au plus près de VDD (4) / VSS (6) de J11, C_SD1 (10 µF) juste derrière**,
+  vias GND directs : la carte tire des pics de plusieurs centaines de mA pendant ~1 ms
+  **[AN : Swissbit « SD Memory Card Design-in » ; projet, audit 2026-11-15 A4]**.
 - Horloges SPI rapides (écrans 40-80 MHz) : R série à la source (R13/R14 déjà au pied de l'ESP32),
   **vias GND à côté de chaque via de signal**, jamais de fente sous les pistes **[AN : Diodes AN022,
   TI SCAA082]**. Aucune longueur de câble chiffrée trouvée chez un fabricant.

@@ -145,6 +145,11 @@ garantis, sans compter les pics de la SD.
   cinq tel quel (le QDtech commence par GND, VCC). J4/J5 restent provisoires tant que le module
   n'est pas choisi (question 1 du 27/09).
 
+**Statut (15/11, décisions de Gilles).** C_SD2 100 nF + C_SD1 10 µF ajoutés au pied de J11
+(feuille `connector`, netlist : seuls ces deux condensateurs s'ajoutent sur 3V3_D/GND).
+Modules des yeux **pas encore choisis** : J4/J5 restent provisoires, bloquant pour le layout
+de Devant et pour boucler H1.
+
 ### A5 — J2 (batterie) en JST-PH : 2 A par contact
 
 JST donne **2 A avec du fil AWG 24** pour la série PH, 1 A en AWG 28 pour la série SH

@@ -38,9 +38,14 @@ premier, CS des autres périphériques maintenus hauts ; la charge capacitive su
 
 ## Notes spécifiques projet
 
-- **J11** sur SPI2 : CS = GPIO47, MOSI = GPIO11, MISO = GPIO15, SCLK = GPIO12 (via FB1,
-  10 pF à la masse), VDD = 3V3_D. DAT1, DAT2 et CD non connectées.
-- ⚠ Aucune pull-up 10 kΩ sur CS/CMD/DAT0/DAT1/DAT2 → à ajouter (audit 2026-09-23).
+- **J11** sur SPI2 : CS = GPIO47, MOSI = GPIO11, MISO = GPIO15, SCLK = GPIO12 (via R13
+  22 Ω au pied de l'ESP32, C_CLK2 10 pF en DNP), VDD = 3V3_D. CD non connectée.
+- ✅ Pull-ups 10 kΩ R15-R19 sur CS, CMD, DAT0, DAT1 et DAT2 (ajoutées le 2026-09-27).
+- ✅ **Découplage au slot** (2026-11-15, audit A4) : **C_SD2 100 nF 0402 + C_SD1 10 µF 0805**
+  entre VDD (4) et VSS (6). Pics de « plusieurs centaines de mA » pendant ~1 ms à l'accès flash,
+  à tamponner par des condensateurs (note Swissbit « SD Memory Card Design-in », sans valeur
+  chiffrée) ; 100 mA en moyenne sur 1 s en SPI (spécification SD v4.10). La valeur
+  10 µF + 100 nF est un choix d'usage, pas une exigence fabricant.
 
 ## Sources
 

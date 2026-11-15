@@ -20,6 +20,8 @@ J9,,Connecteur JST-PH 4pin,JST-PH-4P,—,1,Main,"WS2812 externes + reserve (le b
 J2,,Connecteur batterie JST-PH 4pin (BAT+/BAT-/NTC/retour NTC),JST-PH-4P,—,1,Main,"Cellule 18650 + NTC collee, harnais 4 fils : le retour NTC va sur GND (VSS du bq24075), pas sur BAT- (audit 2026-09-27 H2)"
 J10,,Connecteur haut-parleur JST-PH 4pin,JST-PH-4P,—,1,Main,"Sorties en pont L+/L-/R+/R- via ferrites FB3-FB6 — aucune masse commune, ne jamais relier les - entre elles ni a GND"
 J11,,Slot microSD push-push,TF-PUSH,C91145,1,Main,Carte SD sur SPI2 partage (MISO=15 CS=47) - verifier ref LCSC avant commande
+C_SD1,,10uF 16V ceramique X5R,0805,—,1,Main,"Reservoir au pied de J11 (VDD/VSS) : pics d ecriture SD de plusieurs centaines de mA ~1 ms (note Swissbit) - audit 2026-11-15 A4"
+C_SD2,,100nF 16V ceramique X7R,0402,—,1,Main,"Decouplage HF au pied de J11, plus pres du slot que C_SD1 - audit 2026-11-15 A4"
 L1,Sunlord SWPA5040S6R8MT,6.8uH,SMD 5x5x4mm,C36411,1,Main,"Inductance boost MT3608 : 6,8 uH +-20 %, Isat 2,9 A, Irms 2,5 A, DCR 56 mOhm max (decision 2026-09-27, docs/datasheets/SWPA5040S.md) — remplace le 22uH 1210"
 "C2,C3,C4,C5",,100nF 16V ceramique X7R,0402,—,4,Main,"Decouplage generique (ESP32 C2, micro C3, IMU C4/C5)"
 "C_AVDD,C_DVDD,C_CPVDD,C_LDOO",,100nF 16V ceramique X7R,0402,—,4,Main,"PCM5122 AVDD(pin8)/DVDD(pin28)/CPVDD(pin1)/LDOO(pin26) — 0,1 uF (docs/datasheets/pcm5122.md)"
