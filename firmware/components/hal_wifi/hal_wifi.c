@@ -196,8 +196,15 @@ esp_err_t hal_wifi_connect(uint32_t timeout_ms)
                                            pdFALSE, pdFALSE,
                                            pdMS_TO_TICKS(timeout_ms));
     if (bits & BIT_CONNECTED) return ESP_OK;
-    ESP_LOGW(TAG, "connexion échouée (timeout ou %d échecs)", MAX_RETRY);
-    return ESP_FAIL;
+    if (bits & BIT_FAIL) {
+        ESP_LOGW(TAG, "connexion refusée (%d échecs)", MAX_RETRY);
+        return ESP_FAIL;
+    }
+    // Délai dépassé sans échec : association ou DHCP encore en cours (DHCP
+    // mesuré à 17 s sur le réseau de test, 2026-11-15). La stack continue.
+    ESP_LOGW(TAG, "pas d'IP après %lu ms — connexion toujours en cours",
+             (unsigned long)timeout_ms);
+    return ESP_ERR_TIMEOUT;
 }
 
 bool hal_wifi_is_connected(void)

@@ -28,7 +28,9 @@
 #define PASS_MAX      64
 #define CHALLENGE_MAX 96
 #define STATUS_MAX    24
-#define WIFI_TIMEOUT_MS 15000
+// 45 s : DHCP mesuré à 17 s sur le réseau de test (2026-11-15) — à 15 s la box
+// répondait wifi_fail alors qu'elle se connectait. Aligné sur /devices/add (50 s).
+#define WIFI_TIMEOUT_MS 45000
 
 // Base UUID e5c4000X-5c25-4b10-8f46-6b9c30ac7a11, octets LSB→MSB pour NimBLE.
 #define PROV_UUID(n) BLE_UUID128_INIT(                                  \

@@ -15,7 +15,10 @@ extern "C" {
 esp_err_t hal_wifi_init(void);
 
 // Lance la connexion et bloque jusqu'à l'obtention d'une IP ou l'expiration du
-// délai. Renvoie ESP_OK si connectée, ESP_FAIL sinon.
+// délai. Renvoie ESP_OK si connectée, ESP_FAIL si le réseau a refusé la
+// connexion (MAX_RETRY échecs : mot de passe, AP absent), ESP_ERR_TIMEOUT si
+// le délai expire sans échec (association ou DHCP lents) — la stack continue
+// alors de tenter et hal_wifi_is_connected() passera à true plus tard.
 esp_err_t hal_wifi_connect(uint32_t timeout_ms);
 
 // Applique de nouveaux identifiants (provisioning BLE) : persiste en NVS

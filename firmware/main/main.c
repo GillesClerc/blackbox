@@ -402,13 +402,18 @@ static void touch_task(void *arg)
 // isoler de main_task. Le HTTPS (challenge/auth/sync) vit dans cloud_client.
 static void net_boot_task(void *arg)
 {
-    if (hal_wifi_connect(15000) == ESP_OK) {
+    // 45 s : le DHCP a pris 17 s sur le réseau de test (2026-11-15) ; à 15 s,
+    // l'IP arrivait après l'abandon et la sync de boot n'était jamais lancée.
+    // Tâche dédiée : cette attente ne bloque rien d'autre.
+    esp_err_t err = hal_wifi_connect(45000);
+    if (err == ESP_OK) {
         cloud_client_request_sync();
     } else {
-        // Identifiants enregistrés mais réseau injoignable (mot de passe changé,
-        // box déplacée) : sans cette fenêtre, seul le menu de boot — donc le
+        // Réseau refusé (mot de passe changé) ou toujours pas d'IP après 45 s
+        // (box déplacée) : sans cette fenêtre, seul le menu de boot — donc le
         // clavier — permettait de re-provisionner le WiFi.
-        ESP_LOGW(TAG, "WiFi injoignable — fenêtre d'appairage BLE ouverte");
+        ESP_LOGW(TAG, "WiFi injoignable (%s) — fenêtre d'appairage BLE ouverte",
+                 esp_err_to_name(err));
         if (ble_prov_start(300, on_ble_wifi_ok) != ESP_OK) {
             ESP_LOGW(TAG, "appairage BLE indisponible");
         }

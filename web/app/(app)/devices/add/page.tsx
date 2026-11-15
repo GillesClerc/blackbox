@@ -97,12 +97,13 @@ export default function AddDevicePage() {
         enc.encode(password)
       );
 
-      // La box notifie status ; fallback en polling (20 s max).
+      // La box notifie status ; fallback en polling (50 s max : la box attend
+      // jusqu'à 45 s son adresse IP, le DHCP peut prendre plus de 15 s).
       const statusChr = await svc.getCharacteristic(CHR.status);
       const result = await new Promise<string>((resolve, reject) => {
         const deadline = setTimeout(
-          () => reject(new Error("délai dépassé (20 s)")),
-          20000
+          () => reject(new Error("délai dépassé (50 s)")),
+          50000
         );
         const check = (v: string) => {
           if (v === "wifi_ok") {
@@ -129,7 +130,7 @@ export default function AddDevicePage() {
                 /* lecture ratée : on repollera */
               }
             }, 1500);
-            setTimeout(() => clearInterval(poll), 21000);
+            setTimeout(() => clearInterval(poll), 51000);
           });
       });
       void result;

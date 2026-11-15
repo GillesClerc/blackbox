@@ -38,6 +38,10 @@
 #define BODY_MAX        512
 #define RESP_BUF_SIZE   8192
 #define HTTP_TIMEOUT_MS 10000
+// En-têtes émis : « Authorization: Bearer <JWT> » (~370 o) + Host/User-Agent
+// dépassent le tampon par défaut de 512 o (« Buffer length is small to fit all
+// the headers » à chaque requête authentifiée, relevé sur cible le 2026-11-15).
+#define HTTP_TX_BUF     1024
 
 // Le JWT expire à 2 h côté serveur — ré-auth à 110 min pour garder de la marge.
 #define TOKEN_LIFETIME_US (110LL * 60 * 1000000)
@@ -71,6 +75,7 @@ static esp_err_t http_request(const char *url, const char *body,
         .url               = url,
         .crt_bundle_attach = esp_crt_bundle_attach,
         .timeout_ms        = HTTP_TIMEOUT_MS,
+        .buffer_size_tx    = HTTP_TX_BUF,
     };
     esp_http_client_handle_t client = esp_http_client_init(&cfg);
     if (!client) return ESP_FAIL;
@@ -244,6 +249,7 @@ static esp_err_t download_to_file(const char *url, const char *dst_path,
         .url               = url,
         .crt_bundle_attach = esp_crt_bundle_attach,
         .timeout_ms        = HTTP_TIMEOUT_MS,
+        .buffer_size_tx    = HTTP_TX_BUF,
     };
     esp_http_client_handle_t client = esp_http_client_init(&cfg);
     if (!client) return ESP_FAIL;

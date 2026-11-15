@@ -30,22 +30,29 @@ Avant de router :
 - [ ] 🧑 Trois PDF illisibles par le groupe (`BMP280.pdf`, `MLX90614.pdf`, `TMAG5273.pdf` en
   `rw--w----`) : `sudo chmod g+r` dessus, sinon git les voit modifiés.
 
-Firmware (correctifs du 15/11 **non compilés ni testés sur cible** — pas d'ESP-IDF ni de gcc
-dans la session ; à builder, et la CI rejouera les tests host) :
+Firmware (correctifs du 15/11 : build sans avertissement, tests host 36/36 sous ASan/UBSan,
+**flashés et vérifiés sur la DevKitC** — boot, son de fond + one-shot, auth et sync cloud) :
 - [x] 🤖 **F1** — mixer : une voix en boucle sans trame décodable est arrêtée.
 - [x] 🤖 **F2** — cycles de `branch` refusés par les validateurs C et TS (6 cas partagés ajoutés,
   36/36 côté TS) + un tick de délai dans le moteur.
 - [x] 🤖 **F3** — MP3 hors 44 100 Hz refusé par le mixer ; erreur au back-office et dans
   `package_scenario.py` (W3).
-- [x] 🤖 **F4** — fenêtre BLE ouverte aussi quand le WiFi échoue au boot.
+- [x] 🤖 **F4** — fenêtre BLE ouverte aussi quand le WiFi échoue au boot. Relevé sur cible : le
+  DHCP a pris **17 s** au premier boot (1-5 s ensuite) ; à 15 s la sync de boot n'était jamais
+  lancée. `hal_wifi_connect` distingue désormais refus (`ESP_FAIL`) et délai (`ESP_ERR_TIMEOUT`),
+  attente portée à 45 s au boot et pendant l'appairage BLE (page `/devices/add` : 50 s).
+  **Cause probable de l'échec d'appairage BLE du 30/09** (§9) — à revalider dans Chrome.
+- [x] 🤖 `cloud_client` : tampon d'en-têtes HTTP 1024 o (le JWT dépassait les 512 o par défaut,
+  erreur `HTTP_HEADER` à chaque requête authentifiée — relevé sur cible).
 - [x] 🤖 **F5** — backend MTCH2120 retiré (0x28 = adresse du CAP1298).
 - [x] 🤖 **F6 / F7** — SSID de 32 octets ; `CJSON_NESTING_LIMIT=32`, pile de `main` à 8 Ko.
-- [ ] 🧑 **Valider sur cible** : build, son de fond et one-shot, appairage BLE après échec WiFi.
+- [ ] 🧑 **Reste à valider sur cible** : appairage BLE complet depuis Chrome ; fenêtre BLE après
+  un vrai refus WiFi (mauvais mot de passe) ; MP3 corrompu ou à 48 kHz sur la SD (F1/F3).
 - [ ] 🤖 **F8-F12** — course des voix MP3, installation en cours de partie, `-Os`, console USB,
   `CONFIG_ESP_TASK_WDT_PANIC`.
 
 Web :
-- [x] 🤖 **W2** — zod sur `/api/box/auth` et `/register` (typecheck OK, tests Vitest non lancés).
+- [x] 🤖 **W2** — zod sur `/api/box/auth` et `/register` (Vitest 84/84, lint et typecheck OK).
 - [x] 🤖 **W3** — MP3 sans trame ou hors 44 100 Hz : erreur à la publication.
 - [ ] 🤖 **W4** — plafond de taille décompressée du zip.
 
