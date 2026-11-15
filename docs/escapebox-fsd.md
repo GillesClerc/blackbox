@@ -307,7 +307,7 @@ bq24075 (U8) — chargeur 1 A + power path DPPM, entrée limitée à 1,07 A (R_I
 > **Marche/arrêt (option B, câblée le 2026-09-27)** : SW3 ne commute que `EN_SYS`, qui coupe les trois régulateurs. Depuis le 2026-11-15 (audit A3), le rail 5 V vient d'un **buck-boost TPS63020** qui déconnecte lui-même la charge à l'arrêt : le load switch Q1/Q2 du MT3608 (boost asynchrone, qui laissait passer VSYS − V_F) a été retiré. Le bq24075 reste actif : **la charge USB fonctionne box éteinte**. Consommation éteinte estimée ≈ 15-20 µA (à mesurer).
 >
 > **Paramètres vérifiés datasheets (audits 2026-09-23 et 2026-09-27)** :
-> - Charge : 1 A (R_ISET 890 Ω), entrée limitée à 1,07 A (R_ILIM 1,5 kΩ, mode EN2 = H / EN1 = L).
+> - Charge : 1 A (R_ISET 887 Ω 1 %), entrée limitée à 1,07 A (R_ILIM 1,5 kΩ, mode EN2 = H / EN1 = L).
 >   ✅ 2026-09-27 : timers de sécurité réactivés (**R_TMR 56 kΩ** → 5,6-9,3 h) et **NTC 10 kΩ
 >   de la cellule sur TS** via J2.5 (fenêtre 0-50 °C) ; `R_TS` conservée en **DNP** — monter
 >   l'une **ou** l'autre, jamais les deux (mesure faussée, charge suspendue sans symptôme).
@@ -415,7 +415,7 @@ JST-SH (1,0 mm, verrouillable) pour les signaux inter-PCB ; JST-PH (2,0 mm) pour
 | Réf. | Type | Brochage | Vers |
 |---|---|---|---|
 | J3-J6, J13 | JST-SH 4 | **Qwiic/STEMMA QT** : 1 = GND, 2 = 3V3_D, 3 = SDA, 4 = SCL | satellites I2C — **5 connecteurs, un par face I2C** (Devant, Dessus, Côté 1, Côté 2, Côté 3 ; J13 ajouté le 2026-09-27) |
-| J7 | JST-SH 10 | 3V3_D, GND, MOSI, SCLK, CS_L, CS_R, DC, RST, NC, NC | yeux (SPI3) |
+| J7 | JST-SH 10 | 3V3_D, GND, MOSI, SCLK, CS_L, CS_R, DC, RST, GND, GND | yeux (SPI3) ; 9-10 à GND depuis le 2026-11-15 (retours de masse du câble) |
 | J7b | JST-SH 8 | 3V3_D, GND, MOSI, SCLK, CS, DC, RST, BUSY | bouche (SPI2) |
 | J8 | JST-SH 6 | 3V3_D, GND, SW1, SW2, BTN1, BTN2 | Côté 1 (toggles + 2 boutons poussoirs actifs hauts, pull-down 10 kΩ sur la Main) |
 | J9 | JST-PH 4 | 5V, GND, DATA (sortie de LED13), NC | halo visage (Devant), suite de la chaîne WS2812 — pas de budget de courant fixé : le plafond firmware de luminosité borne l'ensemble |

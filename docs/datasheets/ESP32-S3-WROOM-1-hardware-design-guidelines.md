@@ -26,12 +26,12 @@ Lus au reset pour déterminer le mode de boot, redeviennent GPIO normaux ensuite
 
 | Pin | Rôle boot | État par défaut (interne) | Chez nous |
 |---|---|---|---|
-| GPIO0 | Boot mode (avec GPIO46) | Pull-up interne activé | **Pas de pull-up externe dans notre design actuel** — à vérifier/ajouter (voir Action ci-dessous) |
+| GPIO0 | Boot mode (avec GPIO46) | Pull-up interne activé | **Pull-up externe R_GPIO0 10 kΩ vers 3V3_D** (ajoutée le 2026-11-15, audit B8) — (voir Action ci-dessous) |
 | GPIO46 | Boot mode | Pull-down interne activé | `BTN2` — flottante = 0 ✓ (boot SPI si GPIO0 = 1 ; download exige GPIO0 = 0 et GPIO46 = 0). Pas de pull-up externe |
 | GPIO45 | VDD_SPI voltage select | Pull-down interne activé | `BTN1` — **vérifié datasheet ESP32-S3 §3.2 (2026-09-23)** : flottante = 0 = VDD_SPI 3,3 V ✓. Jamais de pull-up externe (1 = 1,8 V → flash illisible) ; bouton seulement actif haut et relâché au reset. Voir `ESP32-S3-datasheet.md` |
 | GPIO3 | (ADC1_CH2, pas un strap boot standard) | — | `VBAT_SENSE` (déjà câblé) |
 
-**⚠️ Action à vérifier** : la doc recommande explicitement *"place a pull-up resistor at the GPIO0 pin"* et *"do not add high-value capacitors at GPIO0"*. Le module a un pull-up interne (suffisant dans la plupart des designs sans bouton BOOT dédié), mais rien dans notre netlist actuel ne mentionne GPIO0 — à statuer : laisser sur pull-up interne seul, ou ajouter un pull-up externe + éventuellement un bouton BOOT pour le confort de dev.
+**✅ Fait le 2026-11-15 (R_GPIO0 10 kΩ)** : la doc recommande explicitement *"place a pull-up resistor at the GPIO0 pin"* et *"do not add high-value capacitors at GPIO0"*. Le module a un pull-up interne (suffisant dans la plupart des designs sans bouton BOOT dédié), mais rien dans notre netlist actuel ne mentionne GPIO0 — à statuer : laisser sur pull-up interne seul, ou ajouter un pull-up externe + éventuellement un bouton BOOT pour le confort de dev.
 
 ## ADC
 

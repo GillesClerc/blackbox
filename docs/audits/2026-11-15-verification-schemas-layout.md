@@ -223,6 +223,12 @@ série. Netlist : seules les broches de J2 changent. Harnais à refaire en 6 fil
   l'option, en complément du plafond numérique à −22 dB.
 - **B11 — BOM** : la note de U7 (« Boost 3.7V->5V 2A ») est à corriger après A3.
 
+**Statut de la section B (15/11, décisions de Gilles).** B1 (887 Ω), B2 (16 V), B3 (tables du
+projet, avec A2), B4 (DS13519 ajoutée, brochage conforme), B5 (J7.9/10 et Devant J2.9/10 à GND),
+B6 (TP_FB1 retiré avec A3), B7 (procédure de première connexion), B8 (R_GPIO0 10 kΩ ; pas de
+superviseur), B10 (R_INL/R_INR 0 Ω) et B11 (note BOM de U7 réécrite avec A3) : faits. B9 (lecture
+de l'eFuse VDD_SPI_FORCE) reste à faire sur la DevKitC.
+
 ## C. Levé ou confirmé
 
 - **H6 (fader PTA6043) : levé.** La datasheet écrit « Terminal 1-2 Output Voltage / Terminal 1-3

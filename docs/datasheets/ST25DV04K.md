@@ -1,6 +1,13 @@
 # ST25DV04K
 
 > _Synthèse générée par component-research. Datasheet PDF : [./ST25DV04K.pdf](./ST25DV04K.pdf)_
+>
+> ⚠️ **Le composant monté est un ST25DV04K**C** : sa datasheet est la DS13519 rév. 2
+> ([./ST25DV04KC.pdf](./ST25DV04KC.pdf), copie SparkFun ; relue le 2026-11-15, audit B4).** Points
+> vérifiés dans la DS13519 : brochage SO8N (figure 2) **1 V_EH, 2 AC0, 3 AC1, 4 VSS, 5 SDA, 6 SCL,
+> 7 GPO (open drain), 8 VCC** — identique au schéma ; C_TUN **28,5 pF typique, sans min ni max**
+> (tableau des caractéristiques RF) — la plage 26,5-30,5 pF citée plus bas n'est **pas confirmée**
+> par la DS13519 (origine non retrouvée) : dimensionner l'antenne sur 28,5 pF et prévoir C3 (DNP).
 
 **Fabricant** : STMicroelectronics
 **Catégorie** : Tag NFC/RFID dynamique (mémoire EEPROM dual-interface I2C + RF)

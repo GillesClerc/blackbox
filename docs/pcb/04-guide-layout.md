@@ -122,7 +122,7 @@ par transition** pour les nets ≥ 1 A.
 | **R6 10 k / C_EN 1 µF** près de la broche EN, **piste EN courte** (sensible au bruit). | [DS guide Espressif] |
 | **R13/R14 (22 Ω)** sur SPI2/SPI3_SCLK **au pied du module** (côté source) ; C_CLK2/3 (DNP) juste après. | [AN : Diodes AN022, R série à la source] |
 | R3/R4 (pull-ups I2C 4,7 k) près du module ; I2C lent, routage libre mais loin du boost et de l'audio. | [projet] |
-| TP_TXD0/TP_RXD0/TP_EN/TP_GPIO0 accessibles, **loin de l'antenne**. | [AN : Espressif] |
+| TP_TXD0/TP_RXD0/TP_EN/TP_GPIO0 accessibles, **loin de l'antenne** ; R_GPIO0 (10 k) près de la broche 27, **aucun condensateur sur GPIO0**. | [AN : Espressif schematic checklist] |
 | **VBAT_SENSE (IO3)** : pont 1 MΩ / 1 MΩ = nœud à haute impédance. R_VBAT_H/R_VBAT_L et **C_VBAT_SENSE (100 nF) contre la broche 15 du module**, piste courte, loin du nœud SW du boost et des horloges. | [calc ; projet, audit 2026-11-14] |
 
 ### 2.3 USB (R11/R12 → J14)
@@ -198,7 +198,7 @@ remplace le MT3608, D1 et le load switch Q1/Q2)
 | **Ferrites FB3-FB6 au plus près des sorties** (1, 3, 14, 16), puis J10 ; pistes de sortie **courtes**, sur L1 au-dessus de L2 (jamais de signal sur la couche adjacente sans masse entre les deux). | [DS PAM8406 note 2 ; AN : TI SLOA216 §3.1, SLAA896 §2.4] |
 | Paires L+/L− et R+/R− **routées côte à côte** (sorties en pont, **jamais à GND**), 0,6 mm, 1,25 mm aux ferrites. | [DS PAM8406, projet ; AN : Murata] |
 | Les fils du HP (15-20 cm) sont en quart d'onde vers 375-500 MHz : les torsader, les garder loin de l'antenne. | [calc ; AN : TI SNAA050] |
-| C_PAM_INL/INR et C_PAM_VREF près de leurs broches (7, 10, 8) ; R_MODE_D, R_MUTE, R_SHDN à côté. | [DS PAM8406] |
+| C_PAM_INL/INR et C_PAM_VREF près de leurs broches (7, 10, 8) ; R_MODE_D, R_MUTE, R_SHDN à côté ; **R_INL/R_INR (0 Ω, réglage du gain) côté AUDIO_x des C_PAM_INx**. | [DS PAM8406 ; projet, audit 2026-11-15 B10] |
 | **Option SHDN par le DAC** (2026-11-14) : R_SHDN_PD (DNP) près de SHDN# (12) ; R_SHDN_DAC (0 Ω, DNP) sur le net `AMP_SHDN_CTRL` venant de la GPIO6 du PCM5122 (U2.19) — signal statique, routage libre. Monter R_SHDN **ou** le couple R_SHDN_DAC + R_SHDN_PD, jamais R_SHDN avec R_SHDN_PD. | [projet ; DS PCM5122 page 0 reg. 8] |
 
 **Micro ICS-43434 (U4, bottom port)**
@@ -240,7 +240,7 @@ remplace le MT3608, D1 et le load switch Q1/Q2)
   ⚖ Adafruit la place côté LED].
 - Rail 5V des 12 LEDs (≈ 0,44 A datasheet, 0,72 A selon Adafruit) : **0,4 mm** suffit en 1 oz
   **[calc]**. DATA en chaîne courte LED à LED.
-- J3-J6/J13 (Qwiic), J7/J7b/J8 : broches GND bien reliées au plan (retour des signaux du câble) ;
+- J3-J6/J13 (Qwiic), J7/J7b/J8 : broches GND bien reliées au plan (J7 : broches 2, **9 et 10**) (retour des signaux du câble) ;
   une piste par signal, pas de stub.
 
 ### 2.9 Points de test
@@ -266,7 +266,7 @@ l'antenne**, TP_GND1-3 répartis près des zones puissance / numérique / audio 
 
 | Règle | Source |
 |---|---|
-| **Cible L ≈ 4,8 µH** (C_TUN interne 28,5 pF, 26,5-30,5). Viser **un peu en dessous** (accord ≈ 13,6-13,7 MHz) : C3 (DNP) ne peut que **baisser** la fréquence. | [DS ST25DV ; AN : ST AN2972 §1, §5 ; communauté ST] |
+| **Cible L ≈ 4,8 µH** (C_TUN interne 28,5 pF typ., sans min/max dans la DS13519 du ST25DV04KC). Viser **un peu en dessous** (accord ≈ 13,6-13,7 MHz) : C3 (DNP) ne peut que **baisser** la fréquence. | [DS ST25DV ; AN : ST AN2972 §1, §5 ; communauté ST] |
 | Géométries de départ : **carrée 35 mm, 9 spires, piste/espace 0,3/0,3 mm ≈ 4,85 µH** ; carrée 40 mm, 8 spires 0,35/0,35 ≈ 4,6 µH ; ronde Ø 33/27 mm, 9 spires 0,35/0,35 ≈ 4,7 µH (exemple ST). Affiner avec **ST eDesignSuite** (tient compte de la capacité parasite). | [AN : AN2972 §2.2-3.3 ; calc] |
 | **U1 à quelques mm de l'antenne**, pistes AC0/AC1 **courtes et symétriques** (toute longueur ajoutée décale l'accord). | [AN : AN2972 §3.4.1] |
 | **Aucun cuivre au-dessus, en dessous ni à l'intérieur de la boucle**, sur les 2 couches ; aucune boucle de masse fermée qui l'entoure (Rule Area KiCad). Le pont de retour de la spire intérieure passe en bottom par 2 vias. | [AN : AN2972 §3.4.2] |

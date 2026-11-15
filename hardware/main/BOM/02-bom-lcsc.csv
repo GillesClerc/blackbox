@@ -15,7 +15,7 @@ U11,LSM6DSOXTR,,LGA-14,C481766,1,Main,"Accelerometre + gyro 6 axes + MLC, soude 
 COTE2-U1,USBLC6-2SC6,,SOT-23-6,C7519,1,Satellite Cote 2,"[Satellite Cote 2, projet hardware/cote2/ (ex-U12 de la Main, deplace le 2026-09-27).] Au plus pres de J1. Protection ESD USB D+/D-"
 COTE2-J1,HOOYA USB-307HB-B-SU,,USB-C-24P SMD vertical,C309361,1,Satellite Cote 2,"[Satellite Cote 2, projet hardware/cote2/ (ex-J1 de la Main, deplace le 2026-09-27).] Connecteur USB-C femelle 24 pins (fab. Dongguang Haoyu Electronics) — sur LCSC/JLCPCB, importable via easyeda2kicad ou plugin kicad-lcsc-manager (LCSC ID C309361). Pinout standard verifie sur datasheet fabricant 2026-09-20 (voir docs/pcb/01-netlist.txt) : VBUS=A4/A9/B4/B9, GND=A1/A12/B1/B12+shield, D+=A6+B6, D-=A7+B7, CC1=A5, CC2=B5, pins SS/SBU non utilisees (design USB2.0 only)."
 "J3,J4,J5,J6,J13",,Connecteur JST-SH 4pin,JST-SH-4P,—,5,Main,Bus I2C vers satellites (brochage Qwiic ; J13 ajoute le 2026-09-27 : 5 faces satellites en I2C)
-J7,,Connecteur JST-SH 10pin,JST-SH-10P,—,1,Main,SPI3 vers 2x GC9A01 yeux
+J7,,Connecteur JST-SH 10pin,JST-SH-10P,—,1,Main,"SPI3 vers 2x GC9A01 yeux ; broches 9-10 a GND (3 retours de masse dans le cable, audit 2026-11-15 B5)"
 J7b,,Connecteur JST-SH 8pin,JST-SH-8P,—,1,Main,SPI2 vers l ecran bouche (type a choisir)
 J8,,Connecteur JST-SH 6pin,JST-SH-6P,—,1,Main,"Cote 1 : 3V3_D, GND, SW1, SW2, BTN1 (J8.5), BTN2 (J8.6)"
 J9,,Connecteur JST-PH 4pin,JST-PH-4P,—,1,Main,"WS2812 externes + reserve (le budget batterie limite a ~8-10 LEDs externes ; au-dela, alimenter la bande separement)"
@@ -44,7 +44,7 @@ C_B4,,22uF 16V ceramique X5R,0805,—,1,Main,Sortie TPS63020 (4/3) - voir C_B2
 R8,,330 ohm,0402,—,1,Main,Serie WS2812 data
 R_ILIM,,1.5k ohm,0402,—,1,Main,bq24075 ILIM pin12 (input current limit en mode RILIM EN2=H/EN1=L)
 "R_PG,R_CHG",,100k ohm,0402,—,2,Main,Pull-up PGOOD/CHG bq24075 (montees au schema)
-R_ISET,,890 ohm,0402,—,1,Main,bq24075 ISET pin16 (charge current 1A)
+R_ISET,,887 ohm 1%,0402,—,1,Main,"bq24075 ISET pin16 : I_CHG = 890 AOhm / 887 Ohm = 1,0 A (890 n existe pas en E96 ; 1 % exige, datasheet 8.3 note 1) - audit 2026-11-15 B1"
 R_VCC,,100 ohm,0402,—,1,Main,DW01A VCC serie (protection)
 R_FB_H,,1.62M ohm 1%,0402,—,1,Main,"TPS63020 FB, VOUT -> FB : 5,0 V = 0,5 V x (1 + 1620/180) ; consigne 5,0 V et non 5,1 a cause des +3 % du power save (pire cas ~5,21 V < 5,3 V WS2812)"
 R_FB_L,,180k ohm 1%,0402,—,1,Main,"TPS63020 FB -> GND : R2 a garder vers 200 kOhm (datasheet 8.2.3, tableau 3)"
@@ -104,7 +104,9 @@ SW3,E-Switch RR111C1921,"Interrupteur a bascule rond Off-On, bascule rouge marqu
 R_TMR,,56k 1%,0402,—,1,Main,Timer de securite bq24075 : t_MAXCHG 5.6-9.3 h (etait TMR->GND = timers desactives)
 "LED2,LED3,LED4,LED5,LED6,LED7,LED8,LED9,LED10,LED11,LED12,LED13",WS2812B-B/W,LED RGB adressable,LED-SMD 5x5,C2761795,12,Main,Halo face Dessous — plafond de luminosite firmware obligatoire (budget batterie)
 "C_PAM_HF1,C_PAM_HF2,C_PAM_HF3,C_PAM_INL,C_PAM_INR,C_PAM_VREF",,1uF 16V ceramique X7R,0603,—,6,Main,PAM8406 : decouplage HF + liaison entrees + VREF
-C_PAM_BULK,,22uF 10V ceramique X5R,0805,—,1,Main,PAM8406 : reservoir (datasheet : >= 20uF pres de l ampli)
+"R_INL,R_INR",,0 ohm,0402,—,2,Main,"PAM8406 : serie dans les entrees (cote AUDIO_x de C_PAM_INx), 0 ohm = gain 24 dB inchange. Gain = 2 x 142k / (18k + R) : 18 k -> -6 dB, a regler au proto (audit 2026-11-15 B10)"
+R_GPIO0,,10k ohm,0402,—,1,Main,"Pull-up externe GPIO0 (strapping : boot SPI), recommandee par Espressif (schematic checklist) - audit 2026-11-15 B8"
+C_PAM_BULK,,22uF 16V ceramique X5R,0805,—,1,Main,PAM8406 : reservoir (datasheet : >= 20uF pres de l ampli)
 C_U9,,100nF 16V ceramique X7R,0402,—,1,Main,Decouplage DW01A
 C_VBAT_SENSE,,100nF 16V ceramique X7R,0402,—,1,Main,Filtrage du pont diviseur VBAT_SENSE (ADC1_CH2)
 "R_MUTE,R_SHDN,R_MODE_D",,10k ohm,0402,—,3,Main,PAM8406 : MUTE/SHDN tires hauts + MODE vers 3V3_A (classe D)

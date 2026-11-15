@@ -133,6 +133,10 @@ groupées, empreinte `TestPoint:TestPoint_Pad_D1.5mm`.
 ### Phase 3 — Charge de la batterie
 
 - [ ] Cellule branchée (ou alimentation réglée à 3,7 V, limitée à 1,5 A)
+- [ ] **Première connexion de la cellule : brancher l'USB une fois** avant de tester sur batterie
+      seule. Une fiche de la famille DW01A (Fortune DW01A+G, §11) prévient que la décharge peut
+      rester bloquée au premier branchement tant qu'un chargeur n'a pas été vu ; la fiche H&M locale
+      ne le dit pas (audit 2026-11-15 B7). Symptôme : `TP_VBAT1` correct mais `TP_VSYS1` à 0 V.
 - [ ] `TP_CHG1` bas = charge en cours ; **clignotement 2 Hz = défaut de timer**
 - [ ] `TP_ISET1` = ____ V → courant de charge déduit = ____ A (cible ≈ 1 A)
 - [ ] `TP_TS1` ≈ 0,75 V à 25 °C → ____ V (hors plage : la charge est suspendue silencieusement)

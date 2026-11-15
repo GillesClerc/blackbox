@@ -4532,4 +4532,149 @@
 		)
 		(uuid "713c0954-555a-438c-9f65-0f7dd96dd696")
 	)
+	(label "GPIO0"
+		(at 120.65 72.39 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "54d88d1f-d43d-4d9e-8e29-6a85e20f905b")
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 109.22 85.09 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "400f49a9-e377-41ae-a7f8-686a76c93f49")
+		(property "Reference" "R_GPIO0"
+			(at 111.76 83.82000000000001 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "10k"
+			(at 111.76 86.36 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
+			(at 109.22 85.09 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 109.22 85.09 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 109.22 85.09 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "e48ea935-716d-427e-9bec-cd92559cca38")
+		)
+		(pin "2"
+			(uuid "af6311cb-3915-49d8-bbb8-3468e62dd917")
+		)
+		(instances
+			(project "blackbox"
+				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/14cfff57-6a31-4c05-af76-83111480b025"
+					(reference "R_GPIO0")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 109.22 81.28) (xy 109.22 78.74)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "4c5a69a4-e379-4fed-9ea7-1dd7751f5430")
+	)
+	(label "GPIO0"
+		(at 109.22 78.74 90)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "d98d1a87-e6a7-4b58-8b88-8a3916bff791")
+	)
+	(wire
+		(pts
+			(xy 109.22 88.9) (xy 109.22 91.44)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "0af32e8e-2d7b-4f25-8131-abb21b54c628")
+	)
+	(global_label "3V3_D"
+		(shape input)
+		(at 109.22 91.44 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "2a2e5bf1-3272-4d93-9c6d-8b35d833dfd8")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 120.65 91.44 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+	)
 )

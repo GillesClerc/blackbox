@@ -46,6 +46,18 @@ Traitée point par point avec Gilles.
 - [x] 🤖 **A5** — J2 en **JST-PH 6 broches** : 1-2 BAT+, 3-4 BAT−, 5 NTC, 6 retour NTC (GND) —
   contacts doublés (2 A par contact PH en AWG 24). BOM, guide §2.4, `bq24075.md`, FSD à jour.
 - [ ] 🧑 **A5** — harnais de cellule à refaire en **6 fils AWG 24** (au lieu de 4).
+- [x] 🤖 **B1** — R_ISET 887 Ω 1 % (890 n'existe pas en E96). **B2** — C_PAM_BULK en 16 V.
+- [x] 🤖 **B4** — datasheet du ST25DV04K**C** (DS13519 rév. 2) ajoutée ; brochage SO8N conforme,
+  C_TUN 28,5 pF typique seulement.
+- [x] 🤖 **B5** — J7.9/10 (Main) et J2.9/10 (Devant) à GND : 3 retours de masse dans le câble des yeux.
+- [x] 🤖 **B6** — TP_FB1 retiré (avec le MT3608, A3).
+- [x] 🤖 **B7** — procédure : brancher l'USB une fois après la première connexion de la cellule
+  (`03-validation-qualite.md`, phase 3).
+- [x] 🤖 **B8** — pull-up R_GPIO0 10 kΩ sur GPIO0 (Espressif) ; superviseur de reset : non retenu,
+  l'extinction firmware sur VBAT_SENSE en tient lieu.
+- [x] 🤖 **B10** — R_INL / R_INR (0 Ω montées) pour régler le gain du PAM8406 au proto.
+- [ ] 🧑 **B9** — lire `VDD_SPI_FORCE` sur la DevKitC (`espefuse.py --port /dev/ttyACM0 summary`) :
+  à 1, l'appui sur BTN1 (GPIO45) au démarrage cesse d'être un risque.
 - [ ] 🧑 **Recharger les feuilles `power` et `connector`** dans KiCad (Fichier → Revenir) avant toute sauvegarde ;
   au premier F8, vérifier que U8 prend bien l'empreinte corrigée (5 vias « 17 » dans le pad), et
   que U7 (TPS63020) et L1 prennent les nouvelles empreintes `lcsc_footprints:C15483_…` / `C98360_…`.
