@@ -2890,7 +2890,7 @@
 	)
 	(global_label "3V3_D"
 		(shape passive)
-		(at 40.644 36.83 0)
+		(at 40.64 36.83 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -2924,7 +2924,7 @@
 	)
 	(global_label "GND"
 		(shape passive)
-		(at 20.324 36.83 180)
+		(at 20.32 36.83 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -2957,7 +2957,7 @@
 		(uuid "dadf0f60-f2aa-4a67-8340-75e3c35ceaf7")
 	)
 	(label "FADER1"
-		(at 30.484 26.67 90)
+		(at 30.48 26.67 90)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3038,13 +3038,13 @@
 		(uuid "6de4169e-638c-4d19-9397-12881ccb7ca3")
 	)
 	(junction
-		(at 29.214 45.72)
+		(at 29.21 45.72)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "2f308ffc-5fbc-43de-82c9-f240b56501ef")
 	)
 	(junction
-		(at 31.754 45.72)
+		(at 31.75 45.72)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "f8f2e3a6-ec60-4eef-9c49-50bdf42e2485")
@@ -3061,7 +3061,7 @@
 	)
 	(global_label "GND"
 		(shape passive)
-		(at 25.404 45.72 180)
+		(at 25.40 45.72 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3084,7 +3084,7 @@
 		)
 	)
 	(junction
-		(at 27.944 45.72)
+		(at 27.94 45.72)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "3acbb5c8-e1ae-46a1-8d59-c70eb74c1326")
@@ -3228,7 +3228,7 @@
 	)
 	(global_label "3V3_D"
 		(shape passive)
-		(at 86.364 36.83 0)
+		(at 86.36 36.83 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3262,7 +3262,7 @@
 	)
 	(global_label "GND"
 		(shape passive)
-		(at 66.044 36.83 180)
+		(at 66.04 36.83 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3295,7 +3295,7 @@
 		(uuid "8ccc5d6c-8944-4ce8-8922-8e77410dc64e")
 	)
 	(label "FADER2"
-		(at 76.204 26.67 90)
+		(at 76.20 26.67 90)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3376,13 +3376,13 @@
 		(uuid "83f65557-0f31-4cf9-a0a3-eff4105aa976")
 	)
 	(junction
-		(at 74.934 45.72)
+		(at 74.93 45.72)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "1239168a-2e5b-4f3c-848a-0b9e40da7843")
 	)
 	(junction
-		(at 77.474 45.72)
+		(at 77.47 45.72)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "d3de11de-1d38-4e60-b767-754b403fe3d4")
@@ -3399,7 +3399,7 @@
 	)
 	(global_label "GND"
 		(shape passive)
-		(at 71.124 45.72 180)
+		(at 71.12 45.72 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3422,7 +3422,7 @@
 		)
 	)
 	(junction
-		(at 73.664 45.72)
+		(at 73.66 45.72)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "2a129787-a15e-4293-8445-b048787908ea")
@@ -3566,7 +3566,7 @@
 	)
 	(global_label "3V3_D"
 		(shape passive)
-		(at 132.084 36.83 0)
+		(at 132.08 36.83 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3600,7 +3600,7 @@
 	)
 	(global_label "GND"
 		(shape passive)
-		(at 111.764 36.83 180)
+		(at 111.76 36.83 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3633,7 +3633,7 @@
 		(uuid "1ed5a6bf-dcaa-4cfa-a471-95940204d8bb")
 	)
 	(label "FADER3"
-		(at 121.924 26.67 90)
+		(at 121.92 26.67 90)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3714,13 +3714,13 @@
 		(uuid "d675595b-aeb9-453b-8e1a-cc34dc830717")
 	)
 	(junction
-		(at 120.654 45.72)
+		(at 120.65 45.72)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "494eb767-2229-42ca-9772-b51f768cb009")
 	)
 	(junction
-		(at 123.194 45.72)
+		(at 123.19 45.72)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "617d8543-5b4c-46ac-86af-3f0732b9ec23")
@@ -3737,7 +3737,7 @@
 	)
 	(global_label "GND"
 		(shape passive)
-		(at 116.844 45.72 180)
+		(at 116.84 45.72 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3760,7 +3760,7 @@
 		)
 	)
 	(junction
-		(at 119.384 45.72)
+		(at 119.38 45.72)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "810ef5c0-aa9b-4766-bb75-4a7d1785f316")
@@ -3904,7 +3904,7 @@
 	)
 	(global_label "3V3_D"
 		(shape passive)
-		(at 177.804 36.83 0)
+		(at 177.80 36.83 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3938,7 +3938,7 @@
 	)
 	(global_label "GND"
 		(shape passive)
-		(at 157.484 36.83 180)
+		(at 157.48 36.83 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3971,7 +3971,7 @@
 		(uuid "154d3af7-3919-42d6-850c-c7d2f0991262")
 	)
 	(label "FADER4"
-		(at 167.644 26.67 90)
+		(at 167.64 26.67 90)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -4052,13 +4052,13 @@
 		(uuid "e5a12dca-5aff-4ed9-8797-b9b358a0677c")
 	)
 	(junction
-		(at 166.374 45.72)
+		(at 166.37 45.72)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "32f83025-b027-49e0-a22f-a5aa658431de")
 	)
 	(junction
-		(at 168.914 45.72)
+		(at 168.91 45.72)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "7e5ad6ad-989e-46b6-a253-f44c1105b37f")
@@ -4075,7 +4075,7 @@
 	)
 	(global_label "GND"
 		(shape passive)
-		(at 162.564 45.72 180)
+		(at 162.56 45.72 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -4098,7 +4098,7 @@
 		)
 	)
 	(junction
-		(at 165.104 45.72)
+		(at 165.10 45.72)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "ebad82ff-273f-48f1-ace2-d2cc8b7e3931")

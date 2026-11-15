@@ -343,3 +343,10 @@ aucune broche ni extrémité hors grille, aucune broche isolée sans no_connect,
 entre bibliothèque et schémas, simulation de la matrice ERC par défaut de KiCad : 0 erreur.
 **Relancer l'ERC dans KiCad pour confirmer.**
 
+
+**Reprise (même jour)** : le décalage des faders de Côté 1 avait été appliqué en −0,250 mm aux
+16 labels (FADER1-4, 3V3_D, GND) et aux 8 no_connect, au lieu de −0,254 mm comme aux fils et
+aux symboles : 8 labels et 8 no_connect à 4 µm de leur fil ou broche, donc **non raccordés pour
+KiCad** (raccord au nm près). `kicad_netlist.py` arrondit à 0,01 mm et ne le voyait pas. Recalés
+sur la grille ; contrôle refait à 0,1 µm sur les six projets : tous les labels et no_connect sur un
+fil ou une broche, aucun bout de fil pendant.
