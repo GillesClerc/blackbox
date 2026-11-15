@@ -298,3 +298,48 @@ consultable sans saisie. Espressif demande 90 Ω ±10 % ; la paire est en Full-S
 3. Banc du boost MT3608 (A3) et lecture de l'eFuse VDD_SPI (B9).
 4. Guide de layout : G1 à G5.
 5. Firmware : plafond global de courant (A1), en plus du plafond audio.
+
+---
+
+## F. ERC de Gilles (15/11, 18 h 50) et corrections
+
+ERC lancé sur les six projets après rechargement des feuilles. Connectivité sauvée par KiCad
+identique au dernier commit (U7 et L1 déplacés, reformatage).
+
+| Projet | Avant | Corrigé |
+|---|---|---|
+| Main | 3 erreurs, 141 avertissements | voir ci-dessous |
+| Devant / Dessus / Côté 1 / Côté 2 / Côté 3 | 0 erreur, 36 / 6 / 96 / 39 / 6 avertissements | idem |
+
+**Erreurs (Main)**
+- **`C_AVDD?` non annoté** : la cause est déduite, pas lue dans le code de KiCad. KiCad semble
+  traiter comme non annotée **toute référence qui ne se termine pas par un chiffre** et n'en
+  signaler que la première par ordre alphabétique : 42 références étaient concernées (C_AVDD,
+  R_ISET, C_VINA…), ce qui aurait aussi bloqué « Mettre à jour le PCB ». Même raison que le
+  renommage des TP en `TP_xxx1` par KiCad le 27/09. → « 1 » ajouté à ces 42 références
+  (C_AVDD1, R_ISET1…) et **J7b → J15** ; BOM, FSD, guide, validation, synthèses et textes des
+  schémas mis à jour (les audits datés ne sont pas réécrits).
+- **VINA du TPS63020 non pilotée** (alimentée par R_VINA1) → PWR_FLAG sur `BB_VINA`.
+- **Deux sorties d'alimentation reliées** (VOUT 4 et 5 du TPS63020) → broche 5 en `passive`.
+
+**Avertissements**
+- **Broches « non spécifié » de tous les symboles LCSC** (environ 300 avertissements) : types
+  électriques fixés d'après les synthèses (alimentations `power_in`, I2C `input`/`bidirectional`,
+  sorties `output`, connecteurs, potentiomètres et faders `passive` ; les broches reliées à un rail
+  par choix — ALERT# du CAP1298, INT# du TMAG5273, SCX du LSM6DSOX — en `passive`). Fait dans
+  la bibliothèque `lcsc_imported.kicad_sym` (toutes les copies, 355 broches) et dans les symboles
+  embarqués des six projets. Conséquence : PWR_FLAG ajoutés sur 3V3_D et GND de chaque satellite
+  (+ 5V sur Devant), les rails y arrivant par connecteur.
+- **PWR_FLAG différent de la bibliothèque** (5) : copie embarquée remplacée par celle de KiCad 10.
+- **Extrémités hors grille** (Main 68, Côté 1 48, Côté 2 6) : labels et bouts de fil ramenés sur
+  la grille de 1,27 mm ; les faders PTA6043 (broches du symbole LCSC décalées de 0,254 mm)
+  déplacés de −0,254 mm avec leurs fils.
+- **Restent, voulus** : 5 « bidirectionnel / sortie d'alimentation » (broches d'adresse et VCOM du
+  PCM5122 sur GND, BAT du bq24075 sur VBAT, rails portant un PWR_FLAG) et le label `5V_HOST` de
+  Côté 2 relié à une seule broche (réserve du mode hôte USB).
+
+Contrôles faits ici : connectivité identique avant/après sur les six projets (au renommage près),
+aucune broche ni extrémité hors grille, aucune broche isolée sans no_connect, types identiques
+entre bibliothèque et schémas, simulation de la matrice ERC par défaut de KiCad : 0 erreur.
+**Relancer l'ERC dans KiCad pour confirmer.**
+

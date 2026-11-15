@@ -56,7 +56,7 @@ MOSFET N en série sur BATT−, TD non connectée.
 
 ## Notes spécifiques projet
 
-- **U9** + **U10** (FS8205) : R_VCC = 100 Ω, C_U9 = 0,1 µF, R_CS = 1 kΩ, TD NC —
+- **U9** + **U10** (FS8205) : R_VCC1 = 100 Ω, C_U9 = 0,1 µF, R_CS1 = 1 kΩ, TD NC —
   conforme à l'application typique ✓.
 - Avec le FS8205 (R_DS(on) ≤ 28 mΩ à V_GS 4,5 V, ≤ 37 mΩ à 2,5 V) : déclenchement de
   surintensité ≈ 1,6–3,2 A selon la dispersion et la tension cellule → **limite le courant

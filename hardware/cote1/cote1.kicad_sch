@@ -5,6 +5,121 @@
 	(uuid "97be5cf8-783b-4fc3-a9f2-e4a3096a1479")
 	(paper "A4")
 	(lib_symbols
+	(symbol "power:PWR_FLAG"
+			(power global)
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "#FLG"
+				(at 0 1.905 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "PWR_FLAG"
+				(at 0 3.81 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "Special symbol for telling ERC where power comes from"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "flag power"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "PWR_FLAG_0_0"
+				(pin power_out line
+					(at 0 0 90)
+					(length 0)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(symbol "PWR_FLAG_0_1"
+				(polyline
+					(pts
+						(xy 0 0) (xy 0 1.27) (xy -1.016 1.905) (xy 0 2.54) (xy 1.016 1.905) (xy 0 1.27)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "lcsc_imported:ADS7830IPWR"
     (exclude_from_sim no)
     (in_bom yes)
@@ -75,7 +190,7 @@
         (stroke (width 0) (type default) (color 0 0 0 0))
         (fill (type background))
       )
-      (pin unspecified line
+      (pin input line
         (at -17.78 8.89 0)
         (length 2.54)
         (name "CH0"
@@ -89,7 +204,7 @@
           )
         )
       )
-      (pin unspecified line
+      (pin input line
         (at -17.78 6.35 0)
         (length 2.54)
         (name "CH1"
@@ -103,7 +218,7 @@
           )
         )
       )
-      (pin unspecified line
+      (pin input line
         (at -17.78 3.81 0)
         (length 2.54)
         (name "CH2"
@@ -117,7 +232,7 @@
           )
         )
       )
-      (pin unspecified line
+      (pin input line
         (at -17.78 1.27 0)
         (length 2.54)
         (name "CH3"
@@ -131,7 +246,7 @@
           )
         )
       )
-      (pin unspecified line
+      (pin input line
         (at -17.78 -1.27 0)
         (length 2.54)
         (name "CH4"
@@ -145,7 +260,7 @@
           )
         )
       )
-      (pin unspecified line
+      (pin input line
         (at -17.78 -3.81 0)
         (length 2.54)
         (name "CH5"
@@ -159,7 +274,7 @@
           )
         )
       )
-      (pin unspecified line
+      (pin input line
         (at -17.78 -6.35 0)
         (length 2.54)
         (name "CH6"
@@ -173,7 +288,7 @@
           )
         )
       )
-      (pin unspecified line
+      (pin input line
         (at -17.78 -8.89 0)
         (length 2.54)
         (name "CH7"
@@ -187,7 +302,7 @@
           )
         )
       )
-      (pin unspecified line
+      (pin power_in line
         (at 17.78 -8.89 180)
         (length 2.54)
         (name "GND"
@@ -201,7 +316,7 @@
           )
         )
       )
-      (pin unspecified line
+      (pin input line
         (at 17.78 -6.35 180)
         (length 2.54)
         (name "REFIN/REFOUT"
@@ -215,7 +330,7 @@
           )
         )
       )
-      (pin unspecified line
+      (pin input line
         (at 17.78 -3.81 180)
         (length 2.54)
         (name "COM"
@@ -229,7 +344,7 @@
           )
         )
       )
-      (pin unspecified line
+      (pin input line
         (at 17.78 -1.27 180)
         (length 2.54)
         (name "A0"
@@ -243,7 +358,7 @@
           )
         )
       )
-      (pin unspecified line
+      (pin input line
         (at 17.78 1.27 180)
         (length 2.54)
         (name "A1"
@@ -257,7 +372,7 @@
           )
         )
       )
-      (pin unspecified line
+      (pin input line
         (at 17.78 3.81 180)
         (length 2.54)
         (name "SCL"
@@ -271,7 +386,7 @@
           )
         )
       )
-      (pin unspecified line
+      (pin bidirectional line
         (at 17.78 6.35 180)
         (length 2.54)
         (name "SDA"
@@ -285,7 +400,7 @@
           )
         )
       )
-      (pin unspecified line
+      (pin power_in line
         (at 17.78 8.89 180)
         (length 2.54)
         (name "+VDD"
@@ -508,7 +623,7 @@
       )
     )
     (symbol "PTA6043-2015CPB103_1_1"
-      (pin unspecified line
+      (pin passive line
         (at 2.794 -5.08 90)
         (length 2.54000508001016)
         (name "7"
@@ -522,7 +637,7 @@
           )
         )
       )
-      (pin unspecified line
+      (pin passive line
         (at 1.524 -5.08 90)
         (length 2.54000508001016)
         (name "6"
@@ -536,7 +651,7 @@
           )
         )
       )
-      (pin unspecified line
+      (pin passive line
         (at -1.016 -5.08 90)
         (length 2.54000508001016)
         (name "5"
@@ -550,7 +665,7 @@
           )
         )
       )
-      (pin unspecified line
+      (pin passive line
         (at -2.286 -5.08 90)
         (length 2.54000508001016)
         (name "4"
@@ -650,7 +765,7 @@
         (stroke (width 0) (type default) (color 0 0 0 0))
         (fill (type none))
       )
-      (pin unspecified line
+      (pin passive line
         (at -4.826 1.27 0)
         (length 2.54)
         (name "3"
@@ -664,7 +779,7 @@
           )
         )
       )
-      (pin unspecified line
+      (pin passive line
         (at 5.334 1.27 180)
         (length 2.54)
         (name "1"
@@ -694,7 +809,7 @@
         (stroke (width 0) (type default) (color 0 0 0 0))
         (fill (type background))
       )
-      (pin unspecified line
+      (pin passive line
         (at 0.254 6.35 270)
         (length 2.54000508001016)
         (name "2"
@@ -762,7 +877,7 @@
       )
     )
     (symbol "PDB181-K420K-103B_1_1"
-      (pin unspecified line
+      (pin passive line
         (at 0.0 5.08 270)
         (length 2.54000508001016)
         (name "2"
@@ -792,7 +907,7 @@
         (stroke (width 0) (type default) (color 0 0 0 0))
         (fill (type background))
       )
-      (pin unspecified line
+      (pin passive line
         (at 5.08 -0.0 180)
         (length 2.54)
         (name "1"
@@ -806,7 +921,7 @@
           )
         )
       )
-      (pin unspecified line
+      (pin passive line
         (at -5.08 -0.0 0)
         (length 2.54)
         (name "3"
@@ -2638,7 +2753,7 @@
 	)
 	(symbol
 		(lib_id "lcsc_imported:PTA6043-2015CPB103")
-		(at 30.48 38.1 0)
+		(at 30.226 38.1 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -2648,7 +2763,7 @@
 		(dnp no)
 		(uuid "f3e3a091-b9ca-4423-b946-e95ca5c0e135")
 		(property "Reference" "SL1"
-			(at 33.02 36.83 0)
+			(at 32.766 36.83 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -2658,7 +2773,7 @@
 			)
 		)
 		(property "Value" "PTA6043-2015CPB103 10k B"
-			(at 33.02 39.370000000000005 0)
+			(at 32.766 39.370000000000005 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -2668,7 +2783,7 @@
 			)
 		)
 		(property "Footprint" "lcsc_footprints:C17203852_RES-ADJ-TH_PTA6043-2015DPB103"
-			(at 30.48 38.1 0)
+			(at 30.226 38.1 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2679,7 +2794,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 30.48 38.1 0)
+			(at 30.226 38.1 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2690,7 +2805,7 @@
 			)
 		)
 		(property "Description" "Fader 60 mm 10 k lineaire (B), lu en ratiometrique par U1"
-			(at 30.48 38.1 0)
+			(at 30.226 38.1 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2701,7 +2816,7 @@
 			)
 		)
 		(property "LCSC" "C17203852"
-			(at 30.48 38.1 0)
+			(at 30.226 38.1 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2712,7 +2827,7 @@
 			)
 		)
 		(property "Manufacturer" "Bourns"
-			(at 30.48 38.1 0)
+			(at 30.226 38.1 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2723,7 +2838,7 @@
 			)
 		)
 		(property "MPN" "PTA6043-2015CPB103"
-			(at 30.48 38.1 0)
+			(at 30.226 38.1 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2765,7 +2880,7 @@
 	)
 	(wire
 		(pts
-			(xy 35.814 36.83) (xy 40.894 36.83)
+			(xy 35.56 36.83) (xy 40.64 36.83)
 		)
 		(stroke
 			(width 0)
@@ -2775,7 +2890,7 @@
 	)
 	(global_label "3V3_D"
 		(shape passive)
-		(at 40.894 36.83 0)
+		(at 40.644 36.83 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -2785,7 +2900,7 @@
 		)
 		(uuid "f0b2e2e3-8066-46cf-9e40-b606b03eade6")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 52.324 36.83 0)
+			(at 52.074 36.83 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2799,7 +2914,7 @@
 	)
 	(wire
 		(pts
-			(xy 25.654 36.83) (xy 20.574 36.83)
+			(xy 25.4 36.83) (xy 20.32 36.83)
 		)
 		(stroke
 			(width 0)
@@ -2809,7 +2924,7 @@
 	)
 	(global_label "GND"
 		(shape passive)
-		(at 20.574 36.83 180)
+		(at 20.324 36.83 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -2819,7 +2934,7 @@
 		)
 		(uuid "eb8a02a6-930a-4a21-82ba-0b0501fafc41")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 9.144000000000002 36.83 0)
+			(at 8.894 36.83 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2833,7 +2948,7 @@
 	)
 	(wire
 		(pts
-			(xy 30.734 31.75) (xy 30.734 26.67)
+			(xy 30.48 31.75) (xy 30.48 26.67)
 		)
 		(stroke
 			(width 0)
@@ -2842,7 +2957,7 @@
 		(uuid "dadf0f60-f2aa-4a67-8340-75e3c35ceaf7")
 	)
 	(label "FADER1"
-		(at 30.734 26.67 90)
+		(at 30.484 26.67 90)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -2854,7 +2969,7 @@
 	)
 	(wire
 		(pts
-			(xy 28.194 43.18) (xy 28.194 45.72)
+			(xy 27.94 43.18) (xy 27.94 45.72)
 		)
 		(stroke
 			(width 0)
@@ -2864,7 +2979,7 @@
 	)
 	(wire
 		(pts
-			(xy 29.464 43.18) (xy 29.464 45.72)
+			(xy 29.21 43.18) (xy 29.21 45.72)
 		)
 		(stroke
 			(width 0)
@@ -2874,7 +2989,7 @@
 	)
 	(wire
 		(pts
-			(xy 32.004 43.18) (xy 32.004 45.72)
+			(xy 31.75 43.18) (xy 31.75 45.72)
 		)
 		(stroke
 			(width 0)
@@ -2884,7 +2999,7 @@
 	)
 	(wire
 		(pts
-			(xy 33.274 43.18) (xy 33.274 45.72)
+			(xy 33.02 43.18) (xy 33.02 45.72)
 		)
 		(stroke
 			(width 0)
@@ -2894,7 +3009,7 @@
 	)
 	(wire
 		(pts
-			(xy 28.194 45.72) (xy 29.464 45.72)
+			(xy 27.94 45.72) (xy 29.21 45.72)
 		)
 		(stroke
 			(width 0)
@@ -2904,7 +3019,7 @@
 	)
 	(wire
 		(pts
-			(xy 29.464 45.72) (xy 32.004 45.72)
+			(xy 29.21 45.72) (xy 31.75 45.72)
 		)
 		(stroke
 			(width 0)
@@ -2914,7 +3029,7 @@
 	)
 	(wire
 		(pts
-			(xy 32.004 45.72) (xy 33.274 45.72)
+			(xy 31.75 45.72) (xy 33.02 45.72)
 		)
 		(stroke
 			(width 0)
@@ -2923,20 +3038,20 @@
 		(uuid "6de4169e-638c-4d19-9397-12881ccb7ca3")
 	)
 	(junction
-		(at 29.464 45.72)
+		(at 29.214 45.72)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "2f308ffc-5fbc-43de-82c9-f240b56501ef")
 	)
 	(junction
-		(at 32.004 45.72)
+		(at 31.754 45.72)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "f8f2e3a6-ec60-4eef-9c49-50bdf42e2485")
 	)
 	(wire
 		(pts
-			(xy 28.194 45.72) (xy 25.654 45.72)
+			(xy 27.94 45.72) (xy 25.4 45.72)
 		)
 		(stroke
 			(width 0)
@@ -2946,7 +3061,7 @@
 	)
 	(global_label "GND"
 		(shape passive)
-		(at 25.654 45.72 180)
+		(at 25.404 45.72 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -2956,7 +3071,7 @@
 		)
 		(uuid "9c268598-eae6-44cd-986b-5c88d8e6d5d6")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 14.224 45.72 0)
+			(at 13.974 45.72 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2969,14 +3084,14 @@
 		)
 	)
 	(junction
-		(at 28.194 45.72)
+		(at 27.944 45.72)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "3acbb5c8-e1ae-46a1-8d59-c70eb74c1326")
 	)
 	(symbol
 		(lib_id "lcsc_imported:PTA6043-2015CPB103")
-		(at 76.2 38.1 0)
+		(at 75.946 38.1 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -2986,7 +3101,7 @@
 		(dnp no)
 		(uuid "15e2f476-8d87-4c4a-879f-0760e7a03789")
 		(property "Reference" "SL2"
-			(at 78.74000000000001 36.83 0)
+			(at 78.486 36.83 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -2996,7 +3111,7 @@
 			)
 		)
 		(property "Value" "PTA6043-2015CPB103 10k B"
-			(at 78.74000000000001 39.370000000000005 0)
+			(at 78.486 39.370000000000005 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -3006,7 +3121,7 @@
 			)
 		)
 		(property "Footprint" "lcsc_footprints:C17203852_RES-ADJ-TH_PTA6043-2015DPB103"
-			(at 76.2 38.1 0)
+			(at 75.946 38.1 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3017,7 +3132,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 76.2 38.1 0)
+			(at 75.946 38.1 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3028,7 +3143,7 @@
 			)
 		)
 		(property "Description" "Fader 60 mm 10 k lineaire (B), lu en ratiometrique par U1"
-			(at 76.2 38.1 0)
+			(at 75.946 38.1 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3039,7 +3154,7 @@
 			)
 		)
 		(property "LCSC" "C17203852"
-			(at 76.2 38.1 0)
+			(at 75.946 38.1 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3050,7 +3165,7 @@
 			)
 		)
 		(property "Manufacturer" "Bourns"
-			(at 76.2 38.1 0)
+			(at 75.946 38.1 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3061,7 +3176,7 @@
 			)
 		)
 		(property "MPN" "PTA6043-2015CPB103"
-			(at 76.2 38.1 0)
+			(at 75.946 38.1 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3103,7 +3218,7 @@
 	)
 	(wire
 		(pts
-			(xy 81.534 36.83) (xy 86.614 36.83)
+			(xy 81.28 36.83) (xy 86.36 36.83)
 		)
 		(stroke
 			(width 0)
@@ -3113,7 +3228,7 @@
 	)
 	(global_label "3V3_D"
 		(shape passive)
-		(at 86.614 36.83 0)
+		(at 86.364 36.83 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3123,7 +3238,7 @@
 		)
 		(uuid "5a0bdc30-b79b-4606-98ba-2c266b003912")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 98.04400000000001 36.83 0)
+			(at 97.794 36.83 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3137,7 +3252,7 @@
 	)
 	(wire
 		(pts
-			(xy 71.374 36.83) (xy 66.294 36.83)
+			(xy 71.12 36.83) (xy 66.04 36.83)
 		)
 		(stroke
 			(width 0)
@@ -3147,7 +3262,7 @@
 	)
 	(global_label "GND"
 		(shape passive)
-		(at 66.294 36.83 180)
+		(at 66.044 36.83 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3157,7 +3272,7 @@
 		)
 		(uuid "576593c4-7bd7-4925-9bd8-18129f22e109")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 54.864 36.83 0)
+			(at 54.614 36.83 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3171,7 +3286,7 @@
 	)
 	(wire
 		(pts
-			(xy 76.454 31.75) (xy 76.454 26.67)
+			(xy 76.2 31.75) (xy 76.2 26.67)
 		)
 		(stroke
 			(width 0)
@@ -3180,7 +3295,7 @@
 		(uuid "8ccc5d6c-8944-4ce8-8922-8e77410dc64e")
 	)
 	(label "FADER2"
-		(at 76.454 26.67 90)
+		(at 76.204 26.67 90)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3192,7 +3307,7 @@
 	)
 	(wire
 		(pts
-			(xy 73.914 43.18) (xy 73.914 45.72)
+			(xy 73.66 43.18) (xy 73.66 45.72)
 		)
 		(stroke
 			(width 0)
@@ -3202,7 +3317,7 @@
 	)
 	(wire
 		(pts
-			(xy 75.184 43.18) (xy 75.184 45.72)
+			(xy 74.93 43.18) (xy 74.93 45.72)
 		)
 		(stroke
 			(width 0)
@@ -3212,7 +3327,7 @@
 	)
 	(wire
 		(pts
-			(xy 77.724 43.18) (xy 77.724 45.72)
+			(xy 77.47 43.18) (xy 77.47 45.72)
 		)
 		(stroke
 			(width 0)
@@ -3222,7 +3337,7 @@
 	)
 	(wire
 		(pts
-			(xy 78.994 43.18) (xy 78.994 45.72)
+			(xy 78.74 43.18) (xy 78.74 45.72)
 		)
 		(stroke
 			(width 0)
@@ -3232,7 +3347,7 @@
 	)
 	(wire
 		(pts
-			(xy 73.914 45.72) (xy 75.184 45.72)
+			(xy 73.66 45.72) (xy 74.93 45.72)
 		)
 		(stroke
 			(width 0)
@@ -3242,7 +3357,7 @@
 	)
 	(wire
 		(pts
-			(xy 75.184 45.72) (xy 77.724 45.72)
+			(xy 74.93 45.72) (xy 77.47 45.72)
 		)
 		(stroke
 			(width 0)
@@ -3252,7 +3367,7 @@
 	)
 	(wire
 		(pts
-			(xy 77.724 45.72) (xy 78.994 45.72)
+			(xy 77.47 45.72) (xy 78.74 45.72)
 		)
 		(stroke
 			(width 0)
@@ -3261,20 +3376,20 @@
 		(uuid "83f65557-0f31-4cf9-a0a3-eff4105aa976")
 	)
 	(junction
-		(at 75.184 45.72)
+		(at 74.934 45.72)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "1239168a-2e5b-4f3c-848a-0b9e40da7843")
 	)
 	(junction
-		(at 77.724 45.72)
+		(at 77.474 45.72)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "d3de11de-1d38-4e60-b767-754b403fe3d4")
 	)
 	(wire
 		(pts
-			(xy 73.914 45.72) (xy 71.374 45.72)
+			(xy 73.66 45.72) (xy 71.12 45.72)
 		)
 		(stroke
 			(width 0)
@@ -3284,7 +3399,7 @@
 	)
 	(global_label "GND"
 		(shape passive)
-		(at 71.374 45.72 180)
+		(at 71.124 45.72 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3294,7 +3409,7 @@
 		)
 		(uuid "51e2ba9c-0e72-41bb-9ae3-94c269796639")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 59.943999999999996 45.72 0)
+			(at 59.694 45.72 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3307,14 +3422,14 @@
 		)
 	)
 	(junction
-		(at 73.914 45.72)
+		(at 73.664 45.72)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "2a129787-a15e-4293-8445-b048787908ea")
 	)
 	(symbol
 		(lib_id "lcsc_imported:PTA6043-2015CPB103")
-		(at 121.92 38.1 0)
+		(at 121.666 38.1 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -3324,7 +3439,7 @@
 		(dnp no)
 		(uuid "4e0e005f-7d7f-4761-a1e4-2054bfc76e21")
 		(property "Reference" "SL3"
-			(at 124.46000000000001 36.83 0)
+			(at 124.206 36.83 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -3334,7 +3449,7 @@
 			)
 		)
 		(property "Value" "PTA6043-2015CPB103 10k B"
-			(at 124.46000000000001 39.370000000000005 0)
+			(at 124.206 39.370000000000005 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -3344,7 +3459,7 @@
 			)
 		)
 		(property "Footprint" "lcsc_footprints:C17203852_RES-ADJ-TH_PTA6043-2015DPB103"
-			(at 121.92 38.1 0)
+			(at 121.666 38.1 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3355,7 +3470,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 121.92 38.1 0)
+			(at 121.666 38.1 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3366,7 +3481,7 @@
 			)
 		)
 		(property "Description" "Fader 60 mm 10 k lineaire (B), lu en ratiometrique par U1"
-			(at 121.92 38.1 0)
+			(at 121.666 38.1 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3377,7 +3492,7 @@
 			)
 		)
 		(property "LCSC" "C17203852"
-			(at 121.92 38.1 0)
+			(at 121.666 38.1 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3388,7 +3503,7 @@
 			)
 		)
 		(property "Manufacturer" "Bourns"
-			(at 121.92 38.1 0)
+			(at 121.666 38.1 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3399,7 +3514,7 @@
 			)
 		)
 		(property "MPN" "PTA6043-2015CPB103"
-			(at 121.92 38.1 0)
+			(at 121.666 38.1 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3441,7 +3556,7 @@
 	)
 	(wire
 		(pts
-			(xy 127.254 36.83) (xy 132.334 36.83)
+			(xy 127 36.83) (xy 132.08 36.83)
 		)
 		(stroke
 			(width 0)
@@ -3451,7 +3566,7 @@
 	)
 	(global_label "3V3_D"
 		(shape passive)
-		(at 132.334 36.83 0)
+		(at 132.084 36.83 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3461,7 +3576,7 @@
 		)
 		(uuid "f3edddf1-8c20-4844-a97e-cc0d10946bf9")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 143.764 36.83 0)
+			(at 143.514 36.83 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3475,7 +3590,7 @@
 	)
 	(wire
 		(pts
-			(xy 117.094 36.83) (xy 112.014 36.83)
+			(xy 116.84 36.83) (xy 111.76 36.83)
 		)
 		(stroke
 			(width 0)
@@ -3485,7 +3600,7 @@
 	)
 	(global_label "GND"
 		(shape passive)
-		(at 112.014 36.83 180)
+		(at 111.764 36.83 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3495,7 +3610,7 @@
 		)
 		(uuid "829084f2-f692-4e81-a0f0-834119f6a6b1")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 100.584 36.83 0)
+			(at 100.334 36.83 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3509,7 +3624,7 @@
 	)
 	(wire
 		(pts
-			(xy 122.174 31.75) (xy 122.174 26.67)
+			(xy 121.92 31.75) (xy 121.92 26.67)
 		)
 		(stroke
 			(width 0)
@@ -3518,7 +3633,7 @@
 		(uuid "1ed5a6bf-dcaa-4cfa-a471-95940204d8bb")
 	)
 	(label "FADER3"
-		(at 122.174 26.67 90)
+		(at 121.924 26.67 90)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3530,7 +3645,7 @@
 	)
 	(wire
 		(pts
-			(xy 119.634 43.18) (xy 119.634 45.72)
+			(xy 119.38 43.18) (xy 119.38 45.72)
 		)
 		(stroke
 			(width 0)
@@ -3540,7 +3655,7 @@
 	)
 	(wire
 		(pts
-			(xy 120.904 43.18) (xy 120.904 45.72)
+			(xy 120.65 43.18) (xy 120.65 45.72)
 		)
 		(stroke
 			(width 0)
@@ -3550,7 +3665,7 @@
 	)
 	(wire
 		(pts
-			(xy 123.444 43.18) (xy 123.444 45.72)
+			(xy 123.19 43.18) (xy 123.19 45.72)
 		)
 		(stroke
 			(width 0)
@@ -3560,7 +3675,7 @@
 	)
 	(wire
 		(pts
-			(xy 124.714 43.18) (xy 124.714 45.72)
+			(xy 124.46 43.18) (xy 124.46 45.72)
 		)
 		(stroke
 			(width 0)
@@ -3570,7 +3685,7 @@
 	)
 	(wire
 		(pts
-			(xy 119.634 45.72) (xy 120.904 45.72)
+			(xy 119.38 45.72) (xy 120.65 45.72)
 		)
 		(stroke
 			(width 0)
@@ -3580,7 +3695,7 @@
 	)
 	(wire
 		(pts
-			(xy 120.904 45.72) (xy 123.444 45.72)
+			(xy 120.65 45.72) (xy 123.19 45.72)
 		)
 		(stroke
 			(width 0)
@@ -3590,7 +3705,7 @@
 	)
 	(wire
 		(pts
-			(xy 123.444 45.72) (xy 124.714 45.72)
+			(xy 123.19 45.72) (xy 124.46 45.72)
 		)
 		(stroke
 			(width 0)
@@ -3599,20 +3714,20 @@
 		(uuid "d675595b-aeb9-453b-8e1a-cc34dc830717")
 	)
 	(junction
-		(at 120.904 45.72)
+		(at 120.654 45.72)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "494eb767-2229-42ca-9772-b51f768cb009")
 	)
 	(junction
-		(at 123.444 45.72)
+		(at 123.194 45.72)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "617d8543-5b4c-46ac-86af-3f0732b9ec23")
 	)
 	(wire
 		(pts
-			(xy 119.634 45.72) (xy 117.094 45.72)
+			(xy 119.38 45.72) (xy 116.84 45.72)
 		)
 		(stroke
 			(width 0)
@@ -3622,7 +3737,7 @@
 	)
 	(global_label "GND"
 		(shape passive)
-		(at 117.094 45.72 180)
+		(at 116.844 45.72 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3632,7 +3747,7 @@
 		)
 		(uuid "f8c96aa2-3631-4e90-9e72-038cab199c46")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 105.66399999999999 45.72 0)
+			(at 105.414 45.72 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3645,14 +3760,14 @@
 		)
 	)
 	(junction
-		(at 119.634 45.72)
+		(at 119.384 45.72)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "810ef5c0-aa9b-4766-bb75-4a7d1785f316")
 	)
 	(symbol
 		(lib_id "lcsc_imported:PTA6043-2015CPB103")
-		(at 167.64 38.1 0)
+		(at 167.386 38.1 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -3662,7 +3777,7 @@
 		(dnp no)
 		(uuid "94869bf3-6362-4333-86c0-4f2173b45f50")
 		(property "Reference" "SL4"
-			(at 170.17999999999998 36.83 0)
+			(at 169.926 36.83 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -3672,7 +3787,7 @@
 			)
 		)
 		(property "Value" "PTA6043-2015CPB103 10k B"
-			(at 170.17999999999998 39.370000000000005 0)
+			(at 169.926 39.370000000000005 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -3682,7 +3797,7 @@
 			)
 		)
 		(property "Footprint" "lcsc_footprints:C17203852_RES-ADJ-TH_PTA6043-2015DPB103"
-			(at 167.64 38.1 0)
+			(at 167.386 38.1 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3693,7 +3808,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 167.64 38.1 0)
+			(at 167.386 38.1 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3704,7 +3819,7 @@
 			)
 		)
 		(property "Description" "Fader 60 mm 10 k lineaire (B), lu en ratiometrique par U1"
-			(at 167.64 38.1 0)
+			(at 167.386 38.1 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3715,7 +3830,7 @@
 			)
 		)
 		(property "LCSC" "C17203852"
-			(at 167.64 38.1 0)
+			(at 167.386 38.1 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3726,7 +3841,7 @@
 			)
 		)
 		(property "Manufacturer" "Bourns"
-			(at 167.64 38.1 0)
+			(at 167.386 38.1 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3737,7 +3852,7 @@
 			)
 		)
 		(property "MPN" "PTA6043-2015CPB103"
-			(at 167.64 38.1 0)
+			(at 167.386 38.1 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3779,7 +3894,7 @@
 	)
 	(wire
 		(pts
-			(xy 172.974 36.83) (xy 178.054 36.83)
+			(xy 172.72 36.83) (xy 177.8 36.83)
 		)
 		(stroke
 			(width 0)
@@ -3789,7 +3904,7 @@
 	)
 	(global_label "3V3_D"
 		(shape passive)
-		(at 178.054 36.83 0)
+		(at 177.804 36.83 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3799,7 +3914,7 @@
 		)
 		(uuid "c5f5c567-860b-4942-81d6-bf56ab05c04a")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 189.484 36.83 0)
+			(at 189.234 36.83 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3813,7 +3928,7 @@
 	)
 	(wire
 		(pts
-			(xy 162.814 36.83) (xy 157.734 36.83)
+			(xy 162.56 36.83) (xy 157.48 36.83)
 		)
 		(stroke
 			(width 0)
@@ -3823,7 +3938,7 @@
 	)
 	(global_label "GND"
 		(shape passive)
-		(at 157.734 36.83 180)
+		(at 157.484 36.83 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3833,7 +3948,7 @@
 		)
 		(uuid "3da93a53-8522-4545-978b-140e43f64dfa")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 146.304 36.83 0)
+			(at 146.054 36.83 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3847,7 +3962,7 @@
 	)
 	(wire
 		(pts
-			(xy 167.894 31.75) (xy 167.894 26.67)
+			(xy 167.64 31.75) (xy 167.64 26.67)
 		)
 		(stroke
 			(width 0)
@@ -3856,7 +3971,7 @@
 		(uuid "154d3af7-3919-42d6-850c-c7d2f0991262")
 	)
 	(label "FADER4"
-		(at 167.894 26.67 90)
+		(at 167.644 26.67 90)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3868,7 +3983,7 @@
 	)
 	(wire
 		(pts
-			(xy 165.354 43.18) (xy 165.354 45.72)
+			(xy 165.1 43.18) (xy 165.1 45.72)
 		)
 		(stroke
 			(width 0)
@@ -3878,7 +3993,7 @@
 	)
 	(wire
 		(pts
-			(xy 166.624 43.18) (xy 166.624 45.72)
+			(xy 166.37 43.18) (xy 166.37 45.72)
 		)
 		(stroke
 			(width 0)
@@ -3888,7 +4003,7 @@
 	)
 	(wire
 		(pts
-			(xy 169.164 43.18) (xy 169.164 45.72)
+			(xy 168.91 43.18) (xy 168.91 45.72)
 		)
 		(stroke
 			(width 0)
@@ -3898,7 +4013,7 @@
 	)
 	(wire
 		(pts
-			(xy 170.434 43.18) (xy 170.434 45.72)
+			(xy 170.18 43.18) (xy 170.18 45.72)
 		)
 		(stroke
 			(width 0)
@@ -3908,7 +4023,7 @@
 	)
 	(wire
 		(pts
-			(xy 165.354 45.72) (xy 166.624 45.72)
+			(xy 165.1 45.72) (xy 166.37 45.72)
 		)
 		(stroke
 			(width 0)
@@ -3918,7 +4033,7 @@
 	)
 	(wire
 		(pts
-			(xy 166.624 45.72) (xy 169.164 45.72)
+			(xy 166.37 45.72) (xy 168.91 45.72)
 		)
 		(stroke
 			(width 0)
@@ -3928,7 +4043,7 @@
 	)
 	(wire
 		(pts
-			(xy 169.164 45.72) (xy 170.434 45.72)
+			(xy 168.91 45.72) (xy 170.18 45.72)
 		)
 		(stroke
 			(width 0)
@@ -3937,20 +4052,20 @@
 		(uuid "e5a12dca-5aff-4ed9-8797-b9b358a0677c")
 	)
 	(junction
-		(at 166.624 45.72)
+		(at 166.374 45.72)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "32f83025-b027-49e0-a22f-a5aa658431de")
 	)
 	(junction
-		(at 169.164 45.72)
+		(at 168.914 45.72)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "7e5ad6ad-989e-46b6-a253-f44c1105b37f")
 	)
 	(wire
 		(pts
-			(xy 165.354 45.72) (xy 162.814 45.72)
+			(xy 165.1 45.72) (xy 162.56 45.72)
 		)
 		(stroke
 			(width 0)
@@ -3960,7 +4075,7 @@
 	)
 	(global_label "GND"
 		(shape passive)
-		(at 162.814 45.72 180)
+		(at 162.564 45.72 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3970,7 +4085,7 @@
 		)
 		(uuid "1a20a625-37c1-49d8-b211-d4c4d6ee325f")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 151.384 45.72 0)
+			(at 151.134 45.72 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3983,7 +4098,7 @@
 		)
 	)
 	(junction
-		(at 165.354 45.72)
+		(at 165.104 45.72)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "ebad82ff-273f-48f1-ace2-d2cc8b7e3931")
@@ -4513,7 +4628,7 @@
 	)
 	(wire
 		(pts
-			(xy 127.0 76.2) (xy 132.08 76.2)
+			(xy 127 76.2) (xy 132.08 76.2)
 		)
 		(stroke
 			(width 0)
@@ -5793,6 +5908,228 @@
 		(uuid "5ff5c55b-353e-43ac-b49f-81b1c1fa3f53")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 107.94999999999999 119.38 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:PWR_FLAG")
+		(at 187.96 22.86 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "cd62b430-5d99-4641-bf5c-cf4c3b0e16a5")
+		(property "Reference" "#FLG01"
+			(at 190.5 21.59 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "PWR_FLAG"
+			(at 190.5 24.13 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 187.96 22.86 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 187.96 22.86 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Special symbol for telling ERC where power comes from"
+			(at 187.96 22.86 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "53c68664-a568-431b-8632-6f7eb2ad2b38")
+		)
+		(instances
+			(project "cote1"
+				(path "/97be5cf8-783b-4fc3-a9f2-e4a3096a1479"
+					(reference "#FLG01")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 187.96 22.86) (xy 187.96 27.94)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "7b9c3b4c-adb0-4a4f-8a40-804f1d73f171")
+	)
+	(global_label "3V3_D"
+		(shape input)
+		(at 187.96 27.939999999999998 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "7c9a77f5-ef72-49b9-8117-d265a09f158e")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 199.39000000000001 27.939999999999998 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:PWR_FLAG")
+		(at 195.58 22.86 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "96343849-88a4-4684-8900-2e42a1f40925")
+		(property "Reference" "#FLG02"
+			(at 198.12 21.59 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "PWR_FLAG"
+			(at 198.12 24.13 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 195.58 22.86 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 195.58 22.86 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Special symbol for telling ERC where power comes from"
+			(at 195.58 22.86 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "f3f2b2b5-ff72-4ed9-8cee-ef24d7345b54")
+		)
+		(instances
+			(project "cote1"
+				(path "/97be5cf8-783b-4fc3-a9f2-e4a3096a1479"
+					(reference "#FLG02")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 195.58 22.86) (xy 195.58 27.94)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d558b4d8-e403-4f3c-86e5-9a10dd1366ea")
+	)
+	(global_label "GND"
+		(shape input)
+		(at 195.58 27.939999999999998 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "e8564471-fe34-40f1-afd4-f3f2d6e626f5")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 207.01000000000002 27.939999999999998 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)

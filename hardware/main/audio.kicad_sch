@@ -1739,7 +1739,7 @@
 						(type background)
 					)
 				)
-				(pin unspecified line
+				(pin output line
 					(at -15.24 8.89 0)
 					(length 2.54)
 					(name "+OUT_L"
@@ -1757,7 +1757,7 @@
 						)
 					)
 				)
-				(pin unspecified line
+				(pin power_in line
 					(at -15.24 6.35 0)
 					(length 2.54)
 					(name "PGNDL"
@@ -1775,7 +1775,7 @@
 						)
 					)
 				)
-				(pin unspecified line
+				(pin output line
 					(at -15.24 3.81 0)
 					(length 2.54)
 					(name "-OUT_L"
@@ -1793,7 +1793,7 @@
 						)
 					)
 				)
-				(pin unspecified line
+				(pin power_in line
 					(at -15.24 1.27 0)
 					(length 2.54)
 					(name "PVDDL"
@@ -1811,7 +1811,7 @@
 						)
 					)
 				)
-				(pin unspecified line
+				(pin input line
 					(at -15.24 -1.27 0)
 					(length 2.54)
 					(name "MUTE#"
@@ -1829,7 +1829,7 @@
 						)
 					)
 				)
-				(pin unspecified line
+				(pin power_in line
 					(at -15.24 -3.81 0)
 					(length 2.54)
 					(name "VDD"
@@ -1847,7 +1847,7 @@
 						)
 					)
 				)
-				(pin unspecified line
+				(pin input line
 					(at -15.24 -6.35 0)
 					(length 2.54)
 					(name "INL"
@@ -1865,7 +1865,7 @@
 						)
 					)
 				)
-				(pin unspecified line
+				(pin passive line
 					(at -15.24 -8.89 0)
 					(length 2.54)
 					(name "VREF"
@@ -1883,7 +1883,7 @@
 						)
 					)
 				)
-				(pin unspecified line
+				(pin input line
 					(at 15.24 -8.89 180)
 					(length 2.54)
 					(name "MODE"
@@ -1901,7 +1901,7 @@
 						)
 					)
 				)
-				(pin unspecified line
+				(pin input line
 					(at 15.24 -6.35 180)
 					(length 2.54)
 					(name "INR"
@@ -1919,7 +1919,7 @@
 						)
 					)
 				)
-				(pin unspecified line
+				(pin power_in line
 					(at 15.24 -3.81 180)
 					(length 2.54)
 					(name "GND"
@@ -1937,7 +1937,7 @@
 						)
 					)
 				)
-				(pin unspecified line
+				(pin input line
 					(at 15.24 -1.27 180)
 					(length 2.54)
 					(name "SHDN#"
@@ -1955,7 +1955,7 @@
 						)
 					)
 				)
-				(pin unspecified line
+				(pin power_in line
 					(at 15.24 1.27 180)
 					(length 2.54)
 					(name "PVDDR"
@@ -1973,7 +1973,7 @@
 						)
 					)
 				)
-				(pin unspecified line
+				(pin output line
 					(at 15.24 3.81 180)
 					(length 2.54)
 					(name "-OUT_R"
@@ -1991,7 +1991,7 @@
 						)
 					)
 				)
-				(pin unspecified line
+				(pin power_in line
 					(at 15.24 6.35 180)
 					(length 2.54)
 					(name "PGNDR"
@@ -2009,7 +2009,7 @@
 						)
 					)
 				)
-				(pin unspecified line
+				(pin output line
 					(at 15.24 8.89 180)
 					(length 2.54)
 					(name "+OUT_R"
@@ -2050,6 +2050,12 @@
 		(uuid "59ad2b46-efc0-4d4b-81b6-b1b15dac5abc")
 	)
 	(junction
+		(at 251.46 63.5)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "5a5154cd-bf7a-4269-959e-429b252a2e6f")
+	)
+	(junction
 		(at 73.66 90.17)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -2062,7 +2068,7 @@
 		(uuid "600bad96-bcce-4289-8d41-1c643a55bc38")
 	)
 	(junction
-		(at 129.54 60.96)
+		(at 144.78 60.96)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "70e3ea70-bd22-462c-bd63-076f9b04892e")
@@ -2096,6 +2102,12 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "cb738413-cb50-4665-a02c-cc28097e4601")
+	)
+	(junction
+		(at 251.46 58.42)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "cbe301bf-0a9b-494e-8c2f-38b6cc69cf2f")
 	)
 	(junction
 		(at 58.42 90.17)
@@ -2573,6 +2585,16 @@
 	)
 	(wire
 		(pts
+			(xy 110.49 64.77) (xy 115.57 64.77)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "6daaf853-9c36-415f-95b1-c9132586eb5b")
+	)
+	(wire
+		(pts
 			(xy 110.49 77.47) (xy 128.27 77.47)
 		)
 		(stroke
@@ -2760,6 +2782,16 @@
 			(type default)
 		)
 		(uuid "99903331-88db-4ec9-a231-63e791999d95")
+	)
+	(wire
+		(pts
+			(xy 251.46 58.42) (xy 256.54 58.42)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "a0f82a65-39c6-4be6-9800-24934069e8dd")
 	)
 	(wire
 		(pts
@@ -3023,6 +3055,16 @@
 	)
 	(wire
 		(pts
+			(xy 251.46 63.5) (xy 256.54 63.5)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "cd24bded-512c-4500-9efc-8c99be80ec0e")
+	)
+	(wire
+		(pts
 			(xy 187.96 74.93) (xy 207.01 74.93)
 		)
 		(stroke
@@ -3183,7 +3225,7 @@
 	)
 	(wire
 		(pts
-			(xy 129.54 60.96) (xy 129.54 62.23)
+			(xy 144.78 60.96) (xy 144.78 62.23)
 		)
 		(stroke
 			(width 0)
@@ -3679,6 +3721,30 @@
 			)
 		)
 	)
+	(global_label "AMP_SHDN_CTRL"
+		(shape output)
+		(at 115.57 64.77 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "3eb3e6d0-2f6c-4157-9b41-e3764f2fa6bc")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 127 64.77 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+	)
 	(global_label "3V3_A"
 		(shape input)
 		(at 91.44 135.89 90)
@@ -3895,6 +3961,30 @@
 			)
 		)
 	)
+	(global_label "AMP_SHDN_CTRL"
+		(shape input)
+		(at 264.16 58.42 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "6eb44e19-6e05-4153-8673-0daa2b7f1fa5")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 275.59 58.42 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+	)
 	(global_label "GND"
 		(shape input)
 		(at 74.93 69.85 180)
@@ -3969,7 +4059,7 @@
 	)
 	(global_label "GND"
 		(shape input)
-		(at 129.54 62.23 270)
+		(at 144.78 62.23 270)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3979,7 +4069,7 @@
 		)
 		(uuid "9bddd2ad-fe26-48c4-a7d3-3791c0afd85f")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 53.4391 -35.56 0)
+			(at 68.6791 -35.56 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4244,6 +4334,30 @@
 		(uuid "c694dd2b-1d55-45bb-8e89-0865f7a7d875")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 140.3872 52.07 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+	)
+	(global_label "GND"
+		(shape input)
+		(at 264.16 63.5 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "ca469e4a-82d1-4399-9569-893b9e01a680")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 275.59 63.5 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4627,7 +4741,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "05bfefe6-8b7f-4aea-ab9d-2c163f39b128")
-		(property "Reference" "C_LDOO"
+		(property "Reference" "C_LDOO1"
 			(at 129.54 90.1699 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4691,7 +4805,7 @@
 		(instances
 			(project "blackbox"
 				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/17c39c9a-96dc-41e6-b1fb-7a30f21efb24"
-					(reference "C_LDOO")
+					(reference "C_LDOO1")
 					(unit 1)
 				)
 			)
@@ -4933,7 +5047,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "19b48edd-6889-418c-b46c-428a95a312a3")
-		(property "Reference" "R_SD_PD"
+		(property "Reference" "R_SD_PD1"
 			(at 120.142 170.434 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4995,7 +5109,86 @@
 		(instances
 			(project "blackbox"
 				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/17c39c9a-96dc-41e6-b1fb-7a30f21efb24"
-					(reference "R_SD_PD")
+					(reference "R_SD_PD1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 252.73 91.44 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "1b0ee70e-beac-4f45-826b-afe43aab8c15")
+		(property "Reference" "R_INR1"
+			(at 255.27 90.17 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "0R"
+			(at 255.27 92.71 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
+			(at 252.73 91.44 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 252.73 91.44 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 252.73 91.44 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "298fce4d-8330-4b21-956e-e4cce928e418")
+		)
+		(pin "2"
+			(uuid "cf8199e6-7fbf-495a-b28c-be11042f5db5")
+		)
+		(instances
+			(project "blackbox"
+				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/17c39c9a-96dc-41e6-b1fb-7a30f21efb24"
+					(reference "R_INR1")
 					(unit 1)
 				)
 			)
@@ -5237,7 +5430,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "2c437053-6cdc-4771-bc76-440c713c47a3")
-		(property "Reference" "R_SHDN"
+		(property "Reference" "R_SHDN1"
 			(at 255.016 45.212 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5301,7 +5494,7 @@
 		(instances
 			(project "blackbox"
 				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/17c39c9a-96dc-41e6-b1fb-7a30f21efb24"
-					(reference "R_SHDN")
+					(reference "R_SHDN1")
 					(unit 1)
 				)
 			)
@@ -5318,7 +5511,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "3bf24040-287e-4748-8af8-fd14bed62d47")
-		(property "Reference" "TP_AUDIOL"
+		(property "Reference" "TP_AUDIOL1"
 			(at 39.37 166.116 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5378,7 +5571,7 @@
 		(instances
 			(project "blackbox"
 				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/17c39c9a-96dc-41e6-b1fb-7a30f21efb24"
-					(reference "TP_AUDIOL")
+					(reference "TP_AUDIOL1")
 					(unit 1)
 				)
 			)
@@ -5556,7 +5749,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "5401c0e1-b6e3-464f-9d44-a4fa4bc8fd83")
-		(property "Reference" "TP_I2SLRCK"
+		(property "Reference" "TP_I2SLRCK1"
 			(at 29.21 166.878 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5616,7 +5809,7 @@
 		(instances
 			(project "blackbox"
 				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/17c39c9a-96dc-41e6-b1fb-7a30f21efb24"
-					(reference "TP_I2SLRCK")
+					(reference "TP_I2SLRCK1")
 					(unit 1)
 				)
 			)
@@ -5777,6 +5970,85 @@
 			(project "blackbox"
 				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/17c39c9a-96dc-41e6-b1fb-7a30f21efb24"
 					(reference "U2")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 260.35 63.5 90)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp yes)
+		(uuid "571b514f-f70e-474c-aee5-14856492a258")
+		(property "Reference" "R_SHDN_PD1"
+			(at 262.89 62.23 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "10k"
+			(at 262.89 64.77 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
+			(at 260.35 63.5 90)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 260.35 63.5 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Option : pull-down SHDN# (monter avec R_SHDN_DAC1, sans R_SHDN1)"
+			(at 260.35 63.5 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "a83518d4-7221-4c50-a1b8-f17b0fdfcd3b")
+		)
+		(pin "2"
+			(uuid "4aa398b2-1e28-4146-b637-139d7db05bd0")
+		)
+		(instances
+			(project "blackbox"
+				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/17c39c9a-96dc-41e6-b1fb-7a30f21efb24"
+					(reference "R_SHDN_PD1")
 					(unit 1)
 				)
 			)
@@ -6035,7 +6307,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "5f76ce7d-efed-4dda-83b6-ba69a1831aea")
-		(property "Reference" "R_MUTE"
+		(property "Reference" "R_MUTE1"
 			(at 192.532 68.072 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -6097,7 +6369,7 @@
 		(instances
 			(project "blackbox"
 				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/17c39c9a-96dc-41e6-b1fb-7a30f21efb24"
-					(reference "R_MUTE")
+					(reference "R_MUTE1")
 					(unit 1)
 				)
 			)
@@ -6114,7 +6386,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "6026b704-4fec-4937-ba07-10571488f48e")
-		(property "Reference" "C_PAM_VREF"
+		(property "Reference" "C_PAM_VREF1"
 			(at 146.812 86.614 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -6178,7 +6450,7 @@
 		(instances
 			(project "blackbox"
 				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/17c39c9a-96dc-41e6-b1fb-7a30f21efb24"
-					(reference "C_PAM_VREF")
+					(reference "C_PAM_VREF1")
 					(unit 1)
 				)
 			)
@@ -6195,7 +6467,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "6555cc75-95ab-4645-b13d-a6c9420717a0")
-		(property "Reference" "C_AVDD"
+		(property "Reference" "C_AVDD1"
 			(at 31.242 61.722 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -6259,7 +6531,7 @@
 		(instances
 			(project "blackbox"
 				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/17c39c9a-96dc-41e6-b1fb-7a30f21efb24"
-					(reference "C_AVDD")
+					(reference "C_AVDD1")
 					(unit 1)
 				)
 			)
@@ -6358,7 +6630,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "6b9185b1-d874-4da9-a6b4-0caf643175ba")
-		(property "Reference" "C_DVDD"
+		(property "Reference" "C_DVDD1"
 			(at 45.212 61.722 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -6422,7 +6694,7 @@
 		(instances
 			(project "blackbox"
 				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/17c39c9a-96dc-41e6-b1fb-7a30f21efb24"
-					(reference "C_DVDD")
+					(reference "C_DVDD1")
 					(unit 1)
 				)
 			)
@@ -6895,7 +7167,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "8fd28b53-9930-41ea-8e54-93d28386010b")
-		(property "Reference" "C_PAM_BULK"
+		(property "Reference" "C_PAM_BULK1"
 			(at 221.488 92.456 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -6959,7 +7231,86 @@
 		(instances
 			(project "blackbox"
 				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/17c39c9a-96dc-41e6-b1fb-7a30f21efb24"
-					(reference "C_PAM_BULK")
+					(reference "C_PAM_BULK1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 203.2 97.79 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "91b76a99-5e55-40cb-85b5-6032fc94e09c")
+		(property "Reference" "R_INL1"
+			(at 205.74 96.52 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "0R"
+			(at 205.74 99.06 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
+			(at 203.2 97.79 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 203.2 97.79 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 203.2 97.79 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "600ded84-4620-4d2c-b9aa-af694ee263bf")
+		)
+		(pin "2"
+			(uuid "5dff34c7-3607-47f9-a307-1cb991ede474")
+		)
+		(instances
+			(project "blackbox"
+				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/17c39c9a-96dc-41e6-b1fb-7a30f21efb24"
+					(reference "R_INL1")
 					(unit 1)
 				)
 			)
@@ -6976,7 +7327,7 @@
 		(in_pos_files yes)
 		(dnp yes)
 		(uuid "9875baa0-a832-4e3f-ac72-f647a2f908c4")
-		(property "Reference" "R_MODE_AB"
+		(property "Reference" "R_MODE_AB1"
 			(at 248.666 91.186 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -7038,7 +7389,7 @@
 		(instances
 			(project "blackbox"
 				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/17c39c9a-96dc-41e6-b1fb-7a30f21efb24"
-					(reference "R_MODE_AB")
+					(reference "R_MODE_AB1")
 					(unit 1)
 				)
 			)
@@ -7239,6 +7590,85 @@
 		)
 	)
 	(symbol
+		(lib_id "Device:R")
+		(at 260.35 58.42 90)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp yes)
+		(uuid "aa2d1d44-fabd-4a9a-b1ff-abf6eaa01687")
+		(property "Reference" "R_SHDN_DAC1"
+			(at 262.89 57.15 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "0R"
+			(at 262.89 59.69 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
+			(at 260.35 58.42 90)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 260.35 58.42 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Option : SHDN# du PAM8406 pilote par GPIO6 du PCM5122 (monter avec R_SHDN_PD1, sans R_SHDN1)"
+			(at 260.35 58.42 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "f0a2aa4d-1024-4c5b-a0e8-b54e74f8a0c1")
+		)
+		(pin "2"
+			(uuid "4fd51671-cecf-4c57-8ead-3901353f8184")
+		)
+		(instances
+			(project "blackbox"
+				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/17c39c9a-96dc-41e6-b1fb-7a30f21efb24"
+					(reference "R_SHDN_DAC1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:C")
 		(at 38.1 67.31 0)
 		(unit 1)
@@ -7330,7 +7760,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "c1600819-18ba-4acc-81d3-128e8f4a4981")
-		(property "Reference" "C_CPVDD"
+		(property "Reference" "C_CPVDD1"
 			(at 58.928 61.722 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -7394,7 +7824,7 @@
 		(instances
 			(project "blackbox"
 				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/17c39c9a-96dc-41e6-b1fb-7a30f21efb24"
-					(reference "C_CPVDD")
+					(reference "C_CPVDD1")
 					(unit 1)
 				)
 			)
@@ -7411,7 +7841,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "cc1ca048-1174-43c5-95cc-3de102a17515")
-		(property "Reference" "C_PAM_INR"
+		(property "Reference" "C_PAM_INR1"
 			(at 253.746 78.486 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -7475,7 +7905,7 @@
 		(instances
 			(project "blackbox"
 				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/17c39c9a-96dc-41e6-b1fb-7a30f21efb24"
-					(reference "C_PAM_INR")
+					(reference "C_PAM_INR1")
 					(unit 1)
 				)
 			)
@@ -7573,7 +8003,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "e25352c7-cf1c-4c81-bd21-ace41c71e159")
-		(property "Reference" "C_PAM_INL"
+		(property "Reference" "C_PAM_INL1"
 			(at 192.532 86.614 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -7637,7 +8067,7 @@
 		(instances
 			(project "blackbox"
 				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/17c39c9a-96dc-41e6-b1fb-7a30f21efb24"
-					(reference "C_PAM_INL")
+					(reference "C_PAM_INL1")
 					(unit 1)
 				)
 			)
@@ -7654,7 +8084,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "e2b364e5-5f76-4b25-a1a8-610ddc7fccbb")
-		(property "Reference" "R_MODE_D"
+		(property "Reference" "R_MODE_D1"
 			(at 241.046 91.186 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -7716,7 +8146,7 @@
 		(instances
 			(project "blackbox"
 				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/17c39c9a-96dc-41e6-b1fb-7a30f21efb24"
-					(reference "R_MODE_D")
+					(reference "R_MODE_D1")
 					(unit 1)
 				)
 			)
@@ -7814,7 +8244,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "f8a82785-7b37-43c4-8bd2-ca65d2f370dc")
-		(property "Reference" "TP_I2SBCK"
+		(property "Reference" "TP_I2SBCK1"
 			(at 17.78 168.148 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -7874,7 +8304,7 @@
 		(instances
 			(project "blackbox"
 				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/17c39c9a-96dc-41e6-b1fb-7a30f21efb24"
-					(reference "TP_I2SBCK")
+					(reference "TP_I2SBCK1")
 					(unit 1)
 				)
 			)
@@ -7956,436 +8386,6 @@
 			(project "blackbox"
 				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/17c39c9a-96dc-41e6-b1fb-7a30f21efb24"
 					(reference "R5")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(wire
-		(pts
-			(xy 110.49 64.77) (xy 115.57 64.77)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "6daaf853-9c36-415f-95b1-c9132586eb5b")
-	)
-	(global_label "AMP_SHDN_CTRL"
-		(shape output)
-		(at 115.57 64.77 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "3eb3e6d0-2f6c-4157-9b41-e3764f2fa6bc")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 127.0 64.77 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-	)
-	(junction
-		(at 251.46 58.42)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "cbe301bf-0a9b-494e-8c2f-38b6cc69cf2f")
-	)
-	(wire
-		(pts
-			(xy 251.46 58.42) (xy 256.54 58.42)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "a0f82a65-39c6-4be6-9800-24934069e8dd")
-	)
-	(symbol
-		(lib_id "Device:R")
-		(at 260.35 58.42 90)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp yes)
-		(uuid "aa2d1d44-fabd-4a9a-b1ff-abf6eaa01687")
-		(property "Reference" "R_SHDN_DAC"
-			(at 262.89000000000004 57.15 90)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "0R"
-			(at 262.89000000000004 59.690000000000005 90)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
-			(at 260.35 58.42 90)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 260.35 58.42 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "Option : SHDN# du PAM8406 pilote par GPIO6 du PCM5122 (monter avec R_SHDN_PD, sans R_SHDN)"
-			(at 260.35 58.42 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "f0a2aa4d-1024-4c5b-a0e8-b54e74f8a0c1")
-		)
-		(pin "2"
-			(uuid "4fd51671-cecf-4c57-8ead-3901353f8184")
-		)
-		(instances
-			(project "blackbox"
-				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/17c39c9a-96dc-41e6-b1fb-7a30f21efb24"
-					(reference "R_SHDN_DAC")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(global_label "AMP_SHDN_CTRL"
-		(shape input)
-		(at 264.16 58.42 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "6eb44e19-6e05-4153-8673-0daa2b7f1fa5")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 275.59000000000003 58.42 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-	)
-	(junction
-		(at 251.46 63.5)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "5a5154cd-bf7a-4269-959e-429b252a2e6f")
-	)
-	(wire
-		(pts
-			(xy 251.46 63.5) (xy 256.54 63.5)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "cd24bded-512c-4500-9efc-8c99be80ec0e")
-	)
-	(symbol
-		(lib_id "Device:R")
-		(at 260.35 63.5 90)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp yes)
-		(uuid "571b514f-f70e-474c-aee5-14856492a258")
-		(property "Reference" "R_SHDN_PD"
-			(at 262.89000000000004 62.23 90)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "10k"
-			(at 262.89000000000004 64.77 90)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
-			(at 260.35 63.5 90)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 260.35 63.5 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "Option : pull-down SHDN# (monter avec R_SHDN_DAC, sans R_SHDN)"
-			(at 260.35 63.5 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "a83518d4-7221-4c50-a1b8-f17b0fdfcd3b")
-		)
-		(pin "2"
-			(uuid "4aa398b2-1e28-4146-b637-139d7db05bd0")
-		)
-		(instances
-			(project "blackbox"
-				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/17c39c9a-96dc-41e6-b1fb-7a30f21efb24"
-					(reference "R_SHDN_PD")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(global_label "GND"
-		(shape input)
-		(at 264.16 63.5 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "ca469e4a-82d1-4399-9569-893b9e01a680")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 275.59000000000003 63.5 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:R")
-		(at 203.2 97.79 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "91b76a99-5e55-40cb-85b5-6032fc94e09c")
-		(property "Reference" "R_INL"
-			(at 205.73999999999998 96.52000000000001 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "0R"
-			(at 205.73999999999998 99.06 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
-			(at 203.2 97.79 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 203.2 97.79 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "Resistor"
-			(at 203.2 97.79 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "600ded84-4620-4d2c-b9aa-af694ee263bf")
-		)
-		(pin "2"
-			(uuid "5dff34c7-3607-47f9-a307-1cb991ede474")
-		)
-		(instances
-			(project "blackbox"
-				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/17c39c9a-96dc-41e6-b1fb-7a30f21efb24"
-					(reference "R_INL")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:R")
-		(at 252.73 91.44 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "1b0ee70e-beac-4f45-826b-afe43aab8c15")
-		(property "Reference" "R_INR"
-			(at 255.26999999999998 90.17 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "0R"
-			(at 255.26999999999998 92.71 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
-			(at 252.73 91.44 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 252.73 91.44 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "Resistor"
-			(at 252.73 91.44 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "298fce4d-8330-4b21-956e-e4cce928e418")
-		)
-		(pin "2"
-			(uuid "cf8199e6-7fbf-495a-b28c-be11042f5db5")
-		)
-		(instances
-			(project "blackbox"
-				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/17c39c9a-96dc-41e6-b1fb-7a30f21efb24"
-					(reference "R_INR")
 					(unit 1)
 				)
 			)

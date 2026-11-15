@@ -31,7 +31,7 @@ Traitée point par point avec Gilles.
   J4/J5 du satellite Devant restent provisoires, **bloquant pour le layout de Devant** et pour
   boucler le budget 3V3_D (H1).
 - [x] 🤖 **A3** — rail 5 V : **MT3608 → buck-boost TPS63020** (C15483) + L1 **Sunlord WPN4020H1R5MT**
-  1,5 µH (C98360), 3 × 22 µF en sortie, consigne **5,0 V** (1,62 MΩ / 180 kΩ), R_VINA + C_VINA ;
+  1,5 µH (C98360), 3 × 22 µF en sortie, consigne **5,0 V** (1,62 MΩ / 180 kΩ), R_VINA1 + C_VINA1 ;
   **retirés** : D1, Q1, Q2, R21, R_SS, C_SS, TP_5VB1, TP_FB1 (B6), TP_GATE1, PWR_FLAG du 5 V.
   Régule aussi sous USB (**H9 soldé** : plus de 5,2-5,3 V sur les WS2812), charge déconnectée à
   l'arrêt (**H4 sans objet**). Symbole/empreinte/3D générés par easyeda2kicad (C15483, C98360),
@@ -39,14 +39,14 @@ Traitée point par point avec Gilles.
   validation, FSD à jour. Netlist comparée : seul le bloc change.
 - [ ] 🧑 **A3 — deux vérifications à l'œil sur le PDF `TPS63020.pdf`** (figures non lisibles ici) :
   (1) figure 7 p. 13 : comment VINA est alimentée (la rév. G a « removed the connection from VINA
-  to VIN ») — le schéma la met sur VSYS par R_VINA 0 Ω ; (2) dessin DSJ0014A (mécanique) contre
+  to VIN ») — le schéma la met sur VSYS par R_VINA1 0 Ω ; (2) dessin DSJ0014A (mécanique) contre
   l'empreinte LCSC `C15483_VSON-14…` : pad central en peigne jusqu'à ±2,2 mm. Contrôler aussi
   l'empreinte de L1 contre la Fig. 5 du catalogue Sunlord (a 1,9 / b 1,1 / c 3,7 mm).
 - [ ] 🧑 **A3** — stock JLCPCB à revérifier à la commande : TPS63020DSJR 638, **WPN4020H1R5MT 200**.
 - [x] 🤖 **A5** — J2 en **JST-PH 6 broches** : 1-2 BAT+, 3-4 BAT−, 5 NTC, 6 retour NTC (GND) —
   contacts doublés (2 A par contact PH en AWG 24). BOM, guide §2.4, `bq24075.md`, FSD à jour.
 - [ ] 🧑 **A5** — harnais de cellule à refaire en **6 fils AWG 24** (au lieu de 4).
-- [x] 🤖 **B1** — R_ISET 887 Ω 1 % (890 n'existe pas en E96). **B2** — C_PAM_BULK en 16 V.
+- [x] 🤖 **B1** — R_ISET1 887 Ω 1 % (890 n'existe pas en E96). **B2** — C_PAM_BULK1 en 16 V.
 - [x] 🤖 **B4** — datasheet du ST25DV04K**C** (DS13519 rév. 2) ajoutée ; brochage SO8N conforme,
   C_TUN 28,5 pF typique seulement.
 - [x] 🤖 **B5** — J7.9/10 (Main) et J2.9/10 (Devant) à GND : 3 retours de masse dans le câble des yeux.
@@ -55,9 +55,15 @@ Traitée point par point avec Gilles.
   (`03-validation-qualite.md`, phase 3).
 - [x] 🤖 **B8** — pull-up R_GPIO0 10 kΩ sur GPIO0 (Espressif) ; superviseur de reset : non retenu,
   l'extinction firmware sur VBAT_SENSE en tient lieu.
-- [x] 🤖 **B10** — R_INL / R_INR (0 Ω montées) pour régler le gain du PAM8406 au proto.
+- [x] 🤖 **B10** — R_INL1 / R_INR1 (0 Ω montées) pour régler le gain du PAM8406 au proto.
 - [x] 🤖 **G1-G5** — guide de layout : classe PWR_VSYS (1,5 mm), JLCPCB (multicouche 0,09 mm,
   εr 4,6, mires par face, trous d'outillage, rails), TP des horloges sur la piste.
+- [x] 🤖 **ERC du 15/11 corrigé** (rapport §F) : 42 références sans chiffre final renommées
+  (`C_AVDD` → `C_AVDD1`…, `J7b` → `J15` : KiCad les tenait pour non annotées), types de broches
+  de tous les symboles LCSC, PWR_FLAG (BB_VINA, rails des satellites, copie KiCad 10), fils hors
+  grille, VOUT 5 du TPS63020 en passive.
+- [ ] 🧑 **Recharger les six projets et relancer l'ERC** : attendu 0 erreur, 6 avertissements voulus
+  (5 bidirectionnel/sortie d'alimentation sur la Main, `5V_HOST` sur Côté 2).
 - [ ] 🧑 **B9** — lire `VDD_SPI_FORCE` sur la DevKitC (`espefuse.py --port /dev/ttyACM0 summary`) :
   à 1, l'appui sur BTN1 (GPIO45) au démarrage cesse d'être un risque.
 - [ ] 🧑 **Recharger les feuilles `power` et `connector`** dans KiCad (Fichier → Revenir) avant toute sauvegarde ;
@@ -75,14 +81,14 @@ Détail dans `2026-11-14-audit.md` (numéros H/G/F/W de ce rapport).
 Avant de router :
 - [ ] 🤝 **H1** — budget de courant du rail 3V3_D (AP2112 600 mA) : fiche du module des yeux
   (rétroéclairages sur 3V3_D par R1 = 0 Ω) et écran bouche.
-- [x] 🤖 **H2** — empreintes optionnelles posées le 14/11 : `R_SHDN_DAC` (0 Ω, DNP, SHDN# ←
-  GPIO6 du PCM5122, net `AMP_SHDN_CTRL`) et `R_SHDN_PD` (10 kΩ, DNP). `R_SHDN` reste montée.
-  Ne jamais monter `R_SHDN` et `R_SHDN_PD` ensemble.
+- [x] 🤖 **H2** — empreintes optionnelles posées le 14/11 : `R_SHDN_DAC1` (0 Ω, DNP, SHDN# ←
+  GPIO6 du PCM5122, net `AMP_SHDN_CTRL`) et `R_SHDN_PD1` (10 kΩ, DNP). `R_SHDN1` reste montée.
+  Ne jamais monter `R_SHDN1` et `R_SHDN_PD1` ensemble.
 - [ ] 🧑 **Recharger la feuille `audio`** dans KiCad (Fichier → Revenir) avant toute sauvegarde.
 - [x] 🤝 **H3** — LEDs de la Main sur L4 : assemblage double face assumé (décision du 14/11),
   à chiffrer au devis.
 - [ ] 🧑 **H6** — brochage du fader PTA6043 à confirmer sur le PDF, puis dans la synthèse.
-- [ ] 🧑 **H8** — relancer l'ERC Main (`C_AVDD?` sur la racine) et Côté 1 (rapport périmé).
+- [ ] 🧑 **H8** — relancer l'ERC Main (`C_AVDD1?` sur la racine) et Côté 1 (rapport périmé).
 - [ ] 🤝 **H5** — empreinte optionnelle : condensateur 5 V sur Devant. (H4, démarrage progressif de
   Q1 : sans objet depuis le TPS63020, A3.)
 - [x] 🤖 **G1 / G2 / G3 / G4 / G6** — guide de layout complété le 15/11.
@@ -178,7 +184,7 @@ Web :
 
 - [x] 🤖 **BOM de référence corrigée** (H8, 2026-09-27) : U11 = LSM6DSOXTR, doublon U21
   retiré, R1/R2 470 Ω, C21/C22 2,2 nF C0G, TMAG5273A1 (C3716049), U10 SOT-23-6, bouche
-  « à choisir », notes J7b/J8/J9/U3/R_PG, LCSC de D1/Q1/Q2 dans la bonne colonne ; ajoutés :
+  « à choisir », notes J15/J8/J9/U3/R_PG1, LCSC de D1/Q1/Q2 dans la bonne colonne ; ajoutés :
   CAP1298 (COTE2-U2), ST25DV (U27, absent), haut-parleur (LS1) ; découplage satellites 5 × 100 nF.
   Lignes satellites refaites le 27/09 d'après les schémas (préfixes DESSUS-/DEVANT-/COTE1-/COTE3-).
 - [x] 🤖 **Une seule BOM** : `docs/pcb/02-bom-lcsc.csv` supprimée (2026-09-27).
@@ -338,7 +344,7 @@ Document : `docs/pcb/03-validation-qualite.md`.
 ## ✅ Soldé récemment (pour mémoire)
 
 - **Hardware Main (27/09)** : C20 sur VNEG–GND, J10 + FB3-FB6, J3-J6 en Qwiic, pull-ups SD,
-  R13/R14 22 Ω sur les horloges SPI, R_TMR 56 k, NTC sur TS (R_TS en DNP), marche/arrêt
+  R13/R14 22 Ω sur les horloges SPI, R_TMR1 56 k, NTC sur TS (R_TS1 en DNP), marche/arrêt
   (EN_SYS + load switch Q1/Q2), D1 SS34, U5 en SO-8, VBAT_SENSE retiré de J8.5,
   26 points de test, 53 erreurs ERC traitées. Constats A4 (ICS-43434) et LSM6DSOX 10 µF
   reconnus erronés. **Tous vérifiés sur la netlist le 27/09.**

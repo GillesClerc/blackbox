@@ -49,7 +49,7 @@ masse longue en fil volant rend inexploitable toute mesure de signal rapide.
 
 | Repère | Net (schéma) | Ce qu'il permet |
 |---|---|---|
-| `TP_ISET1` | `U8.ISET` / `R_ISET` | **mesurer le courant de charge sans couper une piste** — la tension sur ISET reflète le courant réel (bq24075, `bq24075.md`) |
+| `TP_ISET1` | `U8.ISET` / `R_ISET1` | **mesurer le courant de charge sans couper une piste** — la tension sur ISET reflète le courant réel (bq24075, `bq24075.md`) |
 | `TP_TS1` | `BAT_TS` | vérifier la NTC : ≈ **0,75 V à 25 °C** (10 kΩ × la source interne de 75 µA) ; hors plage = charge suspendue sans symptôme |
 | `TP_ENSYS1` | `EN_SYS` | état de l'interrupteur marche/arrêt vu par la carte |
 | `TP_CHG1` | `U8.CHG` | état de charge (open-drain, pull-up 100 kΩ déjà présent). Clignotement 2 Hz = **défaut de timer** |
@@ -69,7 +69,7 @@ masse longue en fil volant rend inexploitable toute mesure de signal rapide.
 
 ### 2.4 Déjà au schéma
 
-`TP_EN`, `TP_GPIO0`, `TP_I2CA`, `TP_I2CL` — empreinte `TestPoint:TestPoint_Pad_D1.5mm`.
+`TP_EN1`, `TP_GPIO0`, `TP_I2CA1`, `TP_I2CL1` — empreinte `TestPoint:TestPoint_Pad_D1.5mm`.
 
 ### 2.5 État : posés le 2026-09-27
 

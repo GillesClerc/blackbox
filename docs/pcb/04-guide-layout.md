@@ -59,7 +59,7 @@ valeurs proches à 1 A (0,29 mm) mais plus larges à 3 A (2,1 mm) : prendre le m
 |---|---|---|---|---|
 | Default | tout le reste | 0,20 | 0,20 | |
 | PWR_BAT | VBAT, VBAT-, net FS8205 (drain commun), GND près de J2/U10 | **1,5** (ou zone) | 0,25 | jusqu'à ~3 A avant déclenchement DW01A (seuil ≈ 1,6-3,2 A) [projet, FSD §2.2.2b] |
-| PWR_1A | 5V_USB | **0,8** | 0,25 | entrée 1,07 A (R_ILIM) [DS bq24075] |
+| PWR_1A | 5V_USB | **0,8** | 0,25 | entrée 1,07 A (R_ILIM1) [DS bq24075] |
 | PWR_VSYS | VSYS (U8.10/11 → C_B1, U7 VIN, U5, U6, J12) | **1,5** (ou zone) | 0,25 | **sur batterie, VSYS porte tout le courant de décharge** : ~1,5 A plafonné, ~2,6 A sans plafond, coupure du bq24075 dès 2,0 A garantis [DS bq24075 §8.5 ; audit 2026-11-15 A1/G1] |
 | PWR_BOOST | BB_L1, BB_L2 (U7 ↔ L1), 5V | **1,4** (ou zone pour 5V) | 0,25 | crête inductance ≈ 2,8 A en usage, limite moyenne du TPS63020 jusqu'à 4,5 A [DS TPS63020 §6.5, calc] |
 | PWR_3V3 | 3V3_D, 3V3_A, EN_SYS | 0,4 | 0,2 | ≤ 600 mA [DS AP2112] |
@@ -104,7 +104,7 @@ par transition** pour les nets ≥ 1 A.
 - **Antenne loin** du boost (L1, nœud SW), des horloges rapides, de l'USB, de l'UART et des points
   de test **[AN : Espressif]**.
 - Connecteurs **sur les bords**, orientés vers la face qu'ils desservent (câbles courts) :
-  J7/J7b/J9 → Devant ; J10 → Dessus (HP) ; J8 → Côté 1 ; J14 + J12 → Côté 2 ; un Qwiic par face.
+  J7/J15/J9 → Devant ; J10 → Dessus (HP) ; J8 → Côté 1 ; J14 + J12 → Côté 2 ; un Qwiic par face.
 - La Main est sur la **face Dessous** : LED2-LED13 et trou du micro côté extérieur (voir §2.5).
 - **Mécanique à fixer avant le placement** (rien n'est au schéma) **[projet, audit 2026-11-14]** :
   contour de la carte, **trous de fixation** (mêmes dégagements ISO 273 qu'au §3, ≥ 3 points,
@@ -128,11 +128,11 @@ par transition** pour les nets ≥ 1 A.
 | Beaucoup de cuivre GND et des vias de couture denses sur la carte autour du module (hors zone antenne). | [AN : Espressif PCB layout] |
 | Pad central (EPAD, pin 41 GND) : soudure **facultative** ; si on la soude, vias vers GND et pas trop de pâte (le module se soulève). | [DS WROOM-1] |
 | **C2 100 nF** au plus près de la broche 3V3, **C1 10 µF** juste à côté. | [DS guide Espressif] |
-| **R6 10 k / C_EN 1 µF** près de la broche EN, **piste EN courte** (sensible au bruit). | [DS guide Espressif] |
+| **R6 10 k / C_EN1 1 µF** près de la broche EN, **piste EN courte** (sensible au bruit). | [DS guide Espressif] |
 | **R13/R14 (22 Ω)** sur SPI2/SPI3_SCLK **au pied du module** (côté source) ; C_CLK2/3 (DNP) juste après. | [AN : Diodes AN022, R série à la source] |
 | R3/R4 (pull-ups I2C 4,7 k) près du module ; I2C lent, routage libre mais loin du boost et de l'audio. | [projet] |
-| TP_TXD0/TP_RXD0/TP_EN/TP_GPIO0 accessibles, **loin de l'antenne** ; R_GPIO0 (10 k) près de la broche 27, **aucun condensateur sur GPIO0**. | [AN : Espressif schematic checklist] |
-| **VBAT_SENSE (IO3)** : pont 1 MΩ / 1 MΩ = nœud à haute impédance. R_VBAT_H/R_VBAT_L et **C_VBAT_SENSE (100 nF) contre la broche 15 du module**, piste courte, loin du nœud SW du boost et des horloges. | [calc ; projet, audit 2026-11-14] |
+| TP_TXD0/TP_RXD0/TP_EN1/TP_GPIO0 accessibles, **loin de l'antenne** ; R_GPIO0 (10 k) près de la broche 27, **aucun condensateur sur GPIO0**. | [AN : Espressif schematic checklist] |
+| **VBAT_SENSE (IO3)** : pont 1 MΩ / 1 MΩ = nœud à haute impédance. R_VBAT_H1/R_VBAT_L1 et **C_VBAT_SENSE1 (100 nF) contre la broche 15 du module**, piste courte, loin du nœud SW du boost et des horloges. | [calc ; projet, audit 2026-11-14] |
 
 ### 2.3 USB (R11/R12 → J14)
 
@@ -154,17 +154,17 @@ netlist].
 | Règle | Source |
 |---|---|
 | U10 (FS8205) **collé à J2**, pistes VBAT/VBAT−/GND courtes et larges (classe PWR_BAT, zones si possible). | [projet] |
-| Le DW01A mesure la chute **dans les deux Rds(on) du FS8205** (seuil 150 ± 30 mV) : aucune piste de puissance supplémentaire entre U10 et le point de mesure, sinon le seuil de surintensité dérive. U9, R_CS (1 k) et C_U9 au plus près de U10. | [DS DW01A ; AN : TI bq2970 §9.4.1] |
-| R_VCC (100 Ω) + C_U9 (100 nF) au plus près de U9.5 (VCC) ; C_U9 retourne sur **VBAT−**, pas sur GND. | [DS DW01A, projet] |
+| Le DW01A mesure la chute **dans les deux Rds(on) du FS8205** (seuil 150 ± 30 mV) : aucune piste de puissance supplémentaire entre U10 et le point de mesure, sinon le seuil de surintensité dérive. U9, R_CS1 (1 k) et C_U9 au plus près de U10. | [DS DW01A ; AN : TI bq2970 §9.4.1] |
+| R_VCC1 (100 Ω) + C_U9 (100 nF) au plus près de U9.5 (VCC) ; C_U9 retourne sur **VBAT−**, pas sur GND. | [DS DW01A, projet] |
 | J2 en JST-PH 6 : **J2.1 + J2.2 (BAT+) et J2.3 + J2.4 (BAT−) reliés par du cuivre au pied du connecteur** (classe PWR_BAT), J2.6 (retour NTC) sur GND, J2.5 (BAT_TS) en piste fine vers U8.1, loin du buck-boost. | [projet, audit 2026-11-15 A5 ; JST PH : 2 A/contact en AWG 24] |
 
 **bq24075 (U8, QFN-16 3×3)**
 | Règle | Source |
 |---|---|
-| **C_IN (4,7 µF 25 V) sur IN (13)** et **C_OUT (4,7 µF) sur OUT (10/11)** au plus près, pistes courtes vers le pad thermique. C_BAT sur BAT (2/3). | [DS bq24075 §12.1] |
+| **C_IN1 (4,7 µF 25 V) sur IN (13)** et **C_OUT1 (4,7 µF) sur OUT (10/11)** au plus près, pistes courtes vers le pad thermique. C_BAT1 sur BAT (2/3). | [DS bq24075 §12.1] |
 | **Pad thermique → GND** avec vias ; **VSS (8) aussi relié à GND** (⚖ la datasheet dit à la fois « le pad n'est pas la masse principale » et « le pad est la masse principale » : câbler **les deux**). | [DS bq24075] |
 | Vias du pad : **déjà dans l'empreinte** (corrigée le 2026-11-15) — 5 vias numérotés **17**, aux positions TI (centre + 4 à ±0,58 mm), **Ø 0,2 / pastille 0,45 mm** (le diamètre TI ; pastille ≥ 0,45 = sans supplément JLCPCB), connexion pleine aux zones, **bouchés côté L4 par le vernis** (pas d'ouverture B.Mask), comme TI le demande (« filled, plugged or tented »). Ne pas en ajouter à la main. Pâte du pad 1,55 mm = 85 % (stencil TI). | [DS bq24075 RGT0016C, land pattern et stencil 4222419/E ; AN : TI SLUA271 §3.4.1 ; AN : JLCPCB capabilities] |
-| Masses faible courant (R_ISET, R_ILIM, R_TMR, TS) séparées du chemin de charge, rejoignant GND en un point près du pad. | [DS bq24075 §12.1] |
+| Masses faible courant (R_ISET1, R_ILIM1, R_TMR1, TS) séparées du chemin de charge, rejoignant GND en un point près du pad. | [DS bq24075 §12.1] |
 | IN dimensionné pour 1,07 A (PWR_1A) ; **OUT (10, 11) et BAT (2, 3) pour le courant de décharge** (PWR_VSYS / PWR_BAT, ~2,6 A sans plafond) — les deux broches OUT et les deux BAT reliées par du cuivre, pas une seule. | [DS bq24075 ; audit 2026-11-15 G1] |
 
 **Buck-boost TPS63020 (U7, VSON-14 3 × 4) + L1 + C_B1-C_B4** (depuis le 2026-11-15, audit A3 ;
@@ -173,9 +173,9 @@ remplace le MT3608, D1 et le load switch Q1/Q2)
 |---|---|
 | **C_B1 (entrée, VIN 10/11), C_B2-C_B4 (3 × 22 µF, VOUT 4/5) et L1 au plus près du CI** : en boost (batterie), la boucle chaude est côté sortie (L2 → VOUT → C_B2-4 → PGND) ; en buck (USB), côté entrée (VIN → C_B1 → PGND). Les deux boucles minimales, sur L1 sans via, C_B2 le plus près de VOUT/PGND. | [DS TPS63020 §8.2.2.3-4, §10.1] |
 | **Nœuds BB_L1 (8/9) et BB_L2 (6/7) : surface minimale** — cuivre juste suffisant (≈ 2,8 A crête en usage, jusqu'à ~4,7 A en surcharge), pas de zone ; L1 (WPN4020H, 4 × 4 mm) collée aux broches 6-9. | [DS TPS63020 §10.1 ; calc, `WPN4020H.md`] |
-| **Deux masses** : PGND (pad thermique + retours de C_B1-C_B4) et GND commande (broche 2, R_FB_L, C_VINA) sur deux nœuds distincts, **réunis en un seul point près d'une broche de masse du CI**, puis vers L2. | [DS TPS63020 §10.1] |
-| **R_FB_H / R_FB_L au plus près de la broche 2 (GND commande) et de FB (3)**, piste FB courte (pont à ~162 kΩ : nœud sensible), jamais parallèle à BB_L1/BB_L2 ni sous L1 ; prise de tension de R_FB_H sur C_B2. **Aucun point de test sur FB.** | [DS TPS63020 §8.2.3, §10.1] |
-| **C_VINA (100 nF) collé à VINA (1)** / GND (2) ; R_VINA (0 Ω) entre VSYS et VINA. | [DS TPS63020 §8.2.2.5] |
+| **Deux masses** : PGND (pad thermique + retours de C_B1-C_B4) et GND commande (broche 2, R_FB_L1, C_VINA1) sur deux nœuds distincts, **réunis en un seul point près d'une broche de masse du CI**, puis vers L2. | [DS TPS63020 §10.1] |
+| **R_FB_H1 / R_FB_L1 au plus près de la broche 2 (GND commande) et de FB (3)**, piste FB courte (pont à ~162 kΩ : nœud sensible), jamais parallèle à BB_L1/BB_L2 ni sous L1 ; prise de tension de R_FB_H1 sur C_B2. **Aucun point de test sur FB.** | [DS TPS63020 §8.2.3, §10.1] |
+| **C_VINA1 (100 nF) collé à VINA (1)** / GND (2) ; R_VINA1 (0 Ω) entre VSYS et VINA. | [DS TPS63020 §8.2.2.5] |
 | **Pad thermique soudé**, vias vers L2 (R_θJA 41,8 °C/W ; ~0,5 W à pleine charge sur batterie). | [DS TPS63020 §6.4, §10.3 ; calc] |
 | Rien de sensible sous L1 / BB_L1-BB_L2 sur L4 (L2 GND fait écran, mais pas d'audio ni d'I2C juste dessous). Loin de l'antenne. | [AN : SLAA896 §2.4, Espressif] |
 | ⚠ Empreinte LCSC/EasyEDA (C15483) : pad central en peigne jusqu'à ±2,2 mm, **non vérifié contre le dessin TI DSJ0014A** (introuvable en texte) → comparer au dessin du PDF avant de router. | [projet] |
@@ -192,23 +192,23 @@ remplace le MT3608, D1 et le load switch Q1/Q2)
 **PCM5122 (U2, TSSOP-28)**
 | Règle | Source |
 |---|---|
-| **C_AVDD, C_DVDD, C_CPVDD, C_LDOO (100 nF)** au plus près de leurs broches (8, 28, 1, 26) ; **C15-C17 (10 µF)** juste derrière. | [DS PCM5122 §11] |
+| **C_AVDD1, C_DVDD1, C_CPVDD1, C_LDOO1 (100 nF)** au plus près de leurs broches (8, 28, 1, 26) ; **C15-C17 (10 µF)** juste derrière. | [DS PCM5122 §11] |
 | **Charge pump : C19 entre CAPP (2) et CAPM (4), C20 de VNEG (5) à GND** — collés au CI, boucle minimale. | [DS PCM5122 §11] |
 | **Coulée GND sur L1 autour du DAC**, reliée à L2 par plusieurs vias. | [DS PCM5122 §11.2] |
 | **Horloges I2S (BCK 21, LRCK 23, DIN 22) loin des sorties OUTL (6)/OUTR (7)** ; masse entre OUTL et OUTR. | [DS PCM5122 §11] |
-| Filtre de sortie **R1/R2 (470 Ω) + C21/C22 (2,2 nF C0G)** au pied de OUTL/OUTR, puis pistes analogiques courtes vers C_PAM_INL/INR. | [DS PCM5122, projet] |
+| Filtre de sortie **R1/R2 (470 Ω) + C21/C22 (2,2 nF C0G)** au pied de OUTL/OUTR, puis pistes analogiques courtes vers C_PAM_INL1/INR. | [DS PCM5122, projet] |
 | I2S depuis l'ESP32 : pistes groupées au-dessus de L2 continu ; pas de consigne de longueur chez TI. | [AN : recherche, aucune trouvée] |
 
 **PAM8406 (U3, SOP-16, classe D filterless)**
 | Règle | Source |
 |---|---|
-| **C_PAM_HF1-3 (1 µF) au plus près de PVDDL (4), PVDDR (13), VDD (6)** — le plus petit à < 1 mm de sa broche ; **C_PAM_BULK (22 µF, ≥ 20 µF exigés)** près de l'ampli. | [DS PAM8406 ; AN : TI SLAA896 §2.3] |
+| **C_PAM_HF1-3 (1 µF) au plus près de PVDDL (4), PVDDR (13), VDD (6)** — le plus petit à < 1 mm de sa broche ; **C_PAM_BULK1 (22 µF, ≥ 20 µF exigés)** près de l'ampli. | [DS PAM8406 ; AN : TI SLAA896 §2.3] |
 | **PGNDL (2), PGNDR (15), GND (11)** : vias vers L2 **dans/au ras des pastilles**. | [AN : TI SLAA896 §2.2] |
 | **Ferrites FB3-FB6 au plus près des sorties** (1, 3, 14, 16), puis J10 ; pistes de sortie **courtes**, sur L1 au-dessus de L2 (jamais de signal sur la couche adjacente sans masse entre les deux). | [DS PAM8406 note 2 ; AN : TI SLOA216 §3.1, SLAA896 §2.4] |
 | Paires L+/L− et R+/R− **routées côte à côte** (sorties en pont, **jamais à GND**), 0,6 mm, 1,25 mm aux ferrites. | [DS PAM8406, projet ; AN : Murata] |
 | Les fils du HP (15-20 cm) sont en quart d'onde vers 375-500 MHz : les torsader, les garder loin de l'antenne. | [calc ; AN : TI SNAA050] |
-| C_PAM_INL/INR et C_PAM_VREF près de leurs broches (7, 10, 8) ; R_MODE_D, R_MUTE, R_SHDN à côté ; **R_INL/R_INR (0 Ω, réglage du gain) côté AUDIO_x des C_PAM_INx**. | [DS PAM8406 ; projet, audit 2026-11-15 B10] |
-| **Option SHDN par le DAC** (2026-11-14) : R_SHDN_PD (DNP) près de SHDN# (12) ; R_SHDN_DAC (0 Ω, DNP) sur le net `AMP_SHDN_CTRL` venant de la GPIO6 du PCM5122 (U2.19) — signal statique, routage libre. Monter R_SHDN **ou** le couple R_SHDN_DAC + R_SHDN_PD, jamais R_SHDN avec R_SHDN_PD. | [projet ; DS PCM5122 page 0 reg. 8] |
+| C_PAM_INL1/INR et C_PAM_VREF1 près de leurs broches (7, 10, 8) ; R_MODE_D1, R_MUTE1, R_SHDN1 à côté ; **R_INL1/R_INR1 (0 Ω, réglage du gain) côté AUDIO_x des C_PAM_INx**. | [DS PAM8406 ; projet, audit 2026-11-15 B10] |
+| **Option SHDN par le DAC** (2026-11-14) : R_SHDN_PD1 (DNP) près de SHDN# (12) ; R_SHDN_DAC1 (0 Ω, DNP) sur le net `AMP_SHDN_CTRL` venant de la GPIO6 du PCM5122 (U2.19) — signal statique, routage libre. Monter R_SHDN1 **ou** le couple R_SHDN_DAC1 + R_SHDN_PD1, jamais R_SHDN1 avec R_SHDN_PD1. | [projet ; DS PCM5122 page 0 reg. 8] |
 
 **Micro ICS-43434 (U4, bottom port)**
 | Règle | Source |
@@ -249,7 +249,7 @@ remplace le MT3608, D1 et le load switch Q1/Q2)
   ⚖ Adafruit la place côté LED].
 - Rail 5V des 12 LEDs (≈ 0,44 A datasheet, 0,72 A selon Adafruit) : **0,4 mm** suffit en 1 oz
   **[calc]**. DATA en chaîne courte LED à LED.
-- J3-J6/J13 (Qwiic), J7/J7b/J8 : broches GND bien reliées au plan (J7 : broches 2, **9 et 10**) (retour des signaux du câble) ;
+- J3-J6/J13 (Qwiic), J7/J15/J8 : broches GND bien reliées au plan (J7 : broches 2, **9 et 10**) (retour des signaux du câble) ;
   une piste par signal, pas de stub.
 
 ### 2.9 Points de test
@@ -259,7 +259,7 @@ l'antenne**, TP_GND1-3 répartis près des zones puissance / numérique / audio 
 `03-validation-qualite.md`].
 - **TP_SCLK2 / TP_SCLK3 (horloges 40-80 MHz) posés sur la piste elle-même**, pastille au ras, sans
   dérivation : une branche de quelques mm forme un stub sur l'horloge [calc ; AN : Diodes AN022].
-- Aucun point de test sur un nœud à haute impédance (FB du TPS63020, VBAT_SENSE hors C_VBAT_SENSE)
+- Aucun point de test sur un nœud à haute impédance (FB du TPS63020, VBAT_SENSE hors C_VBAT_SENSE1)
   [audit 2026-11-15 B6].
 
 ---

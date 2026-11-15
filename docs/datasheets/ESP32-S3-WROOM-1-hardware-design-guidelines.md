@@ -10,12 +10,12 @@
 
 - Alim recommandée : **3.3V, courant de sortie ≥ 500mA** en simple alimentation — cohérent avec nos LDO AP2112K-3.3 (600mA)
 - **0.1µF au plus près de chaque pin VDD** — la logique interne du module a ses propres broches VDD3P3/VDDA, mais côté module WROOM-1 elles sont regroupées sous une seule pin `3V3` exposée : nos `C1` (10µF bulk) + `C2` (100nF) sur cette pin couvrent la recommandation
-- Diode ESD + ≥10µF conseillés à l'entrée d'alimentation principale de la carte — déjà couvert côté USB-C par `U12` (USBLC6-2SC6) + `C_IN` (4.7µF) sur la feuille Power
+- Diode ESD + ≥10µF conseillés à l'entrée d'alimentation principale de la carte — déjà couvert côté USB-C par `U12` (USBLC6-2SC6) + `C_IN1` (4.7µF) sur la feuille Power
 
 ## Reset / EN (CHIP_PU)
 
 - **CHIP_PU (= EN) ne doit jamais être laissé flottant**
-- Circuit RC recommandé : **R = 10kΩ, C = 1µF** — confirmé et corrigé le 2026-09-20 (`R6` = 10k, `C_EN` = 1µF, anciennement 100nF par erreur)
+- Circuit RC recommandé : **R = 10kΩ, C = 1µF** — confirmé et corrigé le 2026-09-20 (`R6` = 10k, `C_EN1` = 1µF, anciennement 100nF par erreur)
 - Timing mini : `tSTBL` = 50µs (stabilisation alim avant activation), `tRST` = 50µs (durée mini bas pour reset)
 - Trace EN la plus courte possible (sensible aux interférences)
 - Si alimentation lente à monter/instable (ex. charge batterie), le simple RC peut ne pas suffire — pas notre cas ici (LDO classique), pas d'action requise
@@ -36,7 +36,7 @@ Lus au reset pour déterminer le mode de boot, redeviennent GPIO normaux ensuite
 ## ADC
 
 - `GPIO3 = ADC1_CH2` — confirme exactement notre choix pour `VBAT_SENSE`
-- **"Add a 0.1µF filter capacitor between ESP pins and ground when using the ADC function to improve accuracy"** — déjà fait (`C_VBAT_SENSE`, 100nF)
+- **"Add a 0.1µF filter capacitor between ESP pins and ground when using the ADC function to improve accuracy"** — déjà fait (`C_VBAT_SENSE1`, 100nF)
 - ADC1 recommandé plutôt qu'ADC2 (moins sujet aux interférences WiFi) — cohérent, GPIO3 est bien sur ADC1
 - Précision typique après calibration : ±5 à ±50mV selon l'atténuation utilisée — à garder en tête côté firmware pour les seuils de tension batterie
 

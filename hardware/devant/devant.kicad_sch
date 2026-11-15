@@ -5,6 +5,121 @@
 	(uuid "556bb598-9cd8-4ff8-9bff-51a90a592b35")
 	(paper "A3")
 	(lib_symbols
+	(symbol "power:PWR_FLAG"
+			(power global)
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "#FLG"
+				(at 0 1.905 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "PWR_FLAG"
+				(at 0 3.81 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "Special symbol for telling ERC where power comes from"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "flag power"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "PWR_FLAG_0_0"
+				(pin power_out line
+					(at 0 0 90)
+					(length 0)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(symbol "PWR_FLAG_0_1"
+				(polyline
+					(pts
+						(xy 0 0) (xy 0 1.27) (xy -1.016 1.905) (xy 0 2.54) (xy 1.016 1.905) (xy 0 1.27)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "Connector_Generic:Conn_01x10"
 			(pin_names
 				(offset 1.016)
@@ -1141,7 +1256,7 @@
         (stroke (width 0) (type default) (color 0 0 0 0))
         (fill (type background))
       )
-      (pin unspecified line
+      (pin power_in line
         (at 15.24 7.62 180)
         (length 5.08)
         (name "GND"
@@ -1155,7 +1270,7 @@
           )
         )
       )
-      (pin unspecified line
+      (pin input line
         (at 15.24 2.54 180)
         (length 5.08)
         (name "CSB"
@@ -1169,7 +1284,7 @@
           )
         )
       )
-      (pin unspecified line
+      (pin bidirectional line
         (at 15.24 -2.54 180)
         (length 5.08)
         (name "SDI"
@@ -1183,7 +1298,7 @@
           )
         )
       )
-      (pin unspecified line
+      (pin input line
         (at 15.24 -7.62 180)
         (length 5.08)
         (name "SCK"
@@ -1197,7 +1312,7 @@
           )
         )
       )
-      (pin unspecified line
+      (pin input line
         (at -15.24 -7.62 0)
         (length 5.08)
         (name "SDO"
@@ -1211,7 +1326,7 @@
           )
         )
       )
-      (pin unspecified line
+      (pin power_in line
         (at -15.24 -2.54 0)
         (length 5.08)
         (name "VDDIO"
@@ -1225,7 +1340,7 @@
           )
         )
       )
-      (pin unspecified line
+      (pin power_in line
         (at -15.24 2.54 0)
         (length 5.08)
         (name "GND"
@@ -1239,7 +1354,7 @@
           )
         )
       )
-      (pin unspecified line
+      (pin power_in line
         (at -15.24 7.62 0)
         (length 5.08)
         (name "VDD"
@@ -1474,7 +1589,7 @@
         (stroke (width 0) (type default) (color 0 0 0 0))
         (fill (type background))
       )
-      (pin unspecified line
+      (pin input line
         (at -6.35 3.81 0)
         (length 2.54)
         (name "SCL"
@@ -1488,7 +1603,7 @@
           )
         )
       )
-      (pin unspecified line
+      (pin power_in line
         (at -6.35 1.27 0)
         (length 2.54)
         (name "VDD"
@@ -1502,7 +1617,7 @@
           )
         )
       )
-      (pin unspecified line
+      (pin power_in line
         (at -6.35 -1.27 0)
         (length 2.54)
         (name "GND"
@@ -1516,7 +1631,7 @@
           )
         )
       )
-      (pin unspecified line
+      (pin bidirectional line
         (at -6.35 -3.81 0)
         (length 2.54)
         (name "SDA"
@@ -1648,7 +1763,7 @@
 						(type none)
 					)
 				)
-				(pin unspecified line
+				(pin power_in line
 					(at -12.7 2.54 0)
 					(length 2.54)
 					(name "VDD"
@@ -1666,7 +1781,7 @@
 						)
 					)
 				)
-				(pin unspecified line
+				(pin output line
 					(at -12.7 0 0)
 					(length 2.54)
 					(name "DOUT"
@@ -1684,7 +1799,7 @@
 						)
 					)
 				)
-				(pin unspecified line
+				(pin power_in line
 					(at 12.7 0 180)
 					(length 2.54)
 					(name "VSS"
@@ -1702,7 +1817,7 @@
 						)
 					)
 				)
-				(pin unspecified line
+				(pin input line
 					(at 12.7 2.54 180)
 					(length 2.54)
 					(name "DIN"
@@ -1724,7 +1839,7 @@
 			(embedded_fonts no)
 		)
 	)
-	(text "SATELLITE DEVANT — visage du personnage (FSD §2.2.2c / §2.2.3)\n\n- J2 = J7 de la Main (JST-SH 10, SPI3 des yeux), J3 = J7b (JST-SH 8, SPI2 bouche), J7 = J9 (JST-PH 4, halo) : meme ordre, cables broche a broche.\n- J4 / J5 : modules ecran rond GC9A01 1,28 pouce (yeux). Fiche du MODULE manquante : ordre VCC GND SCL SDA RES DC CS BLK PROVISOIRE,\n   retroeclairage (BLK) sur 3V3_D via R1 0 ohm, a confirmer (courant, regulateur du module, VCI/IOVCC max 3,3 V : GC9A01A.md).\n- J6 : ecran bouche, type non choisi (pas e-ink) — embase provisoire dans l ordre de J7b.\n- U1 BMP280 (0x76) : SDO -> GND, CSB DIRECTEMENT sur VDDIO (sinon verrouillage SPI, §5.1), C1/C2 100 nF sur VDD et VDDIO (§6.3).\n   Trou d event oriente vers l ouverture de la bouche.\n- U2 VEML7700 (0x10) : brochage 1 SCL, 2 VDD, 3 GND, 4 SDA (datasheet + AN figure 2), C3 100 nF. Fenetre face aux yeux ; tolere une vitre sombre (AN).\n- LED1-LED8 WS2812B-B (V5), halo : suite de la chaine de la Main (DATA = sortie de LED13), 5 V, sans condensateur (datasheet V5).\n   Nombre de LED provisoire (BOM : ~8-10 externes au budget batterie) ; plafond de luminosite firmware obligatoire.\n- J1 Qwiic vers un des J3-J6/J13 de la Main : 1 = GND, 2 = 3V3_D, 3 = SDA, 4 = SCL (JST-SH 4). Pas de pull-up ici (4,7 k sur la Main)."
+	(text "SATELLITE DEVANT — visage du personnage (FSD §2.2.2c / §2.2.3)\n\n- J2 = J7 de la Main (JST-SH 10, SPI3 des yeux), J3 = J15 (JST-SH 8, SPI2 bouche), J7 = J9 (JST-PH 4, halo) : meme ordre, cables broche a broche.\n- J4 / J5 : modules ecran rond GC9A01 1,28 pouce (yeux). Fiche du MODULE manquante : ordre VCC GND SCL SDA RES DC CS BLK PROVISOIRE,\n   retroeclairage (BLK) sur 3V3_D via R1 0 ohm, a confirmer (courant, regulateur du module, VCI/IOVCC max 3,3 V : GC9A01A.md).\n- J6 : ecran bouche, type non choisi (pas e-ink) — embase provisoire dans l ordre de J15.\n- U1 BMP280 (0x76) : SDO -> GND, CSB DIRECTEMENT sur VDDIO (sinon verrouillage SPI, §5.1), C1/C2 100 nF sur VDD et VDDIO (§6.3).\n   Trou d event oriente vers l ouverture de la bouche.\n- U2 VEML7700 (0x10) : brochage 1 SCL, 2 VDD, 3 GND, 4 SDA (datasheet + AN figure 2), C3 100 nF. Fenetre face aux yeux ; tolere une vitre sombre (AN).\n- LED1-LED8 WS2812B-B (V5), halo : suite de la chaine de la Main (DATA = sortie de LED13), 5 V, sans condensateur (datasheet V5).\n   Nombre de LED provisoire (BOM : ~8-10 externes au budget batterie) ; plafond de luminosite firmware obligatoire.\n- J1 Qwiic vers un des J3-J6/J13 de la Main : 1 = GND, 2 = 3V3_D, 3 = SDA, 4 = SCL (JST-SH 4). Pas de pull-up ici (4,7 k sur la Main)."
 		(exclude_from_sim no)
 		(at 20.32 228.6 0)
 		(effects
@@ -2059,7 +2174,7 @@
 				)
 			)
 		)
-		(property "Value" "Vers J7b Main (bouche)"
+		(property "Value" "Vers J15 Main (bouche)"
 			(at 246.38 52.07 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2091,7 +2206,7 @@
 				)
 			)
 		)
-		(property "Description" "Liaison J7b de la Main : SPI2 de l ecran bouche"
+		(property "Description" "Liaison J15 de la Main : SPI2 de l ecran bouche"
 			(at 243.84 50.8 0)
 			(hide yes)
 			(show_name no)
@@ -3497,7 +3612,7 @@
 				)
 			)
 		)
-		(property "Description" "Ecran bouche, type non choisi (pas e-ink) : embase provisoire dans l ordre de J7b"
+		(property "Description" "Ecran bouche, type non choisi (pas e-ink) : embase provisoire dans l ordre de J15"
 			(at 304.8 50.8 0)
 			(hide yes)
 			(show_name no)
@@ -6729,6 +6844,339 @@
 		(uuid "aba46433-29ee-4c68-ae47-31344288129c")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 24.130000000000003 63.5 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:PWR_FLAG")
+		(at 50.8 22.86 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "a5a5d035-27f9-44cb-849b-8b3e883d9008")
+		(property "Reference" "#FLG01"
+			(at 53.339999999999996 21.59 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "PWR_FLAG"
+			(at 53.339999999999996 24.13 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 50.8 22.86 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 50.8 22.86 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Special symbol for telling ERC where power comes from"
+			(at 50.8 22.86 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "3f82b1ff-e16d-46da-970f-19d1252eda54")
+		)
+		(instances
+			(project "devant"
+				(path "/556bb598-9cd8-4ff8-9bff-51a90a592b35"
+					(reference "#FLG01")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 50.8 22.86) (xy 50.8 27.939999999999998)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "dbbaaf76-50f2-451f-be30-a88f0049caa9")
+	)
+	(global_label "3V3_D"
+		(shape input)
+		(at 50.8 27.939999999999998 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "30130406-0958-4dab-ab64-bd337c9a8f61")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 62.23 27.939999999999998 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:PWR_FLAG")
+		(at 58.42 22.86 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "29074a91-2081-4d8f-bf90-67970418a6b3")
+		(property "Reference" "#FLG02"
+			(at 60.96 21.59 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "PWR_FLAG"
+			(at 60.96 24.13 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 58.42 22.86 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 58.42 22.86 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Special symbol for telling ERC where power comes from"
+			(at 58.42 22.86 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "f080793f-f868-455a-8bae-62f118b3c69f")
+		)
+		(instances
+			(project "devant"
+				(path "/556bb598-9cd8-4ff8-9bff-51a90a592b35"
+					(reference "#FLG02")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 58.42 22.86) (xy 58.42 27.939999999999998)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d3cfdc67-911f-4ca2-b2c4-4b712d3bad20")
+	)
+	(global_label "GND"
+		(shape input)
+		(at 58.42 27.939999999999998 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "2353f025-46e8-4f3f-bef5-1ed5d0599da0")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 69.85 27.939999999999998 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:PWR_FLAG")
+		(at 66.04 22.86 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "f43ecb5d-538d-4999-b172-ac9f05e7a1f8")
+		(property "Reference" "#FLG03"
+			(at 68.58000000000001 21.59 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "PWR_FLAG"
+			(at 68.58000000000001 24.13 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 66.04 22.86 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 66.04 22.86 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Special symbol for telling ERC where power comes from"
+			(at 66.04 22.86 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "f3d43be2-7a6e-4338-82ca-ab8fe88881d9")
+		)
+		(instances
+			(project "devant"
+				(path "/556bb598-9cd8-4ff8-9bff-51a90a592b35"
+					(reference "#FLG03")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 66.04 22.86) (xy 66.04 27.939999999999998)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "7e869550-5645-4256-9d6b-9eb3b616b6fc")
+	)
+	(global_label "5V"
+		(shape input)
+		(at 66.04 27.939999999999998 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "c71ddd85-589c-47ce-b0eb-5abdb57d0d74")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 77.47 27.939999999999998 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)

@@ -227,7 +227,7 @@ Scores et stats remontés à la prochaine synchro
 
 > PCM5122PW en mode I2C (MODE1→GND, MODE2→3V3_A — vérifié datasheet TI SLAS763C §8.4.1.1, "MODE pins à GND" était imprécis, MODE1/MODE2 aux deux GND = mode Hardwired, pas I2C). ADR1/ADR2→GND → adresse 0x4C (confirmé `PCM5122_I2C_ADDR` dans `hal_audio.c`). SCK→GND (mode PLL 3-wire depuis BCK, §8.3.6.3). PLL depuis BCK. I2S : 44100 Hz, 16-bit, 32-bit slots (BCLK = 2.82 MHz), Philips standard. Volume digital : 100 % = 0 dB (reg 0x3D/0x3E = 0x30) dans le firmware actuel, plafond à poser (voir ci-dessous). Sortie analogique OUTL/OUTR → filtre RC (470Ω + 2.2nF NP0/C0G, fc≈153 kHz — valeurs recommandées datasheet TI §8.3.5.2) → PAM8406. Voir `docs/datasheets/pcm5122-registers.md` pour la référence registres complète.
 >
-> Le **PAM8406** (classe D, stéréo) est purement analogique, pas de driver. Puissance réelle sous 5 V (datasheet DS43342) : 3,14 W/canal sur 4 Ω (THD 10 %), 1,8 W sur 8 Ω — les « 5 W » ne valent que sur 2 Ω. SHDN et MUTE tirés haut (toujours actif), MODE haut = classe D (R_MODE_D montée, R_MODE_AB en DNP — jamais les deux). Le mute se fait via le registre PCM5122 (0x03). **Gain fixe 24 dB** : le DAC sort 2,1 Vrms à 0 dB, l'ampli écrête au-delà d'environ −20 dB de volume numérique (la datasheet avertit qu'un écrêtage peut l'endommager).
+> Le **PAM8406** (classe D, stéréo) est purement analogique, pas de driver. Puissance réelle sous 5 V (datasheet DS43342) : 3,14 W/canal sur 4 Ω (THD 10 %), 1,8 W sur 8 Ω — les « 5 W » ne valent que sur 2 Ω. SHDN et MUTE tirés haut (toujours actif), MODE haut = classe D (R_MODE_D1 montée, R_MODE_AB1 en DNP — jamais les deux). Le mute se fait via le registre PCM5122 (0x03). **Gain fixe 24 dB** : le DAC sort 2,1 Vrms à 0 dB, l'ampli écrête au-delà d'environ −20 dB de volume numérique (la datasheet avertit qu'un écrêtage peut l'endommager).
 >
 > **Haut-parleur retenu : PUI AS04008PO-2-R, 8 Ω, 1 W nominal / 2 W max**, un seul, sur le canal **L** (face Dessus). Sortie : **J10** (JST-PH 4 broches : L+, L−, R+, R−) à travers les ferrites **FB3-FB6** (BLM21PG221SN1D). Sorties en pont : aucune masse commune, ne jamais relier les `−` entre elles ni à GND. Le canal R reste disponible pour un second haut-parleur. → Firmware : **plafond de volume vers −22 dB** (1 W sur 8 Ω, calcul dans `docs/datasheets/PAM8406.md`) et mixage mono sur L.
 
@@ -291,7 +291,7 @@ GPIO 48     — WS2812 LEDs
 ```
 USB-C J1 (satellite Côté 2 : CC 5,1 kΩ = sink, USBLC6) ── câble ── J14 (Main)
     ↓ 5V_USB
-bq24075 (U8) — chargeur 1 A + power path DPPM, entrée limitée à 1,07 A (R_ILIM)
+bq24075 (U8) — chargeur 1 A + power path DPPM, entrée limitée à 1,07 A (R_ILIM1)
     ├── BAT → cellule Li-ion 18650 3400-3500 mAh (J2 JST-PH 6 : BAT+ ×2, BAT− ×2, NTC, retour NTC sur GND)
     │         protection DW01A (U9) + FS8205 (U10) sur le négatif (VBAT−)
     └── OUT = VSYS (≈ VIN USB − dropout sur secteur, 5,5 V max régulés ; ≈ VBAT sur batterie)
@@ -307,14 +307,14 @@ bq24075 (U8) — chargeur 1 A + power path DPPM, entrée limitée à 1,07 A (R_I
 > **Marche/arrêt (option B, câblée le 2026-09-27)** : SW3 ne commute que `EN_SYS`, qui coupe les trois régulateurs. Depuis le 2026-11-15 (audit A3), le rail 5 V vient d'un **buck-boost TPS63020** qui déconnecte lui-même la charge à l'arrêt : le load switch Q1/Q2 du MT3608 (boost asynchrone, qui laissait passer VSYS − V_F) a été retiré. Le bq24075 reste actif : **la charge USB fonctionne box éteinte**. Consommation éteinte estimée ≈ 15-20 µA (à mesurer).
 >
 > **Paramètres vérifiés datasheets (audits 2026-09-23 et 2026-09-27)** :
-> - Charge : 1 A (R_ISET 887 Ω 1 %), entrée limitée à 1,07 A (R_ILIM 1,5 kΩ, mode EN2 = H / EN1 = L).
->   ✅ 2026-09-27 : timers de sécurité réactivés (**R_TMR 56 kΩ** → 5,6-9,3 h) et **NTC 10 kΩ
->   de la cellule sur TS** via J2.5 (fenêtre 0-50 °C) ; `R_TS` conservée en **DNP** — monter
+> - Charge : 1 A (R_ISET1 887 Ω 1 %), entrée limitée à 1,07 A (R_ILIM1 1,5 kΩ, mode EN2 = H / EN1 = L).
+>   ✅ 2026-09-27 : timers de sécurité réactivés (**R_TMR1 56 kΩ** → 5,6-9,3 h) et **NTC 10 kΩ
+>   de la cellule sur TS** via J2.5 (fenêtre 0-50 °C) ; `R_TS1` conservée en **DNP** — monter
 >   l'une **ou** l'autre, jamais les deux (mesure faussée, charge suspendue sans symptôme).
 > - **Batterie : cellule 18650 de 3400-3500 mAh** (décision 2026-09-27), et non plus une LiPo
 >   pouch. Même chimie lithium-ion, mais enveloppe acier rigide avec évent de surpression :
 >   bien plus robuste dans un objet qu'on secoue et retourne. ~5 h d'autonomie (~690 mA
->   moyens), charge en ~4 h — compatible avec R_ISET et R_TMR tels quels. Protection assurée
+>   moyens), charge en ~4 h — compatible avec R_ISET1 et R_TMR1 tels quels. Protection assurée
 >   par le DW01A + FS8205 de la carte, donc **cellule nue** possible. NTC 10 kΩ à coller sur
 >   la cellule. Jamais de soudure au fer sur une cellule : languettes ou support.
 > - **NTC** : J2 en **4 broches** (2026-09-27), puis **6 broches** (2026-11-15, BAT+ et BAT− doublés : 2 A par contact PH en AWG 24) — le retour de la NTC va sur **GND** (J2.6) et non sur BAT− : la TS mesure par rapport à VSS, et BAT− en est séparé par les MOSFET du FS8205 (56-74 mV à 1 A, soit ≈ +7 °C d'erreur sur la coupure en surchauffe). Harnais de cellule à 4 fils.
@@ -416,7 +416,7 @@ JST-SH (1,0 mm, verrouillable) pour les signaux inter-PCB ; JST-PH (2,0 mm) pour
 |---|---|---|---|
 | J3-J6, J13 | JST-SH 4 | **Qwiic/STEMMA QT** : 1 = GND, 2 = 3V3_D, 3 = SDA, 4 = SCL | satellites I2C — **5 connecteurs, un par face I2C** (Devant, Dessus, Côté 1, Côté 2, Côté 3 ; J13 ajouté le 2026-09-27) |
 | J7 | JST-SH 10 | 3V3_D, GND, MOSI, SCLK, CS_L, CS_R, DC, RST, GND, GND | yeux (SPI3) ; 9-10 à GND depuis le 2026-11-15 (retours de masse du câble) |
-| J7b | JST-SH 8 | 3V3_D, GND, MOSI, SCLK, CS, DC, RST, BUSY | bouche (SPI2) |
+| J15 | JST-SH 8 | 3V3_D, GND, MOSI, SCLK, CS, DC, RST, BUSY | bouche (SPI2) |
 | J8 | JST-SH 6 | 3V3_D, GND, SW1, SW2, BTN1, BTN2 | Côté 1 (toggles + 2 boutons poussoirs actifs hauts, pull-down 10 kΩ sur la Main) |
 | J9 | JST-PH 4 | 5V, GND, DATA (sortie de LED13), NC | halo visage (Devant), suite de la chaîne WS2812 — pas de budget de courant fixé : le plafond firmware de luminosité borne l'ensemble |
 | J10 | JST-PH 4 | L+, L−, R+, R− (sorties en pont, via FB3-FB6) | haut-parleur (Dessus) |
@@ -949,7 +949,7 @@ Critères produit — go/no-go Phase 2 :
 - [x] Ajouter 12× WS2812B-B/T (halo face Dessous) sur le sheet Connecteurs — chaîne R8→LED2→...→LED13→J9, un bug de câblage trouvé et corrigé au passage (fil direct R8→J9 en reliquat, label WS2812_DATA mal placé)
 - [x] BOM + netlist mis à jour (retrait NFC/ajout IMU/ajout LEDs) — U11 réutilisé pour le LSM6DSOXTR, C4/C5 réutilisés pour son découplage, ST25DV/C4/C5 basculés en ligne "Satellite Dessus"
 - [x] **Bouton marche/arrêt** (option B) : EN_SYS sur les EN de U5/U6/U7 + load switch Q1/Q2 sur le rail 5 V, charge USB préservée quand éteint (2026-09-27)
-- [x] Corrections de l'audit hardware 2026-09-23 : C20 PCM5122, J10 + ferrites FB3-FB6, pull-ups SD, J3-J6 Qwiic, D1 SS34, R_TMR + NTC, U5 en SO-8 (2026-09-27, vérifiées sur la netlist)
+- [x] Corrections de l'audit hardware 2026-09-23 : C20 PCM5122, J10 + ferrites FB3-FB6, pull-ups SD, J3-J6 Qwiic, D1 SS34, R_TMR1 + NTC, U5 en SO-8 (2026-09-27, vérifiées sur la netlist)
 - [x] ERC natif KiCad lancé, 53 erreurs traitées (2026-09-27) — à relancer après chaque modification
 - [ ] **Validation schéma main → étape de passage au PCB** : restent les points de `docs/audits/RESTE-A-FAIRE.md` §0 (aucun point bloquant ; placement de l'antenne)
 - [ ] Placement des composants sur le PCB (contrainte : zone audio isolée dans un coin, pas de trace digitale dessous) — **guide composant par composant + règles KiCad/JLCPCB : `docs/pcb/04-guide-layout.md`**
@@ -1735,8 +1735,8 @@ Ces 3 réponses sont liées à la session (`hints_used`, `duration_sec`, `score`
 |---|---|---|
 | Box ne démarre pas | Batterie déchargée / câble USB charge-only | Charger 30 min / changer câble |
 | Écran blanc | SPI mal câblé / CS/DC inversés | Vérifier SPI3 : MOSI 38, SCLK 39, CS_L 40, CS_R 14, DC 41, RST 42 (GPIO35-37 = PSRAM, jamais utilisables) ; tester avec sketch minimal |
-| Pas de son | PCM5122 XSMT flottante / PAM8406 SHDN actif / haut-parleur sur R | Vérifier XSMT → 3V3_A (R5), SHDN → 3V3_A (R_SHDN), haut-parleur sur J10.1-2 (canal L) |
-| Une partie du son manque | Source stéréo, un seul haut-parleur (L) | Mixage mono dans le firmware ; vérifier C_PAM_INL/INR |
+| Pas de son | PCM5122 XSMT flottante / PAM8406 SHDN actif / haut-parleur sur R | Vérifier XSMT → 3V3_A (R5), SHDN → 3V3_A (R_SHDN1), haut-parleur sur J10.1-2 (canal L) |
+| Une partie du son manque | Source stéréo, un seul haut-parleur (L) | Mixage mono dans le firmware ; vérifier C_PAM_INL1/INR |
 | Bruit de fond / hiss | Retours de courant du numérique ou du boost sous la zone audio | GND unique et continu (pas de split) ; aucune piste numérique ni boucle du boost sous PCM5122/PAM8406 ; vérifier le découplage |
 | Volume ne change pas | I2C addr incorrecte / registres mal configurés | Vérifier 0x4C sur bus I2C, relire registres 61 et 62 |
 | Téléphone ne lit pas le tag | Antenne mal accordée / boucle PCB mal dimensionnée | Vérifier la géométrie de la boucle antenne AC0/AC1, mesurer la résonance ~13.56MHz |
