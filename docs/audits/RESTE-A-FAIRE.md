@@ -1,12 +1,53 @@
 # Reste à faire
 
-> Document vivant, **recréé le 2026-09-27** à partir de l'audit complet du jour
+> Document vivant, **recréé le 2026-09-27**, complété le 2026-11-15 (`2026-11-14-audit.md`) à partir de l'audit complet du jour
 > (`2026-09-27-audit.md`). Les numéros (H1, F2…) renvoient à ce rapport ; le détail des
 > points hérités est dans `2026-09-23-audit.md` et `2026-09-23-hardware-db.md`.
 > Cocher ici au fil de l'eau.
 >
 > **Qui** : 🧑 Gilles (KiCad, choix, service externe) · 🤖 Claude (code / doc, sur
 > validation) · 🤝 à trancher ensemble.
+
+---
+
+## Audit du 2026-11-14 — points nouveaux
+
+Détail dans `2026-11-14-audit.md` (numéros H/G/F/W de ce rapport).
+
+Avant de router :
+- [ ] 🤝 **H1** — budget de courant du rail 3V3_D (AP2112 600 mA) : fiche du module des yeux
+  (rétroéclairages sur 3V3_D par R1 = 0 Ω) et écran bouche.
+- [x] 🤖 **H2** — empreintes optionnelles posées le 14/11 : `R_SHDN_DAC` (0 Ω, DNP, SHDN# ←
+  GPIO6 du PCM5122, net `AMP_SHDN_CTRL`) et `R_SHDN_PD` (10 kΩ, DNP). `R_SHDN` reste montée.
+  Ne jamais monter `R_SHDN` et `R_SHDN_PD` ensemble.
+- [ ] 🧑 **Recharger la feuille `audio`** dans KiCad (Fichier → Revenir) avant toute sauvegarde.
+- [x] 🤝 **H3** — LEDs de la Main sur L4 : assemblage double face assumé (décision du 14/11),
+  à chiffrer au devis.
+- [ ] 🧑 **H6** — brochage du fader PTA6043 à confirmer sur le PDF, puis dans la synthèse.
+- [ ] 🧑 **H8** — relancer l'ERC Main (`C_AVDD?` sur la racine) et Côté 1 (rapport périmé).
+- [ ] 🤝 **H4 / H5** — empreintes optionnelles : démarrage progressif de Q1, condensateur 5 V sur Devant.
+- [x] 🤖 **G1 / G2 / G3 / G4 / G6** — guide de layout complété le 15/11.
+- [ ] 🧑 Trois PDF illisibles par le groupe (`BMP280.pdf`, `MLX90614.pdf`, `TMAG5273.pdf` en
+  `rw--w----`) : `sudo chmod g+r` dessus, sinon git les voit modifiés.
+
+Firmware (correctifs du 15/11 **non compilés ni testés sur cible** — pas d'ESP-IDF ni de gcc
+dans la session ; à builder, et la CI rejouera les tests host) :
+- [x] 🤖 **F1** — mixer : une voix en boucle sans trame décodable est arrêtée.
+- [x] 🤖 **F2** — cycles de `branch` refusés par les validateurs C et TS (6 cas partagés ajoutés,
+  36/36 côté TS) + un tick de délai dans le moteur.
+- [x] 🤖 **F3** — MP3 hors 44 100 Hz refusé par le mixer ; erreur au back-office et dans
+  `package_scenario.py` (W3).
+- [x] 🤖 **F4** — fenêtre BLE ouverte aussi quand le WiFi échoue au boot.
+- [x] 🤖 **F5** — backend MTCH2120 retiré (0x28 = adresse du CAP1298).
+- [x] 🤖 **F6 / F7** — SSID de 32 octets ; `CJSON_NESTING_LIMIT=32`, pile de `main` à 8 Ko.
+- [ ] 🧑 **Valider sur cible** : build, son de fond et one-shot, appairage BLE après échec WiFi.
+- [ ] 🤖 **F8-F12** — course des voix MP3, installation en cours de partie, `-Os`, console USB,
+  `CONFIG_ESP_TASK_WDT_PANIC`.
+
+Web :
+- [x] 🤖 **W2** — zod sur `/api/box/auth` et `/register` (typecheck OK, tests Vitest non lancés).
+- [x] 🤖 **W3** — MP3 sans trame ou hors 44 100 Hz : erreur à la publication.
+- [ ] 🤖 **W4** — plafond de taille décompressée du zip.
 
 ---
 
@@ -55,7 +96,7 @@
 - [ ] 🧑 U5 (AP2112M SO-8) : plan de cuivre généreux sous et autour.
 - [ ] 🧑 bq24075 : pad exposé sur GND avec vias thermiques, VSS (broche 8) raccordée aussi.
 - [ ] 🧑 Boost : boucle SW → L1 → D1 → C_B2 → GND la plus courte ; C_B1 au pied de IN.
-- [ ] 🧑 USBLC6 (U12) au plus près de J1.
+- [x] ~~USBLC6 (U12) au plus près de J1~~ — déplacés sur le satellite Côté 2 le 27/09 (voir §3).
 - [ ] 🧑 ICS-43434 : C3 au plus près des broches 5 et 3, sans via ; trou du micro à
   prévoir avec le boîtier (bottom-port en face Dessous, H13).
 - [ ] 🧑 Audio dans un coin, pas de piste numérique dessous, **GND continu (pas de split)**,
@@ -151,7 +192,7 @@ Adaptation au hardware actuel :
 - [ ] **Bus I2C** (F4) : tout à 100 kHz (`hal_imu` est à 400 kHz) ; aucun
   `ESP_ERROR_CHECK` sur un accès I2C dans `hal_imu` et `hal_light` (satellite absent ⇒
   reboot en boucle aujourd'hui).
-- [ ] **Pilote CAP1298** (F5, remplace le pilote MTCH2120 devenu obsolète) : adresse 0x28,
+- [ ] **Pilote CAP1298** (F5 ; le pilote MTCH2120 a été retiré le 15/11) : adresse 0x28,
   registres 8 bits, scrutation (ALERT# non remontée) — garder l'API commune de `hal_touch`.
 - [ ] **Drivers à écrire** : LSM6DSOX sur la Main (brancher `hal_imu`, fin de l'inclinaison
   simulée), TMAG5273 (MASK_INTB), BMP280, ADS7830, ST25DV
@@ -178,16 +219,18 @@ Hérités du 23/09 :
 
 ## 5. Web et base de données
 
-- [ ] 🤝 **Licences liées à l'utilisateur plutôt qu'à la box** — à trancher **avant Stripe**.
-- [ ] 🤖 **Migrations SQL versionnées** (`supabase/migrations/`) — 🧑 passer dans Studio
-  les requêtes d'extraction du rapport `2026-09-23-hardware-db.md` et coller le résultat.
-- [ ] 🤖 `firmware_releases.sha256` NOT NULL + UNIQUE(version, channel) ; `used`/`active`
-  NOT NULL ; index `devices.owner_id` ; `/register` : 409 au lieu de 500 sur doublon (23505).
-- [ ] 🤖 Version de scénario en un seul endroit (le serveur lit le manifest).
-- [ ] 🤖 Clé JWT dérivée (`HKDF(master, "escapebox:jwt")`) + `iss`/`aud` ; révocation (WB-12).
-- [ ] 🤖 Rate limiting `/api/box/*` (WB-11 : 10 req/min par box).
-- [ ] 🤖 `shadcn` en devDependencies + `npm audit fix` ; en-têtes de sécurité (CSP, HSTS).
-- [ ] 🤖 CI : tests host, crypto, `tsc`/`lint`, validation des scénarios.
+- [x] 🤝 **Licences liées au compte** (E1, table `licenses`) — vérifié le 14/11.
+- [x] 🤖 **Migrations SQL versionnées** (0001-0004) — vérifié le 14/11.
+- [x] 🤖 `used`/`active` NOT NULL ; index `devices.owner_id` ; `/register` : 409 sur doublon.
+- [ ] 🤖 `firmware_releases` : UNIQUE(version, channel) ; `sha256` NOT NULL (appliqué seulement
+  si aucune ligne n'est vide).
+- [x] 🤖 Version de scénario en un seul endroit (`scenario_versions`, manifest recalculé à l'envoi).
+- [x] 🤖 Clé JWT dérivée + `iss`/`aud` ; révocation effective (propriétaire et licence relus à
+  chaque requête).
+- [ ] 🤖 **Rate limiting `/api/box/*`** (WB-11) — `/challenge` écrit en base sans authentification
+  (W1 de l'audit du 14/11) : le point le plus exposé.
+- [x] 🤖 En-têtes de sécurité (CSP, HSTS). `shadcn` en devDependencies + `npm audit` : non revérifié.
+- [x] 🤖 CI : web, crypto, tests host.
 
 ## 6. Sécurité produit (avant la vente)
 

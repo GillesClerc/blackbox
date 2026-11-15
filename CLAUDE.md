@@ -6,7 +6,7 @@ Box physique d'escape game. Specs completes dans :
 - `hardware/` — projets KiCad : `main/` (carte Main, BOM de reference dans `main/BOM/`) + un satellite par face (`devant/`, `dessus/`, `cote1/`, `cote2/`, `cote3/`, bibliotheques partagees `main/libs/`). Pas de kicad-cli : edition par script (`tools/kicad_edit.py`), verification par `tools/kicad_netlist.py`
 - `docs/plans/web-implementation.md` — plan web platform
 - `docs/plans/firmware-cloud-client.md` — plan client cloud firmware (auth/sync/packages d'assets faits ; reste mixer audio, BLE, OTA)
-- `docs/audits/` — audits datés (constats, plan de correction, points restants). Dernier : `2026-09-27-audit.md` (audit complet hardware + logiciel + docs) ; avant : `2026-09-23-audit.md` (logiciel), `2026-09-23-hardware-db.md` (KiCad Main + DB). **Synthese vivante : `docs/audits/RESTE-A-FAIRE.md`** (a cocher au fil de l'eau)
+- `docs/audits/` — audits datés (constats, plan de correction, points restants). Dernier : `2026-11-14-audit.md` (audit complet : schémas, guide de layout, firmware, web) ; avant : `2026-09-27-audit.md` (audit complet hardware + logiciel + docs), `2026-09-23-audit.md` (logiciel), `2026-09-23-hardware-db.md` (KiCad Main + DB). **Synthese vivante : `docs/audits/RESTE-A-FAIRE.md`** (a cocher au fil de l'eau)
 - `docs/datasheets/` — PDF officiels + synthese markdown par composant (pinout, registres, sequence d'init, exemple ESP-IDF, drivers existants). Skill `/component-research <REF>` pour en ajouter un.
 
 ## Regle datasheets (obligatoire)
@@ -49,7 +49,7 @@ Box physique d'escape game. Specs completes dans :
 ## Web platform (web/)
 - Next.js 16 + Supabase self-hosted (Coolify). Landing + auth + API box. Plan : `docs/plans/web-implementation.md`.
 - API box (`web/app/api/box/`) : challenge → auth (HMAC HKDF par box_uid → JWT 2h) → sync. Secret par box derive du `BOX_MASTER_SECRET` serveur (jamais embarque) ; routes box via client service_role (`lib/supabase/admin.ts`), la box n'est pas un user Supabase.
-- **Livraison des scenarios (dette soldee, F3.2)** : packages dans `web/scenario-packages/` (hors `public/`), servis par `GET /api/box/pkg/[slug]/[...path]` — JWT box + droit `device_scenarios` + path assaini. Publier un scenario : `python3 tools/package_scenario.py <src_dir> --slug <slug>` (genere le manifest sha256/version) puis commit + bump `scenarios.version` en DB.
+- **Livraison des scenarios** : servis par `GET /api/box/pkg/[slug]/[...path]` — JWT box + **licence active du proprietaire de la box** (table `licenses`, liee au compte ; `device_scenarios` n'est plus un droit) + path assaini. Version servie = `scenarios.current_version_id`. Publier : zip depose dans `/admin` (fichiers en Supabase Storage, bucket prive `scenario-packages`, manifest recalcule, publication atomique). L'ancien stockage `repo` (`web/scenario-packages/`, genere par `python3 tools/package_scenario.py <src_dir> --slug <slug>`) reste servi pour les versions reprises. MP3 : 44100 Hz obligatoire (refuse au packaging et par le mixer).
 - **Enregistrement box (dette soldee, F5)** : `/api/box/register` exige desormais la **preuve de possession** (option B) — challenge + HMAC signe par la box via BLE pendant l'appairage (`/devices/add`, Web Bluetooth). Plus de squat d'UID possible. Provisioning BLE : composant `ble_prov` (service GATT e5c40001-…), declencheurs = boot sans `wifi_creds` ou item « Appairage » du menu de boot (fenetre 5 min).
 
 ## Auth box (provisioning + firmware)

@@ -2144,10 +2144,6 @@
 		(uuid "18485262-4510-4b44-8891-8877aca9b18a")
 	)
 	(no_connect
-		(at 110.49 64.77)
-		(uuid "21c9f043-774e-4b5c-a743-874d3002cba0")
-	)
-	(no_connect
 		(at 110.49 62.23)
 		(uuid "6b5f7363-dd58-4c93-8c53-65c6740762c3")
 	)
@@ -7962,6 +7958,278 @@
 					(reference "R5")
 					(unit 1)
 				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 110.49 64.77) (xy 115.57 64.77)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "6daaf853-9c36-415f-95b1-c9132586eb5b")
+	)
+	(global_label "AMP_SHDN_CTRL"
+		(shape output)
+		(at 115.57 64.77 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "3eb3e6d0-2f6c-4157-9b41-e3764f2fa6bc")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 127.0 64.77 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+	)
+	(junction
+		(at 251.46 58.42)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "cbe301bf-0a9b-494e-8c2f-38b6cc69cf2f")
+	)
+	(wire
+		(pts
+			(xy 251.46 58.42) (xy 256.54 58.42)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "a0f82a65-39c6-4be6-9800-24934069e8dd")
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 260.35 58.42 90)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp yes)
+		(uuid "aa2d1d44-fabd-4a9a-b1ff-abf6eaa01687")
+		(property "Reference" "R_SHDN_DAC"
+			(at 262.89000000000004 57.15 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "0R"
+			(at 262.89000000000004 59.690000000000005 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
+			(at 260.35 58.42 90)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 260.35 58.42 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Option : SHDN# du PAM8406 pilote par GPIO6 du PCM5122 (monter avec R_SHDN_PD, sans R_SHDN)"
+			(at 260.35 58.42 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "f0a2aa4d-1024-4c5b-a0e8-b54e74f8a0c1")
+		)
+		(pin "2"
+			(uuid "4fd51671-cecf-4c57-8ead-3901353f8184")
+		)
+		(instances
+			(project "blackbox"
+				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/17c39c9a-96dc-41e6-b1fb-7a30f21efb24"
+					(reference "R_SHDN_DAC")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(global_label "AMP_SHDN_CTRL"
+		(shape input)
+		(at 264.16 58.42 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "6eb44e19-6e05-4153-8673-0daa2b7f1fa5")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 275.59000000000003 58.42 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+	)
+	(junction
+		(at 251.46 63.5)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "5a5154cd-bf7a-4269-959e-429b252a2e6f")
+	)
+	(wire
+		(pts
+			(xy 251.46 63.5) (xy 256.54 63.5)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "cd24bded-512c-4500-9efc-8c99be80ec0e")
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 260.35 63.5 90)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp yes)
+		(uuid "571b514f-f70e-474c-aee5-14856492a258")
+		(property "Reference" "R_SHDN_PD"
+			(at 262.89000000000004 62.23 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "10k"
+			(at 262.89000000000004 64.77 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
+			(at 260.35 63.5 90)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 260.35 63.5 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Option : pull-down SHDN# (monter avec R_SHDN_DAC, sans R_SHDN)"
+			(at 260.35 63.5 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "a83518d4-7221-4c50-a1b8-f17b0fdfcd3b")
+		)
+		(pin "2"
+			(uuid "4aa398b2-1e28-4146-b637-139d7db05bd0")
+		)
+		(instances
+			(project "blackbox"
+				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/17c39c9a-96dc-41e6-b1fb-7a30f21efb24"
+					(reference "R_SHDN_PD")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(global_label "GND"
+		(shape input)
+		(at 264.16 63.5 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "ca469e4a-82d1-4399-9569-893b9e01a680")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 275.59000000000003 63.5 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
 			)
 		)
 	)

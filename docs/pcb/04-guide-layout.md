@@ -21,7 +21,7 @@ Attribution des couches de la Main **[AN : TI SLYT512, SLAA896 ; Espressif]** :
 - **L1 (F.Cu)** : composants et signaux ; remplissage GND autour.
 - **L2 (In1.Cu)** : **GND plein, jamais coupé**. C'est la référence de tout ce qui court sur L1.
 - **L3 (In2.Cu)** : zones d'alimentation (VSYS, 5V, 3V3_D, 3V3_A) + quelques signaux lents.
-- **L4 (B.Cu)** : signaux lents / croisements, LEDs du halo (face Dessous) ; remplissage GND.
+- **L4 (B.Cu)** : signaux lents / croisements, les 12 LEDs de la Main LED2-LED13 (éclairage sous la box, face Dessous — à ne pas confondre avec le halo LED1-LED8 du satellite Devant) ; remplissage GND. ⚠ Composants sur L1 **et** L4 = **assemblage double face** chez JLCPCB (décision du 2026-11-14, surcoût à chiffrer au devis).
 
 ### 1.2 Board Setup → Design Rules → Constraints
 
@@ -102,7 +102,12 @@ par transition** pour les nets ≥ 1 A.
   de test **[AN : Espressif]**.
 - Connecteurs **sur les bords**, orientés vers la face qu'ils desservent (câbles courts) :
   J7/J7b/J9 → Devant ; J10 → Dessus (HP) ; J8 → Côté 1 ; J14 + J12 → Côté 2 ; un Qwiic par face.
-- La Main est sur la **face Dessous** : LEDs du halo et trou du micro côté extérieur (voir §2.5).
+- La Main est sur la **face Dessous** : LED2-LED13 et trou du micro côté extérieur (voir §2.5).
+- **Mécanique à fixer avant le placement** (rien n'est au schéma) **[projet, audit 2026-11-14]** :
+  contour de la carte, **trous de fixation** (mêmes dégagements ISO 273 qu'au §3, ≥ 3 points,
+  > 2 mm de l'IMU), emprise de la **cellule 18650 et de son support** (opposée à l'antenne),
+  **3 mires** (fiducials) par face assemblée et trous d'outillage si JLCPCB les demande pour
+  l'assemblage.
 
 ### 2.2 ESP32-S3-WROOM-1 (U1) — zone numérique
 
@@ -118,6 +123,7 @@ par transition** pour les nets ≥ 1 A.
 | **R13/R14 (22 Ω)** sur SPI2/SPI3_SCLK **au pied du module** (côté source) ; C_CLK2/3 (DNP) juste après. | [AN : Diodes AN022, R série à la source] |
 | R3/R4 (pull-ups I2C 4,7 k) près du module ; I2C lent, routage libre mais loin du boost et de l'audio. | [projet] |
 | TP_TXD0/TP_RXD0/TP_EN/TP_GPIO0 accessibles, **loin de l'antenne**. | [AN : Espressif] |
+| **VBAT_SENSE (IO3)** : pont 1 MΩ / 1 MΩ = nœud à haute impédance. R_VBAT_H/R_VBAT_L et **C_VBAT_SENSE (100 nF) contre la broche 15 du module**, piste courte, loin du nœud SW du boost et des horloges. | [calc ; projet, audit 2026-11-14] |
 
 ### 2.3 USB (R11/R12 → J14)
 
@@ -190,6 +196,7 @@ netlist].
 | Paires L+/L− et R+/R− **routées côte à côte** (sorties en pont, **jamais à GND**), 0,6 mm, 1,25 mm aux ferrites. | [DS PAM8406, projet ; AN : Murata] |
 | Les fils du HP (15-20 cm) sont en quart d'onde vers 375-500 MHz : les torsader, les garder loin de l'antenne. | [calc ; AN : TI SNAA050] |
 | C_PAM_INL/INR et C_PAM_VREF près de leurs broches (7, 10, 8) ; R_MODE_D, R_MUTE, R_SHDN à côté. | [DS PAM8406] |
+| **Option SHDN par le DAC** (2026-11-14) : R_SHDN_PD (DNP) près de SHDN# (12) ; R_SHDN_DAC (0 Ω, DNP) sur le net `AMP_SHDN_CTRL` venant de la GPIO6 du PCM5122 (U2.19) — signal statique, routage libre. Monter R_SHDN **ou** le couple R_SHDN_DAC + R_SHDN_PD, jamais R_SHDN avec R_SHDN_PD. | [projet ; DS PCM5122 page 0 reg. 8] |
 
 **Micro ICS-43434 (U4, bottom port)**
 | Règle | Source |
@@ -332,6 +339,7 @@ l'antenne**, TP_GND1-3 répartis près des zones puissance / numérique / audio 
 - [ ] Trou du micro percé, sans pâte ; rien sous l'IMU ni sous le BMP280.
 - [ ] Vias du pad bq24075 tentés côté L4 ; EPAD ESP32 : décision (soudé ou non).
 - [ ] Axes sérigraphiés (IMU, TMAG) ; broche 1 et polarités lisibles ; texte ≥ 1 mm.
+- [ ] Contour, trous de fixation et mires de la Main posés ; assemblage double face confirmé au devis.
 - [ ] Vue 3D : collisions, hauteur des connecteurs vs boîtier, dégagement antenne 15 mm.
 - [ ] Checklist JLCPCB du FSD §3.2 (Gerbers, BOM, CPL, go/no-go).
 

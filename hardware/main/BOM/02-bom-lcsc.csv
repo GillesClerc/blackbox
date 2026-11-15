@@ -107,6 +107,8 @@ C_U9,,100nF 16V ceramique X7R,0402,—,1,Main,Decouplage DW01A
 C_VBAT_SENSE,,100nF 16V ceramique X7R,0402,—,1,Main,Filtrage du pont diviseur VBAT_SENSE (ADC1_CH2)
 "R_MUTE,R_SHDN,R_MODE_D",,10k ohm,0402,—,3,Main,PAM8406 : MUTE/SHDN tires hauts + MODE vers 3V3_A (classe D)
 R_MODE_AB,,10k ohm (DNP),0402,—,1,Main,Alternative classe AB (MODE vers GND) — NE JAMAIS monter en meme temps que R_MODE_D
+R_SHDN_DAC,,0 ohm (DNP),0402,—,1,Main,"Option (audit 2026-11-14, H2) : SHDN# du PAM8406 pilote par GPIO6 du PCM5122 (net AMP_SHDN_CTRL). Monter avec R_SHDN_PD et SANS R_SHDN — decision au proto"
+R_SHDN_PD,,10k ohm (DNP),0402,—,1,Main,"Option (audit 2026-11-14, H2) : pull-down SHDN# — ampli eteint tant que le firmware ne l active pas. Monter avec R_SHDN_DAC et SANS R_SHDN"
 R_SD_PD,,100k ohm,0402,—,1,Main,Pull-down SD du micro ICS-43434 (datasheet)
 R_CS,,1k ohm,0402,—,1,Main,DW01A : resistance de detection (application typique)
 "R_VBAT_H,R_VBAT_L",,1M ohm 1%,0402,—,2,Main,Pont diviseur VBAT_SENSE 1:1

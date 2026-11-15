@@ -162,12 +162,22 @@ def junction(at):
 
 # ----------------------------------------------------------------- fichier
 
+_CRLF = {}   # chemin -> le fichier lu etait en CRLF (KiCad sous Windows)
+
+
 def read(path):
-    return open(path, encoding='utf-8').read()
+    """Lit en LF (les regex du module supposent '\\n') et retient la convention
+    du fichier : sans ca, write() convertissait tout en LF et le diff git
+    reecrivait le fichier entier (audit 2026-11-14)."""
+    raw = open(path, encoding='utf-8', newline='').read()
+    _CRLF[path] = '\r\n' in raw
+    return raw.replace('\r\n', '\n')
 
 
 def write(path, txt):
-    open(path, 'w', encoding='utf-8').write(txt)
+    if _CRLF.get(path):
+        txt = txt.replace('\r\n', '\n').replace('\n', '\r\n')
+    open(path, 'w', encoding='utf-8', newline='').write(txt)
 
 
 def ensure_lib_symbol(txt, lib_id, source_path):
