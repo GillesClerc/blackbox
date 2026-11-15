@@ -19,7 +19,7 @@ J7,,Connecteur JST-SH 10pin,JST-SH-10P,—,1,Main,SPI3 vers 2x GC9A01 yeux
 J7b,,Connecteur JST-SH 8pin,JST-SH-8P,—,1,Main,SPI2 vers l ecran bouche (type a choisir)
 J8,,Connecteur JST-SH 6pin,JST-SH-6P,—,1,Main,"Cote 1 : 3V3_D, GND, SW1, SW2, BTN1 (J8.5), BTN2 (J8.6)"
 J9,,Connecteur JST-PH 4pin,JST-PH-4P,—,1,Main,"WS2812 externes + reserve (le budget batterie limite a ~8-10 LEDs externes ; au-dela, alimenter la bande separement)"
-J2,,Connecteur batterie JST-PH 4pin (BAT+/BAT-/NTC/retour NTC),JST-PH-4P,—,1,Main,"Cellule 18650 + NTC collee, harnais 4 fils : le retour NTC va sur GND (VSS du bq24075), pas sur BAT- (audit 2026-09-27 H2)"
+J2,,Connecteur batterie JST-PH 6pin (BAT+ x2 / BAT- x2 / NTC / retour NTC),JST-PH-6P,—,1,Main,"Cellule 18650 + NTC collee, harnais 6 fils AWG 24 : 1-2 BAT+, 3-4 BAT-, 5 NTC, 6 retour NTC. Contacts doubles (audit 2026-11-15 A5) : 2 A par contact PH en AWG 24 (JST) pour un courant batterie de 1,5 A plafonne (~2,6 A sans plafond). Le retour NTC va le retour NTC va sur GND (VSS du bq24075), pas sur BAT- (audit 2026-09-27 H2)"
 J10,,Connecteur haut-parleur JST-PH 4pin,JST-PH-4P,—,1,Main,"Sorties en pont L+/L-/R+/R- via ferrites FB3-FB6 — aucune masse commune, ne jamais relier les - entre elles ni a GND"
 J11,,Slot microSD push-push,TF-PUSH,C91145,1,Main,Carte SD sur SPI2 partage (MISO=15 CS=47) - verifier ref LCSC avant commande
 C_SD1,,10uF 16V ceramique X5R,0805,—,1,Main,Reservoir au pied de J11 (VDD/VSS) : pics d ecriture SD de plusieurs centaines de mA ~1 ms (note Swissbit) - audit 2026-11-15 A4

@@ -292,7 +292,7 @@ GPIO 48     — WS2812 LEDs
 USB-C J1 (satellite Côté 2 : CC 5,1 kΩ = sink, USBLC6) ── câble ── J14 (Main)
     ↓ 5V_USB
 bq24075 (U8) — chargeur 1 A + power path DPPM, entrée limitée à 1,07 A (R_ILIM)
-    ├── BAT → cellule Li-ion 18650 3400-3500 mAh (J2 : BAT+, BAT−, NTC, retour NTC sur GND)
+    ├── BAT → cellule Li-ion 18650 3400-3500 mAh (J2 JST-PH 6 : BAT+ ×2, BAT− ×2, NTC, retour NTC sur GND)
     │         protection DW01A (U9) + FS8205 (U10) sur le négatif (VBAT−)
     └── OUT = VSYS (≈ VIN USB − dropout sur secteur, 5,5 V max régulés ; ≈ VBAT sur batterie)
          │   interrupteur marche/arrêt SW3 (Côté 2, via J12) → EN_SYS (R20 2,2 k pull-down : courant de contact pour SW3, 27/09)
@@ -309,7 +309,7 @@ bq24075 (U8) — chargeur 1 A + power path DPPM, entrée limitée à 1,07 A (R_I
 > **Paramètres vérifiés datasheets (audits 2026-09-23 et 2026-09-27)** :
 > - Charge : 1 A (R_ISET 890 Ω), entrée limitée à 1,07 A (R_ILIM 1,5 kΩ, mode EN2 = H / EN1 = L).
 >   ✅ 2026-09-27 : timers de sécurité réactivés (**R_TMR 56 kΩ** → 5,6-9,3 h) et **NTC 10 kΩ
->   de la cellule sur TS** via J2.3 (fenêtre 0-50 °C) ; `R_TS` conservée en **DNP** — monter
+>   de la cellule sur TS** via J2.5 (fenêtre 0-50 °C) ; `R_TS` conservée en **DNP** — monter
 >   l'une **ou** l'autre, jamais les deux (mesure faussée, charge suspendue sans symptôme).
 > - **Batterie : cellule 18650 de 3400-3500 mAh** (décision 2026-09-27), et non plus une LiPo
 >   pouch. Même chimie lithium-ion, mais enveloppe acier rigide avec évent de surpression :
@@ -317,7 +317,7 @@ bq24075 (U8) — chargeur 1 A + power path DPPM, entrée limitée à 1,07 A (R_I
 >   moyens), charge en ~4 h — compatible avec R_ISET et R_TMR tels quels. Protection assurée
 >   par le DW01A + FS8205 de la carte, donc **cellule nue** possible. NTC 10 kΩ à coller sur
 >   la cellule. Jamais de soudure au fer sur une cellule : languettes ou support.
-> - **NTC** : J2 en **4 broches** (2026-09-27) — le retour de la NTC va sur **GND** (J2.4) et non sur BAT− : la TS mesure par rapport à VSS, et BAT− en est séparé par les MOSFET du FS8205 (56-74 mV à 1 A, soit ≈ +7 °C d'erreur sur la coupure en surchauffe). Harnais de cellule à 4 fils.
+> - **NTC** : J2 en **4 broches** (2026-09-27), puis **6 broches** (2026-11-15, BAT+ et BAT− doublés : 2 A par contact PH en AWG 24) — le retour de la NTC va sur **GND** (J2.6) et non sur BAT− : la TS mesure par rapport à VSS, et BAT− en est séparé par les MOSFET du FS8205 (56-74 mV à 1 A, soit ≈ +7 °C d'erreur sur la coupure en surchauffe). Harnais de cellule à 4 fils.
 > - Protection DW01A + FS8205 : surcharge 4,30 V, décharge profonde 2,40 V, **surintensité ≈ 1,6-3,2 A** → plafond du courant crête total (plafonds firmware de luminosité et de volume, mesure au proto).
 > - 3V3_D : **U5 = AP2112M-3.3 en SO-8** (θJA 114 °C/W au lieu de 184 °C/W en SOT-25), 600 mA garantis, l'ESP32 en exige ≥ 0,5 A ; plan de cuivre sous U5 au layout. Charges du rail : ESP32 ≥ 3,0 V, CAP1298 ≥ 3,0 V, GC9A01A ≤ 3,3 V → **extinction firmware sur VBAT basse** (~3,4-3,5 V).
 > - Rail 5 V (**TPS63020**, 5,0 V nominal, ≤ 5,21 V à vide au pire cas avec les +3 % du power save — `docs/datasheets/TPS63020.md`) : 12 WS2812B = 432 mA en blanc (+ 7,2 mA au repos), PAM8406 ≈ 0,4 A par canal au maximum sur le haut-parleur 8 Ω, plus le halo externe sur J9 (pas de budget fixé : c'est le plafond firmware de luminosité qui borne l'ensemble). **L1 = Sunlord WPN4020H1R5MT** (1,5 µH ±20 %, Isat 7,7 A, Irms 5,2 A, 4 × 4 mm — `docs/datasheets/WPN4020H.md`). ⚠ Côté batterie, le bq24075 coupe VSYS dès ~2,0 A (audit 2026-11-15 A1) : plafond firmware global vers 1,5 A.
@@ -374,7 +374,7 @@ Composants embarqués :
 - 12 × WS2812B-B (halo face Dessous)
 - Slot microSD (J11)
 - J14 (JST-PH 6) : liaison USB vers le port USB-C du satellite Côté 2 (charge + USB CDC debug) ; R22 (DNP) = réserve du mode hôte
-- Connecteur batterie J2 JST-PH 4 broches (BAT+, BAT−, NTC, retour NTC sur GND)
+- Connecteur batterie J2 JST-PH 6 broches (BAT+ ×2, BAT− ×2, NTC, retour NTC sur GND) — contacts doublés le 2026-11-15
 - Connecteurs JST vers les faces satellites (voir « Connectique backbone » ci-dessous)
 - 28 points de test, dont la console UART0 `TP_TXD0` / `TP_RXD0` (liste et valeurs attendues : `docs/pcb/03-validation-qualite.md`)
 
@@ -422,7 +422,7 @@ JST-SH (1,0 mm, verrouillable) pour les signaux inter-PCB ; JST-PH (2,0 mm) pour
 | J10 | JST-PH 4 | L+, L−, R+, R− (sorties en pont, via FB3-FB6) | haut-parleur (Dessus) |
 | J11 | slot microSD TF-01A | — | carte SD |
 | J12 | JST-SH 2 | VSYS, EN_SYS | interrupteur marche/arrêt SW3 = E-Switch RR111C1921 (bascule ronde de façade Côté 2, câble direct, hors satellite) |
-| J2 | JST-PH 4 | BAT+, BAT−, NTC, retour NTC (GND) | cellule 18650 (harnais 4 fils, voir §2.2.2b) |
+| J2 | JST-PH 6 | 1-2 BAT+, 3-4 BAT−, 5 NTC, 6 retour NTC (GND) | cellule 18650 (harnais 6 fils AWG 24, voir §2.2.2b) |
 | J14 | JST-PH 6 | VBUS (5V_USB), GND, D−, D+, GND, 5V_HOST | satellite Côté 2 (port USB-C J1 + USBLC6 + CC) |
 
 **Boîtier** :
@@ -1672,7 +1672,7 @@ Ces 3 réponses sont liées à la session (`hints_used`, `duration_sec`, `score`
 [ ] Charge crête : LEDs blanc 100 % + audio max + WiFi TX, batterie basse, sans coupure DW01A ni chute du rail 5 V
 [ ] Rail 5 V ≤ 5,3 V (max absolu WS2812) sur USB, avec plusieurs chargeurs
 [ ] Charge sur un port PC 500 mA : comportement acceptable (limite d'entrée à 1,07 A)
-[ ] NTC : charge suspendue au-delà du seuil chaud (J2 en 4 broches, retour NTC sur GND)
+[ ] NTC : charge suspendue au-delà du seuil chaud (J2 en 6 broches, retour NTC sur GND)
 [ ] Thermique : AP2112 3V3_D et bq24075 sous USB + charge, boîtier fermé
 [ ] Marche/arrêt : consommation éteinte ≤ 20 µA, charge USB fonctionnelle éteinte
 [ ] OTA WiFi : mise à jour firmware complète sans intervention physique

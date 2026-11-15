@@ -43,6 +43,9 @@ Traitée point par point avec Gilles.
   l'empreinte LCSC `C15483_VSON-14…` : pad central en peigne jusqu'à ±2,2 mm. Contrôler aussi
   l'empreinte de L1 contre la Fig. 5 du catalogue Sunlord (a 1,9 / b 1,1 / c 3,7 mm).
 - [ ] 🧑 **A3** — stock JLCPCB à revérifier à la commande : TPS63020DSJR 638, **WPN4020H1R5MT 200**.
+- [x] 🤖 **A5** — J2 en **JST-PH 6 broches** : 1-2 BAT+, 3-4 BAT−, 5 NTC, 6 retour NTC (GND) —
+  contacts doublés (2 A par contact PH en AWG 24). BOM, guide §2.4, `bq24075.md`, FSD à jour.
+- [ ] 🧑 **A5** — harnais de cellule à refaire en **6 fils AWG 24** (au lieu de 4).
 - [ ] 🧑 **Recharger les feuilles `power` et `connector`** dans KiCad (Fichier → Revenir) avant toute sauvegarde ;
   au premier F8, vérifier que U8 prend bien l'empreinte corrigée (5 vias « 17 » dans le pad), et
   que U7 (TPS63020) et L1 prennent les nouvelles empreintes `lcsc_footprints:C15483_…` / `C98360_…`.

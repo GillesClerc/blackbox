@@ -172,6 +172,10 @@ décider avant de figer l'empreinte.
 
 ---
 
+**Statut (15/11, décision de Gilles).** J2 passe en **JST-PH 6 broches**, BAT+ et BAT− doublés
+(1-2 BAT+, 3-4 BAT−, 5 NTC, 6 retour NTC sur GND) : 4 A de capacité théorique pour la même
+série. Netlist : seules les broches de J2 changent. Harnais à refaire en 6 fils AWG 24.
+
 ## B. Corrections et améliorations
 
 - **B1 — R_ISET = 890 Ω n'existe pas** en série normalisée. Prendre **887 Ω 1 %** (E96) :

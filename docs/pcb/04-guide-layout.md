@@ -147,7 +147,7 @@ netlist].
 | U10 (FS8205) **collé à J2**, pistes VBAT/VBAT−/GND courtes et larges (classe PWR_BAT, zones si possible). | [projet] |
 | Le DW01A mesure la chute **dans les deux Rds(on) du FS8205** (seuil 150 ± 30 mV) : aucune piste de puissance supplémentaire entre U10 et le point de mesure, sinon le seuil de surintensité dérive. U9, R_CS (1 k) et C_U9 au plus près de U10. | [DS DW01A ; AN : TI bq2970 §9.4.1] |
 | R_VCC (100 Ω) + C_U9 (100 nF) au plus près de U9.5 (VCC) ; C_U9 retourne sur **VBAT−**, pas sur GND. | [DS DW01A, projet] |
-| J2.4 (retour NTC) sur GND, J2.3 (BAT_TS) en piste fine vers U8.1, loin du boost. | [projet] |
+| J2 en JST-PH 6 : **J2.1 + J2.2 (BAT+) et J2.3 + J2.4 (BAT−) reliés par du cuivre au pied du connecteur** (classe PWR_BAT), J2.6 (retour NTC) sur GND, J2.5 (BAT_TS) en piste fine vers U8.1, loin du buck-boost. | [projet, audit 2026-11-15 A5 ; JST PH : 2 A/contact en AWG 24] |
 
 **bq24075 (U8, QFN-16 3×3)**
 | Règle | Source |
