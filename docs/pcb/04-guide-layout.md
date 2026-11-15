@@ -37,7 +37,7 @@ Capacités JLCPCB standard : piste/espace mini 0,10/0,10 mm ; via mini 0,15/0,25
 | Minimum connection width | 0,15 mm | |
 | Minimum annular width | 0,10 mm | via 0,3/0,6 → 0,15 |
 | Minimum via diameter / hole | **0,5 / 0,3 mm** | 0,3/0,5 reste sans surcoût (pastille ≥ 0,45) |
-| Minimum through hole | 0,3 mm | |
+| Minimum through hole | **0,2 mm** | vias thermiques de l'empreinte du bq24075 (Ø 0,2 / 0,45, sans supplément) ; tous les autres vias en 0,3 |
 | Hole to hole clearance | 0,5 mm | |
 | Copper to edge clearance | **0,3 mm** | fab 0,2 ; 0,4 mm si V-cut |
 | Minimum text height / thickness | **1,0 / 0,15 mm** | |
@@ -154,7 +154,7 @@ netlist].
 |---|---|
 | **C_IN (4,7 µF 25 V) sur IN (13)** et **C_OUT (4,7 µF) sur OUT (10/11)** au plus près, pistes courtes vers le pad thermique. C_BAT sur BAT (2/3). | [DS bq24075 §12.1] |
 | **Pad thermique → GND** avec vias ; **VSS (8) aussi relié à GND** (⚖ la datasheet dit à la fois « le pad n'est pas la masse principale » et « le pad est la masse principale » : câbler **les deux**). | [DS bq24075] |
-| Vias du pad : **4 vias 0,3/0,5 mm** (pad 1,68 mm, pas ≈ 1 mm) ; TI dessine 0,2 mm « filled, plugged or tented » — chez JLCPCB, un 0,2 mm à pastille < 0,45 mm coûte plus : 0,3/0,5 reste gratuit. **Tenter les vias côté L4** (vernis) pour limiter la remontée de soudure. | [DS bq24075 RGT0016C ; AN : TI SLUA271 §3.4.1 ; calc] |
+| Vias du pad : **déjà dans l'empreinte** (corrigée le 2026-11-15) — 5 vias numérotés **17**, aux positions TI (centre + 4 à ±0,58 mm), **Ø 0,2 / pastille 0,45 mm** (le diamètre TI ; pastille ≥ 0,45 = sans supplément JLCPCB), connexion pleine aux zones, **bouchés côté L4 par le vernis** (pas d'ouverture B.Mask), comme TI le demande (« filled, plugged or tented »). Ne pas en ajouter à la main. Pâte du pad 1,55 mm = 85 % (stencil TI). | [DS bq24075 RGT0016C, land pattern et stencil 4222419/E ; AN : TI SLUA271 §3.4.1 ; AN : JLCPCB capabilities] |
 | Masses faible courant (R_ISET, R_ILIM, R_TMR, TS) séparées du chemin de charge, rejoignant GND en un point près du pad. | [DS bq24075 §12.1] |
 | IN/OUT/BAT dimensionnés pour 1,07 A / 1 A (PWR_1A) — les deux broches OUT (10, 11) et BAT (2, 3) reliées par du cuivre, pas une seule. | [DS bq24075] |
 

@@ -1,4 +1,7 @@
 (fp_lib_table
   (version 7)
   (lib (name "lcsc_footprints")(type "KiCad")(uri "${KIPRJMOD}/libs/lcsc/footprints.pretty")(options "")(descr "LCSC imported footprints"))
+  (lib (name "BQ24075RGTR")(type "KiCad")(uri "${KIPRJMOD}/libs/BQ24075RGTR")(options "")(descr "SnapEDA, vias thermiques corriges 2026-11-15 (prime sur la table globale)"))
+  (lib (name "FS8205")(type "KiCad")(uri "${KIPRJMOD}/libs/FS8205")(options "")(descr "SnapEDA"))
+  (lib (name "MT3608")(type "KiCad")(uri "${KIPRJMOD}/libs/MT3608")(options "")(descr "SnapEDA"))
 )

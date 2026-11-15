@@ -95,6 +95,20 @@ symbole s'arrête à la broche 17.
 renuméroter en 17 et les passer en 0,3/0,5 mm (elles tiennent dans le pad de 1,68 mm).
 Le pad 17 a bien sa pâte à braser (polygone sur F.Paste).
 
+**Statut (15/11, décision de Gilles : conforme TI).** Le land pattern TI (RGT0016C, 4222419/E)
+place justement 5 vias Ø 0,2 mm au pas de 0,58 mm ; le pochoir TI demande **85 % de pâte**
+(ouverture 1,55 mm), l'empreinte n'en avait que 40 % (1,06 mm). Empreinte corrigée : vias
+numérotés 17, Ø 0,2 / pastille 0,45 mm, connexion pleine, bouchés côté L4 ; pâte 1,55 mm.
+Les rangées de pastilles restent celles de SnapEDA (0,26 × 0,86 mm, IPC nominal), plus longues
+vers l'intérieur que celles de TI (0,24 × 0,6) : 0,165 mm entre leur bout et le pad central,
+contre 0,26 mm chez TI. Conforme au DRC (≥ 0,15 mm), à surveiller au premier assemblage.
+
+**Découvert en traitant A2 — l'empreinte venait d'une autre copie.** La table globale du poste
+pointe `BQ24075RGTR`, `FS8205` et `MT3608` vers `C:/Users/Gilles/dev/Blackbox/blackbox/libs/`,
+hors du dépôt (copies identiques au dépôt avant correction). Une correction dans le dépôt
+n'aurait eu aucun effet. Les trois bibliothèques sont désormais déclarées dans les tables
+**du projet** (`${KIPRJMOD}/libs/…`), qui priment sur la table globale : **B3 soldé**.
+
 ### A3 — MT3608 à 1 A sous 5 V : jamais démontré, à valider sur banc avant de commander
 
 - La datasheet ne donne **aucune courbe à 3,3-3,7 V → 5 V**, ni résistance thermique. R_DS(on)

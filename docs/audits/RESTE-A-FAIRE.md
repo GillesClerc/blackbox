@@ -22,7 +22,12 @@ Traitée point par point avec Gilles.
   `GATE_5V` sur la grille, label **global** du même nom sur TP_GATE1 — KiCad ne les relie pas.
   La grille porte maintenant un label global. `kicad_netlist.py` corrigé : labels locaux limités
   à leur feuille, et `--check` signale tout label local homonyme d'un net global.
-- [ ] 🧑 **Recharger la feuille `power`** dans KiCad (Fichier → Revenir) avant toute sauvegarde.
+- [x] 🤖 **A2** — empreinte du bq24075 conforme au land pattern TI : 5 vias thermiques
+  renumérotés 17 (ils n'avaient aucun net), Ø 0,2 / 0,45 mm bouchés côté L4, pâte 85 %.
+- [x] 🤖 **B3** — `BQ24075RGTR`, `FS8205`, `MT3608` déclarées dans les tables **du projet** Main :
+  la table globale du poste pointait vers une copie hors dépôt (`C:/Users/Gilles/dev/Blackbox/…`).
+- [ ] 🧑 **Recharger la feuille `power`** dans KiCad (Fichier → Revenir) avant toute sauvegarde ;
+  au premier F8, vérifier que U8 prend bien l'empreinte corrigée (5 vias « 17 » dans le pad).
 - [ ] 🤖 **A1 (firmware)** — plafond global de courant **~1,5 A côté batterie** (LEDs + audio,
   en plus du plafond audio à −22 dB) : le bq24075 coupe VSYS dès 2,0 A garantis (V_O(SC2)).
 - [ ] 🧑 **A1 (proto)** — mesurer VSYS à l'oscilloscope à l'allumage et en charge crête ; si
