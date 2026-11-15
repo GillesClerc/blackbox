@@ -40,7 +40,7 @@ describe("buildPackage", () => {
     if (!r.ok) expect(r.errors).toHaveLength(2);
   });
 
-  it("signale un MP3 qui n'est pas en 44,1 kHz sans bloquer", () => {
+  it("refuse un MP3 qui n'est pas en 44,1 kHz, ou sans trame MPEG", () => {
     // en-tête MPEG1 Layer III à 48 kHz (index de fréquence 1)
     const mp3 = new Uint8Array([0xff, 0xfb, 0x94, 0x00, 0, 0, 0, 0]);
     expect(mp3SampleRate(mp3)).toBe(48000);
@@ -49,8 +49,15 @@ describe("buildPackage", () => {
       { path: "scenario.json", data: scen() },
       { path: "a.mp3", data: mp3 },
     ]);
-    expect(r.ok).toBe(true);
-    if (r.ok) expect(r.warnings[0]).toMatch(/48000 Hz/);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors.join()).toMatch(/48000 Hz/);
+
+    const junk = buildPackage("x", 1, [
+      { path: "scenario.json", data: scen() },
+      { path: "ambient.mp3", data: new Uint8Array(64) },
+    ]);
+    expect(junk.ok).toBe(false);
+    if (!junk.ok) expect(junk.errors.join()).toMatch(/aucune trame MP3/);
   });
 });
 

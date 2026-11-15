@@ -1,28 +1,38 @@
 import type { NextRequest } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { z } from "zod";
 import { signBoxJwt, verifyBoxHmac } from "@/lib/box-auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+// Corps strictement typé : un champ non textuel ferait lever verifyBoxHmac
+// (Buffer.from) et répondre 500 au lieu de 400.
+const bodySchema = z.object({
+  box_uid: z.string().regex(/^[A-Za-z0-9-]{4,64}$/),
+  challenge: z.string().min(1).max(128),
+  challenge_response: z.string().min(1).max(128),
+});
+
 // POST /api/box/auth { box_uid, challenge, challenge_response }
 // → { token, server_time }. Vérifie le nonce (non utilisé, non expiré) puis le
 // HMAC de la box, marque le nonce consommé et émet un JWT box (2h).
 export async function POST(request: NextRequest) {
-  let body: { box_uid?: string; challenge?: string; challenge_response?: string };
+  let raw: unknown;
   try {
-    body = await request.json();
+    raw = await request.json();
   } catch {
     return Response.json({ error: "json invalide" }, { status: 400 });
   }
 
-  const { box_uid: boxUid, challenge, challenge_response: response } = body;
-  if (!boxUid || !challenge || !response) {
+  const parsed = bodySchema.safeParse(raw);
+  if (!parsed.success) {
     return Response.json(
       { error: "box_uid, challenge et challenge_response requis" },
       { status: 400 }
     );
   }
+  const { box_uid: boxUid, challenge, challenge_response: response } = parsed.data;
 
   const supabase = createAdminClient();
 

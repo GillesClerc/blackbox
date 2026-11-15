@@ -114,8 +114,13 @@ export function buildPackage(
     total += f.data.length;
     if (f.path.toLowerCase().endsWith(".mp3")) {
       const rate = mp3SampleRate(f.data);
-      if (rate !== 44100) {
-        warnings.push(`${f.path} : ${rate ?? "?"} Hz (44100 attendu par le mixer de la box)`);
+      // Erreur et non avertissement : le mixer de la box sort à 44 100 Hz sans
+      // rééchantillonnage et refuse toute autre fréquence ; un fichier sans
+      // trame MPEG n'est pas un MP3.
+      if (rate === null) {
+        errors.push(`${f.path} : aucune trame MP3 trouvée (fichier illisible par la box)`);
+      } else if (rate !== 44100) {
+        errors.push(`${f.path} : ${rate} Hz (44100 Hz exigés par le mixer de la box)`);
       }
     }
   }

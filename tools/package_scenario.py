@@ -16,7 +16,7 @@ Règles (alignées sur le firmware, cloud_client.c) :
   - chemins relatifs, profondeur <= 2 sous-dossiers, charset [A-Za-z0-9._-],
     aucun segment commençant par '.'
   - scenario.json obligatoire à la racine du package
-  - MP3 : 44100 Hz attendu (contrainte du mixer F4) — warning sinon
+  - MP3 : 44100 Hz exigé (contrainte du mixer) — refus sinon
 """
 import argparse
 import hashlib
@@ -110,7 +110,11 @@ def main() -> int:
         if p.suffix.lower() == ".mp3":
             rate = mp3_sample_rate(p)
             if rate != 44100:
-                print(f"⚠ {rel} : {rate or '?'} Hz (44100 attendu — mixer F4)")
+                # Bloquant, comme au back-office : le mixer refuse toute autre
+                # fréquence et un fichier sans trame MPEG n'est pas un MP3.
+                print(f"MP3 refusé : {rel} — {rate or 'aucune trame trouvée,'} Hz "
+                      f"(44100 Hz exigés par le mixer de la box)", file=sys.stderr)
+                return 1
         entries.append({
             "path": rel,
             "bytes": size,

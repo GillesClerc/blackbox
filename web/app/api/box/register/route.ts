@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { z } from "zod";
 import { verifyBoxHmac } from "@/lib/box-auth";
 
 export const runtime = "nodejs";
@@ -9,6 +10,14 @@ export const dynamic = "force-dynamic";
 const BOX_UID_RE = /^[A-Za-z0-9-]{4,64}$/;
 const MAX_DEVICES = 3;
 
+// Corps strictement typé : un champ non textuel ferait lever verifyBoxHmac
+// (Buffer.from) ou name.slice et répondre 500 au lieu de 400.
+const proofSchema = z.object({
+  name: z.string().optional(),
+  challenge: z.string().min(1).max(128),
+  challenge_response: z.string().min(1).max(128),
+});
+
 // POST /api/box/register { box_uid, name?, challenge, challenge_response }
 // Auth : utilisateur Supabase connecté (cookie de session). Option B (preuve
 // de possession) : la box a signé le challenge via BLE pendant l'appairage
@@ -16,28 +25,25 @@ const MAX_DEVICES = 3;
 // qu'on n'a pas en main. Même mécanique anti-replay que /api/box/auth (nonce
 // consommé) ; la signature "register" n'est pas acceptée par /api/box/auth.
 export async function POST(request: NextRequest) {
-  let body: {
-    box_uid?: string;
-    name?: string;
-    challenge?: string;
-    challenge_response?: string;
-  };
+  let raw: unknown;
   try {
-    body = await request.json();
+    raw = await request.json();
   } catch {
     return Response.json({ error: "json invalide" }, { status: 400 });
   }
 
-  const { box_uid: boxUid, name, challenge, challenge_response: response } = body;
-  if (!boxUid || !BOX_UID_RE.test(boxUid)) {
+  const boxUid = (raw as { box_uid?: unknown } | null)?.box_uid;
+  if (typeof boxUid !== "string" || !BOX_UID_RE.test(boxUid)) {
     return Response.json({ error: "box_uid invalide" }, { status: 400 });
   }
-  if (!challenge || !response) {
+  const proof = proofSchema.safeParse(raw);
+  if (!proof.success) {
     return Response.json(
       { error: "challenge et challenge_response requis (preuve de possession)" },
       { status: 400 }
     );
   }
+  const { name, challenge, challenge_response: response } = proof.data;
 
   const supabase = await createClient();
   const {
