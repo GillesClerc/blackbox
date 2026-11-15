@@ -10,6 +10,24 @@
 
 ---
 
+## Vérification du 2026-11-15 — schémas et guide de layout
+
+Détail dans `2026-11-15-verification-schemas-layout.md` (numéros A/B/C/G de ce rapport).
+Traitée point par point avec Gilles.
+
+- [x] 🤖 **A1 (schéma)** — démarrage progressif de Q1 : **R_SS** (0 Ω monté, série grille) et
+  **C_SS** (10 nF grille-drain, DNP), feuille `power` ; BOM, `AO3401A.md`, `bq24075.md`, guide
+  §2.4 à jour. Netlist comparée avant/après : seuls R_SS, C_SS et le nœud de grille changent.
+- [x] 🤖 **TP_GATE1 n'était relié à rien dans KiCad** (trouvé en traitant A1) : label **local**
+  `GATE_5V` sur la grille, label **global** du même nom sur TP_GATE1 — KiCad ne les relie pas.
+  La grille porte maintenant un label global. `kicad_netlist.py` corrigé : labels locaux limités
+  à leur feuille, et `--check` signale tout label local homonyme d'un net global.
+- [ ] 🧑 **Recharger la feuille `power`** dans KiCad (Fichier → Revenir) avant toute sauvegarde.
+- [ ] 🤖 **A1 (firmware)** — plafond global de courant **~1,5 A côté batterie** (LEDs + audio,
+  en plus du plafond audio à −22 dB) : le bq24075 coupe VSYS dès 2,0 A garantis (V_O(SC2)).
+- [ ] 🧑 **A1 (proto)** — mesurer VSYS à l'oscilloscope à l'allumage et en charge crête ; si
+  coupure, monter R_SS = 47 kΩ + C_SS = 10 nF (départ de réglage).
+
 ## Audit du 2026-11-14 — points nouveaux
 
 Détail dans `2026-11-14-audit.md` (numéros H/G/F/W de ce rapport).

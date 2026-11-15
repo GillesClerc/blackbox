@@ -7155,16 +7155,6 @@
 	)
 	(wire
 		(pts
-			(xy 161.29 167.64) (xy 161.29 172.72)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "bb087783-39cf-4f34-9552-23070fda6c6c")
-	)
-	(wire
-		(pts
 			(xy 204.47 44.45) (xy 204.47 46.99)
 		)
 		(stroke
@@ -7472,16 +7462,6 @@
 			(type default)
 		)
 		(uuid "feb5f04c-5de5-4cd8-abe3-bb80a7dd814f")
-	)
-	(label "GATE_5V"
-		(at 153.67 167.64 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "dbf3ce6e-dd99-4c97-8469-f0bd38a4a656")
 	)
 	(global_label "BOOST_FB"
 		(shape input)
@@ -9525,7 +9505,7 @@
 	)
 	(global_label "5V"
 		(shape input)
-		(at 161.29 172.72 0)
+		(at 181.61 172.72 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -9535,7 +9515,7 @@
 		)
 		(uuid "fac3da37-feb9-47ac-9d04-9d93339d779c")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 166.5733 172.72 0)
+			(at 186.893 172.72 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -10527,7 +10507,7 @@
 	)
 	(symbol
 		(lib_id "Transistor_FET:AO3401A")
-		(at 158.75 162.56 0)
+		(at 179.07 162.56 0)
 		(mirror x)
 		(unit 1)
 		(body_style 1)
@@ -10538,7 +10518,7 @@
 		(dnp no)
 		(uuid "306d3877-bdd5-4b63-8fe8-b7295ba2e39c")
 		(property "Reference" "Q1"
-			(at 166.624 160.782 0)
+			(at 186.944 160.782 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -10548,7 +10528,7 @@
 			)
 		)
 		(property "Value" "AO3401A"
-			(at 168.91 166.116 0)
+			(at 189.23 166.116 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -10558,7 +10538,7 @@
 			)
 		)
 		(property "Footprint" "Package_TO_SOT_SMD:SOT-23"
-			(at 158.75 162.56 0)
+			(at 179.07 162.56 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -10569,7 +10549,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 158.75 162.56 0)
+			(at 179.07 162.56 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -10580,7 +10560,7 @@
 			)
 		)
 		(property "Description" "Load switch du rail 5 V : coupe la fuite du boost asynchrone (VBAT passe par L1+D1 meme EN bas). S cote boost, D cote charge."
-			(at 158.75 162.56 0)
+			(at 179.07 162.56 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -10591,7 +10571,7 @@
 			)
 		)
 		(property "LCSC" "C15127"
-			(at 158.75 162.56 0)
+			(at 179.07 162.56 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -10602,7 +10582,7 @@
 			)
 		)
 		(property "Manufacturer" "Alpha & Omega"
-			(at 158.75 162.56 0)
+			(at 179.07 162.56 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -15302,6 +15282,250 @@
 					(reference "TP_GATE1")
 					(unit 1)
 				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 181.61 167.64) (xy 181.61 172.72)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "72360a9a-73cf-4779-aa8f-20d0b0132b43")
+	)
+	(wire
+		(pts
+			(xy 161.29 157.48) (xy 181.61 157.48)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "75a2ce5e-ea09-432e-94a8-30a54475c9b8")
+	)
+	(wire
+		(pts
+			(xy 161.29 162.56) (xy 168.91 162.56)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "04e25ca9-ed38-4c0a-8bb4-5362c2e3670f")
+	)
+	(wire
+		(pts
+			(xy 168.91 162.56) (xy 173.99 162.56)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "bae87643-f0e5-47b7-baa7-e7cb0aae7daa")
+	)
+	(junction
+		(at 168.91 162.56)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "fedf1f09-90c2-498c-8aa2-2608cd99ead6")
+	)
+	(wire
+		(pts
+			(xy 168.91 170.18) (xy 181.61 170.18)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "7d6606ab-d37d-4bdc-bf20-36259631d156")
+	)
+	(junction
+		(at 181.61 170.18)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "9eccc007-e994-4afd-847e-fbfcb23a7a45")
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 157.48 162.56 90)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "9bbd01e0-e46e-43fb-907e-14334d4a3b77")
+		(property "Reference" "R_SS"
+			(at 160.01999999999998 161.29 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "0R"
+			(at 160.01999999999998 163.83 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
+			(at 157.48 162.56 90)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 157.48 162.56 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 157.48 162.56 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "f181cc8b-1f14-48ed-8507-349a1b6f96e2")
+		)
+		(pin "2"
+			(uuid "829c2446-a2d2-43ce-a227-f15744277f12")
+		)
+		(instances
+			(project "blackbox"
+				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/85a32c7c-168b-4c08-8a60-f4e86c1b8173"
+					(reference "R_SS")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C")
+		(at 168.91 166.37 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp yes)
+		(uuid "65a05131-8776-4d89-9719-e5f9351abe36")
+		(property "Reference" "C_SS"
+			(at 171.45 165.1 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "10n"
+			(at 171.45 167.64000000000001 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
+			(at 168.91 166.37 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 168.91 166.37 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Unpolarized capacitor"
+			(at 168.91 166.37 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "e9cdd13c-66bd-46cc-8811-c0284e50f3bb")
+		)
+		(pin "2"
+			(uuid "3b2850c0-6c6c-41af-8980-b005d9b95a2d")
+		)
+		(instances
+			(project "blackbox"
+				(path "/49e0257f-ff47-4890-a1ac-89438fa62044/85a32c7c-168b-4c08-8a60-f4e86c1b8173"
+					(reference "C_SS")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(global_label "GATE_5V"
+		(shape input)
+		(at 163.83 162.56 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "16e3316b-6294-4ec4-bee0-5c5e18ad5750")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 163.83 173.2861 90)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
 			)
 		)
 	)

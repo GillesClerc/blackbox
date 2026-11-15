@@ -179,6 +179,33 @@ def sheet_pins(sh, angle_sign=1.0, swap=False):
 
 # ---------------------------------------------------------------- netlist
 
+LOCAL_SEP = '\x00'
+
+
+def _scoped(name, kind, sheet):
+    """Cle de fusion d'un label.
+
+    KiCad ne relie un label local qu'aux labels locaux de meme nom de SA feuille,
+    et jamais a un global label homonyme (ERC « same_local_global_label »).
+    L'outil fusionnait tout par nom : TP_GATE1 (global « GATE_5V ») semblait
+    relie a la grille de Q1 (label local « GATE_5V ») alors qu'il ne l'etait
+    pas dans KiCad (verification du 2026-11-15).
+    """
+    return f'{sheet}{LOCAL_SEP}{name}' if kind == 'label' else name
+
+
+def _display(n):
+    """Nom affiche : un label local garde son nom, sauf s'il porte le nom d'un
+    net global, auquel cas il est prefixe par sa feuille, comme dans KiCad."""
+    if LOCAL_SEP not in n:
+        return n
+    sheet, name = n.split(LOCAL_SEP, 1)
+    return f'/{sheet}/{name}' if name in _GLOBAL_NAMES else name
+
+
+_GLOBAL_NAMES = set()
+
+
 def build(sheets, angle_sign=1.0):
     uf = UF()
     node_labels = defaultdict(set)
@@ -210,7 +237,7 @@ def build(sheets, angle_sign=1.0):
             for a, b in sh.wires:
                 if on_segment(pt, a, b):
                     uf.union(key(pt), key(a)); attached = True
-            node_labels[uf.find(key(pt))].add(name)
+            node_labels[uf.find(key(pt))].add(_scoped(name, kind, sh.name))
         # pins
         for ref, number, pname, pt, is_power, value in sheet_pins(sh, angle_sign):
             stats['pins'] += 1
@@ -247,6 +274,11 @@ def build(sheets, angle_sign=1.0):
         nets[uf.find(root)].extend(pins)
     for root, nms in node_labels.items():
         names[uf.find(root)] |= nms
+
+    _GLOBAL_NAMES.clear()
+    _GLOBAL_NAMES.update(n for nms in node_labels.values() for n in nms
+                         if LOCAL_SEP not in n)
+    names = {r: {_display(n) for n in nms} for r, nms in names.items()}
 
     out = {}
     anon = 0
@@ -332,6 +364,14 @@ def main():
                 if ref.upper() == want:
                     print(f"{ref:8s} pin {number:>4s} {pname:<14s} -> {name}   [{sheet}]")
     if '--check' in args:
+        # _GLOBAL_NAMES = global labels + symboles d'alimentation, toutes feuilles
+        clash = sorted({(sh.name, n) for sh in sheets for n, _, k in sh.labels
+                        if k == 'label' and n in _GLOBAL_NAMES})
+        if clash:
+            print(f"\n{len(clash)} label(s) local(aux) homonyme(s) d'un net global "
+                  "(KiCad ne les relie PAS) :")
+            for s, n in clash:
+                print(f'   {s:10s} {n}')
         problems = check_wires(sheets)
         if problems:
             print(f"\n{len(problems)} fil(s) mal raccorde(s) :")

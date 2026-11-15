@@ -166,7 +166,7 @@ netlist].
 | C_B1 (22 µF) sur VSYS au plus près de U7.5, C_B2 (22 µF) près de D1/U7.2 ; retours GND vers L2 par **plusieurs vias** directement aux pastilles. | [DS MT3608 ; AN : SLVA773, 1 via/A] |
 | **R_FB_H / R_FB_L au plus près de U7.3 (FB)**, piste FB courte, **jamais parallèle** au nœud SW ni sous L1 ; prise de tension sur C_B2 (après D1). | [DS MT3608 ; AN : SLVA773] |
 | Rien de sensible sous L1 / le nœud SW sur L4 (L2 GND fait écran, mais pas d'audio ni d'I2C juste dessous). Loin de l'antenne. | [AN : SLAA896 §2.4, Espressif] |
-| Q1 (AO3401A) après C_B2 : 5V_BOOST → Q1 → 5V en PWR_BOOST ; Q2 et R21 près de Q1. | [projet] |
+| Q1 (AO3401A) après C_B2 : 5V_BOOST → Q1 → 5V en PWR_BOOST ; Q2, R21, **R_SS** (série grille, 0 Ω) et **C_SS** (grille-drain, DNP) près de Q1 ; TP_GATE1 sur la grille elle-même (côté Q1 de R_SS). | [projet, audit 2026-11-15 A1] |
 
 **LDO AP2112 (U5 SO-8 = 3V3_D, U6 SOT-23-5 = 3V3_A)**
 | Règle | Source |
