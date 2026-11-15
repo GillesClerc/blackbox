@@ -14,7 +14,7 @@
 
 | Carte | Couches | Épaisseur | Empilement (Board Setup → Physical Stackup) |
 |---|---|---|---|
-| **Main** | 4 | 1,6 mm | **JLC04161H-7628** (celui par défaut) : L1 cuivre 35 µm · préimprégné 7628 **0,2104 mm, εr 4,4** · L2 cuivre 15,2 µm · âme 1,065 mm · L3 15,2 µm · préimprégné 0,2104 mm · L4 35 µm |
+| **Main** | 4 | 1,6 mm | **JLC04161H-7628** (celui par défaut) : L1 cuivre 35 µm · préimprégné 7628 **0,2104 mm, εr 4,4** · L2 cuivre 15,2 µm · âme 1,065 mm (**εr 4,6**) · L3 15,2 µm · préimprégné 0,2104 mm · L4 35 µm |
 | **Satellites** | 2 | 1,6 mm | FR-4, 1 oz (35 µm) des deux côtés |
 
 Attribution des couches de la Main **[AN : TI SLYT512, SLAA896 ; Espressif]** :
@@ -25,8 +25,10 @@ Attribution des couches de la Main **[AN : TI SLYT512, SLAA896 ; Espressif]** :
 
 ### 1.2 Board Setup → Design Rules → Constraints
 
-Capacités JLCPCB standard : piste/espace mini 0,10/0,10 mm ; via mini 0,15/0,25 mm ; « perçage de
-0,2-0,25 mm avec pastille < 0,45 mm » et tout perçage de 0,1-0,15 mm = **surcoût** ; cuivre-bord
+Capacités JLCPCB standard : piste/espace mini 0,10/0,10 mm en 2 couches, **0,09/0,09 mm en
+multicouche** ; via mini 0,15/0,25 mm ; « perçage de 0,2-0,25 mm avec pastille < 0,45 mm » et tout
+perçage de 0,1-0,15 mm = **surcoût** (un 0,3/0,5 n'est pas dans la liste des tailles à supplément :
+déduction, pas une phrase de JLCPCB) ; cuivre-bord
 ≥ 0,2 mm ; via-via 0,2 mm ; pastille-pastille (trous) 0,45 mm ; sérigraphie trait ≥ 0,15 mm, texte
 ≥ 1,0 mm ; vernis 1:1 **[AN : JLCPCB capabilities]**. On garde de la marge :
 
@@ -36,7 +38,7 @@ Capacités JLCPCB standard : piste/espace mini 0,10/0,10 mm ; via mini 0,15/0,25
 | Minimum track width | **0,15 mm** | fab 0,10 |
 | Minimum connection width | 0,15 mm | |
 | Minimum annular width | 0,10 mm | via 0,3/0,6 → 0,15 |
-| Minimum via diameter / hole | **0,5 / 0,3 mm** | 0,3/0,5 reste sans surcoût (pastille ≥ 0,45) |
+| Minimum via diameter / hole | **0,5 / 0,3 mm** | 0,3/0,5 hors de la liste à supplément (pastille ≥ 0,45) |
 | Minimum through hole | **0,2 mm** | vias thermiques de l'empreinte du bq24075 (Ø 0,2 / 0,45, sans supplément) ; tous les autres vias en 0,3 |
 | Hole to hole clearance | 0,5 mm | |
 | Copper to edge clearance | **0,3 mm** | fab 0,2 ; 0,4 mm si V-cut |
@@ -57,7 +59,8 @@ valeurs proches à 1 A (0,29 mm) mais plus larges à 3 A (2,1 mm) : prendre le m
 |---|---|---|---|---|
 | Default | tout le reste | 0,20 | 0,20 | |
 | PWR_BAT | VBAT, VBAT-, net FS8205 (drain commun), GND près de J2/U10 | **1,5** (ou zone) | 0,25 | jusqu'à ~3 A avant déclenchement DW01A (seuil ≈ 1,6-3,2 A) [projet, FSD §2.2.2b] |
-| PWR_1A | 5V_USB, VSYS | **0,8** | 0,25 | entrée 1,07 A (R_ILIM), charge 1 A [DS bq24075] |
+| PWR_1A | 5V_USB | **0,8** | 0,25 | entrée 1,07 A (R_ILIM) [DS bq24075] |
+| PWR_VSYS | VSYS (U8.10/11 → C_B1, U7 VIN, U5, U6, J12) | **1,5** (ou zone) | 0,25 | **sur batterie, VSYS porte tout le courant de décharge** : ~1,5 A plafonné, ~2,6 A sans plafond, coupure du bq24075 dès 2,0 A garantis [DS bq24075 §8.5 ; audit 2026-11-15 A1/G1] |
 | PWR_BOOST | BB_L1, BB_L2 (U7 ↔ L1), 5V | **1,4** (ou zone pour 5V) | 0,25 | crête inductance ≈ 2,8 A en usage, limite moyenne du TPS63020 jusqu'à 4,5 A [DS TPS63020 §6.5, calc] |
 | PWR_3V3 | 3V3_D, 3V3_A, EN_SYS | 0,4 | 0,2 | ≤ 600 mA [DS AP2112] |
 | AUDIO_HP | HP_L±, HP_R±, SPK_L±, SPK_R± | **0,6** (1,25 aux pastilles des ferrites) | 0,25 | crête ≈ 0,6 A sur 8 Ω [calc] ; 1,25 mm conseillé aux pads BLM21 [AN : Murata] |
@@ -106,8 +109,14 @@ par transition** pour les nets ≥ 1 A.
 - **Mécanique à fixer avant le placement** (rien n'est au schéma) **[projet, audit 2026-11-14]** :
   contour de la carte, **trous de fixation** (mêmes dégagements ISO 273 qu'au §3, ≥ 3 points,
   > 2 mm de l'IMU), emprise de la **cellule 18650 et de son support** (opposée à l'antenne),
-  **3 mires** (fiducials) par face assemblée et trous d'outillage si JLCPCB les demande pour
-  l'assemblage.
+  **mires (fiducials) : 3 par face assemblée** (assemblage double face : un jeu par face — JLCPCB,
+  « For a double-sided SMT assembly, you must have a set of global fiducials on both the top and
+  bottom sides » ; disque ≈ 1 mm, ouverture de vernis ≥ 2 × Ø, ≥ 3,35 mm du bord). JLCPCB exige
+  mires, **trous d'outillage** (Ø 1,152 mm non métallisés) et **rails** (5 mm par défaut) pour tout
+  assemblage, et les ajoute s'ils manquent ; corps des composants ≥ 2,5 mm du bord ; rails standard
+  à partir de 70 × 70 mm. **Double face en offre « Economic » : non confirmé** (sources JLCPCB/LCSC
+  contradictoires) → vérifier au devis. **[AN : JLCPCB, CGU assemblage 09/09/2026, FAQ PCBA, blog
+  fiducials]**
 
 ### 2.2 ESP32-S3-WROOM-1 (U1) — zone numérique
 
@@ -156,7 +165,7 @@ netlist].
 | **Pad thermique → GND** avec vias ; **VSS (8) aussi relié à GND** (⚖ la datasheet dit à la fois « le pad n'est pas la masse principale » et « le pad est la masse principale » : câbler **les deux**). | [DS bq24075] |
 | Vias du pad : **déjà dans l'empreinte** (corrigée le 2026-11-15) — 5 vias numérotés **17**, aux positions TI (centre + 4 à ±0,58 mm), **Ø 0,2 / pastille 0,45 mm** (le diamètre TI ; pastille ≥ 0,45 = sans supplément JLCPCB), connexion pleine aux zones, **bouchés côté L4 par le vernis** (pas d'ouverture B.Mask), comme TI le demande (« filled, plugged or tented »). Ne pas en ajouter à la main. Pâte du pad 1,55 mm = 85 % (stencil TI). | [DS bq24075 RGT0016C, land pattern et stencil 4222419/E ; AN : TI SLUA271 §3.4.1 ; AN : JLCPCB capabilities] |
 | Masses faible courant (R_ISET, R_ILIM, R_TMR, TS) séparées du chemin de charge, rejoignant GND en un point près du pad. | [DS bq24075 §12.1] |
-| IN/OUT/BAT dimensionnés pour 1,07 A / 1 A (PWR_1A) — les deux broches OUT (10, 11) et BAT (2, 3) reliées par du cuivre, pas une seule. | [DS bq24075] |
+| IN dimensionné pour 1,07 A (PWR_1A) ; **OUT (10, 11) et BAT (2, 3) pour le courant de décharge** (PWR_VSYS / PWR_BAT, ~2,6 A sans plafond) — les deux broches OUT et les deux BAT reliées par du cuivre, pas une seule. | [DS bq24075 ; audit 2026-11-15 G1] |
 
 **Buck-boost TPS63020 (U7, VSON-14 3 × 4) + L1 + C_B1-C_B4** (depuis le 2026-11-15, audit A3 ;
 remplace le MT3608, D1 et le load switch Q1/Q2)
@@ -248,6 +257,10 @@ remplace le MT3608, D1 et le load switch Q1/Q2)
 Tous les TP_* (Ø 1,5 mm) sur **une seule face** (L1 ou L4) pour sonder carte posée, **loin de
 l'antenne**, TP_GND1-3 répartis près des zones puissance / numérique / audio [projet,
 `03-validation-qualite.md`].
+- **TP_SCLK2 / TP_SCLK3 (horloges 40-80 MHz) posés sur la piste elle-même**, pastille au ras, sans
+  dérivation : une branche de quelques mm forme un stub sur l'horloge [calc ; AN : Diodes AN022].
+- Aucun point de test sur un nœud à haute impédance (FB du TPS63020, VBAT_SENSE hors C_VBAT_SENSE)
+  [audit 2026-11-15 B6].
 
 ---
 

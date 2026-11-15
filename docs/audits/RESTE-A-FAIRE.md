@@ -56,6 +56,8 @@ Traitée point par point avec Gilles.
 - [x] 🤖 **B8** — pull-up R_GPIO0 10 kΩ sur GPIO0 (Espressif) ; superviseur de reset : non retenu,
   l'extinction firmware sur VBAT_SENSE en tient lieu.
 - [x] 🤖 **B10** — R_INL / R_INR (0 Ω montées) pour régler le gain du PAM8406 au proto.
+- [x] 🤖 **G1-G5** — guide de layout : classe PWR_VSYS (1,5 mm), JLCPCB (multicouche 0,09 mm,
+  εr 4,6, mires par face, trous d'outillage, rails), TP des horloges sur la piste.
 - [ ] 🧑 **B9** — lire `VDD_SPI_FORCE` sur la DevKitC (`espefuse.py --port /dev/ttyACM0 summary`) :
   à 1, l'appui sur BTN1 (GPIO45) au démarrage cesse d'être un risque.
 - [ ] 🧑 **Recharger les feuilles `power` et `connector`** dans KiCad (Fichier → Revenir) avant toute sauvegarde ;

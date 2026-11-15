@@ -278,6 +278,11 @@ de l'eFuse VDD_SPI_FORCE) reste à faire sur la DevKitC.
 - **G5 — À ajouter** : condensateurs du slot SD (A4), TP_FB1 (B6), points de test des horloges
   posés sur la piste et non en dérivation, plage de C_TUN (B4).
 
+**Statut (15/11).** G1 (nouvelle classe PWR_VSYS 1,5 mm, IN/OUT/BAT du bq24075), G2 (vias de
+l'empreinte, avec A2), G3 (0,09 mm multicouche, εr de l'âme 4,6, formulation des suppléments),
+G4 (exigences d'assemblage JLCPCB) et G5 (SD, TP sur horloges, pas de TP sur FB, C_TUN) : faits
+dans le guide.
+
 ### Toujours sans valeur vérifiée
 
 Largeur et espacement pour 90 Ω différentiel sur cet empilement : le calculateur JLCPCB n'est pas
