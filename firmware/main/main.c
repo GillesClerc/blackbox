@@ -404,6 +404,14 @@ static void net_boot_task(void *arg)
 {
     if (hal_wifi_connect(15000) == ESP_OK) {
         cloud_client_request_sync();
+    } else {
+        // Identifiants enregistrés mais réseau injoignable (mot de passe changé,
+        // box déplacée) : sans cette fenêtre, seul le menu de boot — donc le
+        // clavier — permettait de re-provisionner le WiFi.
+        ESP_LOGW(TAG, "WiFi injoignable — fenêtre d'appairage BLE ouverte");
+        if (ble_prov_start(300, on_ble_wifi_ok) != ESP_OK) {
+            ESP_LOGW(TAG, "appairage BLE indisponible");
+        }
     }
     vTaskDelete(NULL);
 }

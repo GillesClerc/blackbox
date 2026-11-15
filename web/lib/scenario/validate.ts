@@ -147,6 +147,39 @@ function branchStepOk(steps: Json[], step: Item, sid: string): void {
   }
 }
 
+// Cycles de steps « branch » (même algorithme et mêmes bornes que le C) : un
+// branch saute sans attendre, un cycle de branch bloquerait le moteur de la box.
+const BRANCH_CHAIN_MAX = 16;
+const BRANCH_VISIT_BUDGET = 4096;
+
+function branchStepById(steps: Json[], id: string): Json | null {
+  const step = steps.find((s) => strOf(s, "id") === id);
+  return step !== undefined && strOf(step, "type") === "branch" ? step : null;
+}
+
+function branchLoops(
+  steps: Json[],
+  from: Json,
+  target: Json,
+  depth: number,
+  budget: { left: number }
+): boolean {
+  if (depth >= BRANCH_CHAIN_MAX || --budget.left < 0) return true;
+  const destLoops = (dest: string | null): boolean => {
+    const d = dest ? branchStepById(steps, dest) : null;
+    if (!d) return false;
+    if (d === target) return true;
+    return branchLoops(steps, d, target, depth + 1, budget);
+  };
+  const conds = item(from, "conditions");
+  if (isArray(conds)) {
+    for (const c of conds) {
+      if (destLoops(strOf(c, "next"))) return true;
+    }
+  }
+  return destLoops(strOf(from, "default"));
+}
+
 export function validateScenario(root: Json): ValidationResult {
   try {
     const steps = item(root, "steps");
@@ -171,6 +204,14 @@ export function validateScenario(root: Json): ValidationResult {
       else if (type === "branch") branchStepOk(list, step, sid!);
       else waitStepOk(step, sid!, type!);
     });
+
+    // Seconde passe : cycles de branch.
+    for (const step of list) {
+      if (strOf(step, "type") !== "branch") continue;
+      if (branchLoops(list, step, step, 0, { left: BRANCH_VISIT_BUDGET })) {
+        fail(`step '${strOf(step, "id")}' : cycle (ou chaîne trop longue) de steps 'branch'`);
+      }
+    }
     return { ok: true };
   } catch (e) {
     if (e instanceof Invalid) return { ok: false, error: e.message };

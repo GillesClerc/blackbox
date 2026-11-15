@@ -1,6 +1,6 @@
 // hal_touch — capteur tactile capacitif 12 canaux, API unique.
-// Backends : MTCH2120 @0x28 (PCB Phase 2) ou MPR121 @0x5A (breakout Phase 1),
-// sélectionné par probe I2C à l'init.
+// Backend : MPR121 @0x5A (breakout Phase 1), détecté par probe I2C à l'init.
+// PCB Phase 2 : CAP1298 @0x28, backend à écrire.
 #pragma once
 #include <stdint.h>
 #include <stdbool.h>

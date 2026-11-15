@@ -5,7 +5,7 @@
 
 // MPR121 — contrôleur tactile capacitif 12 canaux — NXP
 // Utilisé en Phase 1 proto (breakout AliExpress)
-// Phase 2 série : remplacé par MTCH2120 directement sur PCB custom
+// Phase 2 série : remplacé par le CAP1298 du satellite Côté 2 (pilote à écrire)
 //
 // Adresse I2C : 0x5A (ADDR pin à GND)
 #define MPR121_ADDR         0x5A

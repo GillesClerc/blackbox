@@ -9,7 +9,7 @@ typedef enum {
     EVT_NONE = 0,
     EVT_RFID_READ,        // uid (str)
     EVT_KEYPAD_CODE,      // code (str)
-    EVT_TOUCH,            // channel (int_val) — MTCH2120
+    EVT_TOUCH,            // channel (int_val) — contrôleur tactile
     EVT_ROTARY_VALUE,     // valeur (int_val)  — potentiomètre ADC (AS5600 retiré Phase 1)
     EVT_HALL_DETECTED,    // actif (bool_val)
     EVT_BREATH_DETECTED,  // (pas de payload)

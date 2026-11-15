@@ -155,6 +155,54 @@ static bool branch_step_ok(const cJSON *steps, const cJSON *step, const char *si
     return true;
 }
 
+// ── Cycles de steps « branch » ───────────────────────────────────────────────
+// Un branch saute sans attendre : un cycle fait uniquement de branch ferait
+// tourner le moteur sans jamais rendre la main. On refuse aussi les chaînes de
+// plus de BRANCH_CHAIN_MAX branch consécutifs (borne de récursion) et les
+// graphes trop touffus (BRANCH_VISIT_BUDGET), plutôt que de les explorer.
+#define BRANCH_CHAIN_MAX    16
+#define BRANCH_VISIT_BUDGET 4096
+
+static const cJSON *branch_step_by_id(const cJSON *steps, const char *id)
+{
+    const cJSON *step;
+    cJSON_ArrayForEach(step, steps) {
+        const char *sid = str_of(step, "id");
+        if (sid && strcmp(sid, id) == 0) {
+            const char *type = str_of(step, "type");
+            return (type && strcmp(type, "branch") == 0) ? step : NULL;
+        }
+    }
+    return NULL;
+}
+
+static bool branch_loops(const cJSON *steps, const cJSON *from,
+                         const cJSON *target, int depth, int *budget);
+
+static bool branch_dest_loops(const cJSON *steps, const char *dest,
+                              const cJSON *target, int depth, int *budget)
+{
+    const cJSON *d = dest ? branch_step_by_id(steps, dest) : NULL;
+    if (!d) return false;            // destination non-branch : la chaîne s'arrête
+    if (d == target) return true;
+    return branch_loops(steps, d, target, depth + 1, budget);
+}
+
+// true si `target` est atteignable depuis `from` par des branch uniquement
+// (ou si l'exploration dépasse les bornes).
+static bool branch_loops(const cJSON *steps, const cJSON *from,
+                         const cJSON *target, int depth, int *budget)
+{
+    if (depth >= BRANCH_CHAIN_MAX || --(*budget) < 0) return true;
+    const cJSON *c;
+    cJSON_ArrayForEach(c, cJSON_GetObjectItem(from, "conditions")) {
+        if (branch_dest_loops(steps, str_of(c, "next"), target, depth, budget)) {
+            return true;
+        }
+    }
+    return branch_dest_loops(steps, str_of(from, "default"), target, depth, budget);
+}
+
 esp_err_t scenario_validate(const cJSON *root)
 {
     const cJSON *steps = cJSON_GetObjectItem(root, "steps");
@@ -207,6 +255,18 @@ esp_err_t scenario_validate(const cJSON *root)
         }
         if (!ok) return ESP_ERR_INVALID_ARG;
         idx++;
+    }
+
+    // Seconde passe (types et références désormais sûrs) : cycles de branch.
+    cJSON_ArrayForEach(step, steps) {
+        const char *type = str_of(step, "type");
+        if (!type || strcmp(type, "branch") != 0) continue;
+        int budget = BRANCH_VISIT_BUDGET;
+        if (branch_loops(steps, step, step, 0, &budget)) {
+            ESP_LOGE(TAG, "step '%s' : cycle (ou chaîne trop longue) de steps 'branch'",
+                     str_of(step, "id"));
+            return ESP_ERR_INVALID_ARG;
+        }
     }
     return ESP_OK;
 }

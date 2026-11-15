@@ -441,6 +441,227 @@
       "name": "racine tableau refusée",
       "valid": false,
       "scenario": []
+    },
+    {
+      "name": "branch qui boucle sur lui-même (default)",
+      "valid": false,
+      "scenario": {
+        "steps": [
+          {
+            "id": "a",
+            "type": "branch",
+            "conditions": [
+              {
+                "var": "x",
+                "op": "eq",
+                "value": 1,
+                "next": "z"
+              }
+            ],
+            "default": "a"
+          },
+          {
+            "id": "z",
+            "type": "end"
+          }
+        ]
+      }
+    },
+    {
+      "name": "branch qui boucle sur lui-même (condition)",
+      "valid": false,
+      "scenario": {
+        "steps": [
+          {
+            "id": "a",
+            "type": "branch",
+            "conditions": [
+              {
+                "var": "x",
+                "op": "eq",
+                "value": 1,
+                "next": "a"
+              }
+            ],
+            "default": "z"
+          },
+          {
+            "id": "z",
+            "type": "end"
+          }
+        ]
+      }
+    },
+    {
+      "name": "cycle de deux branch",
+      "valid": false,
+      "scenario": {
+        "steps": [
+          {
+            "id": "a",
+            "type": "branch",
+            "conditions": [
+              {
+                "var": "x",
+                "op": "eq",
+                "value": 1,
+                "next": "b"
+              }
+            ],
+            "default": "z"
+          },
+          {
+            "id": "b",
+            "type": "branch",
+            "conditions": [
+              {
+                "var": "x",
+                "op": "eq",
+                "value": 1,
+                "next": "z"
+              }
+            ],
+            "default": "a"
+          },
+          {
+            "id": "z",
+            "type": "end"
+          }
+        ]
+      }
+    },
+    {
+      "name": "cycle de branch atteint depuis un branch hors cycle",
+      "valid": false,
+      "scenario": {
+        "steps": [
+          {
+            "id": "a",
+            "type": "branch",
+            "conditions": [
+              {
+                "var": "x",
+                "op": "eq",
+                "value": 1,
+                "next": "b"
+              }
+            ],
+            "default": "z"
+          },
+          {
+            "id": "b",
+            "type": "branch",
+            "conditions": [
+              {
+                "var": "x",
+                "op": "eq",
+                "value": 1,
+                "next": "c"
+              }
+            ],
+            "default": "z"
+          },
+          {
+            "id": "c",
+            "type": "branch",
+            "conditions": [
+              {
+                "var": "x",
+                "op": "eq",
+                "value": 1,
+                "next": "b"
+              }
+            ],
+            "default": "z"
+          },
+          {
+            "id": "z",
+            "type": "end"
+          }
+        ]
+      }
+    },
+    {
+      "name": "chaîne de branch sans cycle",
+      "valid": true,
+      "scenario": {
+        "steps": [
+          {
+            "id": "a",
+            "type": "branch",
+            "conditions": [
+              {
+                "var": "x",
+                "op": "eq",
+                "value": 1,
+                "next": "b"
+              }
+            ],
+            "default": "z"
+          },
+          {
+            "id": "b",
+            "type": "branch",
+            "conditions": [
+              {
+                "var": "x",
+                "op": "eq",
+                "value": 1,
+                "next": "c"
+              }
+            ],
+            "default": "z"
+          },
+          {
+            "id": "c",
+            "type": "branch",
+            "conditions": [
+              {
+                "var": "x",
+                "op": "eq",
+                "value": 1,
+                "next": "z"
+              }
+            ],
+            "default": "z"
+          },
+          {
+            "id": "z",
+            "type": "end"
+          }
+        ]
+      }
+    },
+    {
+      "name": "boucle branch → input → branch (attente, donc permise)",
+      "valid": true,
+      "scenario": {
+        "steps": [
+          {
+            "id": "a",
+            "type": "branch",
+            "conditions": [
+              {
+                "var": "x",
+                "op": "eq",
+                "value": 1,
+                "next": "w"
+              }
+            ],
+            "default": "z"
+          },
+          {
+            "id": "w",
+            "type": "input",
+            "on": "touch",
+            "next": "a"
+          },
+          {
+            "id": "z",
+            "type": "end"
+          }
+        ]
+      }
     }
   ]
 }

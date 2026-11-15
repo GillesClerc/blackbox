@@ -310,6 +310,9 @@ static void engine_task(void *arg) {
                 }
             }
             if (!next) next = cJSON_GetStringValue(cJSON_GetObjectItem(s_current, "default"));
+            // Filet de sécurité : le validateur refuse les cycles de branch, mais
+            // un tick de délai garantit qu'aucune boucle n'affame le cœur 0.
+            vTaskDelay(1);
             if (next) enter_step(next);
             else {
                 ESP_LOGW(TAG, "branch [%s] sans destination",

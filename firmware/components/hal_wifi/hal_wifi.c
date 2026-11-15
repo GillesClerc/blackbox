@@ -89,7 +89,9 @@ static esp_err_t wifi_stack_init(void)
 static esp_err_t wifi_apply_config(const char *ssid, const char *pass)
 {
     wifi_config_t wc = {0};
-    strlcpy((char *)wc.sta.ssid, ssid, sizeof(wc.sta.ssid));
+    // ssid[32] sans NUL final quand le SSID fait 32 octets : strlcpy le
+    // tronquerait à 31. wc est à zéro, la longueur est bornée par les appelants.
+    memcpy(wc.sta.ssid, ssid, strnlen(ssid, sizeof(wc.sta.ssid)));
     strlcpy((char *)wc.sta.password, pass, sizeof(wc.sta.password));
     wc.sta.threshold.authmode = pass[0] ? WIFI_AUTH_WPA2_PSK : WIFI_AUTH_OPEN;
 

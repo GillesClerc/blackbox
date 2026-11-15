@@ -70,6 +70,7 @@ typedef struct {
     bool           loop;
     int16_t       *pcm;        // PSRAM : MINIMP3_MAX_SAMPLES_PER_FRAME*2 échantillons
     int            pcm_len, pcm_pos;  // en échantillons int16 (stéréo entrelacé)
+    bool           produced;   // au moins une trame décodée depuis le dernier retour au début
     mp3dec_t       dec;
 } mp3_voice_t;
 
@@ -148,6 +149,7 @@ static void mp3_voice_mix(mp3_voice_t *v, mp3_ctrl_t *c, int32_t *acc,
         v->remaining = (int)v->size;
         v->pcm_len   = 0;
         v->pcm_pos   = 0;
+        v->produced  = false;
         mp3dec_init(&v->dec);
         v->on = true;
         atomic_store(&c->is_active, true);
@@ -156,12 +158,22 @@ static void mp3_voice_mix(mp3_voice_t *v, mp3_ctrl_t *c, int32_t *acc,
     const int gq     = (int)(gain * 256.0f);
     const int needed = frames * 2;
     int       filled = 0;
+    bool      reject = false;  // source inutilisable → voix arrêtée, même en boucle
     while (filled < needed) {
         if (v->pcm_pos >= v->pcm_len) {
             if (v->remaining < 4) {
                 if (!v->loop || v->size < 4) break;  // fini (ou source vide)
+                // Un tour complet sans aucune trame décodée : le fichier n'est
+                // pas un MP3 lisible. Sans cet arrêt, la boucle repartirait au
+                // début indéfiniment sans jamais rendre la main (cœur 0 affamé).
+                if (!v->produced) {
+                    ESP_LOGE(TAG, "MP3 sans trame décodable — voix arrêtée");
+                    reject = true;
+                    break;
+                }
                 v->ptr       = v->data;
                 v->remaining = (int)v->size;
+                v->produced  = false;
                 mp3dec_init(&v->dec);
             }
             mp3dec_frame_info_t info;
@@ -176,6 +188,15 @@ static void mp3_voice_mix(mp3_voice_t *v, mp3_ctrl_t *c, int32_t *acc,
                 continue;
             }
             if (samples <= 0) continue;
+
+            // Le mixer sort à SR sans rééchantillonnage : une autre fréquence
+            // serait jouée à la mauvaise vitesse.
+            if (info.hz != SR) {
+                ESP_LOGE(TAG, "MP3 à %d Hz (attendu %d) — voix arrêtée", info.hz, SR);
+                reject = true;
+                break;
+            }
+            v->produced = true;
 
             if (info.channels == 1) {
                 for (int i = 0; i < samples; i++) {
@@ -198,7 +219,7 @@ static void mp3_voice_mix(mp3_voice_t *v, mp3_ctrl_t *c, int32_t *acc,
         v->pcm_pos += take;
     }
 
-    if (filled < needed && !v->loop) {  // fin du one-shot
+    if (reject || (filled < needed && !v->loop)) {  // fin du one-shot, ou source refusée
         v->on = false;
         atomic_store(&c->req_active, false);
         atomic_store(&c->is_active, false);
