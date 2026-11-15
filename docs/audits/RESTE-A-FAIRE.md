@@ -15,9 +15,8 @@
 Détail dans `2026-11-15-verification-schemas-layout.md` (numéros A/B/C/G de ce rapport).
 Traitée point par point avec Gilles.
 
-- [x] 🤖 **A1 (schéma)** — démarrage progressif de Q1 : **R_SS** (0 Ω monté, série grille) et
-  **C_SS** (10 nF grille-drain, DNP), feuille `power` ; BOM, `AO3401A.md`, `bq24075.md`, guide
-  §2.4 à jour. Netlist comparée avant/après : seuls R_SS, C_SS et le nœud de grille changent.
+- [x] 🤖 **A1 (schéma)** — démarrage progressif de Q1 (R_SS / C_SS) posé, puis **retiré avec
+  le load switch en A3** : le TPS63020 démarre à courant limité (400 mA, §7.4.1).
 - [x] 🤖 **TP_GATE1 n'était relié à rien dans KiCad** (trouvé en traitant A1) : label **local**
   `GATE_5V` sur la grille, label **global** du même nom sur TP_GATE1 — KiCad ne les relie pas.
   La grille porte maintenant un label global. `kicad_netlist.py` corrigé : labels locaux limités
@@ -31,12 +30,26 @@ Traitée point par point avec Gilles.
 - [ ] 🧑 **A4b** — choisir le module des yeux GC9A01 (référence, ordre des broches, courant) :
   J4/J5 du satellite Devant restent provisoires, **bloquant pour le layout de Devant** et pour
   boucler le budget 3V3_D (H1).
+- [x] 🤖 **A3** — rail 5 V : **MT3608 → buck-boost TPS63020** (C15483) + L1 **Sunlord WPN4020H1R5MT**
+  1,5 µH (C98360), 3 × 22 µF en sortie, consigne **5,0 V** (1,62 MΩ / 180 kΩ), R_VINA + C_VINA ;
+  **retirés** : D1, Q1, Q2, R21, R_SS, C_SS, TP_5VB1, TP_FB1 (B6), TP_GATE1, PWR_FLAG du 5 V.
+  Régule aussi sous USB (**H9 soldé** : plus de 5,2-5,3 V sur les WS2812), charge déconnectée à
+  l'arrêt (**H4 sans objet**). Symbole/empreinte/3D générés par easyeda2kicad (C15483, C98360),
+  types de broches corrigés. Synthèses `TPS63020.md`, `WPN4020H.md` ; BOM, guide §1.3/§2.4,
+  validation, FSD à jour. Netlist comparée : seul le bloc change.
+- [ ] 🧑 **A3 — deux vérifications à l'œil sur le PDF `TPS63020.pdf`** (figures non lisibles ici) :
+  (1) figure 7 p. 13 : comment VINA est alimentée (la rév. G a « removed the connection from VINA
+  to VIN ») — le schéma la met sur VSYS par R_VINA 0 Ω ; (2) dessin DSJ0014A (mécanique) contre
+  l'empreinte LCSC `C15483_VSON-14…` : pad central en peigne jusqu'à ±2,2 mm. Contrôler aussi
+  l'empreinte de L1 contre la Fig. 5 du catalogue Sunlord (a 1,9 / b 1,1 / c 3,7 mm).
+- [ ] 🧑 **A3** — stock JLCPCB à revérifier à la commande : TPS63020DSJR 638, **WPN4020H1R5MT 200**.
 - [ ] 🧑 **Recharger les feuilles `power` et `connector`** dans KiCad (Fichier → Revenir) avant toute sauvegarde ;
-  au premier F8, vérifier que U8 prend bien l'empreinte corrigée (5 vias « 17 » dans le pad).
+  au premier F8, vérifier que U8 prend bien l'empreinte corrigée (5 vias « 17 » dans le pad), et
+  que U7 (TPS63020) et L1 prennent les nouvelles empreintes `lcsc_footprints:C15483_…` / `C98360_…`.
 - [ ] 🤖 **A1 (firmware)** — plafond global de courant **~1,5 A côté batterie** (LEDs + audio,
   en plus du plafond audio à −22 dB) : le bq24075 coupe VSYS dès 2,0 A garantis (V_O(SC2)).
-- [ ] 🧑 **A1 (proto)** — mesurer VSYS à l'oscilloscope à l'allumage et en charge crête ; si
-  coupure, monter R_SS = 47 kΩ + C_SS = 10 nF (départ de réglage).
+- [ ] 🧑 **A1 (proto)** — mesurer VSYS à l'oscilloscope à l'allumage et en charge crête (coupure
+  du bq24075 si VBAT − VSYS > 200 mV pendant 250 µs).
 
 ## Audit du 2026-11-14 — points nouveaux
 
@@ -53,7 +66,8 @@ Avant de router :
   à chiffrer au devis.
 - [ ] 🧑 **H6** — brochage du fader PTA6043 à confirmer sur le PDF, puis dans la synthèse.
 - [ ] 🧑 **H8** — relancer l'ERC Main (`C_AVDD?` sur la racine) et Côté 1 (rapport périmé).
-- [ ] 🤝 **H4 / H5** — empreintes optionnelles : démarrage progressif de Q1, condensateur 5 V sur Devant.
+- [ ] 🤝 **H5** — empreinte optionnelle : condensateur 5 V sur Devant. (H4, démarrage progressif de
+  Q1 : sans objet depuis le TPS63020, A3.)
 - [x] 🤖 **G1 / G2 / G3 / G4 / G6** — guide de layout complété le 15/11.
 - [ ] 🧑 Trois PDF illisibles par le groupe (`BMP280.pdf`, `MLX90614.pdf`, `TMAG5273.pdf` en
   `rw--w----`) : `sudo chmod g+r` dessus, sinon git les voit modifiés.
@@ -130,7 +144,8 @@ Web :
 
 - [ ] 🧑 U5 (AP2112M SO-8) : plan de cuivre généreux sous et autour.
 - [ ] 🧑 bq24075 : pad exposé sur GND avec vias thermiques, VSS (broche 8) raccordée aussi.
-- [ ] 🧑 Boost : boucle SW → L1 → D1 → C_B2 → GND la plus courte ; C_B1 au pied de IN.
+- [ ] 🧑 Buck-boost TPS63020 : C_B1 (entrée) et C_B2-C_B4 (sortie) + L1 au plus près, deux boucles
+  minimales, PGND / GND commande réunis en un point (guide §2.4).
 - [x] ~~USBLC6 (U12) au plus près de J1~~ — déplacés sur le satellite Côté 2 le 27/09 (voir §3).
 - [ ] 🧑 ICS-43434 : C3 au plus près des broches 5 et 3, sans via ; trou du micro à
   prévoir avec le boîtier (bottom-port en face Dessous, H13).
@@ -286,9 +301,9 @@ Hérités du 23/09 :
 
 Document : `docs/pcb/03-validation-qualite.md`.
 - [ ] 🧑 Relever les valeurs de référence sur la première carte saine.
-- [ ] 🧑 Mesures ciblées par l'audit : rendement réel du MT3608 ; **charge crête** (LEDs
-  blanches + audio + WiFi, batterie basse) sans coupure DW01A ; rail 5 V ≤ 5,3 V avec
-  plusieurs chargeurs (H9) ; charge sur un port PC 500 mA (H10) ; consommation éteinte
+- [ ] 🧑 Mesures ciblées par l'audit : rendement réel du TPS63020 (batterie 3,0-4,2 V et USB) ; **charge crête** (LEDs
+  blanches + audio + WiFi, batterie basse) sans coupure DW01A ; rail 5 V ≤ 5,2 V à vide (TPS63020 en
+  power save, H9 normalement soldé) ; charge sur un port PC 500 mA (H10) ; consommation éteinte
   ≤ 20 µA ; thermique de U5 et du bq24075 sous USB en boîtier fermé.
 
 ## 9. Divers

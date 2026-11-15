@@ -58,7 +58,7 @@ valeurs proches à 1 A (0,29 mm) mais plus larges à 3 A (2,1 mm) : prendre le m
 | Default | tout le reste | 0,20 | 0,20 | |
 | PWR_BAT | VBAT, VBAT-, net FS8205 (drain commun), GND près de J2/U10 | **1,5** (ou zone) | 0,25 | jusqu'à ~3 A avant déclenchement DW01A (seuil ≈ 1,6-3,2 A) [projet, FSD §2.2.2b] |
 | PWR_1A | 5V_USB, VSYS | **0,8** | 0,25 | entrée 1,07 A (R_ILIM), charge 1 A [DS bq24075] |
-| PWR_BOOST | SW (L1/U7.1/D1), 5V_BOOST, 5V | **1,0** (ou zone) | 0,25 | crête inductance ≈ 1,9 A [DS SWPA5040S, projet] |
+| PWR_BOOST | BB_L1, BB_L2 (U7 ↔ L1), 5V | **1,4** (ou zone pour 5V) | 0,25 | crête inductance ≈ 2,8 A en usage, limite moyenne du TPS63020 jusqu'à 4,5 A [DS TPS63020 §6.5, calc] |
 | PWR_3V3 | 3V3_D, 3V3_A, EN_SYS | 0,4 | 0,2 | ≤ 600 mA [DS AP2112] |
 | AUDIO_HP | HP_L±, HP_R±, SPK_L±, SPK_R± | **0,6** (1,25 aux pastilles des ferrites) | 0,25 | crête ≈ 0,6 A sur 8 Ω [calc] ; 1,25 mm conseillé aux pads BLM21 [AN : Murata] |
 | USB | USB_DP/DM(_RAW) | voir §2.3 | | paire |
@@ -158,15 +158,18 @@ netlist].
 | Masses faible courant (R_ISET, R_ILIM, R_TMR, TS) séparées du chemin de charge, rejoignant GND en un point près du pad. | [DS bq24075 §12.1] |
 | IN/OUT/BAT dimensionnés pour 1,07 A / 1 A (PWR_1A) — les deux broches OUT (10, 11) et BAT (2, 3) reliées par du cuivre, pas une seule. | [DS bq24075] |
 
-**Boost MT3608 (U7) + L1 + D1 + C_B1/C_B2**
+**Buck-boost TPS63020 (U7, VSON-14 3 × 4) + L1 + C_B1-C_B4** (depuis le 2026-11-15, audit A3 ;
+remplace le MT3608, D1 et le load switch Q1/Q2)
 | Règle | Source |
 |---|---|
-| **Boucle chaude = U7.1 (SW) → D1 → C_B2 → GND → U7.2** : la plus petite possible, **C_B2 placé en premier**, tout sur L1 sans via. | [DS MT3608 ; AN : TI SLVA773 ; calc] |
-| **Nœud SW (U7.1, L1.2, D1 anode) : surface minimale** — cuivre juste suffisant pour 1,9 A, pas de zone. | [DS MT3608] |
-| C_B1 (22 µF) sur VSYS au plus près de U7.5, C_B2 (22 µF) près de D1/U7.2 ; retours GND vers L2 par **plusieurs vias** directement aux pastilles. | [DS MT3608 ; AN : SLVA773, 1 via/A] |
-| **R_FB_H / R_FB_L au plus près de U7.3 (FB)**, piste FB courte, **jamais parallèle** au nœud SW ni sous L1 ; prise de tension sur C_B2 (après D1). | [DS MT3608 ; AN : SLVA773] |
-| Rien de sensible sous L1 / le nœud SW sur L4 (L2 GND fait écran, mais pas d'audio ni d'I2C juste dessous). Loin de l'antenne. | [AN : SLAA896 §2.4, Espressif] |
-| Q1 (AO3401A) après C_B2 : 5V_BOOST → Q1 → 5V en PWR_BOOST ; Q2, R21, **R_SS** (série grille, 0 Ω) et **C_SS** (grille-drain, DNP) près de Q1 ; TP_GATE1 sur la grille elle-même (côté Q1 de R_SS). | [projet, audit 2026-11-15 A1] |
+| **C_B1 (entrée, VIN 10/11), C_B2-C_B4 (3 × 22 µF, VOUT 4/5) et L1 au plus près du CI** : en boost (batterie), la boucle chaude est côté sortie (L2 → VOUT → C_B2-4 → PGND) ; en buck (USB), côté entrée (VIN → C_B1 → PGND). Les deux boucles minimales, sur L1 sans via, C_B2 le plus près de VOUT/PGND. | [DS TPS63020 §8.2.2.3-4, §10.1] |
+| **Nœuds BB_L1 (8/9) et BB_L2 (6/7) : surface minimale** — cuivre juste suffisant (≈ 2,8 A crête en usage, jusqu'à ~4,7 A en surcharge), pas de zone ; L1 (WPN4020H, 4 × 4 mm) collée aux broches 6-9. | [DS TPS63020 §10.1 ; calc, `WPN4020H.md`] |
+| **Deux masses** : PGND (pad thermique + retours de C_B1-C_B4) et GND commande (broche 2, R_FB_L, C_VINA) sur deux nœuds distincts, **réunis en un seul point près d'une broche de masse du CI**, puis vers L2. | [DS TPS63020 §10.1] |
+| **R_FB_H / R_FB_L au plus près de la broche 2 (GND commande) et de FB (3)**, piste FB courte (pont à ~162 kΩ : nœud sensible), jamais parallèle à BB_L1/BB_L2 ni sous L1 ; prise de tension de R_FB_H sur C_B2. **Aucun point de test sur FB.** | [DS TPS63020 §8.2.3, §10.1] |
+| **C_VINA (100 nF) collé à VINA (1)** / GND (2) ; R_VINA (0 Ω) entre VSYS et VINA. | [DS TPS63020 §8.2.2.5] |
+| **Pad thermique soudé**, vias vers L2 (R_θJA 41,8 °C/W ; ~0,5 W à pleine charge sur batterie). | [DS TPS63020 §6.4, §10.3 ; calc] |
+| Rien de sensible sous L1 / BB_L1-BB_L2 sur L4 (L2 GND fait écran, mais pas d'audio ni d'I2C juste dessous). Loin de l'antenne. | [AN : SLAA896 §2.4, Espressif] |
+| ⚠ Empreinte LCSC/EasyEDA (C15483) : pad central en peigne jusqu'à ±2,2 mm, **non vérifié contre le dessin TI DSJ0014A** (introuvable en texte) → comparer au dessin du PDF avant de router. | [projet] |
 
 **LDO AP2112 (U5 SO-8 = 3V3_D, U6 SOT-23-5 = 3V3_A)**
 | Règle | Source |

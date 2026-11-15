@@ -122,6 +122,18 @@ n'aurait eu aucun effet. Les trois bibliothèques sont désormais déclarées da
 ondulation et température à 0,5 / 0,8 / 1,1 A depuis 3,4 V **avant** de lancer la Main. Si la
 tenue est insuffisante, c'est un changement de composant et d'empreinte.
 
+**Statut (15/11, décision de Gilles : chercher une alternative, puis TPS63020).** Comparés :
+FP6293 (boost asynchrone comme le MT3608 : 140 mΩ, 3,5 A typ sans minimum, V_CC max abs 6 V —
+écarté), TPS61022 (pass-through ≈ VIN quand VIN > VOUT, donc jusqu'à ~5,4 V sous USB — écarté),
+TPS61088 (surdimensionné, > 15 composants — écarté), **TPS63020** (buck-boost : régule 5 V que VSYS
+soit au-dessus ou en dessous, charge déconnectée à l'arrêt, démarrage à 400 mA, limite moyenne
+3,5 A min, « 2 A in boost mode » §8.1). Retenu, avec L1 = Sunlord WPN4020H1R5MT (1,5 µH, Isat
+7,7 A, DCR 36 mΩ max). Consigne abaissée à **5,0 V** (+3 % du power save, §7.3.1). Feuille
+`power` refaite : D1, Q1/Q2, R21, R_SS, C_SS, TP_5VB1, TP_FB1, TP_GATE1 et les PWR_FLAG du 5 V
+retirés ; **H4 sans objet, H9 soldé, B6 soldé**. Restent deux contrôles à l'œil (figure 7 pour
+VINA, dessin DSJ0014A pour l'empreinte) et le stock de l'inductance (200). Réserve : VSYS jusqu'à
+5,6 V avec un chargeur hors norme, au-dessus des 5,5 V recommandés (max abs 7 V).
+
 ### A4 — Budget 3V3_D (H1 du 14/11) : des chiffres, et pas de condensateur au slot SD
 
 **[en ligne]** pour les trois premières lignes.

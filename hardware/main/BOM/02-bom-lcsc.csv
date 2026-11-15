@@ -5,7 +5,9 @@ U3,PAM8406DR,,SOP-16,C86270,1,Main,"Ampli classe D stereo en pont ; 1,8 W/canal 
 U4,ICS-43434,,BGA-6 bottom-port,C5656610,1,Main,Micro MEMS I2S 24-bit
 U5,AP2112M-3.3TRG1,,SO-8,C5290219,1,Main,LDO 3.3V digital 600mA — SO-8 (114 °C/W au lieu de 184) pour la thermique sous USB
 U6,AP2112K-3.3TRG1,,SOT-23-5,C51118,1,Main,LDO 3.3V audio 600mA
-U7,MT3608,,SOT-23-6,C84817,1,Main,Boost 3.7V->5V 2A
+U7,TPS63020DSJR,Buck-boost TI TPS63020 (4 A switches),VSON-14-EP(3x4),C15483,1,Main,"Rail 5V (audit 2026-11-15 A3, remplace le MT3608) : regule 5,0 V aussi quand VSYS > 5 V sous USB (mode buck), deconnecte la charge a l arret (plus de load switch), demarrage a 400 mA. Extended, 638 en stock le 15/11 - docs/datasheets/TPS63020.md"
+R_VINA,,0 ohm,0402,—,1,Main,"VSYS -> VINA du TPS63020 : 0 ohm par defaut, place pour un filtre RC si le bruit de commutation perturbe la commande"
+C_VINA,,100nF 16V ceramique X7R,0402,—,1,Main,"VINA du TPS63020 : 0,1 uF recommande, jamais plus de 0,22 uF (datasheet 8.2.2.5)"
 U8,bq24075RGTR,,QFN-16,C15464,1,Main,Chargeur LiPo 1.5A + power path DPPM
 U9,DW01A,,SOT-23-6,C351410,1,Main,Protection batterie
 U10,FS8205,,SOT-23-6,C32254,1,Main,Dual MOSFET protection
@@ -20,20 +22,22 @@ J9,,Connecteur JST-PH 4pin,JST-PH-4P,—,1,Main,"WS2812 externes + reserve (le b
 J2,,Connecteur batterie JST-PH 4pin (BAT+/BAT-/NTC/retour NTC),JST-PH-4P,—,1,Main,"Cellule 18650 + NTC collee, harnais 4 fils : le retour NTC va sur GND (VSS du bq24075), pas sur BAT- (audit 2026-09-27 H2)"
 J10,,Connecteur haut-parleur JST-PH 4pin,JST-PH-4P,—,1,Main,"Sorties en pont L+/L-/R+/R- via ferrites FB3-FB6 — aucune masse commune, ne jamais relier les - entre elles ni a GND"
 J11,,Slot microSD push-push,TF-PUSH,C91145,1,Main,Carte SD sur SPI2 partage (MISO=15 CS=47) - verifier ref LCSC avant commande
-C_SD1,,10uF 16V ceramique X5R,0805,—,1,Main,"Reservoir au pied de J11 (VDD/VSS) : pics d ecriture SD de plusieurs centaines de mA ~1 ms (note Swissbit) - audit 2026-11-15 A4"
+C_SD1,,10uF 16V ceramique X5R,0805,—,1,Main,Reservoir au pied de J11 (VDD/VSS) : pics d ecriture SD de plusieurs centaines de mA ~1 ms (note Swissbit) - audit 2026-11-15 A4
 C_SD2,,100nF 16V ceramique X7R,0402,—,1,Main,"Decouplage HF au pied de J11, plus pres du slot que C_SD1 - audit 2026-11-15 A4"
-L1,Sunlord SWPA5040S6R8MT,6.8uH,SMD 5x5x4mm,C36411,1,Main,"Inductance boost MT3608 : 6,8 uH +-20 %, Isat 2,9 A, Irms 2,5 A, DCR 56 mOhm max (decision 2026-09-27, docs/datasheets/SWPA5040S.md) — remplace le 22uH 1210"
+L1,Sunlord WPN4020H1R5MT,1.5uH,SMD 4x4x2mm,C98360,1,Main,"Inductance du TPS63020 : 1,5 uH +-20 %, Isat 7,7 A, Irms 5,2 A, DCR 36 mOhm max (catalogue Sunlord WPN, docs/datasheets/WPN4020H.md). Extended, 200 en stock le 15/11 - remplace la SWPA5040S6R8MT"
 "C2,C3,C4,C5",,100nF 16V ceramique X7R,0402,—,4,Main,"Decouplage generique (ESP32 C2, micro C3, IMU C4/C5)"
 "C_AVDD,C_DVDD,C_CPVDD,C_LDOO",,100nF 16V ceramique X7R,0402,—,4,Main,"PCM5122 AVDD(pin8)/DVDD(pin28)/CPVDD(pin1)/LDOO(pin26) — 0,1 uF (docs/datasheets/pcm5122.md)"
 C_EN,,1uF 16V ceramique X5R,0402,—,1,Main,"Filtre RC de EN (ESP32) : R6 10 k + 1 uF (guide Espressif, ESP32-S3-WROOM-1-hardware-design-guidelines.md). Etait range a tort dans la ligne 100 nF (corrige 2026-09-27)"
 "C_D2,C_A2",,10uF 10V ceramique X5R,0805,—,2,Main,Sorties LDO U5/U6
-C_B1,,22uF 16V ceramique X5R,0805,—,1,Main,"Entree MT3608 (VSYS) — 22 uF recommandes par la datasheet MT3608, Capacitor Selection ; 16V pour le derating DC bias, comme C_B2"
+C_B1,,22uF 16V ceramique X5R,0805,—,1,Main,"Entree TPS63020 (VSYS, VIN 10/11) : >= 10 uF X5R/X7R au plus pres (datasheet 8.2.2.4) ; 16 V pour le derating DC bias"
 "C15,C16,C17",,10uF 16V ceramique X5R,0805,—,3,Main,Bulk decouplage PCM5122 (AVDD/DVDD/CPVDD)
 "C19,C20",,2.2uF 25V ceramique X5R,0603,—,2,Main,Charge pump PCM5122
 "C21,C22",,2.2nF 50V ceramique C0G/NP0,0603,—,2,Main,"Filtre RC sortie DAC PCM5122 (470 ohm + 2,2 nF)"
 C_IN,Samsung CL10A475KA8NQNC,4.7uF 25V ceramique X5R,0603,C69335,1,Main,"bq24075 IN pin13 (datasheet : 1-10 uF). 25 V (decision 2026-09-27) contre les surtensions de branchement USB ; X5R (-55/+85 C) suffisant, garde l empreinte 0603"
 "C_D1,C_A1",,1uF 10V ceramique X5R,0402,—,2,Main,Entrees LDO U5/U6
-C_B2,,22uF 16V ceramique X5R,0805,—,1,Main,Sortie MT3608 boost (16V pour derating DC bias)
+C_B2,,22uF 16V ceramique X5R,0805,—,1,Main,"Sortie TPS63020 (1/3) : 3 x 22 uF recommandes au plus pres de VOUT/PGND (datasheet 8.2.2.3, tableau 1) ; 16 V pour le derating DC bias"
+C_B3,,22uF 16V ceramique X5R,0805,—,1,Main,Sortie TPS63020 (3/3) - voir C_B2
+C_B4,,22uF 16V ceramique X5R,0805,—,1,Main,Sortie TPS63020 (4/3) - voir C_B2
 "R1,R2",,470 ohm,0603,—,2,Main,"Filtre RC sortie DAC PCM5122 (470 ohm + 2,2 nF, docs/datasheets/pcm5122.md)"
 "R3,R4",,4.7k ohm,0402,—,2,Main,Pull-up I2C SDA/SCL
 "R5,R6",,10k ohm,0402,—,2,Main,Pull-up XSMT (R5 vers 3V3_A) / EN ESP32 (R6)
@@ -42,15 +46,14 @@ R_ILIM,,1.5k ohm,0402,—,1,Main,bq24075 ILIM pin12 (input current limit en mode
 "R_PG,R_CHG",,100k ohm,0402,—,2,Main,Pull-up PGOOD/CHG bq24075 (montees au schema)
 R_ISET,,890 ohm,0402,—,1,Main,bq24075 ISET pin16 (charge current 1A)
 R_VCC,,100 ohm,0402,—,1,Main,DW01A VCC serie (protection)
-R_FB_H,,750k ohm,0402,—,1,Main,MT3608 feedback diviseur haut
-R_FB_L,,100k ohm,0402,—,1,Main,MT3608 feedback diviseur bas
+R_FB_H,,1.62M ohm 1%,0402,—,1,Main,"TPS63020 FB, VOUT -> FB : 5,0 V = 0,5 V x (1 + 1620/180) ; consigne 5,0 V et non 5,1 a cause des +3 % du power save (pire cas ~5,21 V < 5,3 V WS2812)"
+R_FB_L,,180k ohm 1%,0402,—,1,Main,"TPS63020 FB -> GND : R2 a garder vers 200 kOhm (datasheet 8.2.3, tableau 3)"
 C_BAT,,4.7uF 10V ceramique X5R,0603,—,1,Main,bq24075 BAT decouplage
 C_OUT,,4.7uF 10V ceramique X5R,0603,—,1,Main,bq24075 OUT decouplage
 R_TS,,10k ohm (DNP),0402,—,1,Main,"DNP — remplacee par la NTC de la cellule sur J2.3. Monter l'une OU l'autre, jamais les deux"
 "COTE2-R1,COTE2-R2",,5.1k ohm,0402,—,2,Satellite Cote 2,"[Satellite Cote 2, projet hardware/cote2/ (ex-R9,R10 de la Main, deplace le 2026-09-27).] Au pied de J1. USB-C CC1/CC2"
 COTE2-J2,,Connecteur JST-PH 6pin,JST-PH-6P,—,1,Satellite Cote 2,"Liaison vers J14 de la Main (VBUS, GND, D-, D+, GND, 5V_HOST)"
 "R11,R12",,22 ohm,0402,—,2,Main,Serie USB D+/D-
-D1,SS34 (MDD),Diode Schottky SS34 (3A),SMA,C8678,1,Main,Protection MT3608 (SS14 1A insuffisant — audit A5)
 COTE2-U2,CAP1298-1-SL-TR,,SOIC-14,C2652072,1,Satellite Cote 2,"[Satellite Cote 2, projet hardware/cote2/ (U2).] Controleur tactile, adresse I2C FIXE 0x28 (un seul CAP12xx par bus). Repartition (decision 2026-09-27) : 6 touches CS1-CS4/CS6/CS7, proximite ""approche ta main"" sur CS8, garde SG sur CS5 autour de l electrode de proximite. ALERT# et N/C a GND (tableau 1-1), scrutation. docs/datasheets/CAP1298.md"
 COTE2-C1,,100nF 16V ceramique X7R,0402,—,1,Satellite Cote 2,[Satellite Cote 2 (C1).] Decouplage VDD CAP1298 au plus pres (DS00001571B figure 3-1)
 COTE2-C2,,1uF 10V ceramique X5R,0402,—,1,Satellite Cote 2,"[Satellite Cote 2 (C2).] Decouplage VDD CAP1298 (figure 3-1 : 1 uF + 0,1 uF)"
@@ -86,12 +89,7 @@ COTE3-U1,TMAG5273A1QDBVR,,SOT-23-6,C3716049,1,Satellite Cote 3,"[Satellite Cote 
 COTE3-C1,,100nF 16V ceramique X7R,0402,—,1,Satellite Cote 3,"[Satellite Cote 3 (ex-C33).] Decouplage VCC TMAG5273 (SLYS045C §7.4 : >= 0,01 uF)"
 COTE3-J1,,Connecteur JST-SH 4pin,JST-SH-4P,—,1,Satellite Cote 3,"[Satellite Cote 3 (J1).] Qwiic vers un des J3-J6/J13 de la Main : 1 GND, 2 3V3_D, 3 SDA, 4 SCL"
 LS1,PUI Audio AS04008PO-2-R,Haut-parleur 8 ohms 1 W (2 W max),Module,—,1,Satellite Dessus,Cable depuis J10 de la Main (canal L en pont via FB3/FB4) — docs/datasheets/AS04008PO.md
-Q1,AO3401A,MOSFET P AO3401A -30V -4A,SOT-23,C15127,1,Main,Load switch rail 5V (marche/arret)
-Q2,2N7002,MOSFET N 2N7002,SOT-23,C8545,1,Main,Inverseur de commande du load switch
 R20,,2.2k 1%,0402,—,1,Main,"Pull-down EN_SYS. 2,2 k (et non 100 k) depuis le 2026-09-27 : courant de contact ~1,5 mA (VSYS 3,4 V) a 2,5 mA (5,5 V) dans SW3 (contacts argent E-Switch RR1), uniquement box allumee ; 14 mW max"
-R21,,100k 1%,0402,—,1,Main,"Pull-up de grille de Q1 (vers la source, a travers R_SS) : Q1 bloque par defaut"
-R_SS,,0 ohm,0402,—,1,Main,"Demarrage progressif de Q1 (audit 2026-11-15, A1) : serie dans la grille, 0 ohm = commutation franche comme avant. Au proto, si l allumage fait couper le bq24075 (V_O(SC2)) : 47 k avec C_SS 10 nF (depart de reglage, calcul ~0,2 A d appel dans les 25 uF du rail 5V)"
-C_SS,,10nF 16V ceramique X7R (DNP),0402,—,1,Main,"Demarrage progressif de Q1 (audit 2026-11-15, A1) : grille-drain (Miller), NON MONTE. Ne sert qu avec R_SS > 0 ; jamais seul (avec R_SS = 0 il ne ralentit rien)"
 J14,,Connecteur JST-PH 6pin,JST-PH-6P,—,1,Main,"Liaison USB vers le satellite Cote 2 : 1 VBUS (5V_USB, ~1,1 A), 2 GND, 3 D-, 4 D+, 5 GND, 6 5V_HOST (reserve mode hote)"
 R22,,0 ohm (DNP),0603,—,1,Main,Reserve mode hote USB : relie le rail 5V a J14.6 pour alimenter une cle. NON MONTEE
 "R23,R24",,10k ohm,0402,—,2,Main,"Pull-down BTN1/BTN2 (GPIO45/46, strapping) vers J8.5/J8.6 — boutons actifs hauts, JAMAIS de pull-up"
@@ -119,6 +117,6 @@ R_CS,,1k ohm,0402,—,1,Main,DW01A : resistance de detection (application typiqu
 "TP_EN,TP_GPIO0,TP_I2CA,TP_I2CL",,Point de test,TestPoint_Pad_D1.5mm,—,4,Main,"Pastilles de test (EN, GPIO0, I2C SDA/SCL)"
 "C_CLK2,C_CLK3",,10pF (DNP) C0G/NP0,0402,—,2,Main,Provision CEM sur les horloges SPI — non montees
 C1,,10uF 16V ceramique X5R,0603,—,1,Main,Reservoir 3V3_D au pied du module ESP32-S3
-"TP_VBUS1,TP_VSYS1,TP_VBAT1,TP_3V3D1,TP_3V3A1,TP_5VB1,TP_5V1,TP_GND1,TP_GND2,TP_GND3",,Point de test alimentation,TestPoint_Pad_D1.5mm,—,10,Main,Rails et masses — voir docs/pcb/03-validation-qualite.md
-"TP_ISET1,TP_CHG1,TP_FB1,TP_TS1,TP_ENSYS1,TP_GATE1",,Point de test diagnostic,TestPoint_Pad_D1.5mm,—,6,Main,"Courant de charge, etat chargeur, boucle du boost, NTC, marche/arret, load switch"
+"TP_VBUS1,TP_VSYS1,TP_VBAT1,TP_3V3D1,TP_3V3A1,TP_5V1,TP_GND1,TP_GND2,TP_GND3",,Point de test alimentation,TestPoint_Pad_D1.5mm,—,9,Main,Rails et masses — voir docs/pcb/03-validation-qualite.md
+"TP_ISET1,TP_CHG1,TP_TS1,TP_ENSYS1",,Point de test diagnostic,TestPoint_Pad_D1.5mm,—,4,Main,"Courant de charge, etat chargeur, NTC, marche/arret (TP_FB1 et TP_GATE1 retires le 2026-11-15 avec le MT3608 et le load switch)"
 "TP_SCLK2,TP_SCLK3,TP_I2SBCK,TP_I2SLRCK,TP_AUDIOL,TP_WS2812,TP_TXD0,TP_RXD0",,Point de test signaux,TestPoint_Pad_D1.5mm,—,8,Main,"Fronts des horloges SPI, I2S, sortie DAC, data LED, console UART0 (TX/RX, adaptateur USB-serie 3,3 V)"

@@ -1,5 +1,7 @@
 # Sunlord SWPA5040S (inductance de puissance, L1 du boost MT3608)
 
+> ⚠️ **Retiré du schéma le 2026-11-15** (audit A3) : L1 devient une Sunlord **WPN4020H1R5MT** 1,5 µH pour le TPS63020 (`WPN4020H.md`). Synthèse conservée pour mémoire.
+
 > _Synthèse du catalogue Sunlord « Wire Wound SMD Power Inductors – SWPA Series », révision
 > 2023/06/01 (fichier local [./SWPA5040S.pdf](./SWPA5040S.pdf), téléchargé depuis le miroir
 > LCSC de C48496). Le PDF est un **scan** (images, pas de texte) : valeurs relevées à l'œil

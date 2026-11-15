@@ -34,13 +34,12 @@ Sans eux, aucun bring-up sérieux n'est possible.
 | `TP_VBAT1` | `VBAT` | tension cellule, avant protection | 3,0-4,2 V |
 | `TP_3V3D1` | `3V3_D` | rail numérique | 3,3 V ±1,5 % (précision AP2112) |
 | `TP_3V3A1` | `3V3_A` | rail audio | 3,3 V ±1,5 % |
-| `TP_5VB1` | `5V_BOOST` | sortie du boost, **avant** le load switch | 5,0-5,2 V (0,6 × (1+750k/100k), MT3608) |
-| `TP_5V1` | `5V` | rail 5 V, **après** le load switch | idem − ~50 mV de chute dans Q1 |
+| `TP_5V1` | `5V` | sortie du buck-boost TPS63020 (depuis le 2026-11-15) | 4,95-5,05 V en charge ; jusqu'à ~5,2 V à vide (+3 % du power save, `TPS63020.md`) |
 | `TP_GND1..3` | `GND` | retours de mesure | — |
 
-**Le couple `TP_5VB1` / `TP_5V1` est le plus rentable de la liste** : il isole en une mesure
-le boost du load switch. Tension présente en amont et absente en aval = Q1 ou sa commande ;
-absente des deux côtés = MT3608, L1 ou D1.
+`TP_5VB1` (avant le load switch) a disparu le 2026-11-15 avec le MT3608, D1 et Q1/Q2 : le
+TPS63020 déconnecte lui-même la charge. `5V` absent box allumée = U7, L1, `EN_SYS` (TP_ENSYS1)
+ou VINA ; mesurer aussi VSYS (TP_VSYS1) pour séparer entrée et convertisseur.
 
 Pour les masses : **trois points répartis**, dont un dans la zone audio et un près du
 connecteur USB. Au moins un doit accepter une **pince** (trou métallisé ou boucle) : une
@@ -53,8 +52,6 @@ masse longue en fil volant rend inexploitable toute mesure de signal rapide.
 | `TP_ISET1` | `U8.ISET` / `R_ISET` | **mesurer le courant de charge sans couper une piste** — la tension sur ISET reflète le courant réel (bq24075, `bq24075.md`) |
 | `TP_TS1` | `BAT_TS` | vérifier la NTC : ≈ **0,75 V à 25 °C** (10 kΩ × la source interne de 75 µA) ; hors plage = charge suspendue sans symptôme |
 | `TP_ENSYS1` | `EN_SYS` | état de l'interrupteur marche/arrêt vu par la carte |
-| `TP_GATE1` | `GATE_5V` | grille de Q1 : ≈ 0 V box allumée, ≈ V_5V_BOOST éteinte |
-| `TP_FB1` | `U7.FB` | boucle de régulation du boost : **0,6 V** attendu ; toute autre valeur = R_FB_H/R_FB_L ou MT3608 |
 | `TP_CHG1` | `U8.CHG` | état de charge (open-drain, pull-up 100 kΩ déjà présent). Clignotement 2 Hz = **défaut de timer** |
 
 ### 2.3 Utiles — signaux
@@ -82,9 +79,10 @@ accessibles, sans contrainte de dessin). Vérification : 22/22 sur le net attend
 
 Trois nets utiles n'avaient aucun nom et ont été nommés à cette occasion — ce qui sert
 aussi la lisibilité du PCB : **`BQ_ISET`** (courant de charge), **`BQ_CHG`** (état du
-chargeur), **`BOOST_FB`** (boucle de régulation du MT3608).
+chargeur), **`BOOST_FB`** (boucle de régulation du MT3608 — retiré le 2026-11-15 avec `TP_FB1`,
+`TP_GATE1` et `TP_5VB1` : pont de retour du TPS63020 à ~162 kΩ, trop sensible pour une pastille).
 
-Avec les 4 existants, la carte compte **26 points de test**, **28** avec `TP_TXD0` / `TP_RXD0` (2026-09-27). Total en BOM : 3 lignes
+Avec les 4 existants, la carte compte **26 points de test**, **28** avec `TP_TXD0` / `TP_RXD0` (2026-09-27), **25** depuis le retrait de `TP_5VB1`, `TP_FB1` et `TP_GATE1` (2026-11-15). Total en BOM : 3 lignes
 groupées, empreinte `TestPoint:TestPoint_Pad_D1.5mm`.
 
 ### 2.6 Règles de pose (pour le routage)
@@ -109,14 +107,14 @@ groupées, empreinte `TestPoint:TestPoint_Pad_D1.5mm`.
 
 - [ ] Nombre de cartes conforme, aspect général (délaminage, rayures, oxydation)
 - [ ] **Inspection visuelle** : composants manquants, décalés, dressés (tombstoning), ponts
-- [ ] Orientation des polarisés : **D1** (cathode), **U1**, **U8**, **Q1**, **Q2**, **U5**
+- [ ] Orientation des polarisés : **U1**, **U5**, **U7** (TPS63020, repère broche 1), **U8**
 - [ ] Photo recto/verso archivée (numéro de lot)
 
 ### Phase 1 — Hors tension, à l'ohmmètre
 
 - [ ] Continuité de masse entre les trois `TP_GND`
 - [ ] Résistance rail → GND, **aucune ne doit être proche de 0 Ω** :
-      `3V3_D` ____ Ω · `3V3_A` ____ Ω · `5V` ____ Ω · `5V_BOOST` ____ Ω · `VSYS` ____ Ω · `VBAT` ____ Ω
+      `3V3_D` ____ Ω · `3V3_A` ____ Ω · `5V` ____ Ω · `VSYS` ____ Ω · `VBAT` ____ Ω
 - [ ] Pas de continuité entre rails différents (3V3_D ↔ 3V3_A ↔ 5V)
 - [ ] Interrupteur : `EN_SYS` bascule bien entre VSYS et ~0 V (pull-down R20)
 
@@ -128,9 +126,7 @@ groupées, empreinte `TestPoint:TestPoint_Pad_D1.5mm`.
 - [ ] `TP_VSYS1` = ____ V
 - [ ] `TP_3V3D1` = 3,3 V ±1,5 % → ____ V
 - [ ] `TP_3V3A1` = 3,3 V ±1,5 % → ____ V
-- [ ] `TP_FB1` = 0,6 V → ____ V
-- [ ] `TP_5VB1` = 5,0-5,2 V → ____ V
-- [ ] `TP_5V1` ≈ `TP_5VB1` − 50 mV → ____ V
+- [ ] `TP_5V1` = 4,95-5,05 V (≤ 5,2 V à vide) → ____ V — sous USB aussi (le TPS63020 passe en buck)
 - [ ] Interrupteur sur arrêt : **tous les rails à 0 V** sauf `VSYS` (la charge doit rester possible)
 - [ ] Aucun composant anormalement chaud (contrôle au doigt puis caméra thermique si dispo)
 

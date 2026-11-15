@@ -298,14 +298,13 @@ bq24075 (U8) — chargeur 1 A + power path DPPM, entrée limitée à 1,07 A (R_I
          │   interrupteur marche/arrêt SW3 (Côté 2, via J12) → EN_SYS (R20 2,2 k pull-down : courant de contact pour SW3, 27/09)
          ├── AP2112M-3.3 SO-8 (U5)  [EN_SYS] → 3V3_D (ESP32, SD, écrans, IMU, satellites)
          ├── AP2112K-3.3 SOT-25 (U6)[EN_SYS] → 3V3_A (PCM5122, ICS-43434)
-         └── MT3608 boost (U7)      [EN_SYS] → 5V_BOOST (5,1 V) → D1 SS34
-                  └── load switch Q1 AO3401A (commandé par Q2 2N7002 depuis EN_SYS)
-                       → 5V (12 WS2812 du halo, PAM8406, J9 halo visage)
+         └── TPS63020 buck-boost (U7)[EN_SYS] → 5V (5,0 V régulé, batterie comme USB ;
+                  charge déconnectée à l'arrêt) → 12 WS2812 de la Main, PAM8406, J9 halo visage
 ```
 
 > **Power path (DPPM)** : le système est alimenté en priorité par l'USB, le surplus charge la batterie. La box peut rester branchée sans user la batterie. **Deux LDOs séparés** pour isoler le bruit digital du chemin audio. GND unique continu (PAS de split). Source de vérité : le schéma KiCad `hardware/main/power.kicad_sch` (les `docs/schematics/*.txt` sont antérieurs à KiCad).
 >
-> **Marche/arrêt (option B, câblée le 2026-09-27)** : SW3 ne commute que `EN_SYS`, qui coupe les trois régulateurs. Le MT3608 étant un boost asynchrone, EN bas laisse passer VSYS − V_F vers sa sortie : le load switch Q1 coupe donc réellement le rail 5 V (LEDs et ampli). Le bq24075 reste actif : **la charge USB fonctionne box éteinte**. Consommation éteinte estimée ≈ 15-20 µA (à mesurer).
+> **Marche/arrêt (option B, câblée le 2026-09-27)** : SW3 ne commute que `EN_SYS`, qui coupe les trois régulateurs. Depuis le 2026-11-15 (audit A3), le rail 5 V vient d'un **buck-boost TPS63020** qui déconnecte lui-même la charge à l'arrêt : le load switch Q1/Q2 du MT3608 (boost asynchrone, qui laissait passer VSYS − V_F) a été retiré. Le bq24075 reste actif : **la charge USB fonctionne box éteinte**. Consommation éteinte estimée ≈ 15-20 µA (à mesurer).
 >
 > **Paramètres vérifiés datasheets (audits 2026-09-23 et 2026-09-27)** :
 > - Charge : 1 A (R_ISET 890 Ω), entrée limitée à 1,07 A (R_ILIM 1,5 kΩ, mode EN2 = H / EN1 = L).
@@ -321,7 +320,7 @@ bq24075 (U8) — chargeur 1 A + power path DPPM, entrée limitée à 1,07 A (R_I
 > - **NTC** : J2 en **4 broches** (2026-09-27) — le retour de la NTC va sur **GND** (J2.4) et non sur BAT− : la TS mesure par rapport à VSS, et BAT− en est séparé par les MOSFET du FS8205 (56-74 mV à 1 A, soit ≈ +7 °C d'erreur sur la coupure en surchauffe). Harnais de cellule à 4 fils.
 > - Protection DW01A + FS8205 : surcharge 4,30 V, décharge profonde 2,40 V, **surintensité ≈ 1,6-3,2 A** → plafond du courant crête total (plafonds firmware de luminosité et de volume, mesure au proto).
 > - 3V3_D : **U5 = AP2112M-3.3 en SO-8** (θJA 114 °C/W au lieu de 184 °C/W en SOT-25), 600 mA garantis, l'ESP32 en exige ≥ 0,5 A ; plan de cuivre sous U5 au layout. Charges du rail : ESP32 ≥ 3,0 V, CAP1298 ≥ 3,0 V, GC9A01A ≤ 3,3 V → **extinction firmware sur VBAT basse** (~3,4-3,5 V).
-> - Rail 5 V (MT3608, 5,0-5,2 V) : 12 WS2812B = 432 mA en blanc (+ 7,2 mA au repos), PAM8406 ≈ 0,4 A par canal au maximum sur le haut-parleur 8 Ω, plus le halo externe sur J9 (pas de budget fixé : c'est le plafond firmware de luminosité qui borne l'ensemble). **D1 = SS34** (3 A). **L1 = Sunlord SWPA5040S6R8MT** (6,8 µH ±20 %, Isat 2,9 A, 5 × 5 mm ; crête calculée ≈ 1,9 A — `docs/datasheets/SWPA5040S.md`).
+> - Rail 5 V (**TPS63020**, 5,0 V nominal, ≤ 5,21 V à vide au pire cas avec les +3 % du power save — `docs/datasheets/TPS63020.md`) : 12 WS2812B = 432 mA en blanc (+ 7,2 mA au repos), PAM8406 ≈ 0,4 A par canal au maximum sur le haut-parleur 8 Ω, plus le halo externe sur J9 (pas de budget fixé : c'est le plafond firmware de luminosité qui borne l'ensemble). **L1 = Sunlord WPN4020H1R5MT** (1,5 µH ±20 %, Isat 7,7 A, Irms 5,2 A, 4 × 4 mm — `docs/datasheets/WPN4020H.md`). ⚠ Côté batterie, le bq24075 coupe VSYS dès ~2,0 A (audit 2026-11-15 A1) : plafond firmware global vers 1,5 A.
 
 #### 2.2.2c Assignation des faces — Cube 150×150×150mm *(dimension à valider au proto boîtier — la vision mentionne 120mm)*
 
@@ -367,7 +366,7 @@ Les énigmes sont "données" par le personnage (dialogue + feedback visuel).
 
 Composants embarqués :
 - ESP32-S3-WROOM-1-N16R8 (soudé)
-- Alimentation complète : bq24075 (power path) + DW01A + FS8205, AP2112M-3.3 (3V3_D, SO-8) + AP2112K-3.3 (3V3_A), MT3608 boost + load switch 5 V, marche/arrêt par EN_SYS
+- Alimentation complète : bq24075 (power path) + DW01A + FS8205, AP2112M-3.3 (3V3_D, SO-8) + AP2112K-3.3 (3V3_A), buck-boost TPS63020 (rail 5 V, depuis le 2026-11-15 ; MT3608 + load switch auparavant), marche/arrêt par EN_SYS
 - PCM5122PW DAC + découplage (zone audio isolée)
 - PAM8406 Class D ampli + ferrites de sortie FB3-FB6 → J10 (le haut-parleur lui-même est déporté sur la face Dessus, câblé depuis Main)
 - ICS-43434 MEMS micro (bottom-port, trou PCB pour le son)
@@ -1743,8 +1742,8 @@ Ces 3 réponses sont liées à la session (`hints_used`, `duration_sec`, `score`
 | Téléphone ne lit pas le tag | Antenne mal accordée / boucle PCB mal dimensionnée | Vérifier la géométrie de la boucle antenne AC0/AC1, mesurer la résonance ~13.56MHz |
 | Touch erratique | Paroi trop épaisse / mauvais calibrage | Augmenter le pad cuivre / ajuster threshold firmware |
 | Box qui redémarre sur un pic (LEDs, son fort) | Surintensité DW01A (1,6-3,2 A) ou rail 5 V effondré | Baisser les plafonds de luminosité et de volume ; mesurer TP_VBAT1 / TP_5V1 |
-| Box qui ne s'allume pas sur batterie | Interrupteur / EN_SYS, ou cellule en décharge profonde (DW01A < 2,4 V) | Vérifier TP_ENSYS1, TP_GATE1 et TP_VBAT1 ; recharger par USB (relâchement du DW01A vers 3,0 V) |
-| LEDs éteintes ou couleurs fausses | Rail 5 V coupé (Q1) / timings hors spec V5 | Vérifier TP_5V1 et TP_WS2812 ; timings RMT conformes à `WS2812B-B.md` |
+| Box qui ne s'allume pas sur batterie | Interrupteur / EN_SYS, ou cellule en décharge profonde (DW01A < 2,4 V) | Vérifier TP_ENSYS1, TP_VSYS1 et TP_VBAT1 ; recharger par USB (relâchement du DW01A vers 3,0 V) |
+| LEDs éteintes ou couleurs fausses | Rail 5 V coupé (U7 TPS63020, EN_SYS) / timings hors spec V5 | Vérifier TP_5V1 et TP_WS2812 ; timings RMT conformes à `WS2812B-B.md` |
 
 ### 9.2 Firmware
 
@@ -1792,24 +1791,26 @@ Ces 3 réponses sont liées à la session (`hints_used`, `duration_sec`, `score`
 | DW01A | — | https://hmsemi.com/downfile/DW01A.PDF |
 | FS8205(A) | LCSC C32254 (SOT-23-6 — brochage à confirmer sur le PDF) | https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/1811081616_Fortune-Semicon-FS8205A_C32254.pdf |
 | USBLC6-2SC6 | LCSC C7519 | https://www.st.com/resource/en/datasheet/usblc6-2.pdf |
-| SS34 (D1, 3 A) | LCSC C8678 | `docs/datasheets/SS34.md` (PDF local Vishay SS32-SS36 ; fiche MDD sur la page LCSC) |
+| SS34 (D1, 3 A) — retiré le 2026-11-15 | LCSC C8678 | `docs/datasheets/SS34.md` (PDF local Vishay SS32-SS36 ; fiche MDD sur la page LCSC) |
 | TMAG5273 (**variante A1**, 0x35) | C3716049 (TMAG5273A1QDBVR ; empreinte SOT-23-6 commune à la famille, fichier nommé C3715882) | https://www.ti.com/lit/ds/symlink/tmag5273.pdf |
 | MPR121 (Phase 1) | — | https://cdn-shop.adafruit.com/datasheets/MPR121.pdf |
 | GC9A01A (puce driver des yeux) | — | https://github.com/fbiego/dt78/blob/master/datasheets/GC9A01A.pdf (fiche du **module** écran encore absente) |
 | TF-01A (slot microSD) | LCSC C91145 | plan mécanique LCSC (pull-ups 10 kΩ exigées côté hôte, cf. ESP-IDF) |
-| MT3608 | LCSC C84817 | https://datasheet.lcsc.com/lcsc/XI-AN-Aerosemi-Tech-MT3608_C84817.pdf |
+| MT3608 (retiré le 2026-11-15) | LCSC C84817 | https://datasheet.lcsc.com/lcsc/XI-AN-Aerosemi-Tech-MT3608_C84817.pdf |
+| TPS63020 (U7, buck-boost 5 V, depuis le 2026-11-15) | LCSC C15483 | `docs/datasheets/TPS63020.md` |
+| Sunlord WPN4020H1R5MT (L1, 1,5 µH) | LCSC C98360 | `docs/datasheets/WPN4020H.md` |
 | AP2112M-3.3 (U5, 3V3_D, SO-8) | LCSC C5290219 | `docs/datasheets/AP2112.md` (brochage SO-8 ≠ SOT-25) |
 | AP2112K-3.3 (U6, 3V3_A, SOT-25) | LCSC C51118 | https://www.diodes.com/assets/Datasheets/AP2112.pdf |
 | WS2812B-B/T | LCSC C2761795 | Datasheet **WS2812B V5** propre à C2761795 : `docs/datasheets/WS2812B-B.pdf` / `.md` (⚠ ≠ ancienne WS2812B C114586 : V_IH 2,7 V et timings T0H/T1L différents) |
-| 2N7002 | LCSC C8545 | https://datasheet.lcsc.com/lcsc/Nexperia-2N7002_C8545.pdf |
-| AO3401A (Q1, load switch 5 V) | LCSC C15127 | `docs/datasheets/AO3401A.md` |
+| 2N7002 — retiré le 2026-11-15 | LCSC C8545 | https://datasheet.lcsc.com/lcsc/Nexperia-2N7002_C8545.pdf |
+| AO3401A (Q1, load switch 5 V) — retiré le 2026-11-15 | LCSC C15127 | `docs/datasheets/AO3401A.md` |
 | BLM21PG221SN1D (FB3-FB6, ferrites HP) | LCSC C85840 | `docs/datasheets/BLM21PG.md` |
 | PUI AS04008PO-2-R (haut-parleur 8 Ω, 1 W) | — | `docs/datasheets/AS04008PO.md` |
 | ADS7830 (face Côté 1) | LCSC C161747 | `docs/datasheets/ADS7830.md` |
 | E-Switch série 100 (SW1-SW2, finition or) | — | `docs/datasheets/E-Switch-100-series-toggle.md` |
 | E-Switch RR111C1921 (SW3, marche/arrêt) | DigiKey / Mouser | `docs/datasheets/E-Switch-RR1.md` |
 | Bourns PTA6043 / PDB181 (faders, pots) | LCSC C17203852 / C6251250 | `docs/datasheets/Bourns-PTA6043.md`, `Bourns-PDB181.md` |
-| Sunlord SWPA5040S6R8MT (L1, boost, 6,8 µH) | LCSC C36411 | `docs/datasheets/SWPA5040S.md` |
+| Sunlord SWPA5040S6R8MT (L1, boost, 6,8 µH) — retiré le 2026-11-15 | LCSC C36411 | `docs/datasheets/SWPA5040S.md` |
 | Cellule 18650 + NTC | **à choisir** | — |
 
 ### 10.2 Liens utiles
